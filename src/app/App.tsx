@@ -4,7 +4,7 @@ import Button from './components/Button';
 import styles from './ui.module.scss';
 import { fetchPlugin, fetchPluginNoResponse } from './utils/uiUtils';
 
-const UI = ({ }) => {
+const App = ({}) => {
   const textbox = React.useRef<HTMLInputElement>();
 
   const countRef = React.useCallback((element) => {
@@ -31,7 +31,7 @@ const UI = ({ }) => {
   return (
     <div className={styles.container}>
       <Logo />
-      <h2>Rectangle Creator</h2>
+      <h2>Rectangle Creator29</h2>
       <p>
         Count: <input ref={countRef} />
       </p>
@@ -46,4 +46,4 @@ const UI = ({ }) => {
   );
 };
 
-export default UI;
+export default App;

@@ -8,6 +8,7 @@ import postcss from 'rollup-plugin-postcss';
 import html from 'rollup-plugin-bundle-html-plus';
 import typescript from 'rollup-plugin-typescript';
 import svgr from '@svgr/rollup';
+import dotenv from "rollup-plugin-dotenv";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -29,6 +30,8 @@ export default [
         browser: true,
         dedupe: ['react', 'react-dom'],
       }),
+
+      dotenv(),
 
       // Manage process.env
       replace({
@@ -71,7 +74,10 @@ export default [
 
       // If dev mode, serve and livereload
       !production && serve(),
-      !production && livereload('dist'),
+      !production && livereload({
+        watch: ['dist', '.env.local' /* KO */],
+        delay: 100,
+      }),
 
       // If prod mode, minify
       production && terser(),

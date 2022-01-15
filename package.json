@@ -1,14 +1,18 @@
 {
-  "name": "create-react-figma-plugin-2",
+  "name": "clapy",
   "version": "1.0.0",
-  "description": "A template for creating Figma plugins with React for the UI element.  It supports Typescript and CSS/SCSS modules out of the box",
-  "license": "ISC",
+  "description": "Figma plugin to start building Clapy applications.",
+  "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "start:rollup": "sirv dist"
+    "start:rollup": "sirv dist",
+    "upgr": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
+    "jwt-decode": "^3.1.2",
+    "keytar": "^7.7.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
@@ -31,6 +35,7 @@
     "prettier": "^2.3.1",
     "rollup": "^2.53.2",
     "rollup-plugin-bundle-html-plus": "^1.4.0",
+    "rollup-plugin-dotenv": "^0.3.0",
     "rollup-plugin-html-bundle": "^0.0.3",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.0",
