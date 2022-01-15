@@ -17,6 +17,7 @@
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.16.7",
     "@babel/plugin-transform-runtime": "^7.14.5",
     "@babel/preset-env": "^7.14.7",
     "@babel/preset-react": "^7.14.5",
@@ -29,7 +30,6 @@
     "@types/react": "^17.0.14",
     "@types/react-dom": "^17.0.9",
     "@types/sass": "^1.16.1",
-    "babel-loader": "^8.2.2",
     "edit-json-file": "^1.6.0",
     "postcss": "^8.4.5",
     "prettier": "^2.3.1",
