@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "start:rollup": "sirv dist",
+    "start:rollup": "sirv dist --dev --no-clear",
     "upgr": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
@@ -26,24 +26,23 @@
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.0.2",
     "@rollup/plugin-replace": "^3.0.1",
+    "@rollup/plugin-typescript": "^8.3.0",
     "@svgr/rollup": "^6.2.0",
     "@types/react": "^17.0.14",
     "@types/react-dom": "^17.0.9",
     "@types/sass": "^1.16.1",
-    "edit-json-file": "^1.6.0",
     "postcss": "^8.4.5",
     "prettier": "^2.3.1",
     "rollup": "^2.64.0",
     "rollup-plugin-bundle-html-plus": "^1.4.0",
     "rollup-plugin-dotenv": "^0.3.0",
-    "rollup-plugin-html-bundle": "^0.0.3",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.0",
     "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript": "^1.0.1",
     "sass": "^1.48.0",
     "sirv-cli": "^2.0.1",
+    "tslib": "^2.3.1",
     "typescript": "^4.3.5"
   }
 }

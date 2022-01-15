@@ -6,7 +6,7 @@ import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import html from 'rollup-plugin-bundle-html-plus';
-import typescript from 'rollup-plugin-typescript';
+import typescript from '@rollup/plugin-typescript';
 import svgr from '@svgr/rollup';
 import dotenv from "rollup-plugin-dotenv";
 
@@ -19,6 +19,7 @@ export default [
   {
     input: 'src/app/index.tsx',
     output: {
+      sourcemap: !production,
       name: 'ui',
       file: 'dist/bundle.js',
       format: 'umd',
@@ -93,11 +94,17 @@ export default [
   {
     input: 'src/plugin/controller.ts',
     output: {
+      sourcemap: !production,
       file: 'dist/code.js',
       format: 'iife',
       name: 'code',
     },
-    plugins: [resolve(), typescript(), commonjs({ transformMixedEsModules: true }), production && terser()],
+    plugins: [
+      resolve(),
+      typescript({ sourceMap: !production }),
+      commonjs({ transformMixedEsModules: true }),
+      production && terser()
+    ],
   },
 ];
 
@@ -110,7 +117,7 @@ function serve() {
         started = true;
 
         // Start localhost dev server on port 5000 to work on the UI in the browser
-        require('child_process').spawn('npm', ['run', 'start:rollup', '--', '--dev'], {
+        require('child_process').spawn('npm', ['run', 'start:rollup'], {
           stdio: ['ignore', 'inherit', 'inherit'],
           shell: true,
         });
