@@ -14,7 +14,8 @@
     "jwt-decode": "^3.1.2",
     "keytar": "^7.7.0",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "sha.js": "^2.4.11"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
@@ -31,6 +32,7 @@
     "@types/react": "^17.0.14",
     "@types/react-dom": "^17.0.9",
     "@types/sass": "^1.16.1",
+    "@types/sha.js": "^2.4.0",
     "postcss": "^8.4.5",
     "prettier": "^2.3.1",
     "rollup": "^2.64.0",

@@ -1,6 +1,6 @@
 import { initRoutes } from './core/initRoutes';
 import { createRectangles } from './createRectangles';
-import { getCachedToken } from './getCachedToken';
+import { getCachedToken, setCachedToken } from './getCachedToken';
 
 figma.showUI(__html__);
 figma.ui.resize(400, 300);
@@ -8,6 +8,7 @@ figma.ui.resize(400, 300);
 const routes = {
   createRectangles,
   getCachedToken,
+  setCachedToken,
   closePlugin: () => figma.closePlugin(),
 };
 

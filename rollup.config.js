@@ -29,6 +29,7 @@ export default [
       resolve({
         extensions: ['.jsx', '.js', '.json', '.ts', '.tsx'],
         browser: true,
+        preferBuiltins: false,
         dedupe: ['react', 'react-dom'],
       }),
 
