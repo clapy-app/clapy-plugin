@@ -58,14 +58,14 @@ export async function login() {
       authWindow!.location.href = authUrl;
     }
     const authoCode = await waitForAuthorizationCode(readToken);
-    const { accessToken, tokenType } = await fetchTokensFromCode(authoCode, verifier, readToken);
+    const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
 
     _accessToken = accessToken;
     _tokenType = tokenType;
 
-    fetchPlugin('setCachedToken', accessToken, tokenType);
+    fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
     // return { accessToken, tokenType };
   } catch (err) {
@@ -93,6 +93,7 @@ function getAuthenticationURL(state: string, challenge: string) {
   const data = {
     audience: env.auth0Audience,
     // scope: 'openid profile offline_access',
+    scope: 'offline_access',
     response_type: 'code',
     client_id: auth0ClientId,
     redirect_uri: redirectUri,
@@ -154,14 +155,16 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
       body: JSON.stringify(exchangeOptions)
     });
     // Example of response:
-    // access_token: "K29GEl_8awqphnnJDhabs7yIl1dTs3jp"
+    // access_token: "eyJhbGciOiJSUzI1N...QbpMeOXvDQ"
     // expires_in: 86400
+    // refresh_token: "v1.McBQzYi89tbOf...k7QUPI5aKQ"
+    // scope: "offline_access"
     // token_type: "Bearer"
-    const { access_token, token_type/* , expires_in, id_token, refresh_token */ } = await rawResponse.json();
+    const { access_token, token_type, refresh_token/* , expires_in, id_token */ } = await rawResponse.json();
 
     // profile = jwtDecode(id_token);
 
-    return { accessToken: access_token, tokenType: token_type/* , refreshToken, profile */ };
+    return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token/* , profile */ };
 
     // if (refreshToken) {
     //   await keytar.setPassword(keytarService, keytarAccount, refreshToken);

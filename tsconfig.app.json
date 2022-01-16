@@ -1,11 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "src/plugin",
+    "src/app/index.tsx",
     // "src/common",
     "src/typings"
   ],
   "exclude": [
-    "src/app"
+    "src/plugin"
   ]
 }

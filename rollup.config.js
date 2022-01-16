@@ -9,6 +9,7 @@ import html from 'rollup-plugin-bundle-html-plus';
 import typescript from '@rollup/plugin-typescript';
 import svgr from '@svgr/rollup';
 import dotenv from "rollup-plugin-dotenv";
+import del from 'rollup-plugin-delete';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -21,9 +22,10 @@ export default [
     output: {
       sourcemap: !production,
       name: 'ui',
-      file: 'dist/bundle.js',
-      format: 'umd',
+      dir: 'dist/app',
+      format: 'es',
     },
+    preserveEntrySignatures: false,
     plugins: [
       // What extensions is rollup looking for
       resolve({
@@ -41,7 +43,12 @@ export default [
         'process.env.NODE_ENV': JSON.stringify(production),
       }),
 
-      typescript({ sourceMap: !production }),
+      typescript({
+        tsconfig: 'tsconfig.app.json',
+        sourceMap: !production,
+        inlineSourceMap: !production,
+        outputToFilesystem: false,
+      }),
 
       // Babel config to support React
       babel({
@@ -62,16 +69,20 @@ export default [
         extract: false,
         modules: true,
         use: ['sass'],
+        sourceMap: !production,
       }),
 
       // Injecting UI code into ui.html
       html({
         template: 'src/app/index.html',
-        dest: 'dist',
+        dest: 'dist/app',
         filename: 'index.html',
-        inline: true,
+        // inline: !production,
         inject: 'body',
         ignore: /code.js/,
+        scriptType: 'module',
+        sourcemap: !production,
+        sourceMap: !production,
       }),
 
       // If dev mode, serve and livereload
@@ -83,6 +94,11 @@ export default [
 
       // If prod mode, minify
       production && terser(),
+
+      del({
+        targets: 'dist/app/*',
+        runOnce: true
+      }),
     ],
     watch: {
       // clearScreen: true,
@@ -111,7 +127,8 @@ export default [
     input: 'src/plugin/controller.ts',
     output: {
       sourcemap: !production,
-      file: 'dist/code.js',
+      file: 'dist/plugin/code.js',
+      // dir: 'dist/plugin',
       format: 'iife',
       name: 'code',
     },
@@ -119,10 +136,16 @@ export default [
       resolve(),
       typescript({
         sourceMap: !production,
-        tsconfig: 'tsconfig.plugin.json'
+        tsconfig: 'tsconfig.plugin.json',
+        outputToFilesystem: false,
       }),
       commonjs({ transformMixedEsModules: true }),
-      production && terser()
+      production && terser(),
+
+      del({
+        targets: 'dist/plugin/*',
+        runOnce: true
+      }),
     ],
   },
 ];
@@ -132,15 +155,18 @@ function serve() {
 
   return {
     writeBundle() {
-      if (!started) {
-        started = true;
+      console.log('Serving at http://localhost:8080');
 
-        // Start localhost dev server on port 5000 to work on the UI in the browser
-        require('child_process').spawn('npm', ['run', 'start:rollup'], {
-          stdio: ['ignore', 'inherit', 'inherit'],
-          shell: true,
-        });
-      }
+      // if (!started) {
+      //   started = true;
+
+      //   // Start localhost dev server on port 5000 to work on the UI in the browser
+      //   require('child_process').spawn('npm', ['run', 'start:serve'], {
+      //     stdio: ['ignore', 'inherit', 'inherit'],
+      //     shell: true,
+      //   });
+      // }
+
     },
   };
 }

@@ -6,9 +6,14 @@ export async function getCachedToken() {
   return { accessToken, tokenType };
 }
 
-export async function setCachedToken(accessToken: string, tokenType: string) {
+export async function getRefreshToken() {
+  return await figma.clientStorage.getAsync('refreshToken');
+}
+
+export async function setCachedToken(accessToken: string, tokenType: string, refreshToken: string) {
   await Promise.all([
     figma.clientStorage.setAsync('accessToken', accessToken),
     figma.clientStorage.setAsync('tokenType', tokenType),
+    figma.clientStorage.setAsync('refreshToken', refreshToken),
   ]);
 }

@@ -4,6 +4,10 @@ export const isFigmaPlugin = window.location.origin === 'null';
 
 type UnPromise<T> = T extends Promise<infer U> ? U : T;
 
+// import('./../../plugin/routes')
+//   .then(res => console.log('import:', res))
+//   .catch(handleError);
+
 // Usage: `fetchPlugin('createRectangles', count)`
 // We could have set an alternative syntax (not implemented): `fetchPlugin('createRectangles')(count)`.
 export function fetchPlugin<T extends keyof Routes>(routeName: T, ...args: Parameters<Routes[T]>): Promise<UnPromise<ReturnType<Routes[T]>>> {

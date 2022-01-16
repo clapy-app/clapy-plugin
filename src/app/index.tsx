@@ -5,7 +5,6 @@ import { App } from './App';
 import { store } from './core/redux/store';
 import './core/theme/global.scss';
 
-
 render(
   <StrictMode>
     <Provider store={store}>
