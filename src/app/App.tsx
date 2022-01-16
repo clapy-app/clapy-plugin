@@ -1,40 +1,23 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { FC, memo, useCallback, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import Logo from './assets/logo.svg';
-import Button from './components/Button';
+import { login } from './auth/auth-service';
+import { selectAuthError, selectAuthLoading } from './auth/auth-slice';
+import { Button } from './components/Button';
+import { useGetWorksQuery } from './feat/api-sample';
 import styles from './ui.module.scss';
-import { login } from './utils/auth-service';
 import { fetchPlugin, fetchPluginNoResponse } from './utils/ui-utils';
 
+export const App: FC = memo(() => {
+  const textbox = useRef<HTMLInputElement>();
 
-function useAccessToken() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>();
-  const [accessToken, setAccessToken] = useState<string>();
-  useEffect(() => {
-    fetchPlugin('getCachedToken')
-      .then(token => {
-        setLoading(false);
-        setError(undefined);
-        setAccessToken(token);
-      })
-      .catch(error => {
-        setLoading(false);
-        setError(error);
-        setAccessToken(undefined);
-      });
-  }, []);
-  return { loading, error, accessToken, setAccessToken };
-}
-
-const App = ({}) => {
-  const textbox = React.useRef<HTMLInputElement>();
-
-  const countRef = React.useCallback((element) => {
+  const countRef = useCallback((element) => {
     if (element) element.value = '5';
     textbox.current = element;
   }, []);
 
-  const { loading, error, accessToken, setAccessToken } = useAccessToken();
+  const authLoading = useSelector(selectAuthLoading);
+  const authError = useSelector(selectAuthError);
 
   const createRectangles = useCallback(() => {
     const count = parseInt(textbox.current?.value || '0', 10);
@@ -42,18 +25,19 @@ const App = ({}) => {
       .then(resp => console.log(`Figma Says: ${resp}`))
       .catch(err => console.error('err:', err));
   }, []);
-  const loginBtn = useCallback(() => {
-    login()
-      .then(token => setAccessToken(token))
-      .catch(err => console.error(err));
-  }, []);
+
+  const loginBtn = useCallback(() => login(), []);
+
+  const { isLoading, error, data, refetch } = useGetWorksQuery();
+
+  const refetchBtn = useCallback(() => refetch(), []);
 
   const closePlugin = useCallback(() => {
     fetchPluginNoResponse('closePlugin');
   }, []);
 
-  if (loading) return <p>Loading authentication status...</p>;
-  if (error) return <p>Could not check the authentication status.</p>
+  if (authLoading) return <p>Loading authentication status...</p>;
+  if (authError) return <p>Could not check the authentication status: {JSON.stringify(authError)}</p>;
 
   return (
     <div className={styles.container}>
@@ -65,13 +49,16 @@ const App = ({}) => {
       <div className={styles.buttonContainer}>
         <Button onClick={createRectangles}>Create</Button>
         <Button onClick={loginBtn}>Auth</Button>
+        <Button onClick={refetchBtn}>Refetch API</Button>
         <Button onClick={closePlugin} secondary>
           Cancel
         </Button>
       </div>
-      <p>Access token: {accessToken}</p>
+      {isLoading
+        ? <p>Loading API sample...</p>
+        : error
+          ? <p>Could not fetch the API sample: {JSON.stringify(error)}</p>
+          : <p>API result: {JSON.stringify(data)}</p>}
     </div>
   );
-};
-
-export default App;
+});

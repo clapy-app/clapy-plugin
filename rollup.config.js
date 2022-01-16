@@ -85,7 +85,22 @@ export default [
       production && terser(),
     ],
     watch: {
-      clearScreen: true,
+      // clearScreen: true,
+    },
+
+    // https://github.com/reduxjs/redux-toolkit/issues/1466
+    // Hide the following warning, which is not a concern:
+    //   (!) `this` has been rewritten to `undefined`
+    //   https://rollupjs.org/guide/en/#error-this-is-undefined
+    //   node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+    //   1: var __extends = (this && this.__extends) || (function () {
+    //                       ^
+    //   2:     var extendStatics = function (d, b) {
+    //   3:         extendStatics = Object.setPrototypeOf ||
+    //   ...and 5 other occurrences
+    onwarn(warning, warn) {
+      if (warning.code === 'THIS_IS_UNDEFINED') return;
+      warn(warning);
     },
   },
 
@@ -102,7 +117,10 @@ export default [
     },
     plugins: [
       resolve(),
-      typescript({ sourceMap: !production }),
+      typescript({
+        sourceMap: !production,
+        tsconfig: 'tsconfig.plugin.json'
+      }),
       commonjs({ transformMixedEsModules: true }),
       production && terser()
     ],

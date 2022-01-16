@@ -1,7 +1,12 @@
+import { dispatchOther } from '../core/redux/redux.utils';
 import { env } from '../environment/env';
-import { createChallenge, createVerifier } from './auth-service.utils';
-import { handleError } from './error-utils';
-import { fetchPlugin, isFigmaPlugin } from './ui-utils';
+import { handleError } from '../utils/error-utils';
+import { fetchPlugin, isFigmaPlugin } from '../utils/ui-utils';
+import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
+import { authSuccess, setAuthError, startLoadingAuth } from './auth-slice';
+
+// TODO next step: validate the access token (tuto online)
+
 
 // const jwtDecode = require("jwt-decode");
 // const axios = require("axios");
@@ -19,7 +24,8 @@ const redirectUri = `${apiBaseUrl}/login/callback`;
 // const keytarService = "electron-openid-oauth";
 // const keytarAccount = os.userInfo().username;
 
-let accessToken: string | null = null;
+let _accessToken: string | null = null;
+let _tokenType: string | null = null;
 // let profile: string | null = null;
 // let refreshToken: string | null = null;
 // let _readToken: string | null = null;
@@ -32,14 +38,60 @@ let accessToken: string | null = null;
 //   return profile;
 // }
 
-function mkUrl(baseAndPath: string, queryObject?: any) {
-  if (!queryObject) return baseAndPath;
-  const queryParams = new URLSearchParams(queryObject).toString();
-  return `${baseAndPath}?${queryParams}`;
+// Exported methods
+
+export async function login() {
+  try {
+    const authWindow = isFigmaPlugin ? null : window.open(undefined, '_blank');
+    if (!isFigmaPlugin && !authWindow) throw new Error('Cannot open a window to authenticate. Something is wrong.');
+
+    dispatchOther(startLoadingAuth());
+
+    const verifier = createVerifier();
+    const challenge = createChallenge(verifier);
+
+    const { readToken, writeToken } = await fetchReadWriteKeys();
+    const authUrl = getAuthenticationURL(writeToken, challenge);
+    if (isFigmaPlugin) {
+      window.open(authUrl, '_blank');
+    } else {
+      authWindow!.location.href = authUrl;
+    }
+    const authoCode = await waitForAuthorizationCode(readToken);
+    const { accessToken, tokenType } = await fetchTokensFromCode(authoCode, verifier, readToken);
+    deleteReadToken(readToken);
+    if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+
+    _accessToken = accessToken;
+    _tokenType = tokenType;
+
+    fetchPlugin('setCachedToken', accessToken, tokenType);
+    dispatchOther(authSuccess());
+    // return { accessToken, tokenType };
+  } catch (err) {
+    handleError(err);
+    dispatchOther(setAuthError(err));
+  }
 }
+
+export async function getTokens() {
+  if (!_accessToken) {
+    const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
+    _accessToken = accessToken;
+    _tokenType = tokenType;
+  }
+  if (!_accessToken) {
+    // Silent authentication with auth0 or, if it doesn't work here, use refresh token here.
+  }
+  return { accessToken: _accessToken, tokenType: _tokenType };
+}
+
+
+// Steps (detail)
 
 function getAuthenticationURL(state: string, challenge: string) {
   const data = {
+    audience: env.auth0Audience,
     // scope: 'openid profile offline_access',
     response_type: 'code',
     client_id: auth0ClientId,
@@ -81,7 +133,7 @@ function getAuthenticationURL(state: string, challenge: string) {
 //   }
 // }
 
-async function loadTokens(code: string, verifier: string, readToken: string) {
+async function fetchTokensFromCode(code: string, verifier: string, readToken: string) {
   const exchangeOptions = {
     grant_type: "authorization_code",
     client_id: auth0ClientId,
@@ -101,13 +153,15 @@ async function loadTokens(code: string, verifier: string, readToken: string) {
       },
       body: JSON.stringify(exchangeOptions)
     });
-    const response = await rawResponse.json();
+    // Example of response:
+    // access_token: "K29GEl_8awqphnnJDhabs7yIl1dTs3jp"
+    // expires_in: 86400
+    // token_type: "Bearer"
+    const { access_token, token_type/* , expires_in, id_token, refresh_token */ } = await rawResponse.json();
 
-    accessToken = response.access_token;
-    // profile = jwtDecode(response.id_token);
-    // refreshToken = response.refresh_token;
+    // profile = jwtDecode(id_token);
 
-    return { accessToken/* , refreshToken, profile */ };
+    return { accessToken: access_token, tokenType: token_type/* , refreshToken, profile */ };
 
     // if (refreshToken) {
     //   await keytar.setPassword(keytarService, keytarAccount, refreshToken);
@@ -121,7 +175,7 @@ async function loadTokens(code: string, verifier: string, readToken: string) {
 
 async function logout() {
   // await keytar.deletePassword(keytarService, keytarAccount);
-  accessToken = null;
+  // accessToken = null;
   // profile = null;
   // refreshToken = null;
   // TODO should call logout URL
@@ -136,7 +190,7 @@ async function fetchReadWriteKeys() {
   return await (await fetch(url)).json();
 }
 
-async function fetchAuthoCode(readToken: string) {
+async function fetchAuthorizationCode(readToken: string) {
   const url = mkUrl(`${apiBaseUrl}/read-code`, { read_token: readToken });
   const code = (await (await fetch(url)).json())?.code;
   return code;
@@ -144,7 +198,7 @@ async function fetchAuthoCode(readToken: string) {
 
 async function waitForAuthorizationCode(readToken: string/* , authWindow: Window | null */) {
   while (true) {
-    const authoCode = await fetchAuthoCode(readToken);
+    const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       return authoCode;
     }
@@ -159,42 +213,3 @@ async function deleteReadToken(readToken: string) {
     handleError('After getting the authorization token, did not delete the read token. Something is wrong in the workflow.');
   }
 }
-
-// Higher level
-
-export async function login() {
-  const authWindow = isFigmaPlugin ? null : window.open(undefined, '_blank');
-  if (!isFigmaPlugin && !authWindow) throw new Error('Cannot open a window to authenticate. Something is wrong.');
-
-  console.log('Start logging in...');
-
-  const verifier = createVerifier();
-  const challenge = createChallenge(verifier);
-
-  const { readToken, writeToken } = await fetchReadWriteKeys();
-  const authUrl = getAuthenticationURL(writeToken, challenge);
-  if (isFigmaPlugin) {
-    window.open(authUrl, '_blank');
-  } else {
-    authWindow!.location.href = authUrl;
-  }
-  const authoCode = await waitForAuthorizationCode(readToken);
-  const { accessToken/* , refreshToken, profile */ } = await loadTokens(authoCode, verifier, readToken);
-  deleteReadToken(readToken);
-  if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
-  console.log('tokens:', accessToken/* , refreshToken, profile */);
-
-  fetchPlugin('setCachedToken', accessToken);
-  return accessToken;
-}
-
-// module.exports = {
-//   getAccessToken,
-//   getAuthenticationURL,
-//   getLogOutUrl,
-//   getProfile,
-//   loadTokens,
-//   logout,
-//   // refreshTokens,
-//   login,
-// };

@@ -1,5 +1,11 @@
 import { sha256 } from 'sha.js';
 
+export function mkUrl(baseAndPath: string, queryObject?: any) {
+  if (!queryObject) return baseAndPath;
+  const queryParams = new URLSearchParams(queryObject).toString();
+  return `${baseAndPath}?${queryParams}`;
+}
+
 export function createVerifier() {
   const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_~.';
   let random = '';

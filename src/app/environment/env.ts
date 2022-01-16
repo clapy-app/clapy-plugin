@@ -39,6 +39,7 @@ export const env = {
   isJest: typeof process !== 'undefined' && process.env.JEST_WORKER_ID !== undefined,
   nodeEnv,
   isNodeProduction,
+  auth0Audience: 'clapy',
 };
 
 // export const rawProcessEnv = process.env;

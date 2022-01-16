@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2017",
     "outDir": "dist",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "strict": true,
     "allowJs": true,
+    "incremental": true,
+    "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "experimentalDecorators": true,
@@ -16,6 +18,20 @@
       "./node_modules/@types",
       "./node_modules/@figma",
       "./typings"
-    ]
-  }
+    ],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    // "isolatedModules": true,
+    "noEmit": true,
+  },
+  "include": [
+    "src/app",
+    "src/common"
+  ],
+  "exclude": [
+    "src/plugin"
+  ]
 }

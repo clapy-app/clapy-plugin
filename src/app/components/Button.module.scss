@@ -1,4 +1,4 @@
-@import '../styles/variables.scss';
+@import '../core/theme/variables.scss';
 
 .base {
   box-shadow: none;
@@ -17,6 +17,10 @@
   &:hover {
     background-color: darken($COLOR-FIGMA-BLUE, 15%);
     cursor: pointer;
+  }
+
+  &:disabled {
+    background-color: darken($COLOR-LIGHT-GREY, 15%);
   }
 }
 
