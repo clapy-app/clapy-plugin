@@ -17,3 +17,11 @@ export async function setCachedToken(accessToken: string, tokenType: string, ref
     figma.clientStorage.setAsync('refreshToken', refreshToken),
   ]);
 }
+
+export async function clearCachedTokens() {
+  await Promise.all([
+    figma.clientStorage.deleteAsync('accessToken'),
+    figma.clientStorage.deleteAsync('tokenType'),
+    figma.clientStorage.deleteAsync('refreshToken'),
+  ]);
+}

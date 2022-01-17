@@ -1,12 +1,12 @@
 import { FC, memo, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import Logo from './assets/logo.svg';
-import { login } from './auth/auth-service';
+import { login, logout } from './auth/auth-service';
 import { selectAuthError, selectAuthLoading } from './auth/auth-slice';
 import { Button } from './components/Button';
 import { useGetWorksQuery } from './feat/api-sample';
 import styles from './ui.module.scss';
-import { fetchPlugin, fetchPluginNoResponse } from './utils/ui-utils';
+import { fetchPlugin, fetchPluginNoResponse } from './utils/plugin-utils';
 
 export const App: FC = memo(() => {
   const textbox = useRef<HTMLInputElement>();
@@ -32,6 +32,8 @@ export const App: FC = memo(() => {
 
   const refetchBtn = useCallback(() => refetch(), []);
 
+  const logoutBtn = useCallback(() => logout(), []);
+
   const closePlugin = useCallback(() => {
     fetchPluginNoResponse('closePlugin');
   }, []);
@@ -50,6 +52,7 @@ export const App: FC = memo(() => {
         <Button onClick={createRectangles}>Create</Button>
         <Button onClick={loginBtn}>Auth</Button>
         <Button onClick={refetchBtn}>Refetch API</Button>
+        <Button onClick={logoutBtn}>Logout</Button>
         <Button onClick={closePlugin} secondary>
           Cancel
         </Button>

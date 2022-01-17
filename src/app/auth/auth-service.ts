@@ -1,43 +1,18 @@
 import { dispatchOther } from '../core/redux/redux.utils';
 import { env } from '../environment/env';
+import { wait } from '../utils/common-utils';
 import { handleError } from '../utils/error-utils';
-import { fetchPlugin, isFigmaPlugin } from '../utils/ui-utils';
+import { fetchPlugin, isFigmaPlugin } from '../utils/plugin-utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, startLoadingAuth } from './auth-slice';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from './unauthenticated-http.utils';
 
-// TODO next step: validate the access token (tuto online)
-
-
-// const jwtDecode = require("jwt-decode");
-// const axios = require("axios");
-// const url = require("url");
-// const envVariables = require("../env-variables");
-// const keytar = require("keytar");
-// const os = require("os");
-
-// const { apiIdentifier, auth0Domain, clientId } = envVariables;
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
-// const redirectUri = "http://localhost/callback";
 const redirectUri = `${apiBaseUrl}/login/callback`;
-
-// const keytarService = "electron-openid-oauth";
-// const keytarAccount = os.userInfo().username;
 
 let _accessToken: string | null = null;
 let _tokenType: string | null = null;
-// let profile: string | null = null;
-// let refreshToken: string | null = null;
-// let _readToken: string | null = null;
-
-// function getAccessToken() {
-//   return accessToken;
-// }
-
-// function getProfile() {
-//   return profile;
-// }
 
 // Exported methods
 
@@ -68,7 +43,6 @@ export async function login() {
 
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
-    // return { accessToken, tokenType };
   } catch (err) {
     handleError(err);
     dispatchOther(setAuthError(err));
@@ -98,7 +72,15 @@ export async function refreshTokens() {
     return;
   }
   // Otherwise, it fails here. A manual login is required.
-  throw new Error('Unauthenticated user');
+  throw new Error('Interactive sign in required');
+}
+
+export function logout() {
+  _accessToken = null;
+  _tokenType = null;
+  const url = mkUrl(`https://${auth0Domain}/v2/logout`, { client_id: auth0ClientId, returnTo: `${apiBaseUrl}/logged-out` });
+  window.open(url, '_blank');
+  fetchPlugin('clearCachedTokens').catch(handleError);
 }
 
 
@@ -136,16 +118,9 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
     code_verifier: verifier,
   };
 
-  try {
-    const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, { query: { read_token: readToken } });
-    const { access_token, token_type, refresh_token/* , expires_in */ } = data;
-
-    return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token };
-  } catch (error) {
-    await logout();
-
-    throw error;
-  }
+  const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, { headers: { read_token: readToken } });
+  const { access_token, token_type, refresh_token } = data;
+  return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token };
 }
 
 async function fetchRefreshedTokens(refreshToken: string) {
@@ -156,30 +131,10 @@ async function fetchRefreshedTokens(refreshToken: string) {
     refresh_token: refreshToken,
   };
 
-  try {
-    const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-refresh-token', exchangeOptions);
-
-    const { access_token, token_type, refresh_token } = data;
-
-    return { accessToken: access_token, tokenType: token_type, newRefreshToken: refresh_token };
-  } catch (error) {
-    await logout();
-
-    throw error;
-  }
+  const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-refresh-token', exchangeOptions);
+  const { access_token, token_type, refresh_token } = data;
+  return { accessToken: access_token, tokenType: token_type, newRefreshToken: refresh_token };
 }
-
-async function logout() {
-  // await keytar.deletePassword(keytarService, keytarAccount);
-  // accessToken = null;
-  // profile = null;
-  // refreshToken = null;
-  // TODO should call logout URL
-}
-
-// function getLogOutUrl() {
-//   return `https://${auth0Domain}/v2/logout`;
-// }
 
 async function fetchReadWriteKeys() {
   const { data } = await apiGetUnauthenticated<{ readToken: string, writeToken: string; }>('generate-tokens');
@@ -187,22 +142,22 @@ async function fetchReadWriteKeys() {
 }
 
 async function fetchAuthorizationCode(readToken: string) {
-  const { data } = await apiGetUnauthenticated<{ code: string; }>('read-code', { query: { read_token: readToken } });
+  const { data } = await apiGetUnauthenticated<{ code: string; }>('read-code', { headers: { read_token: readToken } });
   return data?.code;
 }
 
-async function waitForAuthorizationCode(readToken: string/* , authWindow: Window | null */) {
+async function waitForAuthorizationCode(readToken: string) {
   while (true) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       return authoCode;
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await wait(500);
   }
 }
 
 async function deleteReadToken(readToken: string) {
-  const { data } = await apiGetUnauthenticated<{ deleted: boolean; }>('delete-read-token', { query: { read_token: readToken } });
+  const { data } = await apiGetUnauthenticated<{ deleted: boolean; }>('delete-read-token', { headers: { read_token: readToken } });
   if (!data?.deleted) {
     handleError('After getting the authorization token, did not delete the read token. Something is wrong in the workflow.');
   }

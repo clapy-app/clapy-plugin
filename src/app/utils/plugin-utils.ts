@@ -6,7 +6,7 @@ type UnPromise<T> = T extends Promise<infer U> ? U : T;
 
 // Usage: `fetchPlugin('createRectangles', count)`
 // We could have set an alternative syntax (not implemented): `fetchPlugin('createRectangles')(count)`.
-export function fetchPlugin<T extends keyof Routes>(routeName: T, ...args: Parameters<Routes[T]>): Promise<UnPromise<ReturnType<Routes[T]>>> {
+export async function fetchPlugin<T extends keyof Routes>(routeName: T, ...args: Parameters<Routes[T]>): Promise<UnPromise<ReturnType<Routes[T]>>> {
 
   // Mocks to test the authentication on the browser.
   if (!isFigmaPlugin) {
@@ -19,6 +19,10 @@ export function fetchPlugin<T extends keyof Routes>(routeName: T, ...args: Param
     if (routeName === 'getRefreshToken') {
       return mock__getRefreshToken() as any;
     }
+    if (routeName === 'clearCachedTokens') {
+      return mock__clearCachedTokens() as any;
+    }
+    throw new Error(`Call to Figma plugin not mocked in the browser: ${routeName}`);
   }
 
   return new Promise<UnPromise<ReturnType<Routes[T]>>>((resolve, reject) => {
@@ -61,6 +65,10 @@ function setLS(key: string, value: any) {
   localStorage.setItem(`figma_mock__${key}`, JSON.stringify(value));
 }
 
+function rmLS(key: string) {
+  localStorage.removeItem(`figma_mock__${key}`);
+}
+
 async function mock_getCachedToken() {
   return {
     accessToken: getLS('accessToken') as string,
@@ -76,4 +84,10 @@ async function mock_setCachedToken(accessToken: string, tokenType: string, refre
 
 async function mock__getRefreshToken() {
   return getLS('refreshToken') as string;
+}
+
+async function mock__clearCachedTokens() {
+  rmLS('accessToken');
+  rmLS('tokenType');
+  rmLS('refreshToken');
 }

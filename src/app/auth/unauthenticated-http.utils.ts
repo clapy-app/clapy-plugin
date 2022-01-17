@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Dict } from '../../common/appModels';
 import { env } from '../environment/env';
+import { wait } from '../utils/common-utils';
 import { mkUrl } from './auth-service.utils';
 
 export interface ApiRequestConfig extends RequestInit {
@@ -186,10 +187,6 @@ function extendConfig(config: RequestInit | undefined): RequestInit {
       ...requiredHeaders,
     },
   };
-}
-
-export function wait(ms?: number) {
-  return new Promise<void>(resolve => setTimeout(resolve, ms));
 }
 
 function apiFullUrl(path: string) {

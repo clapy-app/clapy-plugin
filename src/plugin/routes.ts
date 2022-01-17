@@ -1,5 +1,5 @@
 import { createRectangles } from './routes/createRectangles';
-import { getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
+import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 
 
 export const routes = {
@@ -7,5 +7,6 @@ export const routes = {
   getCachedToken: getCachedToken,
   setCachedToken: setCachedToken,
   getRefreshToken: getRefreshToken,
+  clearCachedTokens: clearCachedTokens,
   closePlugin: () => figma.closePlugin(),
 };
