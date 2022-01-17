@@ -4,6 +4,7 @@ import { handleError } from '../utils/error-utils';
 import { fetchPlugin, isFigmaPlugin } from '../utils/ui-utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, startLoadingAuth } from './auth-slice';
+import { apiGetUnauthenticated, apiPostUnauthenticated } from './unauthenticated-http.utils';
 
 // TODO next step: validate the access token (tuto online)
 
@@ -39,19 +40,6 @@ let _tokenType: string | null = null;
 // }
 
 // Exported methods
-
-export async function apiGet() {
-  addAuthHeader()
-    .then(headers => fetch(`${env.apiBaseUrl}/sample/works`, { headers }))
-    .then(resp => resp.json());
-}
-
-async function addAuthHeader(headers = {}) {
-  const { accessToken, tokenType } = await getTokens();
-  return accessToken
-    ? { ...headers, Authorization: `${tokenType || 'Bearer'} ${accessToken}` }
-    : headers;
-}
 
 export async function login() {
   try {
@@ -94,22 +82,35 @@ export async function getTokens() {
     _tokenType = tokenType;
   }
   if (!_accessToken) {
-    const refreshToken = await fetchPlugin('getRefreshToken');
-    if (refreshToken) {
-      // If a refresh token is available, use it to generate a new access token.
-      const { accessToken, tokenType, newRefreshToken } = await refreshTokens(refreshToken);
-      _accessToken = accessToken;
-      _tokenType = tokenType;
-      await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
-    }
-    // Otherwise, it fails here. A manual login is required.
-    throw new Error('Unauthenticated user');
+    await refreshTokens();
   }
   return { accessToken: _accessToken, tokenType: _tokenType };
 }
 
+export async function refreshTokens() {
+  const refreshToken = await fetchPlugin('getRefreshToken');
+  if (refreshToken) {
+    // If a refresh token is available, use it to generate a new access token.
+    const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
+    _accessToken = accessToken;
+    _tokenType = tokenType;
+    await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
+    return;
+  }
+  // Otherwise, it fails here. A manual login is required.
+  throw new Error('Unauthenticated user');
+}
+
 
 // Steps (detail)
+
+interface ExchangeTokenResponse {
+  access_token: string; // "eyJhbGciOiJSUzI1N...QbpMeOXvDQ"
+  expires_in: number; // 86400
+  refresh_token: string; // "v1.McBQzYi89tbOf...k7QUPI5aKQ"
+  scope: string; // "offline_access"
+  token_type: string; // "Bearer"
+}
 
 function getAuthenticationURL(state: string, challenge: string) {
   const data = {
@@ -135,32 +136,11 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
     code_verifier: verifier,
   };
 
-  const url = mkUrl(`${apiBaseUrl}/proxy-get-token`, { read_token: readToken });
-
   try {
-    const rawResponse = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(exchangeOptions)
-    });
-    // Example of response:
-    // access_token: "eyJhbGciOiJSUzI1N...QbpMeOXvDQ"
-    // expires_in: 86400
-    // refresh_token: "v1.McBQzYi89tbOf...k7QUPI5aKQ"
-    // scope: "offline_access"
-    // token_type: "Bearer"
-    const { access_token, token_type, refresh_token/* , expires_in, id_token */ } = await rawResponse.json();
+    const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, { query: { read_token: readToken } });
+    const { access_token, token_type, refresh_token/* , expires_in */ } = data;
 
-    // profile = jwtDecode(id_token);
-
-    return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token/* , profile */ };
-
-    // if (refreshToken) {
-    //   await keytar.setPassword(keytarService, keytarAccount, refreshToken);
-    // }
+    return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token };
   } catch (error) {
     await logout();
 
@@ -168,29 +148,20 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
   }
 }
 
-async function refreshTokens(refreshToken: string) {
+async function fetchRefreshedTokens(refreshToken: string) {
   const exchangeOptions = {
     grant_type: "refresh_token",
     client_id: auth0ClientId,
     scope: 'offline_access',
     refresh_token: refreshToken,
   };
-  const url = `${apiBaseUrl}/proxy-refresh-token`;
 
   try {
-    const rawResponse = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(exchangeOptions)
-    });
-    const resp = await rawResponse.json();
-    const { access_token, token_type, refresh_token } = resp;
+    const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-refresh-token', exchangeOptions);
+
+    const { access_token, token_type, refresh_token } = data;
 
     return { accessToken: access_token, tokenType: token_type, newRefreshToken: refresh_token };
-
   } catch (error) {
     await logout();
 
@@ -211,14 +182,13 @@ async function logout() {
 // }
 
 async function fetchReadWriteKeys() {
-  const url = `${apiBaseUrl}/generate-tokens`;
-  return await (await fetch(url)).json();
+  const { data } = await apiGetUnauthenticated<{ readToken: string, writeToken: string; }>('generate-tokens');
+  return data;
 }
 
 async function fetchAuthorizationCode(readToken: string) {
-  const url = mkUrl(`${apiBaseUrl}/read-code`, { read_token: readToken });
-  const code = (await (await fetch(url)).json())?.code;
-  return code;
+  const { data } = await apiGetUnauthenticated<{ code: string; }>('read-code', { query: { read_token: readToken } });
+  return data?.code;
 }
 
 async function waitForAuthorizationCode(readToken: string/* , authWindow: Window | null */) {
@@ -232,9 +202,8 @@ async function waitForAuthorizationCode(readToken: string/* , authWindow: Window
 }
 
 async function deleteReadToken(readToken: string) {
-  const url = mkUrl(`${apiBaseUrl}/delete-read-token`, { read_token: readToken });
-  const resp = await (await fetch(url)).json();
-  if (!resp?.deleted) {
+  const { data } = await apiGetUnauthenticated<{ deleted: boolean; }>('delete-read-token', { query: { read_token: readToken } });
+  if (!data?.deleted) {
     handleError('After getting the authorization token, did not delete the read token. Something is wrong in the workflow.');
   }
 }

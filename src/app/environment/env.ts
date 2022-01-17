@@ -40,6 +40,8 @@ export const env = {
   nodeEnv,
   isNodeProduction,
   auth0Audience: 'clapy',
+  securityRequestedByHeader: 'clapy',
+  allowCorsApi: false,
 };
 
 // export const rawProcessEnv = process.env;

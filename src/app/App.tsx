@@ -57,7 +57,7 @@ export const App: FC = memo(() => {
       {isLoading
         ? <p>Loading API sample...</p>
         : error
-          ? <p>Could not fetch the API sample: {JSON.stringify(error)}</p>
+          ? <p>Could not fetch the API sample: {JSON.stringify(error.message || error)}</p>
           : <p>API result: {JSON.stringify(data)}</p>}
     </div>
   );

@@ -1,9 +1,13 @@
 import { sha256 } from 'sha.js';
+import { Dict } from '../../common/appModels';
 
-export function mkUrl(baseAndPath: string, queryObject?: any) {
+export function mkUrl(baseAndPath: string, queryObject?: Dict<string>) {
   if (!queryObject) return baseAndPath;
-  const queryParams = new URLSearchParams(queryObject).toString();
-  return `${baseAndPath}?${queryParams}`;
+  const url = new URL(baseAndPath);
+  for (const [key, value] of Object.entries(queryObject)) {
+    url.searchParams.append(key, value);
+  }
+  return url.toString();
 }
 
 export function createVerifier() {

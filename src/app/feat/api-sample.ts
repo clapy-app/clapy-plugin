@@ -1,10 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { getTokens } from '../auth/auth-service';
+import { apiGet } from '../auth/http.utils';
 import { Dispatcher, useAppDispatch } from '../core/redux/hooks';
 import { RootState } from '../core/redux/store';
-import { env } from '../environment/env';
 
 // -- RTK Query version
 // /!\ it seems to add a significant overhead in auto-completion. The extra typings may be too heavy and complex.
@@ -42,7 +41,7 @@ interface FetchWorksState {
 
 const initialState: FetchWorksState = { isLoading: true };
 
-export const slice = createSlice({
+const slice = createSlice({
   name: 'sampleApi',
   initialState,
   reducers: {
@@ -68,8 +67,6 @@ export const { fetchWorksStartLoading, fetchWorksSuccess, fetchWorksError } = sl
 
 const selectSampleApi = (state: RootState) => state.sampleApi;
 
-// To add to src/core/redux/store.ts
-export const authReducer = slice.reducer;
 export const sampleApi = {
   reducer: slice.reducer,
   reducerPath: slice.name,
@@ -85,21 +82,12 @@ export const sampleApi = {
 };
 
 function refetch(dispatch: Dispatcher) {
-  addAuthHeader()
-    .then(headers => fetch(`${env.apiBaseUrl}/sample/works`, { headers }))
-    .then(resp => resp.json())
-    .then((data: SampleApiModel) => dispatch(fetchWorksSuccess(data)))
+  apiGet<SampleApiModel>(`sample/works`)
+    .then(({ data }) => dispatch(fetchWorksSuccess(data)))
     .catch(error => {
       console.error(error);
       dispatch(fetchWorksError(error));
     });
-}
-
-async function addAuthHeader(headers = {}) {
-  const { accessToken, tokenType } = await getTokens();
-  return accessToken
-    ? { ...headers, Authorization: `${tokenType || 'Bearer'} ${accessToken}` }
-    : headers;
 }
 
 // -- end
