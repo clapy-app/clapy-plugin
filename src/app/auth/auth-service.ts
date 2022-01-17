@@ -40,6 +40,19 @@ let _tokenType: string | null = null;
 
 // Exported methods
 
+export async function apiGet() {
+  addAuthHeader()
+    .then(headers => fetch(`${env.apiBaseUrl}/sample/works`, { headers }))
+    .then(resp => resp.json());
+}
+
+async function addAuthHeader(headers = {}) {
+  const { accessToken, tokenType } = await getTokens();
+  return accessToken
+    ? { ...headers, Authorization: `${tokenType || 'Bearer'} ${accessToken}` }
+    : headers;
+}
+
 export async function login() {
   try {
     const authWindow = isFigmaPlugin ? null : window.open(undefined, '_blank');
@@ -65,7 +78,7 @@ export async function login() {
     _accessToken = accessToken;
     _tokenType = tokenType;
 
-    fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
+    await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
     // return { accessToken, tokenType };
   } catch (err) {
@@ -81,7 +94,16 @@ export async function getTokens() {
     _tokenType = tokenType;
   }
   if (!_accessToken) {
-    // Silent authentication with auth0 or, if it doesn't work here, use refresh token here.
+    const refreshToken = await fetchPlugin('getRefreshToken');
+    if (refreshToken) {
+      // If a refresh token is available, use it to generate a new access token.
+      const { accessToken, tokenType, newRefreshToken } = await refreshTokens(refreshToken);
+      _accessToken = accessToken;
+      _tokenType = tokenType;
+      await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
+    }
+    // Otherwise, it fails here. A manual login is required.
+    throw new Error('Unauthenticated user');
   }
   return { accessToken: _accessToken, tokenType: _tokenType };
 }
@@ -103,36 +125,6 @@ function getAuthenticationURL(state: string, challenge: string) {
   };
   return mkUrl(`https://${auth0Domain}/authorize`, data);
 }
-
-// async function refreshTokens() {
-//   const refreshToken = await keytar.getPassword(keytarService, keytarAccount);
-
-//   if (refreshToken) {
-//     const refreshOptions = {
-//       method: "POST",
-//       url: `https://${auth0Domain}/oauth/token`,
-//       headers: { "content-type": "application/json" },
-//       data: {
-//         grant_type: "refresh_token",
-//         client_id: auth0ClientId,
-//         refresh_token: refreshToken,
-//       },
-//     };
-
-//     try {
-//       const response = await axios(refreshOptions);
-
-//       accessToken = response.data.access_token;
-//       profile = jwtDecode(response.data.id_token);
-//     } catch (error) {
-//       await logout();
-
-//       throw error;
-//     }
-//   } else {
-//     throw new Error("No available refresh token.");
-//   }
-// }
 
 async function fetchTokensFromCode(code: string, verifier: string, readToken: string) {
   const exchangeOptions = {
@@ -169,6 +161,36 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
     // if (refreshToken) {
     //   await keytar.setPassword(keytarService, keytarAccount, refreshToken);
     // }
+  } catch (error) {
+    await logout();
+
+    throw error;
+  }
+}
+
+async function refreshTokens(refreshToken: string) {
+  const exchangeOptions = {
+    grant_type: "refresh_token",
+    client_id: auth0ClientId,
+    scope: 'offline_access',
+    refresh_token: refreshToken,
+  };
+  const url = `${apiBaseUrl}/proxy-refresh-token`;
+
+  try {
+    const rawResponse = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(exchangeOptions)
+    });
+    const resp = await rawResponse.json();
+    const { access_token, token_type, refresh_token } = resp;
+
+    return { accessToken: access_token, tokenType: token_type, newRefreshToken: refresh_token };
+
   } catch (error) {
     await logout();
 

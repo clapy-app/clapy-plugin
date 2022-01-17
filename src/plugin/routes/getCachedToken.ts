@@ -1,3 +1,7 @@
+import { getFigma } from '../utils/figma';
+
+const figma = getFigma();
+
 export async function getCachedToken() {
   const [accessToken, tokenType]: [string, string] = await Promise.all([
     figma.clientStorage.getAsync('accessToken'),
@@ -7,7 +11,7 @@ export async function getCachedToken() {
 }
 
 export async function getRefreshToken() {
-  return await figma.clientStorage.getAsync('refreshToken');
+  return await figma.clientStorage.getAsync('refreshToken') as string;
 }
 
 export async function setCachedToken(accessToken: string, tokenType: string, refreshToken: string) {

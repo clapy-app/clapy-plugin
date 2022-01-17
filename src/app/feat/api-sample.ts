@@ -89,7 +89,10 @@ function refetch(dispatch: Dispatcher) {
     .then(headers => fetch(`${env.apiBaseUrl}/sample/works`, { headers }))
     .then(resp => resp.json())
     .then((data: SampleApiModel) => dispatch(fetchWorksSuccess(data)))
-    .catch(error => dispatch(fetchWorksError(error)));
+    .catch(error => {
+      console.error(error);
+      dispatch(fetchWorksError(error));
+    });
 }
 
 async function addAuthHeader(headers = {}) {
