@@ -1,5 +1,5 @@
 import { sha256 } from 'sha.js';
-import { Dict } from '../../common/appModels';
+import { Dict } from '../../common/app-models';
 
 export function mkUrl(baseAndPath: string, queryObject?: Dict<string>) {
   if (!queryObject) return baseAndPath;

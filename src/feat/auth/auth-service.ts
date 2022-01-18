@@ -1,11 +1,11 @@
-import { dispatchOther } from '../core/redux/redux.utils';
-import { env } from '../environment/env';
-import { wait } from '../utils/common-utils';
-import { handleError } from '../utils/error-utils';
-import { fetchPlugin, isFigmaPlugin } from '../utils/plugin-utils';
+import { handleError } from '../../common/error-utils';
+import { wait } from '../../common/general-utils';
+import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
+import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
+import { dispatchOther } from '../../core/redux/redux.utils';
+import { env } from '../../environment/env';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, startLoadingAuth } from './auth-slice';
-import { apiGetUnauthenticated, apiPostUnauthenticated } from './unauthenticated-http.utils';
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 

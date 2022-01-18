@@ -2,9 +2,9 @@
   "name": "Clapy",
   "id": "1062567834134269",
   "api": "1.0.0",
-  "main": "dist/plugin/code.js",
+  "main": "dist/backend.js",
+  "ui": "dist/index.html",
   "editorType": [
     "figma"
-  ],
-  "ui": "dist/app/index.html"
+  ]
 }

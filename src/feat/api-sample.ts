@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { apiGet } from '../auth/http.utils';
+import { apiGet } from '../common/http.utils';
 import { Dispatcher, useAppDispatch } from '../core/redux/hooks';
 import { RootState } from '../core/redux/store';
 

@@ -1,9 +1,9 @@
 import { configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { enableMapSet, setAutoFreeze } from 'immer';
 import { AnyAction } from 'redux';
-import { authSlice } from '../../auth/auth-slice';
 import { env } from '../../environment/env';
 import { sampleApi } from '../../feat/api-sample';
+import { authSlice } from '../../feat/auth/auth-slice';
 import { setStore } from './storeIsolated';
 
 const reducer = {

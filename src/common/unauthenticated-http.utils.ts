@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Dict } from '../../common/appModels';
 import { env } from '../environment/env';
-import { wait } from '../utils/common-utils';
-import { mkUrl } from './auth-service.utils';
+import { mkUrl } from '../feat/auth/auth-service.utils';
+import { Dict } from './app-models';
+import { wait } from './general-utils';
 
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;

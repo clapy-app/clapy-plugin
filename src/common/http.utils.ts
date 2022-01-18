@@ -1,4 +1,4 @@
-import { getTokens, refreshTokens } from './auth-service';
+import { getTokens, refreshTokens } from '../feat/auth/auth-service';
 import { apiGetUnauthenticated, apiPostUnauthenticated, ApiRequestConfig, ApiResponse } from './unauthenticated-http.utils';
 
 export async function apiGet<T>(url: string,
