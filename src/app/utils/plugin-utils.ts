@@ -27,7 +27,7 @@ export async function fetchPlugin<T extends keyof Routes>(routeName: T, ...args:
 
   return new Promise<UnPromise<ReturnType<Routes[T]>>>((resolve, reject) => {
     // Add an abortable event listener to cancel the subscription once the response is received.
-    const controller = new AbortController();
+    const aborter = new AbortController();
     // Listen to responses from the server. We listen to all messages and filter by type.
     // Then, for a one-shot fetch, we cancel the subscription.
     window.addEventListener("message", event => {
@@ -38,9 +38,9 @@ export async function fetchPlugin<T extends keyof Routes>(routeName: T, ...args:
         } else {
           resolve(payload);
         }
-        controller.abort();
+        aborter.abort();
       }
-    }, { signal: controller.signal });
+    }, { signal: aborter.signal });
     parent.postMessage({ pluginMessage: { type: routeName, payload: args } }, '*');
   });
 }
