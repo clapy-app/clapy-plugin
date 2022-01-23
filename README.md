@@ -9,3 +9,5 @@ Faster bundling with vitejs:
 
 - https://stackoverflow.com/questions/69585063/vue-js-package-app-as-figma-plugin-using-vite
 - https://github.com/vitejs/vite/issues/3314
+
+Another template for figma plugin using iframe for live reload: https://github.com/PluginFinchy/Figma-Vue3-Template/blob/main/livepreview.html

@@ -14,7 +14,7 @@ export async function fetchPlugin<T extends keyof Routes>(routeName: T, ...args:
     // Listen to responses from the server. We listen to all messages and filter by type.
     // Then, for a one-shot fetch, we cancel the subscription.
     window.addEventListener("message", event => {
-      if (!event.data.pluginMessage) return;
+      if (!event.data.pluginMessage || event.data.__source === 'browser') return;
       const { type, payload, error } = event.data.pluginMessage;
       if (type === routeName) {
         if (error) {
@@ -25,7 +25,7 @@ export async function fetchPlugin<T extends keyof Routes>(routeName: T, ...args:
         aborter.abort();
       }
     }, { signal: aborter.signal });
-    parent.postMessage({ pluginMessage: { type: routeName, payload: args } }, '*');
+    parent.postMessage({ pluginMessage: { type: routeName, payload: args }, __source: 'browser' }, '*');
   });
 
 }

@@ -16,7 +16,7 @@ wss.on('connection', (ws) => {
     wss.clients.forEach(client => {
       if (client != ws) {
         client.send(message);
-      }    
+      }
     });
   });
 
@@ -27,7 +27,7 @@ const interval = setInterval(() => {
     if (!ws.isAlive) return ws.terminate();
     ws.isAlive = false;
     ws.ping();
-  })
+  });
 }, 30000);
 
 wss.on('close', () => clearInterval(interval));

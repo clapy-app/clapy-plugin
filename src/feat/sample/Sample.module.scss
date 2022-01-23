@@ -1,0 +1,12 @@
+@import '../../core/theme/variables.scss';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.buttonContainer {
+  display: flex;
+  margin: 1rem 0;
+}

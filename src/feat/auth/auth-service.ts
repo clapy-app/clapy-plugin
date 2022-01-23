@@ -62,7 +62,11 @@ export async function getTokens() {
 }
 
 export async function refreshTokens() {
-  const refreshToken = await fetchPlugin('getRefreshToken');
+  let refreshToken: string | null = await fetchPlugin('getRefreshToken');
+  if (Array.isArray(refreshToken) && !refreshToken.length) {
+    console.warn('The refresh token is an empty array! This is not expected, resetting to null.');
+    refreshToken = null;
+  }
   if (refreshToken) {
     // If a refresh token is available, use it to generate a new access token.
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);

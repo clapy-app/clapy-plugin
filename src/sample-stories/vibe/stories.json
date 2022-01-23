@@ -1,0 +1,3836 @@
+{
+  "v": 3,
+  "stories": {
+    "welcome--page": {
+      "id": "welcome--page",
+      "name": "Page",
+      "title": "Welcome",
+      "importPath": "./src/storybook/stand-alone-documentaion/welcome/welcome.stories.mdx",
+      "kind": "Welcome",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/welcome/welcome.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "welcome--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-accessibility--page": {
+      "id": "foundations-accessibility--page",
+      "name": "Page",
+      "title": "Foundations/Accessibility",
+      "importPath": "./src/storybook/stand-alone-documentaion/accessibility/accessibility.stories.mdx",
+      "kind": "Foundations/Accessibility",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/accessibility/accessibility.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-accessibility--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-colors--page": {
+      "id": "foundations-colors--page",
+      "name": "Page",
+      "title": "Foundations/Colors",
+      "importPath": "./src/storybook/stand-alone-documentaion/colors/colors.stories.mdx",
+      "kind": "Foundations/Colors",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/colors/colors.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-colors--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-motion--page": {
+      "id": "foundations-motion--page",
+      "name": "Page",
+      "title": "Foundations/Motion",
+      "importPath": "./src/storybook/stand-alone-documentaion/motion/motion.stories.mdx",
+      "kind": "Foundations/Motion",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/motion/motion.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-motion--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-round-corners--page": {
+      "id": "foundations-round-corners--page",
+      "name": "Page",
+      "title": "Foundations/Round Corners",
+      "importPath": "./src/storybook/stand-alone-documentaion/round-corners/round-corners.stories.mdx",
+      "kind": "Foundations/Round Corners",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/round-corners/round-corners.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-round-corners--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-shadow--page": {
+      "id": "foundations-shadow--page",
+      "name": "Page",
+      "title": "Foundations/Shadow",
+      "importPath": "./src/storybook/stand-alone-documentaion/shadow/shadow.stories.mdx",
+      "kind": "Foundations/Shadow",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/shadow/shadow.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-shadow--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-spacing--page": {
+      "id": "foundations-spacing--page",
+      "name": "Page",
+      "title": "Foundations/Spacing",
+      "importPath": "./src/storybook/stand-alone-documentaion/spacing/spacing.stories.mdx",
+      "kind": "Foundations/Spacing",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/spacing/spacing.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-spacing--page",
+        "__isArgsStory": false
+      }
+    },
+    "foundations-typography--page": {
+      "id": "foundations-typography--page",
+      "name": "Page",
+      "title": "Foundations/Typography",
+      "importPath": "./src/storybook/stand-alone-documentaion/typography/typography.stories.mdx",
+      "kind": "Foundations/Typography",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/typography/typography.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "foundations-typography--page",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--overview": {
+      "id": "buttons-button--overview",
+      "name": "Overview",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--overview",
+        "__isArgsStory": true
+      }
+    },
+    "buttons-button--button-kinds": {
+      "id": "buttons-button--button-kinds",
+      "name": "Button kinds",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Button kinds",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--button-kinds",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--sizes": {
+      "id": "buttons-button--sizes",
+      "name": "Sizes",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--disabled": {
+      "id": "buttons-button--disabled",
+      "name": "Disabled",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--states": {
+      "id": "buttons-button--states",
+      "name": "States",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--states",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--error-and-success": {
+      "id": "buttons-button--error-and-success",
+      "name": "Error and success",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Error and success",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--error-and-success",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--icons": {
+      "id": "buttons-button--icons",
+      "name": "Icons",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Icons",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--icons",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--loading-state": {
+      "id": "buttons-button--loading-state",
+      "name": "Loading state",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Loading state",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--loading-state",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--success-state": {
+      "id": "buttons-button--success-state",
+      "name": "Success state",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Success state",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--success-state",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--on-color-states": {
+      "id": "buttons-button--on-color-states",
+      "name": "On color states",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "On color states",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--on-color-states",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-button--adjacent-buttons": {
+      "id": "buttons-button--adjacent-buttons",
+      "name": "Adjacent buttons",
+      "title": "Buttons/Button",
+      "importPath": "./src/components/Button/__stories__/button.stories.mdx",
+      "kind": "Buttons/Button",
+      "story": "Adjacent buttons",
+      "parameters": {
+        "fileName": "./src/components/Button/__stories__/button.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-button--adjacent-buttons",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--overview": {
+      "id": "buttons-buttongroup--overview",
+      "name": "Overview",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--overview",
+        "__isArgsStory": true
+      }
+    },
+    "buttons-buttongroup--default-story": {
+      "id": "buttons-buttongroup--default-story",
+      "name": "Default",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Default",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--default-story",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--tertiary": {
+      "id": "buttons-buttongroup--tertiary",
+      "name": "Tertiary",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Tertiary",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--tertiary",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--disabled": {
+      "id": "buttons-buttongroup--disabled",
+      "name": "Disabled",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--size": {
+      "id": "buttons-buttongroup--size",
+      "name": "Size",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Size",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--size",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--button-group-in-settings": {
+      "id": "buttons-buttongroup--button-group-in-settings",
+      "name": "Button group in settings",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Button group in settings",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--button-group-in-settings",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-buttongroup--button-group-as-toggle": {
+      "id": "buttons-buttongroup--button-group-as-toggle",
+      "name": "Button group as toggle",
+      "title": "Buttons/ButtonGroup",
+      "importPath": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+      "kind": "Buttons/ButtonGroup",
+      "story": "Button group as toggle",
+      "parameters": {
+        "fileName": "./src/components/ButtonGroup/__stories__/ButtonGroup.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-buttongroup--button-group-as-toggle",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-iconbutton--overview": {
+      "id": "buttons-iconbutton--overview",
+      "name": "Overview",
+      "title": "Buttons/IconButton",
+      "importPath": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+      "kind": "Buttons/IconButton",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-iconbutton--overview",
+        "__isArgsStory": true
+      }
+    },
+    "buttons-iconbutton--kinds": {
+      "id": "buttons-iconbutton--kinds",
+      "name": "Kinds",
+      "title": "Buttons/IconButton",
+      "importPath": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+      "kind": "Buttons/IconButton",
+      "story": "Kinds",
+      "parameters": {
+        "fileName": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-iconbutton--kinds",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-iconbutton--sizes": {
+      "id": "buttons-iconbutton--sizes",
+      "name": "Sizes",
+      "title": "Buttons/IconButton",
+      "importPath": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+      "kind": "Buttons/IconButton",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-iconbutton--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-iconbutton--active": {
+      "id": "buttons-iconbutton--active",
+      "name": "Active",
+      "title": "Buttons/IconButton",
+      "importPath": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+      "kind": "Buttons/IconButton",
+      "story": "Active",
+      "parameters": {
+        "fileName": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-iconbutton--active",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-iconbutton--disabled": {
+      "id": "buttons-iconbutton--disabled",
+      "name": "Disabled",
+      "title": "Buttons/IconButton",
+      "importPath": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+      "kind": "Buttons/IconButton",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/IconButton/__stories__/IconButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-iconbutton--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-menubutton--overview": {
+      "id": "buttons-menubutton--overview",
+      "name": "Overview",
+      "title": "Buttons/MenuButton",
+      "importPath": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+      "kind": "Buttons/MenuButton",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-menubutton--overview",
+        "__isArgsStory": true
+      }
+    },
+    "buttons-menubutton--sizes": {
+      "id": "buttons-menubutton--sizes",
+      "name": "Sizes",
+      "title": "Buttons/MenuButton",
+      "importPath": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+      "kind": "Buttons/MenuButton",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-menubutton--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-menubutton--different-icon": {
+      "id": "buttons-menubutton--different-icon",
+      "name": "Different Icon",
+      "title": "Buttons/MenuButton",
+      "importPath": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+      "kind": "Buttons/MenuButton",
+      "story": "Different Icon",
+      "parameters": {
+        "fileName": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-menubutton--different-icon",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-menubutton--with-text": {
+      "id": "buttons-menubutton--with-text",
+      "name": "With Text",
+      "title": "Buttons/MenuButton",
+      "importPath": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+      "kind": "Buttons/MenuButton",
+      "story": "With Text",
+      "parameters": {
+        "fileName": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-menubutton--with-text",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-menubutton--disabled": {
+      "id": "buttons-menubutton--disabled",
+      "name": "Disabled",
+      "title": "Buttons/MenuButton",
+      "importPath": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+      "kind": "Buttons/MenuButton",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/MenuButton/__stories__/MenuButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-menubutton--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-split-button--overview": {
+      "id": "buttons-split-button--overview",
+      "name": "Overview",
+      "title": "Buttons/Split Button",
+      "importPath": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+      "kind": "Buttons/Split Button",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-split-button--overview",
+        "__isArgsStory": true
+      }
+    },
+    "buttons-split-button--button-types": {
+      "id": "buttons-split-button--button-types",
+      "name": "Button types",
+      "title": "Buttons/Split Button",
+      "importPath": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+      "kind": "Buttons/Split Button",
+      "story": "Button types",
+      "parameters": {
+        "fileName": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-split-button--button-types",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-split-button--icons": {
+      "id": "buttons-split-button--icons",
+      "name": "Icons",
+      "title": "Buttons/Split Button",
+      "importPath": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+      "kind": "Buttons/Split Button",
+      "story": "Icons",
+      "parameters": {
+        "fileName": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-split-button--icons",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-split-button--split-button-as-the-primary-action": {
+      "id": "buttons-split-button--split-button-as-the-primary-action",
+      "name": "Split button as the primary action",
+      "title": "Buttons/Split Button",
+      "importPath": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+      "kind": "Buttons/Split Button",
+      "story": "Split button as the primary action",
+      "parameters": {
+        "fileName": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-split-button--split-button-as-the-primary-action",
+        "__isArgsStory": false
+      }
+    },
+    "buttons-split-button--secondary-split-button": {
+      "id": "buttons-split-button--secondary-split-button",
+      "name": "Secondary split button",
+      "title": "Buttons/Split Button",
+      "importPath": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+      "kind": "Buttons/Split Button",
+      "story": "Secondary split button",
+      "parameters": {
+        "fileName": "./src/components/SplitButton/__stories__/splitButton.stories.mdx",
+        "framework": "react",
+        "__id": "buttons-split-button--secondary-split-button",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-checkbox--overview": {
+      "id": "inputs-checkbox--overview",
+      "name": "Overview",
+      "title": "Inputs/Checkbox",
+      "importPath": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+      "kind": "Inputs/Checkbox",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-checkbox--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-checkbox--states": {
+      "id": "inputs-checkbox--states",
+      "name": "States",
+      "title": "Inputs/Checkbox",
+      "importPath": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+      "kind": "Inputs/Checkbox",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-checkbox--states",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-checkbox--single-checkbox": {
+      "id": "inputs-checkbox--single-checkbox",
+      "name": "Single checkbox",
+      "title": "Inputs/Checkbox",
+      "importPath": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+      "kind": "Inputs/Checkbox",
+      "story": "Single checkbox",
+      "parameters": {
+        "fileName": "./src/components/Checkbox/__stories__/checkbox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-checkbox--single-checkbox",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--overview": {
+      "id": "inputs-combobox--overview",
+      "name": "Overview",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-combobox--default-story": {
+      "id": "inputs-combobox--default-story",
+      "name": "Default",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "Default",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--default-story",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--sizes": {
+      "id": "inputs-combobox--sizes",
+      "name": "Sizes",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--comobox-inside-a-dialog": {
+      "id": "inputs-combobox--comobox-inside-a-dialog",
+      "name": "Comobox inside a dialog",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "Comobox inside a dialog",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--comobox-inside-a-dialog",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--with-categories": {
+      "id": "inputs-combobox--with-categories",
+      "name": "With categories",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "With categories",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--with-categories",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--with-icons": {
+      "id": "inputs-combobox--with-icons",
+      "name": "With icons",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "With icons",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--with-icons",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--with-button": {
+      "id": "inputs-combobox--with-button",
+      "name": "With Button",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "With Button",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--with-button",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-combobox--combobox": {
+      "id": "inputs-combobox--combobox",
+      "name": "Combobox",
+      "title": "Inputs/Combobox",
+      "importPath": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+      "kind": "Inputs/Combobox",
+      "story": "Combobox",
+      "parameters": {
+        "fileName": "./src/components/Combobox/__stories__/combobox.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-combobox--combobox",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--overview": {
+      "id": "inputs-dropdown--overview",
+      "name": "Overview",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-dropdown--sizes": {
+      "id": "inputs-dropdown--sizes",
+      "name": "Sizes",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--disabled": {
+      "id": "inputs-dropdown--disabled",
+      "name": "Disabled",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--rtl": {
+      "id": "inputs-dropdown--rtl",
+      "name": "RTL",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "RTL",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--rtl",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--dropdown-with-chips": {
+      "id": "inputs-dropdown--dropdown-with-chips",
+      "name": "Dropdown with chips",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Dropdown with chips",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--dropdown-with-chips",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--searchable-dropdown": {
+      "id": "inputs-dropdown--searchable-dropdown",
+      "name": "Searchable dropdown",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Searchable dropdown",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--searchable-dropdown",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--dropdown-inside-a-form": {
+      "id": "inputs-dropdown--dropdown-inside-a-form",
+      "name": "Dropdown inside a form",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Dropdown inside a form",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--dropdown-inside-a-form",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-dropdown--dropdown-with-lables": {
+      "id": "inputs-dropdown--dropdown-with-lables",
+      "name": "Dropdown with lables",
+      "title": "Inputs/Dropdown",
+      "importPath": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+      "kind": "Inputs/Dropdown",
+      "story": "Dropdown with lables",
+      "parameters": {
+        "fileName": "./src/components/Dropdown/__stories__/dropdown.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-dropdown--dropdown-with-lables",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-editableheading--overview": {
+      "id": "inputs-editableheading--overview",
+      "name": "Overview",
+      "title": "Inputs/EditableHeading",
+      "importPath": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+      "kind": "Inputs/EditableHeading",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-editableheading--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-editableheading--types": {
+      "id": "inputs-editableheading--types",
+      "name": "Types",
+      "title": "Inputs/EditableHeading",
+      "importPath": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+      "kind": "Inputs/EditableHeading",
+      "story": "Types",
+      "parameters": {
+        "fileName": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-editableheading--types",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-editableheading--placeholder": {
+      "id": "inputs-editableheading--placeholder",
+      "name": "Placeholder",
+      "title": "Inputs/EditableHeading",
+      "importPath": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+      "kind": "Inputs/EditableHeading",
+      "story": "Placeholder",
+      "parameters": {
+        "fileName": "./src/components/EditableHeading/__stories__/EditableHeading.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-editableheading--placeholder",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-radio-button--overview": {
+      "id": "inputs-radio-button--overview",
+      "name": "Overview",
+      "title": "Inputs/Radio Button",
+      "importPath": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+      "kind": "Inputs/Radio Button",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-radio-button--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-radio-button--states": {
+      "id": "inputs-radio-button--states",
+      "name": "States",
+      "title": "Inputs/Radio Button",
+      "importPath": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+      "kind": "Inputs/Radio Button",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-radio-button--states",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-radio-button--radio-button-in-items-list": {
+      "id": "inputs-radio-button--radio-button-in-items-list",
+      "name": "Radio button in items list",
+      "title": "Inputs/Radio Button",
+      "importPath": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+      "kind": "Inputs/Radio Button",
+      "story": "Radio button in items list",
+      "parameters": {
+        "fileName": "./src/components/RadioButton/__stories__/radioButton.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-radio-button--radio-button-in-items-list",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-search--overview": {
+      "id": "inputs-search--overview",
+      "name": "Overview",
+      "title": "Inputs/Search",
+      "importPath": "./src/components/Search/__stories__/Search.stories.mdx",
+      "kind": "Inputs/Search",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Search/__stories__/Search.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-search--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-search--sizes": {
+      "id": "inputs-search--sizes",
+      "name": "Sizes",
+      "title": "Inputs/Search",
+      "importPath": "./src/components/Search/__stories__/Search.stories.mdx",
+      "kind": "Inputs/Search",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Search/__stories__/Search.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-search--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-search--filter-in-combobox": {
+      "id": "inputs-search--filter-in-combobox",
+      "name": "Filter in combobox",
+      "title": "Inputs/Search",
+      "importPath": "./src/components/Search/__stories__/Search.stories.mdx",
+      "kind": "Inputs/Search",
+      "story": "Filter in combobox",
+      "parameters": {
+        "fileName": "./src/components/Search/__stories__/Search.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-search--filter-in-combobox",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--overview": {
+      "id": "inputs-slider--overview",
+      "name": "Overview",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-slider--sizes": {
+      "id": "inputs-slider--sizes",
+      "name": "Sizes",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--ranged": {
+      "id": "inputs-slider--ranged",
+      "name": "Ranged",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Ranged",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--ranged",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--colors": {
+      "id": "inputs-slider--colors",
+      "name": "Colors",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Colors",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--colors",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--disabled": {
+      "id": "inputs-slider--disabled",
+      "name": "Disabled",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--with-labels": {
+      "id": "inputs-slider--with-labels",
+      "name": "WithLabels",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "WithLabels",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--with-labels",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--show-value": {
+      "id": "inputs-slider--show-value",
+      "name": "ShowValue",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "ShowValue",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--show-value",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--limits-steps": {
+      "id": "inputs-slider--limits-steps",
+      "name": "Limits, Steps",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Limits, Steps",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--limits-steps",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-slider--customisation": {
+      "id": "inputs-slider--customisation",
+      "name": "Customisation",
+      "title": "Inputs/Slider",
+      "importPath": "./src/components/Slider/__stories__/Slider.stories.mdx",
+      "kind": "Inputs/Slider",
+      "story": "Customisation",
+      "parameters": {
+        "fileName": "./src/components/Slider/__stories__/Slider.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-slider--customisation",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--overview": {
+      "id": "inputs-textfield--overview",
+      "name": "Overview",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-textfield--sizes": {
+      "id": "inputs-textfield--sizes",
+      "name": "Sizes",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--states": {
+      "id": "inputs-textfield--states",
+      "name": "States",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--states",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--text-field-in-a-form": {
+      "id": "inputs-textfield--text-field-in-a-form",
+      "name": "Text field in a form",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Text field in a form",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--text-field-in-a-form",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--input-field-with-placeholder-text": {
+      "id": "inputs-textfield--input-field-with-placeholder-text",
+      "name": "Input field with placeholder text",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Input field with placeholder text",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--input-field-with-placeholder-text",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--input-field-with-date": {
+      "id": "inputs-textfield--input-field-with-date",
+      "name": "Input field with date",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Input field with date",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--input-field-with-date",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-textfield--input-field-with-date-and-time": {
+      "id": "inputs-textfield--input-field-with-date-and-time",
+      "name": "Input field with date and time",
+      "title": "Inputs/TextField",
+      "importPath": "./src/components/TextField/__stories__/TextField.stories.mdx",
+      "kind": "Inputs/TextField",
+      "story": "Input field with date and time",
+      "parameters": {
+        "fileName": "./src/components/TextField/__stories__/TextField.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-textfield--input-field-with-date-and-time",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-toggle--overview": {
+      "id": "inputs-toggle--overview",
+      "name": "Overview",
+      "title": "Inputs/Toggle",
+      "importPath": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+      "kind": "Inputs/Toggle",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-toggle--overview",
+        "__isArgsStory": true
+      }
+    },
+    "inputs-toggle--states": {
+      "id": "inputs-toggle--states",
+      "name": "States",
+      "title": "Inputs/Toggle",
+      "importPath": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+      "kind": "Inputs/Toggle",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-toggle--states",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-toggle--disabled": {
+      "id": "inputs-toggle--disabled",
+      "name": "Disabled",
+      "title": "Inputs/Toggle",
+      "importPath": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+      "kind": "Inputs/Toggle",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-toggle--disabled",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-toggle--turn-on-off-an-automation": {
+      "id": "inputs-toggle--turn-on-off-an-automation",
+      "name": "Turn on/ off an automation",
+      "title": "Inputs/Toggle",
+      "importPath": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+      "kind": "Inputs/Toggle",
+      "story": "Turn on/ off an automation",
+      "parameters": {
+        "fileName": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-toggle--turn-on-off-an-automation",
+        "__isArgsStory": false
+      }
+    },
+    "inputs-toggle--turn-on-off-an-notifications": {
+      "id": "inputs-toggle--turn-on-off-an-notifications",
+      "name": "Turn on/ off an notifications",
+      "title": "Inputs/Toggle",
+      "importPath": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+      "kind": "Inputs/Toggle",
+      "story": "Turn on/ off an notifications",
+      "parameters": {
+        "fileName": "./src/components/Toggle/__stories__/toggle.stories.mdx",
+        "framework": "react",
+        "__id": "inputs-toggle--turn-on-off-an-notifications",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-accordion--overview": {
+      "id": "data-display-accordion--overview",
+      "name": "Overview",
+      "title": "Data display/Accordion",
+      "importPath": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+      "kind": "Data display/Accordion",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-accordion--overview",
+        "__isArgsStory": true
+      }
+    },
+    "data-display-accordion--multi-active": {
+      "id": "data-display-accordion--multi-active",
+      "name": "Multi active",
+      "title": "Data display/Accordion",
+      "importPath": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+      "kind": "Data display/Accordion",
+      "story": "Multi active",
+      "parameters": {
+        "fileName": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-accordion--multi-active",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-accordion--single-active": {
+      "id": "data-display-accordion--single-active",
+      "name": "Single active",
+      "title": "Data display/Accordion",
+      "importPath": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+      "kind": "Data display/Accordion",
+      "story": "Single active",
+      "parameters": {
+        "fileName": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-accordion--single-active",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-accordion--preferences-accordion": {
+      "id": "data-display-accordion--preferences-accordion",
+      "name": "Preferences Accordion",
+      "title": "Data display/Accordion",
+      "importPath": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+      "kind": "Data display/Accordion",
+      "story": "Preferences Accordion",
+      "parameters": {
+        "fileName": "./src/components/Accordion/Accordion/__stories__/accordion.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-accordion--preferences-accordion",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-chips--overview": {
+      "id": "data-display-chips--overview",
+      "name": "Overview",
+      "title": "Data display/Chips",
+      "importPath": "./src/components/Chips/__stories__/chips.stories.mdx",
+      "kind": "Data display/Chips",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Chips/__stories__/chips.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-chips--overview",
+        "__isArgsStory": true
+      }
+    },
+    "data-display-chips--with-icons": {
+      "id": "data-display-chips--with-icons",
+      "name": "With icons",
+      "title": "Data display/Chips",
+      "importPath": "./src/components/Chips/__stories__/chips.stories.mdx",
+      "kind": "Data display/Chips",
+      "story": "With icons",
+      "parameters": {
+        "fileName": "./src/components/Chips/__stories__/chips.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-chips--with-icons",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-chips--themes": {
+      "id": "data-display-chips--themes",
+      "name": "Themes",
+      "title": "Data display/Chips",
+      "importPath": "./src/components/Chips/__stories__/chips.stories.mdx",
+      "kind": "Data display/Chips",
+      "story": "Themes",
+      "parameters": {
+        "fileName": "./src/components/Chips/__stories__/chips.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-chips--themes",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-chips--colorful-chips-for-different-content": {
+      "id": "data-display-chips--colorful-chips-for-different-content",
+      "name": "Colorful chips for different content",
+      "title": "Data display/Chips",
+      "importPath": "./src/components/Chips/__stories__/chips.stories.mdx",
+      "kind": "Data display/Chips",
+      "story": "Colorful chips for different content",
+      "parameters": {
+        "fileName": "./src/components/Chips/__stories__/chips.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-chips--colorful-chips-for-different-content",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-chips--chips-in-person-column": {
+      "id": "data-display-chips--chips-in-person-column",
+      "name": "Chips in Person Column",
+      "title": "Data display/Chips",
+      "importPath": "./src/components/Chips/__stories__/chips.stories.mdx",
+      "kind": "Data display/Chips",
+      "story": "Chips in Person Column",
+      "parameters": {
+        "fileName": "./src/components/Chips/__stories__/chips.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-chips--chips-in-person-column",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-divider--overview": {
+      "id": "data-display-divider--overview",
+      "name": "Overview",
+      "title": "Data display/Divider",
+      "importPath": "./src/components/Divider/__stories__/Divider.stories.mdx",
+      "kind": "Data display/Divider",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Divider/__stories__/Divider.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-divider--overview",
+        "__isArgsStory": true
+      }
+    },
+    "data-display-divider--directions": {
+      "id": "data-display-divider--directions",
+      "name": "Directions",
+      "title": "Data display/Divider",
+      "importPath": "./src/components/Divider/__stories__/Divider.stories.mdx",
+      "kind": "Data display/Divider",
+      "story": "Directions",
+      "parameters": {
+        "fileName": "./src/components/Divider/__stories__/Divider.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-divider--directions",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-label--overview": {
+      "id": "data-display-label--overview",
+      "name": "Overview",
+      "title": "Data display/Label",
+      "importPath": "./src/components/Label/__stories__/label.stories.mdx",
+      "kind": "Data display/Label",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Label/__stories__/label.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-label--overview",
+        "__isArgsStory": true
+      }
+    },
+    "data-display-label--states": {
+      "id": "data-display-label--states",
+      "name": "States",
+      "title": "Data display/Label",
+      "importPath": "./src/components/Label/__stories__/label.stories.mdx",
+      "kind": "Data display/Label",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Label/__stories__/label.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-label--states",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-label--colors": {
+      "id": "data-display-label--colors",
+      "name": "Colors",
+      "title": "Data display/Label",
+      "importPath": "./src/components/Label/__stories__/label.stories.mdx",
+      "kind": "Data display/Label",
+      "story": "Colors",
+      "parameters": {
+        "fileName": "./src/components/Label/__stories__/label.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-label--colors",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-label--secondary-label": {
+      "id": "data-display-label--secondary-label",
+      "name": "Secondary label",
+      "title": "Data display/Label",
+      "importPath": "./src/components/Label/__stories__/label.stories.mdx",
+      "kind": "Data display/Label",
+      "story": "Secondary label",
+      "parameters": {
+        "fileName": "./src/components/Label/__stories__/label.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-label--secondary-label",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-steps--overview": {
+      "id": "data-display-steps--overview",
+      "name": "Overview",
+      "title": "Data display/Steps",
+      "importPath": "./src/components/Steps/__stories__/steps.stories.mdx",
+      "kind": "Data display/Steps",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Steps/__stories__/steps.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-steps--overview",
+        "__isArgsStory": true
+      }
+    },
+    "data-display-steps--types": {
+      "id": "data-display-steps--types",
+      "name": "Types",
+      "title": "Data display/Steps",
+      "importPath": "./src/components/Steps/__stories__/steps.stories.mdx",
+      "kind": "Data display/Steps",
+      "story": "Types",
+      "parameters": {
+        "fileName": "./src/components/Steps/__stories__/steps.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-steps--types",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-steps--on-primary": {
+      "id": "data-display-steps--on-primary",
+      "name": "On primary",
+      "title": "Data display/Steps",
+      "importPath": "./src/components/Steps/__stories__/steps.stories.mdx",
+      "kind": "Data display/Steps",
+      "story": "On primary",
+      "parameters": {
+        "fileName": "./src/components/Steps/__stories__/steps.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-steps--on-primary",
+        "__isArgsStory": false
+      }
+    },
+    "data-display-steps--steps-inside-a-tipseen": {
+      "id": "data-display-steps--steps-inside-a-tipseen",
+      "name": "Steps inside a tipseen",
+      "title": "Data display/Steps",
+      "importPath": "./src/components/Steps/__stories__/steps.stories.mdx",
+      "kind": "Data display/Steps",
+      "story": "Steps inside a tipseen",
+      "parameters": {
+        "fileName": "./src/components/Steps/__stories__/steps.stories.mdx",
+        "framework": "react",
+        "__id": "data-display-steps--steps-inside-a-tipseen",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--overview": {
+      "id": "media-avatar--overview",
+      "name": "Overview",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--overview",
+        "__isArgsStory": true
+      }
+    },
+    "media-avatar--size": {
+      "id": "media-avatar--size",
+      "name": "Size",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Size",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--size",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--disable": {
+      "id": "media-avatar--disable",
+      "name": "Disable",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Disable",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--disable",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--avatar-with-text": {
+      "id": "media-avatar--avatar-with-text",
+      "name": "Avatar with text",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Avatar with text",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--avatar-with-text",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--square-avatar": {
+      "id": "media-avatar--square-avatar",
+      "name": "Square avatar",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Square avatar",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--square-avatar",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--multiplue-avatars": {
+      "id": "media-avatar--multiplue-avatars",
+      "name": "Multiplue avatars",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Multiplue avatars",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--multiplue-avatars",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--avatar-with-right-badge": {
+      "id": "media-avatar--avatar-with-right-badge",
+      "name": "Avatar with right badge",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Avatar with right badge",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--avatar-with-right-badge",
+        "__isArgsStory": false
+      }
+    },
+    "media-avatar--avatar-with-left-badge": {
+      "id": "media-avatar--avatar-with-left-badge",
+      "name": "Avatar with left badge",
+      "title": "Media/Avatar",
+      "importPath": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+      "kind": "Media/Avatar",
+      "story": "Avatar with left badge",
+      "parameters": {
+        "fileName": "./src/components/Avatar/__stories__/avatar.stories.mdx",
+        "framework": "react",
+        "__id": "media-avatar--avatar-with-left-badge",
+        "__isArgsStory": false
+      }
+    },
+    "media-icon--overview": {
+      "id": "media-icon--overview",
+      "name": "Overview",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--overview",
+        "__isArgsStory": true
+      }
+    },
+    "media-icon--vibe-icon": {
+      "id": "media-icon--vibe-icon",
+      "name": "Vibe Icon",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Vibe Icon",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--vibe-icon",
+        "__isArgsStory": false
+      }
+    },
+    "media-icon--font-icon": {
+      "id": "media-icon--font-icon",
+      "name": "Font Icon",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Font Icon",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--font-icon",
+        "__isArgsStory": false
+      }
+    },
+    "media-icon--custom-svg": {
+      "id": "media-icon--custom-svg",
+      "name": "Custom SVG",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Custom SVG",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--custom-svg",
+        "__isArgsStory": false
+      }
+    },
+    "media-icon--color": {
+      "id": "media-icon--color",
+      "name": "Color",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Color",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--color",
+        "__isArgsStory": false
+      }
+    },
+    "media-icon--icons-list": {
+      "id": "media-icon--icons-list",
+      "name": "Icons List",
+      "title": "Media/Icon",
+      "importPath": "./src/components/Icon/__stories__/Icon.stories.mdx",
+      "kind": "Media/Icon",
+      "story": "Icons List",
+      "parameters": {
+        "fileName": "./src/components/Icon/__stories__/Icon.stories.mdx",
+        "framework": "react",
+        "__id": "media-icon--icons-list",
+        "__isArgsStory": false
+      }
+    },
+    "popover-dialogcontentcontainer--overview": {
+      "id": "popover-dialogcontentcontainer--overview",
+      "name": "Overview",
+      "title": "Popover/DialogContentContainer",
+      "importPath": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+      "kind": "Popover/DialogContentContainer",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+        "framework": "react",
+        "__id": "popover-dialogcontentcontainer--overview",
+        "__isArgsStory": true
+      }
+    },
+    "popover-dialogcontentcontainer--popover": {
+      "id": "popover-dialogcontentcontainer--popover",
+      "name": "Popover",
+      "title": "Popover/DialogContentContainer",
+      "importPath": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+      "kind": "Popover/DialogContentContainer",
+      "story": "Popover",
+      "parameters": {
+        "fileName": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+        "framework": "react",
+        "__id": "popover-dialogcontentcontainer--popover",
+        "__isArgsStory": false
+      }
+    },
+    "popover-dialogcontentcontainer--modal": {
+      "id": "popover-dialogcontentcontainer--modal",
+      "name": "Modal",
+      "title": "Popover/DialogContentContainer",
+      "importPath": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+      "kind": "Popover/DialogContentContainer",
+      "story": "Modal",
+      "parameters": {
+        "fileName": "./src/components/DialogContentContainer/__stories__/DialogContentContainer.stories.mdx",
+        "framework": "react",
+        "__id": "popover-dialogcontentcontainer--modal",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tipseen--overview": {
+      "id": "popover-tipseen--overview",
+      "name": "Overview",
+      "title": "Popover/Tipseen",
+      "importPath": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+      "kind": "Popover/Tipseen",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tipseen--overview",
+        "__isArgsStory": true
+      }
+    },
+    "popover-tipseen--default-story": {
+      "id": "popover-tipseen--default-story",
+      "name": "Default",
+      "title": "Popover/Tipseen",
+      "importPath": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+      "kind": "Popover/Tipseen",
+      "story": "Default",
+      "parameters": {
+        "fileName": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tipseen--default-story",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tipseen--tipseen-with-a-wizard": {
+      "id": "popover-tipseen--tipseen-with-a-wizard",
+      "name": "Tipseen with a wizard",
+      "title": "Popover/Tipseen",
+      "importPath": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+      "kind": "Popover/Tipseen",
+      "story": "Tipseen with a wizard",
+      "parameters": {
+        "fileName": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tipseen--tipseen-with-a-wizard",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tipseen--tipseen-with-image": {
+      "id": "popover-tipseen--tipseen-with-image",
+      "name": "Tipseen with image",
+      "title": "Popover/Tipseen",
+      "importPath": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+      "kind": "Popover/Tipseen",
+      "story": "Tipseen with image",
+      "parameters": {
+        "fileName": "./src/components/Tipseen/__stories__/tipseen.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tipseen--tipseen-with-image",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tooltip--overview": {
+      "id": "popover-tooltip--overview",
+      "name": "Overview",
+      "title": "Popover/Tooltip",
+      "importPath": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+      "kind": "Popover/Tooltip",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tooltip--overview",
+        "__isArgsStory": true
+      }
+    },
+    "popover-tooltip--positions": {
+      "id": "popover-tooltip--positions",
+      "name": "Positions",
+      "title": "Popover/Tooltip",
+      "importPath": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+      "kind": "Popover/Tooltip",
+      "story": "Positions",
+      "parameters": {
+        "fileName": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tooltip--positions",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tooltip--icon-tooltip": {
+      "id": "popover-tooltip--icon-tooltip",
+      "name": "Icon tooltip",
+      "title": "Popover/Tooltip",
+      "importPath": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+      "kind": "Popover/Tooltip",
+      "story": "Icon tooltip",
+      "parameters": {
+        "fileName": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tooltip--icon-tooltip",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tooltip--definition-tooltip": {
+      "id": "popover-tooltip--definition-tooltip",
+      "name": "Definition tooltip",
+      "title": "Popover/Tooltip",
+      "importPath": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+      "kind": "Popover/Tooltip",
+      "story": "Definition tooltip",
+      "parameters": {
+        "fileName": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tooltip--definition-tooltip",
+        "__isArgsStory": false
+      }
+    },
+    "popover-tooltip--immediate-tooltips": {
+      "id": "popover-tooltip--immediate-tooltips",
+      "name": "Immediate tooltips",
+      "title": "Popover/Tooltip",
+      "importPath": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+      "kind": "Popover/Tooltip",
+      "story": "Immediate tooltips",
+      "parameters": {
+        "fileName": "./src/components/Tooltip/__stories__/tooltip.stories.mdx",
+        "framework": "react",
+        "__id": "popover-tooltip--immediate-tooltips",
+        "__isArgsStory": false
+      }
+    },
+    "pickers-colorpicker--overview": {
+      "id": "pickers-colorpicker--overview",
+      "name": "Overview",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--overview",
+        "__isArgsStory": true
+      }
+    },
+    "pickers-colorpicker--with-indicator": {
+      "id": "pickers-colorpicker--with-indicator",
+      "name": "With Indicator",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "With Indicator",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--with-indicator",
+        "__isArgsStory": false
+      }
+    },
+    "pickers-colorpicker--text-indication": {
+      "id": "pickers-colorpicker--text-indication",
+      "name": "Text Indication",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "Text Indication",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--text-indication",
+        "__isArgsStory": false
+      }
+    },
+    "pickers-colorpicker--selected": {
+      "id": "pickers-colorpicker--selected",
+      "name": "Selected",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "Selected",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--selected",
+        "__isArgsStory": false
+      }
+    },
+    "pickers-colorpicker--no-color": {
+      "id": "pickers-colorpicker--no-color",
+      "name": "No color",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "No color",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--no-color",
+        "__isArgsStory": false
+      }
+    },
+    "pickers-colorpicker--selected-icon": {
+      "id": "pickers-colorpicker--selected-icon",
+      "name": "Selected icon",
+      "title": "Pickers/ColorPicker",
+      "importPath": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+      "kind": "Pickers/ColorPicker",
+      "story": "Selected icon",
+      "parameters": {
+        "fileName": "./src/components/ColorPicker/__stories__/ColorPicker.stories.mdx",
+        "framework": "react",
+        "__id": "pickers-colorpicker--selected-icon",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--overview": {
+      "id": "feedback-alertbanner--overview",
+      "name": "Overview",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-alertbanner--types": {
+      "id": "feedback-alertbanner--types",
+      "name": "Types",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Types",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--types",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--alert-banner-with-button": {
+      "id": "feedback-alertbanner--alert-banner-with-button",
+      "name": "Alert Banner with button",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Alert Banner with button",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--alert-banner-with-button",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--alert-banner-with-link": {
+      "id": "feedback-alertbanner--alert-banner-with-link",
+      "name": "Alert Banner with link",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Alert Banner with link",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--alert-banner-with-link",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--alert-banner-as-an-announcement": {
+      "id": "feedback-alertbanner--alert-banner-as-an-announcement",
+      "name": "Alert banner as an announcement",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Alert banner as an announcement",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--alert-banner-as-an-announcement",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--alert-banner-as-an-opportunity-to-upgrade": {
+      "id": "feedback-alertbanner--alert-banner-as-an-opportunity-to-upgrade",
+      "name": "Alert banner as an opportunity to upgrade",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Alert banner as an opportunity to upgrade",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--alert-banner-as-an-opportunity-to-upgrade",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-alertbanner--overflow-text": {
+      "id": "feedback-alertbanner--overflow-text",
+      "name": "Overflow text",
+      "title": "Feedback/AlertBanner",
+      "importPath": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+      "kind": "Feedback/AlertBanner",
+      "story": "Overflow text",
+      "parameters": {
+        "fileName": "./src/components/AlertBanner/__stories__/alertBanner.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-alertbanner--overflow-text",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-attentionbox--overview": {
+      "id": "feedback-attentionbox--overview",
+      "name": "Overview",
+      "title": "Feedback/AttentionBox",
+      "importPath": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+      "kind": "Feedback/AttentionBox",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-attentionbox--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-attentionbox--states": {
+      "id": "feedback-attentionbox--states",
+      "name": "States",
+      "title": "Feedback/AttentionBox",
+      "importPath": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+      "kind": "Feedback/AttentionBox",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-attentionbox--states",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-attentionbox--dismissable": {
+      "id": "feedback-attentionbox--dismissable",
+      "name": "Dismissable ",
+      "title": "Feedback/AttentionBox",
+      "importPath": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+      "kind": "Feedback/AttentionBox",
+      "story": "Dismissable ",
+      "parameters": {
+        "fileName": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-attentionbox--dismissable",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-attentionbox--natural-attention-box": {
+      "id": "feedback-attentionbox--natural-attention-box",
+      "name": "Natural attention box",
+      "title": "Feedback/AttentionBox",
+      "importPath": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+      "kind": "Feedback/AttentionBox",
+      "story": "Natural attention box",
+      "parameters": {
+        "fileName": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-attentionbox--natural-attention-box",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-attentionbox--attention-box-inside-a-dialog-combobox": {
+      "id": "feedback-attentionbox--attention-box-inside-a-dialog-combobox",
+      "name": "Attention box inside a dialog/combobox",
+      "title": "Feedback/AttentionBox",
+      "importPath": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+      "kind": "Feedback/AttentionBox",
+      "story": "Attention box inside a dialog/combobox",
+      "parameters": {
+        "fileName": "./src/components/AttentionBox/__stories__/attentionBox.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-attentionbox--attention-box-inside-a-dialog-combobox",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbitem--overview": {
+      "id": "navigation-breadcrumbsbar-breadcrumbitem--overview",
+      "name": "Overview",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "importPath": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbitem--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbitem--states": {
+      "id": "navigation-breadcrumbsbar-breadcrumbitem--states",
+      "name": "States",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "importPath": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbitem--states",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbitem--with-icon": {
+      "id": "navigation-breadcrumbsbar-breadcrumbitem--with-icon",
+      "name": "With icon",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "importPath": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbItem",
+      "story": "With icon",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/BreadcrumbItem/__stories__/breadcrumbItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbitem--with-icon",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbsbar--overview": {
+      "id": "navigation-breadcrumbsbar-breadcrumbsbar--overview",
+      "name": "Overview",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "importPath": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbsbar--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbsbar--text-only": {
+      "id": "navigation-breadcrumbsbar-breadcrumbsbar--text-only",
+      "name": "Text only",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "importPath": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "story": "Text only",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbsbar--text-only",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbsbar--with-icons": {
+      "id": "navigation-breadcrumbsbar-breadcrumbsbar--with-icons",
+      "name": "With icons",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "importPath": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "story": "With icons",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbsbar--with-icons",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-breadcrumbsbar-breadcrumbsbar--navigatable-breadcrumbs": {
+      "id": "navigation-breadcrumbsbar-breadcrumbsbar--navigatable-breadcrumbs",
+      "name": "Navigatable breadcrumbs",
+      "title": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "importPath": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+      "kind": "Navigation/BreadcrumbsBar/BreadcrumbsBar",
+      "story": "Navigatable breadcrumbs",
+      "parameters": {
+        "fileName": "./src/components/BreadcrumbsBar/__stories__/breadcrumbsBar.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-breadcrumbsbar-breadcrumbsbar--navigatable-breadcrumbs",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--overview": {
+      "id": "feedback-counter--overview",
+      "name": "Overview",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-counter--sizes": {
+      "id": "feedback-counter--sizes",
+      "name": "Sizes",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--colors": {
+      "id": "feedback-counter--colors",
+      "name": "Colors",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Colors",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--colors",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--outline": {
+      "id": "feedback-counter--outline",
+      "name": "Outline",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Outline",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--outline",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--limits": {
+      "id": "feedback-counter--limits",
+      "name": "Limits",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Limits",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--limits",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--notification-counter": {
+      "id": "feedback-counter--notification-counter",
+      "name": "Notification counter",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Notification counter",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--notification-counter",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--counter-on-inbox-filters": {
+      "id": "feedback-counter--counter-on-inbox-filters",
+      "name": "Counter on inbox filters",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Counter on inbox filters",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--counter-on-inbox-filters",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-counter--count-the-number-of-updates": {
+      "id": "feedback-counter--count-the-number-of-updates",
+      "name": "Count the number of updates",
+      "title": "Feedback/Counter",
+      "importPath": "./src/components/Counter/__stories__/counter.stories.mdx",
+      "kind": "Feedback/Counter",
+      "story": "Count the number of updates",
+      "parameters": {
+        "fileName": "./src/components/Counter/__stories__/counter.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-counter--count-the-number-of-updates",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--overview": {
+      "id": "layout-flex--overview",
+      "name": "Overview",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--overview",
+        "__isArgsStory": true
+      }
+    },
+    "layout-flex--directions": {
+      "id": "layout-flex--directions",
+      "name": "Directions",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Directions",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--directions",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--horizontal-spacing-between-items": {
+      "id": "layout-flex--horizontal-spacing-between-items",
+      "name": "Horizontal spacing between items",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Horizontal spacing between items",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--horizontal-spacing-between-items",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--vertical-spacing-between-items": {
+      "id": "layout-flex--vertical-spacing-between-items",
+      "name": "Vertical spacing between items",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Vertical spacing between items",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--vertical-spacing-between-items",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--horizontal-positions": {
+      "id": "layout-flex--horizontal-positions",
+      "name": "Horizontal positions",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Horizontal positions",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--horizontal-positions",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--vertical-positions": {
+      "id": "layout-flex--vertical-positions",
+      "name": "Vertical positions",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Vertical positions",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--vertical-positions",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--support-multi-lines-layout": {
+      "id": "layout-flex--support-multi-lines-layout",
+      "name": "Support multi lines layout",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Support multi lines layout",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--support-multi-lines-layout",
+        "__isArgsStory": false
+      }
+    },
+    "layout-flex--flex-as-toolbar-container": {
+      "id": "layout-flex--flex-as-toolbar-container",
+      "name": "Flex as toolbar container",
+      "title": "Layout/Flex",
+      "importPath": "./src/components/Flex/__stories__/Flex.stories.mdx",
+      "kind": "Layout/Flex",
+      "story": "Flex as toolbar container",
+      "parameters": {
+        "fileName": "./src/components/Flex/__stories__/Flex.stories.mdx",
+        "framework": "react",
+        "__id": "layout-flex--flex-as-toolbar-container",
+        "__isArgsStory": false
+      }
+    },
+    "text-heading--overview": {
+      "id": "text-heading--overview",
+      "name": "Overview",
+      "title": "Text/Heading",
+      "importPath": "./src/components/Heading/__stories__/Heading.stories.mdx",
+      "kind": "Text/Heading",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Heading/__stories__/Heading.stories.mdx",
+        "framework": "react",
+        "__id": "text-heading--overview",
+        "__isArgsStory": true
+      }
+    },
+    "text-heading--sizes": {
+      "id": "text-heading--sizes",
+      "name": "Sizes",
+      "title": "Text/Heading",
+      "importPath": "./src/components/Heading/__stories__/Heading.stories.mdx",
+      "kind": "Text/Heading",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Heading/__stories__/Heading.stories.mdx",
+        "framework": "react",
+        "__id": "text-heading--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "text-heading--overflow": {
+      "id": "text-heading--overflow",
+      "name": "Overflow",
+      "title": "Text/Heading",
+      "importPath": "./src/components/Heading/__stories__/Heading.stories.mdx",
+      "kind": "Text/Heading",
+      "story": "Overflow",
+      "parameters": {
+        "fileName": "./src/components/Heading/__stories__/Heading.stories.mdx",
+        "framework": "react",
+        "__id": "text-heading--overflow",
+        "__isArgsStory": false
+      }
+    },
+    "text-heading--not-editable-header-of-a-page": {
+      "id": "text-heading--not-editable-header-of-a-page",
+      "name": "Not editable header of a page",
+      "title": "Text/Heading",
+      "importPath": "./src/components/Heading/__stories__/Heading.stories.mdx",
+      "kind": "Text/Heading",
+      "story": "Not editable header of a page",
+      "parameters": {
+        "fileName": "./src/components/Heading/__stories__/Heading.stories.mdx",
+        "framework": "react",
+        "__id": "text-heading--not-editable-header-of-a-page",
+        "__isArgsStory": false
+      }
+    },
+    "text-heading--empty-state-title": {
+      "id": "text-heading--empty-state-title",
+      "name": "Empty state title",
+      "title": "Text/Heading",
+      "importPath": "./src/components/Heading/__stories__/Heading.stories.mdx",
+      "kind": "Text/Heading",
+      "story": "Empty state title",
+      "parameters": {
+        "fileName": "./src/components/Heading/__stories__/Heading.stories.mdx",
+        "framework": "react",
+        "__id": "text-heading--empty-state-title",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-link--overview": {
+      "id": "navigation-link--overview",
+      "name": "Overview",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-link--states": {
+      "id": "navigation-link--states",
+      "name": "States",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--states",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-link--right-to-left": {
+      "id": "navigation-link--right-to-left",
+      "name": "Right to left",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "Right to left",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--right-to-left",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-link--with-icons": {
+      "id": "navigation-link--with-icons",
+      "name": "With icons",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "With icons",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--with-icons",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-link--reference-link": {
+      "id": "navigation-link--reference-link",
+      "name": "Reference link",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "Reference link",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--reference-link",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-link--shortening-texts": {
+      "id": "navigation-link--shortening-texts",
+      "name": "Shortening texts",
+      "title": "Navigation/Link",
+      "importPath": "./src/components/Link/__stories__/Link.stories.mdx",
+      "kind": "Navigation/Link",
+      "story": "Shortening texts",
+      "parameters": {
+        "fileName": "./src/components/Link/__stories__/Link.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-link--shortening-texts",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-list--overview": {
+      "id": "navigation-list-list--overview",
+      "name": "Overview",
+      "title": "Navigation/List/List",
+      "importPath": "./src/components/List/__stories__/List.stories.mdx",
+      "kind": "Navigation/List/List",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/List/__stories__/List.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-list--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-list-list--list-with-categories": {
+      "id": "navigation-list-list--list-with-categories",
+      "name": "List with categories",
+      "title": "Navigation/List/List",
+      "importPath": "./src/components/List/__stories__/List.stories.mdx",
+      "kind": "Navigation/List/List",
+      "story": "List with categories",
+      "parameters": {
+        "fileName": "./src/components/List/__stories__/List.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-list--list-with-categories",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-list--list-with-icons": {
+      "id": "navigation-list-list--list-with-icons",
+      "name": "List with icons",
+      "title": "Navigation/List/List",
+      "importPath": "./src/components/List/__stories__/List.stories.mdx",
+      "kind": "Navigation/List/List",
+      "story": "List with icons",
+      "parameters": {
+        "fileName": "./src/components/List/__stories__/List.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-list--list-with-icons",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-list--list-as-leftpane": {
+      "id": "navigation-list-list--list-as-leftpane",
+      "name": "List as leftpane",
+      "title": "Navigation/List/List",
+      "importPath": "./src/components/List/__stories__/List.stories.mdx",
+      "kind": "Navigation/List/List",
+      "story": "List as leftpane",
+      "parameters": {
+        "fileName": "./src/components/List/__stories__/List.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-list--list-as-leftpane",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-listitem--overview": {
+      "id": "navigation-list-listitem--overview",
+      "name": "Overview",
+      "title": "Navigation/List/ListItem",
+      "importPath": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+      "kind": "Navigation/List/ListItem",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-listitem--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-list-listitem--states": {
+      "id": "navigation-list-listitem--states",
+      "name": "States",
+      "title": "Navigation/List/ListItem",
+      "importPath": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+      "kind": "Navigation/List/ListItem",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-listitem--states",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-listitem--sizes": {
+      "id": "navigation-list-listitem--sizes",
+      "name": "Sizes",
+      "title": "Navigation/List/ListItem",
+      "importPath": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+      "kind": "Navigation/List/ListItem",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-listitem--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-listitem--list-item-with-an-icon": {
+      "id": "navigation-list-listitem--list-item-with-an-icon",
+      "name": "List item with an icon",
+      "title": "Navigation/List/ListItem",
+      "importPath": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+      "kind": "Navigation/List/ListItem",
+      "story": "List item with an icon",
+      "parameters": {
+        "fileName": "./src/components/ListItem/__stories__/ListItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-listitem--list-item-with-an-icon",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-list-listitemicon--overview": {
+      "id": "navigation-list-listitemicon--overview",
+      "name": "Overview",
+      "title": "Navigation/List/ListItemIcon",
+      "importPath": "./src/components/ListItemIcon/__stories__/ListItemIcon.stories.mdx",
+      "kind": "Navigation/List/ListItemIcon",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ListItemIcon/__stories__/ListItemIcon.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-list-listitemicon--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-loader--overview": {
+      "id": "feedback-loader--overview",
+      "name": "Overview",
+      "title": "Feedback/Loader",
+      "importPath": "./src/components/Loader/__stories__/Loader.stories.mdx",
+      "kind": "Feedback/Loader",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Loader/__stories__/Loader.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-loader--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-loader--color": {
+      "id": "feedback-loader--color",
+      "name": "Color",
+      "title": "Feedback/Loader",
+      "importPath": "./src/components/Loader/__stories__/Loader.stories.mdx",
+      "kind": "Feedback/Loader",
+      "story": "Color",
+      "parameters": {
+        "fileName": "./src/components/Loader/__stories__/Loader.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-loader--color",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-menu-menu--overview": {
+      "id": "navigation-menu-menu--overview",
+      "name": "Overview",
+      "title": "Navigation/Menu/Menu",
+      "importPath": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+      "kind": "Navigation/Menu/Menu",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menu--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menu--sizes": {
+      "id": "navigation-menu-menu--sizes",
+      "name": "Sizes",
+      "title": "Navigation/Menu/Menu",
+      "importPath": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+      "kind": "Navigation/Menu/Menu",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menu--sizes",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menu--menu-with-icons": {
+      "id": "navigation-menu-menu--menu-with-icons",
+      "name": "Menu with icons",
+      "title": "Navigation/Menu/Menu",
+      "importPath": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+      "kind": "Navigation/Menu/Menu",
+      "story": "Menu with icons",
+      "parameters": {
+        "fileName": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menu--menu-with-icons",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menu--menu-with-sub-menu": {
+      "id": "navigation-menu-menu--menu-with-sub-menu",
+      "name": "Menu with sub menu",
+      "title": "Navigation/Menu/Menu",
+      "importPath": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+      "kind": "Navigation/Menu/Menu",
+      "story": "Menu with sub menu",
+      "parameters": {
+        "fileName": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menu--menu-with-sub-menu",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menu--menu-with-2-depth-sub-menu": {
+      "id": "navigation-menu-menu--menu-with-2-depth-sub-menu",
+      "name": "Menu with 2-depth sub menu",
+      "title": "Navigation/Menu/Menu",
+      "importPath": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+      "kind": "Navigation/Menu/Menu",
+      "story": "Menu with 2-depth sub menu",
+      "parameters": {
+        "fileName": "./src/components/Menu/Menu/__stories__/Menu.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menu--menu-with-2-depth-sub-menu",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menudivider--overview": {
+      "id": "navigation-menu-menudivider--overview",
+      "name": "Overview",
+      "title": "Navigation/Menu/MenuDivider",
+      "importPath": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+      "kind": "Navigation/Menu/MenuDivider",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menudivider--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menudivider--menu-with-divider": {
+      "id": "navigation-menu-menudivider--menu-with-divider",
+      "name": "Menu with divider",
+      "title": "Navigation/Menu/MenuDivider",
+      "importPath": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+      "kind": "Navigation/Menu/MenuDivider",
+      "story": "Menu with divider",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menudivider--menu-with-divider",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-menu-menudivider--sub-menu-with-divider": {
+      "id": "navigation-menu-menudivider--sub-menu-with-divider",
+      "name": "Sub menu with divider",
+      "title": "Navigation/Menu/MenuDivider",
+      "importPath": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+      "kind": "Navigation/Menu/MenuDivider",
+      "story": "Sub menu with divider",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuDivider/__stories__/MenuDivider.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menudivider--sub-menu-with-divider",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-menu-menuitem--overview": {
+      "id": "navigation-menu-menuitem--overview",
+      "name": "Overview",
+      "title": "Navigation/Menu/MenuItem",
+      "importPath": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+      "kind": "Navigation/Menu/MenuItem",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitem--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitem--states": {
+      "id": "navigation-menu-menuitem--states",
+      "name": "States",
+      "title": "Navigation/Menu/MenuItem",
+      "importPath": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+      "kind": "Navigation/Menu/MenuItem",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitem--states",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitem--icons": {
+      "id": "navigation-menu-menuitem--icons",
+      "name": "Icons",
+      "title": "Navigation/Menu/MenuItem",
+      "importPath": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+      "kind": "Navigation/Menu/MenuItem",
+      "story": "Icons",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitem--icons",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitem--icons-with-colors": {
+      "id": "navigation-menu-menuitem--icons-with-colors",
+      "name": "Icons with colors",
+      "title": "Navigation/Menu/MenuItem",
+      "importPath": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+      "kind": "Navigation/Menu/MenuItem",
+      "story": "Icons with colors",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitem--icons-with-colors",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitem--overflow": {
+      "id": "navigation-menu-menuitem--overflow",
+      "name": "Overflow",
+      "title": "Navigation/Menu/MenuItem",
+      "importPath": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+      "kind": "Navigation/Menu/MenuItem",
+      "story": "Overflow",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItem/__stories__/MenuItem.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitem--overflow",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitembutton--overview": {
+      "id": "navigation-menu-menuitembutton--overview",
+      "name": "Overview",
+      "title": "Navigation/Menu/MenuItemButton",
+      "importPath": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+      "kind": "Navigation/Menu/MenuItemButton",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitembutton--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitembutton--states": {
+      "id": "navigation-menu-menuitembutton--states",
+      "name": "States",
+      "title": "Navigation/Menu/MenuItemButton",
+      "importPath": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+      "kind": "Navigation/Menu/MenuItemButton",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitembutton--states",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitembutton--disabled": {
+      "id": "navigation-menu-menuitembutton--disabled",
+      "name": "Disabled",
+      "title": "Navigation/Menu/MenuItemButton",
+      "importPath": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+      "kind": "Navigation/Menu/MenuItemButton",
+      "story": "Disabled",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitembutton--disabled",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menuitembutton--icons": {
+      "id": "navigation-menu-menuitembutton--icons",
+      "name": "Icons",
+      "title": "Navigation/Menu/MenuItemButton",
+      "importPath": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+      "kind": "Navigation/Menu/MenuItemButton",
+      "story": "Icons",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuItemButton/__stories__/MenuItemButton.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menuitembutton--icons",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menutitle--overview": {
+      "id": "navigation-menu-menutitle--overview",
+      "name": "Overview",
+      "title": "Navigation/Menu/MenuTitle",
+      "importPath": "./src/components/Menu/MenuTitle/__stories__/MenuTitle.stories.mdx",
+      "kind": "Navigation/Menu/MenuTitle",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuTitle/__stories__/MenuTitle.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menutitle--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-menu-menutitle--caption-placements": {
+      "id": "navigation-menu-menutitle--caption-placements",
+      "name": "Caption placements",
+      "title": "Navigation/Menu/MenuTitle",
+      "importPath": "./src/components/Menu/MenuTitle/__stories__/MenuTitle.stories.mdx",
+      "kind": "Navigation/Menu/MenuTitle",
+      "story": "Caption placements",
+      "parameters": {
+        "fileName": "./src/components/Menu/MenuTitle/__stories__/MenuTitle.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-menu-menutitle--caption-placements",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-wizard--overview": {
+      "id": "navigation-wizard--overview",
+      "name": "Overview",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-wizard--placements": {
+      "id": "navigation-wizard--placements",
+      "name": "Placements",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Placements",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--placements",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-wizard--types": {
+      "id": "navigation-wizard--types",
+      "name": "Types",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Types",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--types",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-wizard--fullfiled-icons": {
+      "id": "navigation-wizard--fullfiled-icons",
+      "name": "Fullfiled Icons",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Fullfiled Icons",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--fullfiled-icons",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-wizard--transition-animation": {
+      "id": "navigation-wizard--transition-animation",
+      "name": "Transition Animation",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Transition Animation",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--transition-animation",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-wizard--multi-step-wizard": {
+      "id": "navigation-wizard--multi-step-wizard",
+      "name": "Multi step wizard",
+      "title": "Navigation/Wizard",
+      "importPath": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+      "kind": "Navigation/Wizard",
+      "story": "Multi step wizard",
+      "parameters": {
+        "fileName": "./src/components/MultiStepIndicator/__stories__/multiStepIndicator.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-wizard--multi-step-wizard",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-linearprogressbar--overview": {
+      "id": "feedback-linearprogressbar--overview",
+      "name": "Overview",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-linearprogressbar--regular": {
+      "id": "feedback-linearprogressbar--regular",
+      "name": "Regular",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "Regular",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--regular",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-linearprogressbar--with-secondary-value": {
+      "id": "feedback-linearprogressbar--with-secondary-value",
+      "name": "With secondary value",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "With secondary value",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--with-secondary-value",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-linearprogressbar--multi-progress-bar": {
+      "id": "feedback-linearprogressbar--multi-progress-bar",
+      "name": "Multi progress bar",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "Multi progress bar",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--multi-progress-bar",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-linearprogressbar--progress-bar-as-a-counter": {
+      "id": "feedback-linearprogressbar--progress-bar-as-a-counter",
+      "name": "Progress bar as a counter",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "Progress bar as a counter",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--progress-bar-as-a-counter",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-linearprogressbar--progress-bar-as-loading-indicator": {
+      "id": "feedback-linearprogressbar--progress-bar-as-loading-indicator",
+      "name": "Progress bar as loading indicator",
+      "title": "Feedback/LinearProgressBar",
+      "importPath": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+      "kind": "Feedback/LinearProgressBar",
+      "story": "Progress bar as loading indicator",
+      "parameters": {
+        "fileName": "./src/components/ProgressBars/LinearProgressBar/__stories__/linearProgressBar.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-linearprogressbar--progress-bar-as-loading-indicator",
+        "__isArgsStory": false
+      }
+    },
+    "layout-responsivelist--overview": {
+      "id": "layout-responsivelist--overview",
+      "name": "Overview",
+      "title": "Layout/ResponsiveList",
+      "importPath": "./src/components/ResponsiveList/__stories__/ResponsiveList.stories.mdx",
+      "kind": "Layout/ResponsiveList",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/ResponsiveList/__stories__/ResponsiveList.stories.mdx",
+        "framework": "react",
+        "__id": "layout-responsivelist--overview",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-skeleton--overview": {
+      "id": "feedback-skeleton--overview",
+      "name": "Overview",
+      "title": "Feedback/Skeleton",
+      "importPath": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+      "kind": "Feedback/Skeleton",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-skeleton--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-skeleton--shapes": {
+      "id": "feedback-skeleton--shapes",
+      "name": "Shapes",
+      "title": "Feedback/Skeleton",
+      "importPath": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+      "kind": "Feedback/Skeleton",
+      "story": "Shapes",
+      "parameters": {
+        "fileName": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-skeleton--shapes",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-skeleton--text": {
+      "id": "feedback-skeleton--text",
+      "name": "Text",
+      "title": "Feedback/Skeleton",
+      "importPath": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+      "kind": "Feedback/Skeleton",
+      "story": "Text",
+      "parameters": {
+        "fileName": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-skeleton--text",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-skeleton--update-in-the-system": {
+      "id": "feedback-skeleton--update-in-the-system",
+      "name": "Update in the system",
+      "title": "Feedback/Skeleton",
+      "importPath": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+      "kind": "Feedback/Skeleton",
+      "story": "Update in the system",
+      "parameters": {
+        "fileName": "./src/components/Skeleton/__stories__/skeleton.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-skeleton--update-in-the-system",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tab--overview": {
+      "id": "navigation-tabs-tab--overview",
+      "name": "Overview",
+      "title": "Navigation/Tabs/Tab",
+      "importPath": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+      "kind": "Navigation/Tabs/Tab",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tab--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-tabs-tab--states": {
+      "id": "navigation-tabs-tab--states",
+      "name": "States",
+      "title": "Navigation/Tabs/Tab",
+      "importPath": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+      "kind": "Navigation/Tabs/Tab",
+      "story": "States",
+      "parameters": {
+        "fileName": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tab--states",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tab--icons": {
+      "id": "navigation-tabs-tab--icons",
+      "name": "Icons",
+      "title": "Navigation/Tabs/Tab",
+      "importPath": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+      "kind": "Navigation/Tabs/Tab",
+      "story": "Icons",
+      "parameters": {
+        "fileName": "./src/components/Tabs/Tab/__stories__/tab.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tab--icons",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tablist--overview": {
+      "id": "navigation-tabs-tablist--overview",
+      "name": "Overview",
+      "title": "Navigation/Tabs/TabList",
+      "importPath": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+      "kind": "Navigation/Tabs/TabList",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tablist--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-tabs-tablist--default-story": {
+      "id": "navigation-tabs-tablist--default-story",
+      "name": "Default",
+      "title": "Navigation/Tabs/TabList",
+      "importPath": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+      "kind": "Navigation/Tabs/TabList",
+      "story": "Default",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tablist--default-story",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tablist--stretched": {
+      "id": "navigation-tabs-tablist--stretched",
+      "name": "Stretched",
+      "title": "Navigation/Tabs/TabList",
+      "importPath": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+      "kind": "Navigation/Tabs/TabList",
+      "story": "Stretched",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tablist--stretched",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tablist--sizes": {
+      "id": "navigation-tabs-tablist--sizes",
+      "name": "Sizes",
+      "title": "Navigation/Tabs/TabList",
+      "importPath": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+      "kind": "Navigation/Tabs/TabList",
+      "story": "Sizes",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabList/__stories__/tab-list.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tablist--sizes",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tabpanel--overview": {
+      "id": "navigation-tabs-tabpanel--overview",
+      "name": "Overview",
+      "title": "Navigation/Tabs/TabPanel",
+      "importPath": "./src/components/Tabs/TabPanel/__stories__/tab-panel.stories.mdx",
+      "kind": "Navigation/Tabs/TabPanel",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabPanel/__stories__/tab-panel.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabpanel--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-tabs-tabpanels--overview": {
+      "id": "navigation-tabs-tabpanels--overview",
+      "name": "Overview",
+      "title": "Navigation/Tabs/TabPanels",
+      "importPath": "./src/components/Tabs/TabPanels/__stories__/tab-panels.stories.mdx",
+      "kind": "Navigation/Tabs/TabPanels",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tabs/TabPanels/__stories__/tab-panels.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabpanels--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-tabs-tabs--overview": {
+      "id": "navigation-tabs-tabs--overview",
+      "name": "Overview",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-tabs-tabs--default-story": {
+      "id": "navigation-tabs-tabs--default-story",
+      "name": "Default",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Default",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--default-story",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tabs--stretched": {
+      "id": "navigation-tabs-tabs--stretched",
+      "name": "Stretched",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Stretched",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--stretched",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tabs--motion": {
+      "id": "navigation-tabs-tabs--motion",
+      "name": "Motion",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Motion",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--motion",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tabs--board-views-tabs": {
+      "id": "navigation-tabs-tabs--board-views-tabs",
+      "name": "Board views tabs",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Board views tabs",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--board-views-tabs",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-tabs-tabs--admin-section-tabs": {
+      "id": "navigation-tabs-tabs--admin-section-tabs",
+      "name": "Admin section tabs",
+      "title": "Navigation/Tabs/Tabs",
+      "importPath": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+      "kind": "Navigation/Tabs/Tabs",
+      "story": "Admin section tabs",
+      "parameters": {
+        "fileName": "./src/components/Tabs/__stories__/tabs.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-tabs-tabs--admin-section-tabs",
+        "__isArgsStory": false
+      }
+    },
+    "text-textwithhighlight--overview": {
+      "id": "text-textwithhighlight--overview",
+      "name": "Overview",
+      "title": "Text/TextWithHighlight",
+      "importPath": "./src/components/TextWithHighlight/__stories__/TextWithHighlight.stories.mdx",
+      "kind": "Text/TextWithHighlight",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/TextWithHighlight/__stories__/TextWithHighlight.stories.mdx",
+        "framework": "react",
+        "__id": "text-textwithhighlight--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-toast--overview": {
+      "id": "feedback-toast--overview",
+      "name": "Overview",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--overview",
+        "__isArgsStory": true
+      }
+    },
+    "feedback-toast--default-with-button": {
+      "id": "feedback-toast--default-with-button",
+      "name": "Default with button",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Default with button",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--default-with-button",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-toast--toast-with-link": {
+      "id": "feedback-toast--toast-with-link",
+      "name": "Toast with link",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Toast with link",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--toast-with-link",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-toast--success-message": {
+      "id": "feedback-toast--success-message",
+      "name": "Success message",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Success message",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--success-message",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-toast--error-message": {
+      "id": "feedback-toast--error-message",
+      "name": "Error message",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Error message",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--error-message",
+        "__isArgsStory": false
+      }
+    },
+    "feedback-toast--feedback-loop": {
+      "id": "feedback-toast--feedback-loop",
+      "name": "Feedback loop",
+      "title": "Feedback/Toast",
+      "importPath": "./src/components/Toast/__stories__/toast.stories.mdx",
+      "kind": "Feedback/Toast",
+      "story": "Feedback loop",
+      "parameters": {
+        "fileName": "./src/components/Toast/__stories__/toast.stories.mdx",
+        "framework": "react",
+        "__id": "feedback-toast--feedback-loop",
+        "__isArgsStory": false
+      }
+    },
+    "navigation-virtualizedgrid--overview": {
+      "id": "navigation-virtualizedgrid--overview",
+      "name": "Overview",
+      "title": "Navigation/VirtualizedGrid",
+      "importPath": "./src/components/VirtualizedGrid/__stories__/VirtualizedGrid.stories.mdx",
+      "kind": "Navigation/VirtualizedGrid",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/VirtualizedGrid/__stories__/VirtualizedGrid.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-virtualizedgrid--overview",
+        "__isArgsStory": true
+      }
+    },
+    "navigation-virtualizedlist--overview": {
+      "id": "navigation-virtualizedlist--overview",
+      "name": "Overview",
+      "title": "Navigation/VirtualizedList",
+      "importPath": "./src/components/VirtualizedList/__stories__/VirtualizedList.stories.mdx",
+      "kind": "Navigation/VirtualizedList",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/VirtualizedList/__stories__/VirtualizedList.stories.mdx",
+        "framework": "react",
+        "__id": "navigation-virtualizedlist--overview",
+        "__isArgsStory": false
+      }
+    },
+    "change-log--page": {
+      "id": "change-log--page",
+      "name": "Page",
+      "title": "Change Log",
+      "importPath": "./src/storybook/stand-alone-documentaion/change-log/changelog.stories.mdx",
+      "kind": "Change Log",
+      "story": "Page",
+      "parameters": {
+        "fileName": "./src/storybook/stand-alone-documentaion/change-log/changelog.stories.mdx",
+        "docsOnly": true,
+        "framework": "react",
+        "__id": "change-log--page",
+        "__isArgsStory": false
+      }
+    },
+    "accessibility-clickable--overview": {
+      "id": "accessibility-clickable--overview",
+      "name": "Overview",
+      "title": "Accessibility/Clickable",
+      "importPath": "./src/components/Clickable/__stories__/Clickable.stories.mdx",
+      "kind": "Accessibility/Clickable",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/Clickable/__stories__/Clickable.stories.mdx",
+        "framework": "react",
+        "__id": "accessibility-clickable--overview",
+        "__isArgsStory": false
+      }
+    },
+    "accessibility-hiddentext--overview": {
+      "id": "accessibility-hiddentext--overview",
+      "name": "Overview",
+      "title": "Accessibility/HiddenText",
+      "importPath": "./src/components/HiddenText/__stories__/HiddenText.stories.mdx",
+      "kind": "Accessibility/HiddenText",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/HiddenText/__stories__/HiddenText.stories.mdx",
+        "framework": "react",
+        "__id": "accessibility-hiddentext--overview",
+        "__isArgsStory": true
+      }
+    },
+    "hooks-usegridkeyboardnavigationcontext--overview": {
+      "id": "hooks-usegridkeyboardnavigationcontext--overview",
+      "name": "Overview",
+      "title": "Hooks/useGridKeyboardNavigationContext",
+      "importPath": "./src/components/GridKeyboardNavigationContext/__stories__/useGridKeyboardNavigationContext.stories.mdx",
+      "kind": "Hooks/useGridKeyboardNavigationContext",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/components/GridKeyboardNavigationContext/__stories__/useGridKeyboardNavigationContext.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usegridkeyboardnavigationcontext--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usegridkeyboardnavigationcontext--multiple-depths": {
+      "id": "hooks-usegridkeyboardnavigationcontext--multiple-depths",
+      "name": "Multiple Depths",
+      "title": "Hooks/useGridKeyboardNavigationContext",
+      "importPath": "./src/components/GridKeyboardNavigationContext/__stories__/useGridKeyboardNavigationContext.stories.mdx",
+      "kind": "Hooks/useGridKeyboardNavigationContext",
+      "story": "Multiple Depths",
+      "parameters": {
+        "fileName": "./src/components/GridKeyboardNavigationContext/__stories__/useGridKeyboardNavigationContext.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usegridkeyboardnavigationcontext--multiple-depths",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-useafterfirstrender--overview": {
+      "id": "hooks-useafterfirstrender--overview",
+      "name": "Overview",
+      "title": "Hooks/useAfterFirstRender",
+      "importPath": "./src/hooks/useAfterFirstRender/__stories__/useAfterFirstRender.stories.mdx",
+      "kind": "Hooks/useAfterFirstRender",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useAfterFirstRender/__stories__/useAfterFirstRender.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-useafterfirstrender--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-useclickoutside--overview": {
+      "id": "hooks-useclickoutside--overview",
+      "name": "Overview",
+      "title": "Hooks/useClickOutside",
+      "importPath": "./src/hooks/useClickOutside/__stories__/useClickOutside.stories.mdx",
+      "kind": "Hooks/useClickOutside",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useClickOutside/__stories__/useClickOutside.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-useclickoutside--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usedebounceevent--overview": {
+      "id": "hooks-usedebounceevent--overview",
+      "name": "Overview",
+      "title": "Hooks/useDebounceEvent",
+      "importPath": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+      "kind": "Hooks/useDebounceEvent",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usedebounceevent--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usedebounceevent--passing-an-initial-value": {
+      "id": "hooks-usedebounceevent--passing-an-initial-value",
+      "name": "Passing an initial value",
+      "title": "Hooks/useDebounceEvent",
+      "importPath": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+      "kind": "Hooks/useDebounceEvent",
+      "story": "Passing an initial value",
+      "parameters": {
+        "fileName": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usedebounceevent--passing-an-initial-value",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usedebounceevent--passing-an-on-change-handler": {
+      "id": "hooks-usedebounceevent--passing-an-on-change-handler",
+      "name": "Passing an `onChange` handler",
+      "title": "Hooks/useDebounceEvent",
+      "importPath": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+      "kind": "Hooks/useDebounceEvent",
+      "story": "Passing an `onChange` handler",
+      "parameters": {
+        "fileName": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usedebounceevent--passing-an-on-change-handler",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usedebounceevent--with-trim": {
+      "id": "hooks-usedebounceevent--with-trim",
+      "name": "With trim",
+      "title": "Hooks/useDebounceEvent",
+      "importPath": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+      "kind": "Hooks/useDebounceEvent",
+      "story": "With trim",
+      "parameters": {
+        "fileName": "./src/hooks/useDebounceEvent/__stories__/useDebounceEvent.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usedebounceevent--with-trim",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-useeventlistener--overview": {
+      "id": "hooks-useeventlistener--overview",
+      "name": "Overview",
+      "title": "Hooks/useEventListener",
+      "importPath": "./src/hooks/useEventListener/__stories__/useEventListener.stories.mdx",
+      "kind": "Hooks/useEventListener",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useEventListener/__stories__/useEventListener.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-useeventlistener--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usegridkeyboardnavigation--overview": {
+      "id": "hooks-usegridkeyboardnavigation--overview",
+      "name": "Overview",
+      "title": "Hooks/useGridKeyboardNavigation",
+      "importPath": "./src/hooks/useGridKeyboardNavigation/__stories__/useGridKeyboardNavigation.stories.mdx",
+      "kind": "Hooks/useGridKeyboardNavigation",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useGridKeyboardNavigation/__stories__/useGridKeyboardNavigation.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usegridkeyboardnavigation--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usekeyevent--overview": {
+      "id": "hooks-usekeyevent--overview",
+      "name": "Overview",
+      "title": "Hooks/useKeyEvent",
+      "importPath": "./src/hooks/useKeyEvent/__stories__/useKeyEvent.stories.mdx",
+      "kind": "Hooks/useKeyEvent",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useKeyEvent/__stories__/useKeyEvent.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usekeyevent--overview",
+        "__isArgsStory": false
+      }
+    },
+    "hooks-usetimeout--overview": {
+      "id": "hooks-usetimeout--overview",
+      "name": "Overview",
+      "title": "Hooks/useTimeout",
+      "importPath": "./src/hooks/useTimeout/__stories__/useTimeout.stories.mdx",
+      "kind": "Hooks/useTimeout",
+      "story": "Overview",
+      "parameters": {
+        "fileName": "./src/hooks/useTimeout/__stories__/useTimeout.stories.mdx",
+        "framework": "react",
+        "__id": "hooks-usetimeout--overview",
+        "__isArgsStory": false
+      }
+    }
+  }
+}
