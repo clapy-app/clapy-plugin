@@ -14,3 +14,8 @@ export type ResponseMessageError = { type: keyof Routes, error: any; };
 export type Subscriptions = _Subscriptions;
 export type NextFn<T> = (value: T) => void;
 export type NextMessage<T = any> = { type: keyof Subscriptions, payload: T; };
+
+export interface SbCompSelection {
+  name: string;
+  url: string;
+}
