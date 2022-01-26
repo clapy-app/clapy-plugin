@@ -1,0 +1,34 @@
+
+.previewApp {
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.previewConnectionInfo {
+  display: flex;
+  align-self: center;
+  margin-bottom: 16px;
+}
+.previewPluginWrapper {
+  position: relative;
+  height: 450px;
+  width: 400px;
+  border: 1px solid black;
+  overflow: auto;
+}
+.select-warning {
+  text-align: center;
+  color: #4a4848;
+}
+.previewConnectionStatus {
+  border-radius: 50px/50px;
+  background-color: #f00;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+}
+.statusGreen {
+  background-color: lawngreen;
+}

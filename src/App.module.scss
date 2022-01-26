@@ -1,6 +1,7 @@
 @import './core/theme/variables.scss';
 
 .container {
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
 }

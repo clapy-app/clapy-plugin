@@ -16,6 +16,9 @@ export type NextFn<T> = (value: T) => void;
 export type NextMessage<T = any> = { type: keyof Subscriptions, payload: T; };
 
 export interface SbCompSelection {
+  id: string;
   name: string;
   url: string;
+  // baseUrl if required?
+  figmaId: string;
 }

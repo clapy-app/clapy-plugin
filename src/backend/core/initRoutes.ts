@@ -14,13 +14,17 @@ export function initRoutes(routes: Routes) {
         };
         figma.ui.postMessage(responseMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       if (!noResponse) {
         const responseError: ResponseMessageError = {
           type,
           error: error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`),
         };
         figma.ui.postMessage(responseError);
+        console.error('type:', type);
+        const e: Error = error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`);
+        console.error(e.message);
+        console.error(e.stack);
       } else {
         console.error(error || `[Custom] Unknown error when running controller code on route ${type}.`);
       }

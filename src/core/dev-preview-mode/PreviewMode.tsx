@@ -1,5 +1,5 @@
 import { FC, memo, MutableRefObject, useEffect, useRef, useState } from "react";
-import './PreviewMode.scss';
+import styles from './PreviewMode.module.css';
 
 type WSRef = MutableRefObject<WebSocket | undefined>;
 
@@ -42,15 +42,15 @@ export const PreviewMode: FC = memo(({ children }) => {
   if (!previewEnv) return <>{children}</>;
 
   return (
-    <div className="preview-app">
+    <div className={styles.previewApp}>
       <h3>Preview App</h3>
-      <div className="preview-connection-info">
+      <div className={styles.previewConnectionInfo}>
         <strong>Connection Status:</strong>
-        <div className={`preview-connection-status${isConnected ? ' status-green' : ''}`} />
+        <div className={`${styles.previewConnectionStatus} ${isConnected ? styles.statusGreen : ''}`} />
       </div>
 
       {isPreviewInBrowser && setIsConnected && (
-        <div className="preview-plugin-wrapper">
+        <div className={styles.previewPluginWrapper}>
           {children}
         </div>
       )}
