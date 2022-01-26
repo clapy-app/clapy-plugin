@@ -1,5 +1,7 @@
 import { isFrame, isLayout } from './canvas-utils';
-import { CNode, isCElementNode, isCTextNode } from './sb-serialize.model';
+import { CNode } from './sb-serialize.model';
+import { appendNodes } from './update-canvas-append-nodes';
+import { sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
   try {
@@ -36,6 +38,14 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
     }
 
     currentNode.layoutMode = 'VERTICAL';
+    // currentNode.counterAxisSizingMode = 'AUTO';
+    currentNode.primaryAxisSizingMode = 'AUTO';
+    for (const node of sbNodes) {
+      const w = sizeWithUnitToPx(node.styles.width!);
+      if (currentNode.width < w) {
+        currentNode.resizeWithoutConstraints(w, currentNode.height);
+      }
+    }
 
     await appendNodes(currentNode, sbNodes);
 
@@ -45,61 +55,3 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
     figma.commitUndo();
   }
 }
-
-async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], fontLoaded?: boolean) {
-
-  for (const sbNode of sbNodes) {
-    if (isCTextNode(sbNode)) {
-      const node = figma.createText();
-      if (!fontLoaded) {
-        // figma.loadFontAsync({ family: "Roboto", style: "Regular" })
-        await figma.loadFontAsync(<FontName>node.fontName);
-        fontLoaded = true;
-      }
-      node.characters = sbNode.value;
-      figmaParentNode.appendChild(node);
-    } else if (!isCElementNode(sbNode)) {
-      console.warn('Unknown node type:', (sbNode as any).type, '- skipping.');
-      continue;
-    } else {
-      const node = figma.createFrame();
-      node.name = sbNode.name;
-      const { display, flexDirection, width, height } = sbNode.styles;
-
-      node.layoutMode = display === 'flex' && flexDirection === 'row'
-        ? 'HORIZONTAL' : 'VERTICAL';
-
-      const w = parseInt(width);
-      const h = parseInt(height);
-      if (!isNaN(w) && !isNaN(h)) {
-        node.resizeWithoutConstraints(parseInt(width), parseInt(height));
-      }
-
-      // node.backgrounds
-
-      figmaParentNode.appendChild(node);
-      if (sbNode.children) {
-        await appendNodes(node, sbNode.children, fontLoaded);
-      }
-    }
-  }
-}
-
-// display,
-// flexDirection,
-// width,
-// height,
-// fontSize,
-// fontWeight,
-// lineHeight,
-// textAlign,
-// color,
-// backgroundColor,
-// borderColor,
-// borderStyle,
-// borderWidth,
-// position,
-// left,
-// top,
-// right,
-// bottom,

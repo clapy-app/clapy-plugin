@@ -73,6 +73,7 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
+        if (!url) return;
         if (!nodes) {
           setLoadingTxt('Serializing on API...');
           nodes = (await apiGet<CNode[]>('serialize', { query: { url } })).data;
@@ -86,6 +87,10 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
       }
     })();
   }, [url, figmaId]);
+
+  if (!url) {
+    return <p>Figma ID: {figmaId}</p>;
+  }
 
   return <>
     <div>{name} <a href={url} target='_blank'>(preview)</a></div>

@@ -53,6 +53,10 @@ function prepareSbCompSelection(): SbCompSelection[] {
           url: url,
           figmaId: node.id,
         });
+      } else {
+        selection.push({
+          figmaId: node.id,
+        });
       }
       return selection;
     }, [] as SbCompSelection[]);
