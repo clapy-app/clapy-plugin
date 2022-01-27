@@ -60,10 +60,10 @@ export type CNode = CElementNode | CTextNode;
 const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const TEXT_NODE = 3; /* Node.TEXT_NODE */
 
-export function isCElementNode(node: CNode): node is CElementNode {
-  return node.type === ELEMENT_NODE;
+export function isCElementNode(node: CNode | null): node is CElementNode {
+  return !!node && node.type === ELEMENT_NODE;
 }
 
-export function isCTextNode(node: CNode): node is CTextNode {
-  return node.type === TEXT_NODE;
+export function isCTextNode(node: CNode | null): node is CTextNode {
+  return !!node && node.type === TEXT_NODE;
 }
