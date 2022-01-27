@@ -39,12 +39,12 @@ export function selectedSbComp(next: NextFn<SbCompSelection[]>) {
 
 function prepareSbCompSelection(): SbCompSelection[] {
   const sbUrlNode = getSbUrlNode(figma.currentPage);
-  const baseUrl = sbUrlNode.characters;
+  const baseUrl = sbUrlNode?.characters;
 
   const selectedSbComp = figma.currentPage.selection
     .reduce((selection, node) => {
       const [name, id] = getLayoutCompKeyOrUndef(node);
-      if (id) {
+      if (id && baseUrl) {
         // &args=kind:secondary;size:xxs
         const url = `${baseUrl}/iframe.html?id=${id}&viewMode=story`;
         selection.push({
@@ -60,5 +60,18 @@ function prepareSbCompSelection(): SbCompSelection[] {
       }
       return selection;
     }, [] as SbCompSelection[]);
+  // To log the selection flex config:
+  // if (selectedSbComp.length === 1) {
+  //   show(figma.getNodeById(selectedSbComp[0].figmaId) as FrameNode);
+  // }
   return selectedSbComp;
 }
+
+// function show(node: FrameNode) {
+//   console.log('--------------');
+//   console.log(node.name, ' => layoutMode:', node.layoutMode);
+//   console.log('layoutGrow:', node.layoutGrow);
+//   console.log('counterAxisSizingMode:', node.counterAxisSizingMode);
+//   console.log('layoutAlign:', node.layoutAlign);
+//   console.log('primaryAxisSizingMode:', node.primaryAxisSizingMode);
+// }

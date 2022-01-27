@@ -1,9 +1,9 @@
 import { CNode, isCElementNode, isCTextNode } from './sb-serialize.model';
-import { applyBorders, applyShadow, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, sizeWithUnitToPx } from './update-canvas-utils';
+import { applyBorders, applyFlexWidthHeight, applyShadow, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, sizeWithUnitToPx } from './update-canvas-utils';
 
 const loadedFonts = new Set();
 
-export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[]) {
+export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], sbParentNode: CNode | null) {
 
   for (const sbNode of sbNodes) {
 
@@ -43,7 +43,12 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[]) 
         opacity: a,
       }] : [];
 
-      // node.layoutAlign
+      node.layoutAlign = figmaParentNode.layoutMode === 'HORIZONTAL'
+        ? 'INHERIT'
+        : 'STRETCH';
+      node.layoutGrow = figmaParentNode.layoutMode === 'HORIZONTAL'
+        ? 1 : 0;
+
       figmaParentNode.appendChild(node);
     } else {
       const node = figma.createFrame();
@@ -55,18 +60,24 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[]) 
 
       const w = sizeWithUnitToPx(width!);
       const h = sizeWithUnitToPx(height!);
-      if (!isNaN(w) && !isNaN(h)) {
-        node.resizeWithoutConstraints(w, h);
-      }
+      // Parent nodes are considered 100% width (we'll see if the assumption is wrong).
+      // For child nodes, it's considered width: 100% if the width is the same as the parent width minus the padding.
+      const isWidth100P = sbParentNode === null
+        || w === sizeWithUnitToPx(sbParentNode.styles.width!)
+        - sizeWithUnitToPx(sbParentNode.styles.paddingLeft!)
+        - sizeWithUnitToPx(sbParentNode.styles.paddingRight!);
+      const isHeight100P = sbParentNode === null
+        || h === sizeWithUnitToPx(sbParentNode.styles.height!)
+        - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
+        - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
+      // if (!isNaN(w) && !isNaN(h)) {
+      //   node.resize(w, h);
+      // }
 
       node.layoutMode = display === 'flex' && flexDirection === 'row'
         ? 'HORIZONTAL' : 'VERTICAL';
 
-      // node.counterAxisSizingMode = 'AUTO';
-      // node.primaryAxisSizingMode = 'AUTO';
-      if (node.layoutMode === 'VERTICAL') {
-        node.layoutAlign = 'STRETCH';
-      }
+      applyFlexWidthHeight(node, figmaParentNode);
 
       if (paddingBottom) node.paddingBottom = sizeWithUnitToPx(paddingBottom);
       if (paddingLeft) node.paddingLeft = sizeWithUnitToPx(paddingLeft);
@@ -92,7 +103,7 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[]) 
 
       figmaParentNode.appendChild(node);
       if (sbNode.children) {
-        await appendNodes(node, sbNode.children);
+        await appendNodes(node, sbNode.children, sbNode);
       }
     }
 

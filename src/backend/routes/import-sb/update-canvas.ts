@@ -37,17 +37,31 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
       figma.currentPage.selection = [currentNode];
     }
 
-    currentNode.layoutMode = 'VERTICAL';
     // currentNode.counterAxisSizingMode = 'AUTO';
-    currentNode.primaryAxisSizingMode = 'AUTO';
+    // currentNode.primaryAxisSizingMode = 'AUTO';
+    let maxWidth = -1;
     for (const node of sbNodes) {
       const w = sizeWithUnitToPx(node.styles.width!);
-      if (currentNode.width < w) {
-        currentNode.resizeWithoutConstraints(w, currentNode.height);
+      if (maxWidth < w) {
+        maxWidth = w;
       }
     }
+    currentNode.resizeWithoutConstraints(maxWidth, currentNode.height);
+    // Apply flex. The top container behaves as if the parent had horizontal direction.
+    currentNode.layoutMode = 'VERTICAL';
+    // Width: fixed
+    currentNode.layoutGrow = 0;
+    currentNode.counterAxisSizingMode = 'FIXED';
+    // Height: hug content
+    currentNode.layoutAlign = 'INHERIT';
+    currentNode.primaryAxisSizingMode = 'AUTO';
 
-    await appendNodes(currentNode, sbNodes);
+    // Delete previous children
+    for (const node of currentNode.children) {
+      node.remove();
+    }
+
+    await appendNodes(currentNode, sbNodes, null);
 
     console.log('update canvas:', sbNodes, figmaId);
     console.log('figma node:', figma.getNodeById(currentNode.id));

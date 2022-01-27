@@ -7,7 +7,7 @@ figma.showUI(__html__);
 if (isPreviewInFigma) {
   figma.ui.resize(300, 200);
 } else {
-  figma.ui.resize(400, 400);
+  figma.ui.resize(400, 450);
 }
 
 // Use Routes from appModels.ts instead, which is clearly made to be shared between the front and the back.

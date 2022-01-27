@@ -78,5 +78,6 @@ export function getSbUrlNode(page: PageNode) {
       return node;
     }
   }
-  throw new Error('Text element giving Storybook URL not found');
+  // throw new Error('Text element giving Storybook URL not found');
+  return undefined;
 }

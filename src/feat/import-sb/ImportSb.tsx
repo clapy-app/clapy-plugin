@@ -63,9 +63,6 @@ export const ImportSb: FC = memo(() => {
   );
 });
 
-// Cache
-let nodes: CNode[] | undefined = undefined;
-
 export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selection }) => {
   const { name, url, figmaId } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
@@ -74,10 +71,8 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
     (async () => {
       try {
         if (!url) return;
-        if (!nodes) {
-          setLoadingTxt('Serializing on API...');
-          nodes = (await apiGet<CNode[]>('serialize', { query: { url } })).data;
-        }
+        setLoadingTxt('Serializing on API...');
+        const nodes = (await apiGet<CNode[]>('serialize', { query: { url } })).data;
         setLoadingTxt('Updating canvas...');
         await fetchPlugin('updateCanvas', nodes, figmaId);
       } catch (err) {

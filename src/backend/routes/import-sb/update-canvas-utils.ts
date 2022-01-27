@@ -164,6 +164,9 @@ export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomS
 const shadowRegex = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
 
 export function applyShadow(boxShadow: string, effects: Effect[]) {
+  if (boxShadow === 'none') {
+    return;
+  }
   var matchShadow = new RegExp(shadowRegex);
   var match = matchShadow.exec(boxShadow);
   if (match == null) {
@@ -189,6 +192,59 @@ export function applyShadow(boxShadow: string, effects: Effect[]) {
     visible: true,
     blendMode: 'NORMAL',
   });
+}
+
+export function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode) {
+
+  // OK, works most of the time
+  // if (node.layoutMode === 'HORIZONTAL') {
+  //   node.layoutGrow = 0;
+  //   node.counterAxisSizingMode = 'AUTO';
+  //   node.layoutAlign = 'STRETCH';
+  //   node.primaryAxisSizingMode = 'FIXED';
+  // } else {
+  //   node.layoutAlign = 'STRETCH';
+  //   node.primaryAxisSizingMode = 'AUTO';
+  //   node.layoutGrow = 0;
+  //   node.counterAxisSizingMode = 'FIXED';
+  // }
+
+  // const widthFillContainer = isWidth100P;
+  // const heightFillContainer = isHeight100P;
+  const widthFillContainer = true;
+  const heightFillContainer = false; // Hug contents
+  const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
+  const parentVertical = !parentHorizontal;
+  const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
+  const nodeVertical = !nodeHorizontal;
+
+  // layoutGrow = 1 si (0 sinon) :
+  // - Parent vertical && Height fill container
+  // - ou Parent horizontal && width fill container
+  node.layoutGrow = (parentVertical && heightFillContainer)
+    || (parentHorizontal && widthFillContainer)
+    ? 1 : 0;
+
+  // layoutAlign = STRETCH (INHERIT sinon) :
+  // - Parent vertical && width fill container
+  // - ou Parent horizontal && height fill container
+  node.layoutAlign = (parentVertical && widthFillContainer)
+    || (parentHorizontal && heightFillContainer)
+    ? 'STRETCH' : 'INHERIT';
+
+  // primaryAxisSizingMode = FIXED (AUTO sinon) :
+  // - Enfant vertical && height fill container
+  // - ou Enfant horizontal && width fill container
+  node.primaryAxisSizingMode = (nodeVertical && heightFillContainer)
+    || (nodeHorizontal && widthFillContainer)
+    ? 'FIXED' : 'AUTO';
+
+  // counterAxisSizingMode = FIXED (AUTO sinon) :
+  // - Enfant vertical && width fill container
+  // - ou Enfant horizontal && height fill container
+  node.counterAxisSizingMode = (nodeVertical && widthFillContainer)
+    || (nodeHorizontal && heightFillContainer)
+    ? 'FIXED' : 'AUTO';
 }
 
 function isNumeric(n: string) {
