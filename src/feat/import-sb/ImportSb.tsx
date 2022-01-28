@@ -29,6 +29,13 @@ export const ImportSb: FC = memo(() => {
   }, []);
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     fetchPlugin('importStories', sbSelection)
+      .then(async (insertedComponents) => {
+        // Could be done in parallel, with a pool to not overload the API.
+        for (const { figmaId, url } of insertedComponents) {
+          const nodes = await fetchCNodes(url);
+          await fetchPlugin('updateCanvas', nodes, figmaId);
+        }
+      })
       .catch(handleError);
   }, [sbSelection]);
 
@@ -72,7 +79,7 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
       try {
         if (!url) return;
         setLoadingTxt('Serializing on API...');
-        const nodes = (await apiGet<CNode[]>('serialize', { query: { url } })).data;
+        const nodes = await fetchCNodes(url);
         setLoadingTxt('Updating canvas...');
         await fetchPlugin('updateCanvas', nodes, figmaId);
       } catch (err) {
@@ -101,3 +108,7 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
       : <p>Figma ID: {figmaId}</p>}
   </>;
 });
+
+async function fetchCNodes(url: string) {
+  return (await apiGet<CNode[]>('serialize', { query: { url } })).data;
+}

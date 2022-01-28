@@ -1,18 +1,18 @@
 import { NextFn, SbCompSelection } from '../../../common/app-models';
 import { SbSelection, StoriesObj, storiesSamples } from './import-model';
-import { createRectangles, getLayoutCompKeyOrUndef, getOrCreatePage, getSbUrlNode, StoryEntries, updateOrCreateSbUrlNode } from './import-sb-detail';
+import { createRectangles, getLayoutCompKeyOrUndef, getOrCreatePage, getSbUrlNode, RectangleCreated, StoryEntries, updateOrCreateSbUrlNode } from './import-sb-detail';
 
 export function getStoriesSamples() {
   const samples = Object.entries(storiesSamples).map(([key, entry]) => [key as SbSelection, entry.label] as const);
   return samples;
 }
 
-export async function importStories(sbSelection: SbSelection) {
+export async function importStories(sbSelection: SbSelection): Promise<RectangleCreated[]> {
   const { stories: storiesWrapper, baseUrl } = storiesSamples[sbSelection];
   const stories: StoryEntries = Object.entries(storiesWrapper.stories as StoriesObj)
     // Alternative: filter on !story.parameters.docsOnly
     .filter(([_, story]) => story.parameters.__isArgsStory)
-    .slice(0, 3)
+    .slice(0, 15)
     ;
 
   const page = getOrCreatePage();
@@ -20,7 +20,7 @@ export async function importStories(sbSelection: SbSelection) {
 
   await updateOrCreateSbUrlNode(page, baseUrl);
 
-  createRectangles(stories);
+  return createRectangles(stories, baseUrl);
 }
 
 

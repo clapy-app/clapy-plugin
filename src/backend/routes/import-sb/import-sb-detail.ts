@@ -12,19 +12,31 @@ export function getLayoutCompKeyOrUndef(node: SceneNode) {
   return [undefined, undefined];
 }
 
-export function createRectangles(stories: StoryEntries) {
+export interface RectangleCreated {
+  figmaId: string;
+  url: string;
+}
+
+export function createRectangles(stories: StoryEntries, baseUrl: string) {
   const nodes: RectangleNode[] = [];
+  const response: RectangleCreated[] = [];
 
   for (let i = 0; i < stories.length; i++) {
-    const [key, story] = stories[i];
-    const rect = getOrCreateCompRectangle(figma.currentPage, key, i);
+    const [storyId, story] = stories[i];
+    const rect = getOrCreateCompRectangle(figma.currentPage, storyId, i);
     const name = `${story.title || story.kind} ${story.name || story.story}`;
-    rect.name = `${name} [sb:c:${key}]`;
+    rect.name = `${name} [sb:c:${storyId}]`;
     nodes.push(rect);
+    const url = `${baseUrl}/iframe.html?id=${storyId}&viewMode=story`;
+    response.push({
+      figmaId: rect.id,
+      url,
+    });
   }
 
   figma.currentPage.selection = nodes;
   figma.viewport.scrollAndZoomIntoView(nodes);
+  return response;
 }
 
 function getOrCreateCompRectangle(page: PageNode, key: string, i: number) {
@@ -35,8 +47,9 @@ function getOrCreateCompRectangle(page: PageNode, key: string, i: number) {
     }
   }
   const rect = figma.createRectangle();
-  rect.y = 150;
-  rect.x = i * 150;
+  rect.y = 100;
+  rect.x = i * 550;
+  rect.resize(500, 300);
   rect.fills = [{ type: "SOLID", color: { r: 0, g: 0.4, b: 0.8 } }];
   figma.currentPage.appendChild(rect);
   return rect;
