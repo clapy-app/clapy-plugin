@@ -1,11 +1,12 @@
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, prepareBorderWidths, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, prepareBorderWidths, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
   const { figmaParentNode } = context;
   let absoluteElementsToAdd: { node: FrameNode, sbNode: (CElementNode | CPseudoElementNode); }[] = [];
+  let previousMargins: Margins | undefined = undefined;
 
   for (const sbNode of sbNodes) {
 
@@ -124,6 +125,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
       applyAutoLayout(node, figmaParentNode, sbNode, paddings, svgNode, w, h);
 
+      const margins = prepareMargins(sbNode.styles);
+      appendMargins(context, sbNode, margins, previousMargins);
+      previousMargins = margins;
+
       applyBackgroundColor(node, backgroundColor);
 
       const effects: Effect[] = [];
@@ -163,6 +168,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
   if (context.previousInlineNode) {
     figmaParentNode.appendChild(context.previousInlineNode);
     // previousInlineNode = undefined;
+  }
+
+  if (sbNodes.length >= 1) {
+    appendMargins(context, sbNodes[sbNodes.length - 1], undefined, previousMargins);
   }
 
   for (const { node, sbNode } of absoluteElementsToAdd) {

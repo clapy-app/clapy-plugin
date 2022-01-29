@@ -1,6 +1,6 @@
 import { isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CPseudoElementNode, isCElementNode, MyStyles, Properties } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, MyStyles, Properties } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -240,6 +240,56 @@ export function preparePaddings(styles: MyStyles, { borderBottomWidth, borderLef
   } as Paddings;
 }
 
+export interface Margins {
+  marginBottom: number;
+  marginLeft: number;
+  marginTop: number;
+  marginRight: number;
+}
+
+export function prepareMargins({ marginBottom, marginLeft, marginTop, marginRight }: MyStyles) {
+  return {
+    marginBottom: sizeWithUnitToPx(marginBottom as string),
+    marginLeft: sizeWithUnitToPx(marginLeft as string),
+    marginTop: sizeWithUnitToPx(marginTop as string),
+    marginRight: sizeWithUnitToPx(marginRight as string),
+  } as Margins;
+}
+
+export function appendMargins({ figmaParentNode }: RenderContext, sbNode: CNode, margins: Margins | undefined, previousMargins: Margins | undefined) {
+  if (isCPseudoElementNode(sbNode)) {
+    // Hack because we can't recognize margin: auto with computed CSS.
+    // Let's assume it's typically used with pseudo elements.
+    // Later, to replace with a check of the source CSS rule.
+    return;
+  }
+  const { display } = sbNode.styles;
+  let margin = 0, width = 0, height = 0;
+  if (figmaParentNode.layoutMode === 'HORIZONTAL') {
+    margin = (previousMargins?.marginRight || 0) + (margins?.marginLeft || 0);
+    width = margin;
+    height = 1;
+  } else if (figmaParentNode.layoutMode === 'VERTICAL') {
+    const m1 = previousMargins?.marginBottom || 0;
+    const m2 = margins?.marginTop || 0;
+    margin = display === 'block' ? Math.max(m1, m2) : m1 + m2;
+    width = 1;
+    height = margin;
+  }
+  if (margin > 0) {
+    const space = figma.createFrame();
+    space.name = `Margin ${margin}px`;
+    // Add a transparent frame taking the margin space, stretching in counter axis.
+    space.resize(width, height);
+    space.fills = [{
+      type: 'SOLID',
+      color: { r: 1, g: 1, b: 1 },
+      opacity: 0,
+    }];
+    space.layoutAlign = 'STRETCH';
+    figmaParentNode.appendChild(space);
+  }
+}
 
 export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
   const { display, flexDirection } = sbNode.styles;
@@ -401,7 +451,7 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
     // We could work around it by reducing paddings, margins... (if any) by 1px (not implemented)
     wrapper.fills = [{
       type: 'SOLID',
-      color: { r: 0.5, g: 0.5, b: 0.5 },
+      color: { r: 1, g: 1, b: 1 },
       opacity: 0,
     }];
 
