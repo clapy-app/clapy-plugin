@@ -35,6 +35,12 @@ export const cssKeys = makeCssKeys([
   'paddingBottom',
   'paddingLeft',
   'boxShadow',
+  'backgroundImage',
+  'transform',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
 ]);
 
 function makeCssKeys<T extends Partial<keyof CSSProperties>>(rules: T[]): T[] {
@@ -43,27 +49,37 @@ function makeCssKeys<T extends Partial<keyof CSSProperties>>(rules: T[]): T[] {
 
 export type MyStyles = Pick<CSSProperties, typeof cssKeys[number]>;
 
+const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
+const PSEUDO_ELEMENT_NODE = -1;
+const TEXT_NODE = 3; /* Node.TEXT_NODE */
+
 export interface CElementNode {
   name: string;
-  type: typeof Node.ELEMENT_NODE;
+  type: typeof ELEMENT_NODE;
   styles: MyStyles;
   children?: CNode[];
 }
+export interface CPseudoElementNode {
+  name: string;
+  type: typeof PSEUDO_ELEMENT_NODE;
+  styles: MyStyles;
+}
 export interface CTextNode {
   name: '#text';
-  type: typeof Node.TEXT_NODE;
+  type: typeof TEXT_NODE;
   styles: MyStyles;
   value: string;
 }
-export type CNode = CElementNode | CTextNode;
+export type CNode = CElementNode | CPseudoElementNode | CTextNode;
 
-const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
-const TEXT_NODE = 3; /* Node.TEXT_NODE */
-
-export function isCElementNode(node: CNode | null): node is CElementNode {
-  return !!node && node.type === ELEMENT_NODE;
+export function isCElementNode(node: CNode): node is CElementNode {
+  return node.type === ELEMENT_NODE;
 }
 
-export function isCTextNode(node: CNode | null): node is CTextNode {
-  return !!node && node.type === TEXT_NODE;
+export function isCPseudoElementNode(node: CNode): node is CPseudoElementNode {
+  return node.type === PSEUDO_ELEMENT_NODE;
+}
+
+export function isCTextNode(node: CNode): node is CTextNode {
+  return node.type === TEXT_NODE;
 }

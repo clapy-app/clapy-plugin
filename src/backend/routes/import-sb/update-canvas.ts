@@ -1,4 +1,5 @@
 import { isFrame, isLayout } from './canvas-utils';
+import { RenderContext } from './import-model';
 import { CNode } from './sb-serialize.model';
 import { appendNodes } from './update-canvas-append-nodes';
 import { sizeWithUnitToPx } from './update-canvas-utils';
@@ -61,7 +62,11 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
       node.remove();
     }
 
-    await appendNodes(currentNode, sbNodes, null);
+    const context: RenderContext = {
+      figmaParentNode: currentNode,
+      sbParentNode: null,
+    };
+    await appendNodes(sbNodes, context);
 
     console.log('update canvas:', sbNodes, figmaId);
     console.log('figma node:', figma.getNodeById(currentNode.id));

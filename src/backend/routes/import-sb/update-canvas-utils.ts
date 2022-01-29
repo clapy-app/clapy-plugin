@@ -1,5 +1,20 @@
-import { MyStyles, Properties } from './sb-serialize.model';
+import { CElementNode, CPseudoElementNode, isCElementNode, MyStyles, Properties } from './sb-serialize.model';
 
+const loadedFonts = new Map<string, Promise<void>>();
+
+export async function ensureFontIsLoaded(family: string, style: string) {
+  const fontCacheKey = `${family}_${style}`;
+  const newFont: FontName = { family, style };
+  if (!loadedFonts.has(fontCacheKey)) {
+    const p = figma.loadFontAsync(newFont);
+    loadedFonts.set(fontCacheKey, p);
+    // Loading fonts takes time. We are in a loop and we don't want other loop runs to also load the font. So the cache returns the promise of the font we are already loading, so that everybody awaits a shared font loading.
+    await p;
+  } else {
+    await loadedFonts.get(fontCacheKey);
+  }
+  return newFont;
+}
 
 export function cssFontWeightToFigmaValue(fontWeight: string) {
   if (!isNumeric(fontWeight)) {
@@ -52,19 +67,14 @@ const rgbaRegex = 'rgba?\\((\\d{1,3}),\\s*(\\d{1,3}),\\s*(\\d{1,3})(,\\s*(\\d*\\
 const sizeRegex = '(-?\\d*\\.?\\d+)(px)';
 
 export function cssRGBAToFigmaValue(rgb: string): { r: number, g: number, b: number, a: number; } {
-  var matchRGB = new RegExp(rgbaRegex);
-  var match = matchRGB.exec(rgb);
+  const matchRGB = new RegExp(rgbaRegex);
+  const match = matchRGB.exec(rgb);
   if (match == null) {
     // return null;
     console.warn('Incorrect RGB value from CSS:', rgb);
     return { r: 1, g: 1, b: 1, a: 1 };
   }
   return rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
-}
-
-export function sizeWithUnitToPx(size: Exclude<Properties['width'], undefined>) {
-  if (size == null) return 0;
-  return parseInt(size as string);
 }
 
 export interface BorderMapping {
@@ -167,8 +177,8 @@ export function applyShadow(boxShadow: string, effects: Effect[]) {
   if (boxShadow === 'none') {
     return;
   }
-  var matchShadow = new RegExp(shadowRegex);
-  var match = matchShadow.exec(boxShadow);
+  const matchShadow = new RegExp(shadowRegex);
+  const match = matchShadow.exec(boxShadow);
   if (match == null) {
     // return null;
     console.warn('Incorrect box-shadow value from CSS:', boxShadow);
@@ -194,7 +204,25 @@ export function applyShadow(boxShadow: string, effects: Effect[]) {
   });
 }
 
-export function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode) {
+export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode) {
+  const { paddingBottom, paddingLeft, paddingTop, paddingRight, display, flexDirection } = sbNode.styles;
+  if (isCElementNode(sbNode)) {
+    node.layoutMode = display === 'flex' && flexDirection === 'row'
+      ? 'HORIZONTAL' : 'VERTICAL';
+  } else {
+    // Already done upfront:
+    // node.resize(w, h);
+  }
+
+  applyFlexWidthHeight(node, figmaParentNode, sbNode);
+
+  if (paddingBottom) node.paddingBottom = sizeWithUnitToPx(paddingBottom);
+  if (paddingLeft) node.paddingLeft = sizeWithUnitToPx(paddingLeft);
+  if (paddingTop) node.paddingTop = sizeWithUnitToPx(paddingTop);
+  if (paddingRight) node.paddingRight = sizeWithUnitToPx(paddingRight);
+}
+
+function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode) {
 
   // OK, works most of the time
   // if (node.layoutMode === 'HORIZONTAL') {
@@ -221,8 +249,9 @@ export function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode
   // layoutGrow = 1 si (0 sinon) :
   // - Parent vertical && Height fill container
   // - ou Parent horizontal && width fill container
-  node.layoutGrow = (parentVertical && heightFillContainer)
-    || (parentHorizontal && widthFillContainer)
+  node.layoutGrow = isCElementNode(sbNode)
+    && ((parentVertical && heightFillContainer)
+      || (parentHorizontal && widthFillContainer))
     ? 1 : 0;
 
   // layoutAlign = STRETCH (INHERIT sinon) :
@@ -235,8 +264,10 @@ export function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode
   // primaryAxisSizingMode = FIXED (AUTO sinon) :
   // - Enfant vertical && height fill container
   // - ou Enfant horizontal && width fill container
+  // - ou pas d'enfants
   node.primaryAxisSizingMode = (nodeVertical && heightFillContainer)
     || (nodeHorizontal && widthFillContainer)
+    || (isCElementNode(sbNode) && !sbNode.children?.length)
     ? 'FIXED' : 'AUTO';
 
   // counterAxisSizingMode = FIXED (AUTO sinon) :
@@ -245,6 +276,72 @@ export function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode
   node.counterAxisSizingMode = (nodeVertical && widthFillContainer)
     || (nodeHorizontal && heightFillContainer)
     ? 'FIXED' : 'AUTO';
+}
+
+export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage']) {
+  if (backgroundImage === 'none') {
+    return;
+  }
+  // Extract svg string
+  const dataUrlRegex = /^url\("data:[^,]+,(.*?)"\)$/;
+  const match = dataUrlRegex.exec(backgroundImage as string);
+  if (match == null || !match[1]) {
+    console.warn('Incorrect background-image value from CSS:', backgroundImage);
+    return;
+  }
+  return figma.createNodeFromSvg(decodeURIComponent(match[1]));
+}
+
+export function applyTransform(transform: Properties['transform'], node: FrameNode) {
+  if (transform === 'none') {
+    return;
+  }
+  const numberRegexStr = '-?(\\d+.)?\\d+(e-?\\d+)?';
+  const matrixRegexStr = `matrix\\((${numberRegexStr}),\\s*(${numberRegexStr}),\\s*(${numberRegexStr}),\\s*(${numberRegexStr}),\\s*(${numberRegexStr}),\\s*(${numberRegexStr})\\)`;
+  const matrixRegex = new RegExp(matrixRegexStr);
+  const match = matrixRegex.exec(transform as string);
+  if (match == null) {
+    console.warn('Incorrect transform value from CSS:', transform);
+    return;
+  }
+  const a = parseFloat(match[1]);
+  const b = parseFloat(match[4]);
+  const c = parseFloat(match[7]);
+  const d = parseFloat(match[10]);
+  const tx = parseFloat(match[13]);
+  const ty = parseFloat(match[16]);
+
+  // https://developer.mozilla.org/fr/docs/Web/CSS/transform-function/matrix()
+  // https://www.figma.com/plugin-docs/api/Transform/#docsNav
+  const transformationMatrix: Transform = [
+    [a, c, tx],
+    [b, d, ty],
+  ];
+
+  node.relativeTransform = transformationMatrix;
+}
+
+export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRightRadius, borderBottomLeftRadius, borderBottomRightRadius }: MyStyles) {
+  node.topLeftRadius = sizeWithUnitToPx(borderTopLeftRadius as string);
+  node.topRightRadius = sizeWithUnitToPx(borderTopRightRadius as string);
+  node.bottomLeftRadius = sizeWithUnitToPx(borderBottomLeftRadius as string);
+  node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
+}
+
+export function applyAbsolutePosition(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode): FrameNode {
+  const { bottom, left, top, right } = sbNode.styles;
+  // TODO calculate the x/y based on the bottom, left... above and the position/size of the first parent which is absolutely or relatively positioned.
+  // TODO add a context for that.
+  const wrapper = figma.createFrame();
+  wrapper.resize(0, 0);
+  wrapper.clipsContent = false;
+  wrapper.appendChild(node);
+  return wrapper;
+}
+
+export function sizeWithUnitToPx(size: Exclude<Properties['width'], undefined>) {
+  if (size == null) return 0;
+  return parseInt(size as string);
 }
 
 function isNumeric(n: string) {

@@ -1,24 +1,29 @@
-import { CNode, isCElementNode, isCTextNode } from './sb-serialize.model';
-import { applyBorders, applyFlexWidthHeight, applyShadow, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, sizeWithUnitToPx } from './update-canvas-utils';
+import { RenderContext } from './import-model';
+import { CNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
+import { applyAbsolutePosition, applyAutoLayout, applyBorders as applyBordersToEffects, applyRadius, applyShadow as applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, sizeWithUnitToPx } from './update-canvas-utils';
 
-const loadedFonts = new Set();
+export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
-export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], sbParentNode: CNode | null, previousInlineNode?: TextNode) {
+  const { figmaParentNode, sbParentNode } = context;
 
   for (const sbNode of sbNodes) {
 
-    if (!isCElementNode(sbNode) && !isCTextNode(sbNode)) {
+    if (!isCElementNode(sbNode) && !isCPseudoElementNode(sbNode) && !isCTextNode(sbNode)) {
       console.warn('Unknown node type:', (sbNode as any).type, '- skipping.');
       continue;
     }
 
-    const { display, flexDirection, width, height, paddingBottom, paddingLeft, paddingRight, paddingTop, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow } = sbNode.styles;
+    const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position } = sbNode.styles;
 
-    if ((isCTextNode(sbNode) || display === 'inline') && !previousInlineNode) {
-      previousInlineNode = newTextNode();
+    if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
+      // Mutate the current loop context to reuse the node in the next loop runs
+      context.previousInlineNode = newTextNode();
     }
 
+    const { previousInlineNode } = context;
+
     if (isCTextNode(sbNode)) {
+      // Have a look at ShapeWithText and TextStyle (createXX)?
 
       const node = previousInlineNode!;
       const start = node.characters.length;
@@ -34,12 +39,9 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], 
       const fontName = start > 0 ? node.getRangeFontName(0, 1) : node.fontName;
       const family = (<FontName>fontName).family;
       const style = cssFontWeightToFigmaValue(fontWeight as string);
-      const fontCacheKey = `${family}_${style}`;
-      const newFont: FontName = { family, style };
-      if (!loadedFonts.has(fontCacheKey)) {
-        await figma.loadFontAsync(newFont);
-        loadedFonts.add(fontCacheKey);
-      }
+
+      await ensureFontIsLoaded(family, 'Regular');
+      const newFont = await ensureFontIsLoaded(family, style);
 
       node.insertCharacters(start, sbNode.value);
 
@@ -64,20 +66,26 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], 
       node.layoutGrow = figmaParentNode.layoutMode === 'HORIZONTAL'
         ? 1 : 0;
 
-    } else if (display === 'inline') {
+    } else if (isCElementNode(sbNode) && display === 'inline') {
 
       if (sbNode.children) {
-        await appendNodes(figmaParentNode, sbNode.children, sbNode, previousInlineNode);
+        await appendNodes(sbNode.children, {
+          ...context,
+          sbParentNode: sbNode,
+          // figmaParentNode does not change
+          // previousInlineNode does not change
+        });
       }
 
-    } else {
+    } else { // sbNode is element or pseudo-element
 
       if (previousInlineNode) {
         figmaParentNode.appendChild(previousInlineNode);
-        previousInlineNode = undefined;
+        context.previousInlineNode = undefined;
       }
 
-      const node = figma.createFrame();
+      const svgNode = getSvgNodeFromBackground(backgroundImage);
+      const node = svgNode || figma.createFrame();
       node.name = sbNode.name;
 
       if (display === 'none') {
@@ -96,19 +104,11 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], 
         || h === sizeWithUnitToPx(sbParentNode.styles.height!)
         - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
         - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
-      // if (!isNaN(w) && !isNaN(h)) {
-      //   node.resize(w, h);
-      // }
+      if (!isNaN(w) && !isNaN(h)) {
+        node.resize(w, h);
+      }
 
-      node.layoutMode = display === 'flex' && flexDirection === 'row'
-        ? 'HORIZONTAL' : 'VERTICAL';
-
-      applyFlexWidthHeight(node, figmaParentNode);
-
-      if (paddingBottom) node.paddingBottom = sizeWithUnitToPx(paddingBottom);
-      if (paddingLeft) node.paddingLeft = sizeWithUnitToPx(paddingLeft);
-      if (paddingTop) node.paddingTop = sizeWithUnitToPx(paddingTop);
-      if (paddingRight) node.paddingRight = sizeWithUnitToPx(paddingRight);
+      applyAutoLayout(node, figmaParentNode, sbNode);
 
       {
         const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
@@ -121,22 +121,38 @@ export async function appendNodes(figmaParentNode: FrameNode, sbNodes: CNode[], 
 
       const effects: Effect[] = [];
 
-      applyBorders(node, sbNode.styles, effects);
+      applyBordersToEffects(node, sbNode.styles, effects);
 
-      applyShadow(boxShadow as string, effects);
+      applyShadowToEffects(boxShadow as string, effects);
 
       node.effects = effects;
 
-      figmaParentNode.appendChild(node);
-      if (sbNode.children) {
-        await appendNodes(node, sbNode.children, sbNode);
+      applyTransform(transform, node);
+
+      applyRadius(node, sbNode.styles);
+
+      // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
+      if (position === 'absolute') {
+        const wrapper = applyAbsolutePosition(node, figmaParentNode, sbNode);
+        wrapper.appendChild(node);
+      } else {
+        figmaParentNode.appendChild(node);
+      }
+
+      if (isCElementNode(sbNode) && sbNode.children) {
+        await appendNodes(sbNode.children, {
+          ...context,
+          figmaParentNode: node,
+          sbParentNode: sbNode,
+          previousInlineNode: undefined,
+        });
       }
     }
 
   }
 
-  if (previousInlineNode) {
-    figmaParentNode.appendChild(previousInlineNode);
+  if (context.previousInlineNode) {
+    figmaParentNode.appendChild(context.previousInlineNode);
     // previousInlineNode = undefined;
   }
 
