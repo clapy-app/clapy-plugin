@@ -36,8 +36,17 @@ export interface StoryObj {
 }
 export type StoriesObj = Dict<StoryObj>;
 
+export interface BorderWidths {
+  borderBottomWidth: number;
+  borderLeftWidth: number;
+  borderTopWidth: number;
+  borderRightWidth: number;
+}
+
 export interface RenderContext {
   figmaParentNode: FrameNode;
   sbParentNode: CNode | null;
   previousInlineNode?: TextNode;
+  absoluteAncestor: FrameNode;
+  absoluteAncestorBorders: BorderWidths;
 }

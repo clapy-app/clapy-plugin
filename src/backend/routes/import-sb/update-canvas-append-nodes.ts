@@ -1,10 +1,11 @@
 import { RenderContext } from './import-model';
-import { CNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { applyAbsolutePosition, applyAutoLayout, applyBorders as applyBordersToEffects, applyRadius, applyShadow as applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, sizeWithUnitToPx } from './update-canvas-utils';
+import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
+import { appendAbsolutelyPositionedNode, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, prepareBorderWidths, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
-  const { figmaParentNode, sbParentNode } = context;
+  const { figmaParentNode } = context;
+  let absoluteElementsToAdd: { node: FrameNode, sbNode: (CElementNode | CPseudoElementNode); }[] = [];
 
   for (const sbNode of sbNodes) {
 
@@ -13,7 +14,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       continue;
     }
 
-    const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position } = sbNode.styles;
+    const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing } = sbNode.styles;
 
     if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
       // Mutate the current loop context to reuse the node in the next loop runs
@@ -84,7 +85,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         context.previousInlineNode = undefined;
       }
 
-      const svgNode = getSvgNodeFromBackground(backgroundImage);
+      const borders = prepareBorderWidths(sbNode.styles);
+      const paddings = preparePaddings(sbNode.styles, borders);
+
+      const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings);
       const node = svgNode || figma.createFrame();
       node.name = sbNode.name;
 
@@ -92,36 +96,39 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         node.visible = false;
       }
 
-      const w = sizeWithUnitToPx(width!);
-      const h = sizeWithUnitToPx(height!);
+      const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
+      const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
+      const cssWidth = sizeWithUnitToPx(width!);
+      const cssHeight = sizeWithUnitToPx(height!);
+      // In figma, inside borders are on top of the padding, although in CSS it's an extra layer.
+      // So we increase the padding to cover the borders. It also affects the width/height.
+      const w = cssWidth + borderLeftWidth + borderRightWidth
+        + (boxSizing! === 'content-box' ? paddingLeft + paddingRight : 0);
+      const h = cssHeight + borderTopWidth + borderBottomWidth
+        + (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
       // Parent nodes are considered 100% width (we'll see if the assumption is wrong).
       // For child nodes, it's considered width: 100% if the width is the same as the parent width minus the padding.
-      const isWidth100P = sbParentNode === null
-        || w === sizeWithUnitToPx(sbParentNode.styles.width!)
-        - sizeWithUnitToPx(sbParentNode.styles.paddingLeft!)
-        - sizeWithUnitToPx(sbParentNode.styles.paddingRight!);
-      const isHeight100P = sbParentNode === null
-        || h === sizeWithUnitToPx(sbParentNode.styles.height!)
-        - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
-        - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
-      if (!isNaN(w) && !isNaN(h)) {
-        node.resize(w, h);
-      }
+      // If we want those variables, review them using Figma width/height instead, since they are already numbers. Keep in mind that Figma padding includes border width.
+      // const isWidth100P = sbParentNode === null
+      //   || w === sizeWithUnitToPx(sbParentNode.styles.width!)
+      //   - sizeWithUnitToPx(sbParentNode.styles.paddingLeft!)
+      //   - sizeWithUnitToPx(sbParentNode.styles.paddingRight!);
+      // const isHeight100P = sbParentNode === null
+      //   || h === sizeWithUnitToPx(sbParentNode.styles.height!)
+      //   - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
+      //   - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
 
-      applyAutoLayout(node, figmaParentNode, sbNode);
+      // if (!isNaN(w) && !isNaN(h)) {
+      //   node.resize(w, h);
+      // }
 
-      {
-        const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
-        node.fills = a > 0 ? [{
-          type: 'SOLID',
-          color: { r, g, b },
-          opacity: a,
-        }] : [];
-      }
+      applyAutoLayout(node, figmaParentNode, sbNode, paddings, svgNode, w, h);
+
+      applyBackgroundColor(node, backgroundColor);
 
       const effects: Effect[] = [];
 
-      applyBordersToEffects(node, sbNode.styles, effects);
+      applyBordersToEffects(node, sbNode.styles, borders, effects);
 
       applyShadowToEffects(boxShadow as string, effects);
 
@@ -131,12 +138,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
       applyRadius(node, sbNode.styles);
 
-      // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
-      if (position === 'absolute') {
-        const wrapper = applyAbsolutePosition(node, figmaParentNode, sbNode);
-        wrapper.appendChild(node);
-      } else {
+      if (position !== 'absolute') {
         figmaParentNode.appendChild(node);
+      } else {
+        absoluteElementsToAdd.push({ node, sbNode });
       }
 
       if (isCElementNode(sbNode) && sbNode.children) {
@@ -145,6 +150,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           figmaParentNode: node,
           sbParentNode: sbNode,
           previousInlineNode: undefined,
+          ...((position === 'relative' || position === 'absolute') && {
+            absoluteAncestor: node,
+            absoluteAncestorBorders: borders,
+          }),
         });
       }
     }
@@ -156,26 +165,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
     // previousInlineNode = undefined;
   }
 
-}
+  for (const { node, sbNode } of absoluteElementsToAdd) {
+    const { position } = sbNode.styles;
+    // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
+    // We append here so that it's the last thing appended, including the text nodes appended just above. It's required to calculate well the parent node height for absolute positioning with a bottom constraint.
+    if (position === 'absolute') {
+      appendAbsolutelyPositionedNode(node, sbNode, context);
+    }
+  }
 
-// display,
-// flexDirection,
-// width,
-// height,
-// fontSize,
-// fontWeight,
-// lineHeight,
-// textAlign,
-// color,
-// backgroundColor,
-// borderColor,
-// borderStyle,
-// borderWidth,
-// position,
-// left,
-// top,
-// right,
-// bottom,
+}
 
 function newTextNode() {
   const node = figma.createText();

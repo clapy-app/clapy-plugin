@@ -1,3 +1,5 @@
+import { isLayout } from './canvas-utils';
+import { BorderWidths, RenderContext } from './import-model';
 import { CElementNode, CPseudoElementNode, isCElementNode, MyStyles, Properties } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
@@ -70,7 +72,6 @@ export function cssRGBAToFigmaValue(rgb: string): { r: number, g: number, b: num
   const matchRGB = new RegExp(rgbaRegex);
   const match = matchRGB.exec(rgb);
   if (match == null) {
-    // return null;
     console.warn('Incorrect RGB value from CSS:', rgb);
     return { r: 1, g: 1, b: 1, a: 1 };
   }
@@ -80,15 +81,15 @@ export function cssRGBAToFigmaValue(rgb: string): { r: number, g: number, b: num
 export interface BorderMapping {
   color: Properties['borderColor'];
   style: Properties['borderStyle'];
-  width: Properties['borderWidth'];
+  width: number;
   x: 1 | 0 | -1;
   y: 1 | 0 | -1;
 }
 
-export function areBordersTheSame(borderMapping: BorderMapping[]) {
+function areBordersTheSame(borderMapping: BorderMapping[]) {
   let latestColor: Properties['borderColor'];
   let latestStyle: Properties['borderStyle'];
-  let latestWidth: Properties['borderWidth'];
+  let latestWidth: number | undefined;
   let first = true;
   for (const { color, style, width } of borderMapping) {
     if (!first) {
@@ -104,7 +105,25 @@ export function areBordersTheSame(borderMapping: BorderMapping[]) {
   return true;
 }
 
-export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomStyle, borderBottomWidth, borderLeftColor, borderLeftStyle, borderLeftWidth, borderRightColor, borderRightStyle, borderRightWidth, borderTopColor, borderTopStyle, borderTopWidth }: MyStyles, effects: Effect[]) {
+export function applyBackgroundColor(node: FrameNode, backgroundColor: Properties['backgroundColor']) {
+  const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
+  node.fills = a > 0 ? [{
+    type: 'SOLID',
+    color: { r, g, b },
+    opacity: a,
+  }] : [];
+}
+
+export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: MyStyles) {
+  return {
+    borderBottomWidth: sizeWithUnitToPx(borderBottomWidth as string),
+    borderLeftWidth: sizeWithUnitToPx(borderLeftWidth as string),
+    borderTopWidth: sizeWithUnitToPx(borderTopWidth as string),
+    borderRightWidth: sizeWithUnitToPx(borderRightWidth as string),
+  } as BorderWidths;
+}
+
+export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
   const borderMapping: BorderMapping[] = [
     {
       color: borderBottomColor,
@@ -138,10 +157,10 @@ export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomS
 
   // If all borders are the same, we could apply real borders with strokes.
   if (areBordersTheSame(borderMapping)) {
-    const borderWidthNum = sizeWithUnitToPx(borderTopWidth as string);
-    if (borderTopStyle !== 'none' && borderWidthNum !== 0) {
+    const borderWidth = borderTopWidth;
+    if (borderTopStyle !== 'none' && borderWidth !== 0) {
       node.strokeAlign = 'INSIDE';
-      node.strokeWeight = borderWidthNum;
+      node.strokeWeight = borderWidth;
       const { r, g, b, a } = cssRGBAToFigmaValue(borderTopColor as string);
       node.strokes = [{
         type: 'SOLID',
@@ -151,8 +170,7 @@ export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomS
     }
   } else {
     for (const { color, style, width, x, y } of borderMapping) {
-      const borderWidthNum = sizeWithUnitToPx(width as string);
-      if (style !== 'none' && borderWidthNum !== 0) {
+      if (style !== 'none' && width !== 0) {
         const { r, g, b, a } = cssRGBAToFigmaValue(color as string);
         effects.push({
           type: 'INNER_SHADOW',
@@ -160,8 +178,8 @@ export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomS
           radius: 0,
           color: { r, g, b, a },
           offset: {
-            x: x * borderWidthNum,
-            y: y * borderWidthNum,
+            x: x * width,
+            y: y * width,
           },
           visible: true,
           blendMode: 'NORMAL',
@@ -173,14 +191,13 @@ export function applyBorders(node: FrameNode, { borderBottomColor, borderBottomS
 
 const shadowRegex = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
 
-export function applyShadow(boxShadow: string, effects: Effect[]) {
+export function applyShadowToEffects(boxShadow: string, effects: Effect[]) {
   if (boxShadow === 'none') {
     return;
   }
   const matchShadow = new RegExp(shadowRegex);
   const match = matchShadow.exec(boxShadow);
   if (match == null) {
-    // return null;
     console.warn('Incorrect box-shadow value from CSS:', boxShadow);
     return;
   }
@@ -204,38 +221,46 @@ export function applyShadow(boxShadow: string, effects: Effect[]) {
   });
 }
 
-export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode) {
-  const { paddingBottom, paddingLeft, paddingTop, paddingRight, display, flexDirection } = sbNode.styles;
-  if (isCElementNode(sbNode)) {
-    node.layoutMode = display === 'flex' && flexDirection === 'row'
-      ? 'HORIZONTAL' : 'VERTICAL';
-  } else {
-    // Already done upfront:
-    // node.resize(w, h);
-  }
-
-  applyFlexWidthHeight(node, figmaParentNode, sbNode);
-
-  if (paddingBottom) node.paddingBottom = sizeWithUnitToPx(paddingBottom);
-  if (paddingLeft) node.paddingLeft = sizeWithUnitToPx(paddingLeft);
-  if (paddingTop) node.paddingTop = sizeWithUnitToPx(paddingTop);
-  if (paddingRight) node.paddingRight = sizeWithUnitToPx(paddingRight);
+interface Paddings {
+  paddingBottom: number;
+  paddingLeft: number;
+  paddingTop: number;
+  paddingRight: number;
 }
 
-function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode) {
+export function preparePaddings(styles: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths) {
+  const { paddingBottom, paddingLeft, paddingTop, paddingRight } = styles;
+  // In figma, inside borders are on top of the padding, although in CSS it's an extra layer.
+  // So we increase the padding to cover the borders. It also affects the width/height.
+  return {
+    paddingBottom: sizeWithUnitToPx(paddingBottom as string) + borderBottomWidth,
+    paddingLeft: sizeWithUnitToPx(paddingLeft as string) + borderLeftWidth,
+    paddingTop: sizeWithUnitToPx(paddingTop as string) + borderTopWidth,
+    paddingRight: sizeWithUnitToPx(paddingRight as string) + borderRightWidth,
+  } as Paddings;
+}
 
-  // OK, works most of the time
-  // if (node.layoutMode === 'HORIZONTAL') {
-  //   node.layoutGrow = 0;
-  //   node.counterAxisSizingMode = 'AUTO';
-  //   node.layoutAlign = 'STRETCH';
-  //   node.primaryAxisSizingMode = 'FIXED';
-  // } else {
-  //   node.layoutAlign = 'STRETCH';
-  //   node.primaryAxisSizingMode = 'AUTO';
-  //   node.layoutGrow = 0;
-  //   node.counterAxisSizingMode = 'FIXED';
-  // }
+
+export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
+  const { display, flexDirection } = sbNode.styles;
+  const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
+  const fixedSize = !!svgNode;
+  node.layoutMode = display === 'flex' && flexDirection === 'row'
+    ? 'HORIZONTAL' : 'VERTICAL';
+
+  applyFlexWidthHeight(node, figmaParentNode, sbNode, fixedSize);
+
+  if (paddingBottom) node.paddingBottom = paddingBottom;
+  if (paddingLeft) node.paddingLeft = paddingLeft;
+  if (paddingTop) node.paddingTop = paddingTop;
+  if (paddingRight) node.paddingRight = paddingRight;
+
+  if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || fixedSize) && !isNaN(w) && !isNaN(h)) {
+    node.resize(w, h);
+  }
+}
+
+function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode, fixedSize: boolean) {
 
   // const widthFillContainer = isWidth100P;
   // const heightFillContainer = isHeight100P;
@@ -246,39 +271,42 @@ function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode, sbNod
   const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
   const nodeVertical = !nodeHorizontal;
 
-  // layoutGrow = 1 si (0 sinon) :
+  // layoutGrow = 1 si (0 sinon) si pas fixe et :
   // - Parent vertical && Height fill container
   // - ou Parent horizontal && width fill container
-  node.layoutGrow = isCElementNode(sbNode)
+  node.layoutGrow = !fixedSize
     && ((parentVertical && heightFillContainer)
       || (parentHorizontal && widthFillContainer))
     ? 1 : 0;
 
-  // layoutAlign = STRETCH (INHERIT sinon) :
+  // layoutAlign = STRETCH (INHERIT sinon) si pas fixe et :
   // - Parent vertical && width fill container
   // - ou Parent horizontal && height fill container
-  node.layoutAlign = (parentVertical && widthFillContainer)
-    || (parentHorizontal && heightFillContainer)
+  node.layoutAlign = !fixedSize
+    && ((parentVertical && widthFillContainer)
+      || (parentHorizontal && heightFillContainer))
     ? 'STRETCH' : 'INHERIT';
 
-  // primaryAxisSizingMode = FIXED (AUTO sinon) :
+  // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
   // - Enfant vertical && height fill container
   // - ou Enfant horizontal && width fill container
-  // - ou pas d'enfants
-  node.primaryAxisSizingMode = (nodeVertical && heightFillContainer)
+  // - ou pas d'enfants (e.g. <hr />)
+  node.primaryAxisSizingMode = fixedSize
+    || (nodeVertical && heightFillContainer)
     || (nodeHorizontal && widthFillContainer)
     || (isCElementNode(sbNode) && !sbNode.children?.length)
     ? 'FIXED' : 'AUTO';
 
-  // counterAxisSizingMode = FIXED (AUTO sinon) :
+  // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
   // - Enfant vertical && width fill container
   // - ou Enfant horizontal && height fill container
-  node.counterAxisSizingMode = (nodeVertical && widthFillContainer)
+  node.counterAxisSizingMode = fixedSize
+    || (nodeVertical && widthFillContainer)
     || (nodeHorizontal && heightFillContainer)
     ? 'FIXED' : 'AUTO';
 }
 
-export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage']) {
+export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings) {
   if (backgroundImage === 'none') {
     return;
   }
@@ -289,7 +317,27 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
     console.warn('Incorrect background-image value from CSS:', backgroundImage);
     return;
   }
-  return figma.createNodeFromSvg(decodeURIComponent(match[1]));
+
+  // Required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
+  const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
+  const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
+  const shouldWrap = borderBottomWidth > 0 || borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || paddingBottom > 0 || paddingLeft > 0 || paddingTop > 0 || paddingRight > 0;
+  let node = figma.createNodeFromSvg(decodeURIComponent(match[1]));
+  if (shouldWrap) {
+    node.name = 'SVG wrapper';
+    node.layoutMode = 'VERTICAL';
+    node.layoutGrow = 1;
+    node.layoutAlign = 'STRETCH';
+    node.primaryAxisSizingMode = 'FIXED';
+    node.counterAxisSizingMode = 'FIXED';
+    const svgWrapper = figma.createFrame();
+    svgWrapper.appendChild(node);
+    node = svgWrapper;
+  }
+  // Center, because we mainly use autolayout (wrapper or not).
+  node.primaryAxisAlignItems = 'CENTER';
+  node.counterAxisAlignItems = 'CENTER';
+  return node;
 }
 
 export function applyTransform(transform: Properties['transform'], node: FrameNode) {
@@ -328,15 +376,77 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
   node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
 }
 
-export function applyAbsolutePosition(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode): FrameNode {
-  const { bottom, left, top, right } = sbNode.styles;
-  // TODO calculate the x/y based on the bottom, left... above and the position/size of the first parent which is absolutely or relatively positioned.
-  // TODO add a context for that.
-  const wrapper = figma.createFrame();
-  wrapper.resize(0, 0);
-  wrapper.clipsContent = false;
-  wrapper.appendChild(node);
-  return wrapper;
+function prepareAbsoluteConstraints(styles: MyStyles) {
+  const { bottom, left, top, right } = styles;
+  return {
+    bottom: sizeWithUnitToPx(bottom as string),
+    left: sizeWithUnitToPx(left as string),
+    top: sizeWithUnitToPx(top as string),
+    right: sizeWithUnitToPx(right as string),
+  };
+}
+
+export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElementNode | CPseudoElementNode, context: RenderContext) {
+  const { figmaParentNode, absoluteAncestor, absoluteAncestorBorders } = context;
+  let wrapper: FrameNode | undefined;
+  if (figmaParentNode.layoutMode === 'NONE') {
+    // No need to wrap if the parent is not auto-layout (e.g. an absolute position right within an absolutely positioned node)
+    wrapper = node;
+  } else {
+    wrapper = figma.createFrame();
+    wrapper.name = 'Absolute position wrapper';
+    // 1x1 px (resize() rounds to 1 px, although it doesn't with the UI :( )
+    wrapper.resize(0.01, 0.01);
+    // So we set to transparent. The tradeoff is that there is 1px shift for the rest.
+    // We could work around it by reducing paddings, margins... (if any) by 1px (not implemented)
+    wrapper.fills = [{
+      type: 'SOLID',
+      color: { r: 0.5, g: 0.5, b: 0.5 },
+      opacity: 0,
+    }];
+
+    wrapper.clipsContent = false;
+    wrapper.appendChild(node);
+  }
+
+  figmaParentNode.appendChild(wrapper);
+
+  // Sum the x and y coordinates of intermediates nodes to have the distance between the absolute node and the ancestor.
+  let n: BaseNode & ChildrenMixin | null = wrapper;
+  let dx = 0, dy = 0;
+  while (isLayout(n) && n !== absoluteAncestor) {
+    dx += n.x;
+    dy += n.y;
+    n = n.parent;
+  }
+
+  if (!n) { // absoluteAncestor not found among the parents in the tree
+    console.warn('absoluteAncestor', absoluteAncestor.name, 'not found in ancestors of', node.name, '- using a shift of 0px for x/y to render anyway.');
+    dx = 0;
+    dy = 0;
+  }
+
+  const { width, height } = node;
+  const { width: parentWidth, height: parentHeight } = absoluteAncestor;
+  const { bottom, left, top, right } = prepareAbsoluteConstraints(sbNode.styles);
+  if (top < bottom) {
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
+  } else if (bottom < top) {
+    node.y = -dy + parentHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
+  } else if (top === bottom) {
+    const parentShift = (parentHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth) / 2;
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + parentShift - height / 2;
+  }
+
+  if (left < right) {
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
+  } else if (right < left) {
+    node.x = -dx + parentWidth - absoluteAncestorBorders.borderRightWidth - right - width;
+  } else if (left === right) {
+    const parentShift = (parentWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth) / 2;
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + parentShift - width / 2;
+  }
+
 }
 
 export function sizeWithUnitToPx(size: Exclude<Properties['width'], undefined>) {

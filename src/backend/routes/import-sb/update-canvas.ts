@@ -65,6 +65,10 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
     const context: RenderContext = {
       figmaParentNode: currentNode,
       sbParentNode: null,
+      absoluteAncestor: currentNode,
+      absoluteAncestorBorders: {
+        borderBottomWidth: 0, borderLeftWidth: 0, borderTopWidth: 0, borderRightWidth: 0,
+      },
     };
     await appendNodes(sbNodes, context);
 

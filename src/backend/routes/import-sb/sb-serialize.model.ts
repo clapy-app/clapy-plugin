@@ -29,7 +29,6 @@ export const cssKeys = makeCssKeys([
   'top',
   'right',
   'bottom',
-  'padding',
   'paddingTop',
   'paddingRight',
   'paddingBottom',
@@ -41,6 +40,7 @@ export const cssKeys = makeCssKeys([
   'borderTopRightRadius',
   'borderBottomLeftRadius',
   'borderBottomRightRadius',
+  'boxSizing',
 ]);
 
 function makeCssKeys<T extends Partial<keyof CSSProperties>>(rules: T[]): T[] {

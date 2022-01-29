@@ -1,7 +1,7 @@
 const layoutTypes = new Set(['GROUP', 'SLICE', 'RECTANGLE', 'ELLIPSE', 'POLYGON', 'STAR', 'VECTOR', 'TEXT', 'BOOLEAN_OPERATION', 'STAMP', 'COMPONENT_SET', 'FRAME', 'COMPONENT', 'INSTANCE']);
 
-export function isLayout(node: BaseNode): node is LayoutMixin & BaseNode {
-  return layoutTypes.has(node.type);
+export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
+  return !!node && layoutTypes.has(node.type);
 }
 
 export function isGroup(node: BaseNode): node is GroupNode {
