@@ -1,17 +1,34 @@
 import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { CNode } from '../../backend/routes/import-sb/sb-serialize.model';
 import { SbCompSelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { Button } from '../../components/Button';
+import { getTokens, login } from '../auth/auth-service';
+import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
 
 const fake = () => fetchPlugin('getStoriesSamples');
 type SbSelection = ReturnType<typeof fake> extends Promise<(readonly [infer Keys, string])[]> ? Keys : never;
 
 export const ImportSb: FC = memo(() => {
-  const [sbSelection, setSbSelection] = useState<SbSelection>('vibe');
+  const loginBtn = useCallback(() => login(), []);
+  const authLoading = useSelector(selectAuthLoading);
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+  const [sbSelection, setSbSelection] = useState<SbSelection>('reactstrap');
   const [options, setOptions] = useState<JSX.Element[]>();
+  useEffect(() => {
+    getTokens()
+      .then(({ accessToken }) => {
+        const _isSignedIn = !!accessToken;
+        if (isSignedIn !== _isSignedIn) {
+          setIsSignedIn(_isSignedIn);
+        }
+      })
+      .catch(handleError);
+  }, []);
 
   useEffect(() => {
     const storiesSamplesP = fetchPlugin('getStoriesSamples');
@@ -53,12 +70,13 @@ export const ImportSb: FC = memo(() => {
     <div className={classes.container}>
       <div>{!options
         ? <p>Loading available stories...</p>
-        : <>
-          <select onChange={setSbSelectionHandler} defaultValue={sbSelection}>
-            {options}
-          </select>
-          <button onClick={runImport}>Import</button>
-        </>}</div>
+        : authLoading ? <p>Loading...</p> :
+          !isSignedIn ? <Button onClick={loginBtn}>Auth</Button> : <>
+            <select onChange={setSbSelectionHandler} defaultValue={sbSelection}>
+              {options}
+            </select>
+            <button onClick={runImport}>Import</button>
+          </>}</div>
       <hr />
       {!selectedSbComp?.length
         ? <p>Select an element to preview the Storybook version here.</p>

@@ -30,7 +30,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
     const { previousInlineNode } = context;
 
     if (isCTextNode(sbNode)) {
-      // Have a look at ShapeWithText and TextStyle (createXX)?
+      // Have a look at createTextStyle?
 
       const node = previousInlineNode!;
       const start = node.characters.length;

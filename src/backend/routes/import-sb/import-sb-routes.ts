@@ -12,7 +12,7 @@ export async function importStories(sbSelection: SbSelection): Promise<Rectangle
   const stories: StoryEntries = Object.entries(storiesWrapper.stories as StoriesObj)
     // Alternative: filter on !story.parameters.docsOnly
     .filter(([_, story]) => story.parameters.__isArgsStory)
-    .slice(0, 15)
+    .slice(0, 7)
     ;
 
   const page = getOrCreatePage();
