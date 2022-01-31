@@ -32,7 +32,7 @@ const interval = setInterval(() => {
 
 wss.on('close', () => clearInterval(interval));
 
-['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal => process.on(signal, () => {
+['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGQUIT', 'uncaughtException'].forEach(signal => process.on(signal, () => {
   wss.close();
   process.exit();
 }));

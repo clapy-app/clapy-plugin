@@ -4,9 +4,14 @@ import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBa
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
-  const { figmaParentNode } = context;
+  const { figmaParentNode, sbParentNode } = context;
   let absoluteElementsToAdd: { node: FrameNode, sbNode: (CElementNode | CPseudoElementNode); }[] = [];
   let previousMargins: Margins | undefined = undefined;
+
+  // TODO append there, and process them after the loop (after text, before absolute positioning).
+  // const floatElements = [];
+  // TODO append there consecutive inline-block elements if parent is block (to test on jsfiddle how it behaves if the parent is flex or other), as we do for text & inline elements. Consecutive ones should be wrapped in a frame for horizontal autolayout while keeping a vertical autolayout for the rest which is not inline-block. Exception: if all children are inline-block, don't wrap, just set the parent's direction to horizontal.
+  // const consecutiveInlineBlocks = [];
 
   for (const sbNode of sbNodes) {
 
@@ -62,10 +67,13 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         opacity: a,
       }] : []);
 
-      node.layoutAlign = figmaParentNode.layoutMode === 'HORIZONTAL'
-        ? 'INHERIT'
-        : 'STRETCH';
-      node.layoutGrow = figmaParentNode.layoutMode === 'HORIZONTAL'
+      const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
+      const parentVertical = !parentHorizontal;
+      const widthFillContainer = !(sbParentNode?.styles.display === 'inline-block'); // true unless the containing tag is inline-block
+      node.layoutAlign = parentVertical && widthFillContainer
+        ? 'STRETCH'
+        : 'INHERIT';
+      node.layoutGrow = parentHorizontal
         ? 1 : 0;
 
     } else if (isCElementNode(sbNode) && display === 'inline') {
@@ -123,7 +131,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       //   node.resize(w, h);
       // }
 
-      applyAutoLayout(node, figmaParentNode, sbNode, paddings, svgNode, w, h);
+      applyAutoLayout(node, context, sbNode, paddings, svgNode, w, h);
 
       const margins = prepareMargins(sbNode.styles);
       appendMargins(context, sbNode, margins, previousMargins);

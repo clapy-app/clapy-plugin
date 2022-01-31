@@ -291,14 +291,14 @@ export function appendMargins({ figmaParentNode }: RenderContext, sbNode: CNode,
   }
 }
 
-export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
+export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
   const { display, flexDirection } = sbNode.styles;
   const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
   const fixedSize = !!svgNode;
   node.layoutMode = display === 'flex' && flexDirection === 'row'
     ? 'HORIZONTAL' : 'VERTICAL';
 
-  applyFlexWidthHeight(node, figmaParentNode, sbNode, fixedSize);
+  applyFlexWidthHeight(node, context, sbNode, fixedSize);
 
   if (paddingBottom) node.paddingBottom = paddingBottom;
   if (paddingLeft) node.paddingLeft = paddingLeft;
@@ -310,11 +310,13 @@ export function applyAutoLayout(node: FrameNode, figmaParentNode: FrameNode, sbN
   }
 }
 
-function applyFlexWidthHeight(node: FrameNode, figmaParentNode: FrameNode, sbNode: CElementNode | CPseudoElementNode, fixedSize: boolean) {
+function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, fixedSize: boolean) {
+  const { figmaParentNode, sbParentNode } = context;
 
   // const widthFillContainer = isWidth100P;
   // const heightFillContainer = isHeight100P;
-  const widthFillContainer = true;
+  // sbNode.parent
+  const widthFillContainer = !(sbParentNode?.styles.display === 'block' && sbNode.styles.display === 'inline-block'); // true unless block parent and inline-block child
   const heightFillContainer = false; // Hug contents
   const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   const parentVertical = !parentHorizontal;
