@@ -20,13 +20,13 @@ const dev = {
 const staging = {
   auth0Domain: 'aol-perso.eu.auth0.com',
   auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
-  apiBaseUrl: 'http://localhost:4141',
+  apiBaseUrl: 'https://applab-backend-tuty7lwcwq-ew.a.run.app',
 };
 
 const prod = {
   auth0Domain: 'aol-perso.eu.auth0.com',
   auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
-  apiBaseUrl: 'http://localhost:4141',
+  apiBaseUrl: 'https://applab-backend-tuty7lwcwq-ew.a.run.app',
 };
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
@@ -43,5 +43,7 @@ export const env = {
   securityRequestedByHeader: 'clapy',
   allowCorsApi: false,
 };
+
+console.log('Environment variables:', env);
 
 // export const rawProcessEnv = process.env;
