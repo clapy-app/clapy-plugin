@@ -13,12 +13,12 @@ jobs:
 
       # yarn install
       - uses: borales/actions-yarn@v2.3.0
-      - name: yarn install
+        name: yarn install
         with:
           cmd: install
       # yarn build
       - uses: borales/actions-yarn@v2.3.0
-      - name: yarn build
+        name: yarn build
         with:
           cmd: build
 
