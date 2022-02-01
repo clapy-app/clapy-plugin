@@ -11,6 +11,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # yarn install
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
+      # yarn build
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: build
+
       - name: pwd
         run: |
           pwd
@@ -36,7 +45,7 @@ jobs:
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          filename: "package.json"
+          filename: "dist/Clapy-figma-plugin.zip"
           folderId: ${{ secrets.folderId }}
           # name: "documentation.zip" # optional string
           overwrite: "true" # optional boolean
