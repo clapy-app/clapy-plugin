@@ -13,12 +13,18 @@ jobs:
 
       # yarn install
       - uses: borales/actions-yarn@v2.3.0
+      - name: yarn install
         with:
           cmd: install
       # yarn build
       - uses: borales/actions-yarn@v2.3.0
+      - name: yarn build
         with:
           cmd: build
+
+      - name: Move to top
+        run: |
+          mv dist/Clapy-figma-plugin.zip Clapy-figma-plugin.zip
 
       - name: pwd
         run: |
@@ -45,7 +51,7 @@ jobs:
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          filename: "dist/Clapy-figma-plugin.zip"
+          filename: "Clapy-figma-plugin.zip"
           folderId: ${{ secrets.folderId }}
           # name: "documentation.zip" # optional string
           overwrite: "true" # optional boolean
