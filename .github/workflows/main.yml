@@ -63,7 +63,8 @@ jobs:
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          filename: "Clapy-figma-plugin.zip"
+          # filename: "Clapy-figma-plugin.zip"
+          filename: "package.json"
           folderId: ${{ secrets.folderId }}
           # name: "documentation.zip" # optional string
           overwrite: "true" # optional boolean
