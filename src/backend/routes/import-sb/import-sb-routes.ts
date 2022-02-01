@@ -15,8 +15,11 @@ export async function importStories(sbSelection: SbSelection): Promise<Rectangle
     .slice(0, 7)
     ;
 
-  const page = getOrCreatePage();
+  const page = getOrCreatePage(baseUrl);
   figma.currentPage = page;
+  // TODO remove, should be on each node? Or keep, and when looking for the URL in the node, if not found there, check the page as fallback.
+  page.setPluginData('sbUrl', baseUrl);
+  page.setRelaunchData({ open: '' });
 
   await updateOrCreateSbUrlNode(page, baseUrl);
 

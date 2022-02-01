@@ -29,7 +29,7 @@ module.exports = (env, argv) => {
 
     devServer: {
       static: {
-        directory: path.join(__dirname, 'dist'),
+        directory: path.join(__dirname, 'build'),
       },
       open: true,
       hot: true,
@@ -79,7 +79,7 @@ module.exports = (env, argv) => {
 
     output: {
       filename: '[name].js',
-      path: path.resolve(__dirname, 'dist'), // Compile into a folder called "dist"
+      path: path.resolve(__dirname, 'build'), // Compile into a folder called "build"
     },
 
     // Tells Webpack to generate "ui.html" and to inline "ui.ts" into it

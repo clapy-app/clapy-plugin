@@ -26,6 +26,8 @@ export function createRectangles(stories: StoryEntries, baseUrl: string) {
     const rect = getOrCreateCompRectangle(figma.currentPage, storyId, i);
     const name = `${story.title || story.kind} ${story.name || story.story}`;
     rect.name = `${name} [sb:c:${storyId}]`;
+    rect.setPluginData('storyId', storyId);
+    rect.setRelaunchData({ preview: '' });
     nodes.push(rect);
     const url = `${baseUrl}/iframe.html?id=${storyId}&viewMode=story`;
     response.push({
@@ -34,7 +36,7 @@ export function createRectangles(stories: StoryEntries, baseUrl: string) {
     });
   }
 
-  figma.currentPage.selection = nodes;
+  // figma.currentPage.selection = nodes;
   figma.viewport.scrollAndZoomIntoView(nodes);
   return response;
 }
@@ -55,14 +57,17 @@ function getOrCreateCompRectangle(page: PageNode, key: string, i: number) {
   return rect;
 }
 
-export function getOrCreatePage() {
+console.log('command:', figma.command);
+
+export function getOrCreatePage(baseUrl: string) {
   for (const p of figma.root.children) {
-    if (p.name.includes('[sb]')) {
+    // if (p.name.includes('[sb]')) {
+    if (p.getPluginData('sbUrl')) {
       return p;
     }
   }
   const page = figma.createPage();
-  page.name = 'Design System [sb]';
+  page.name = 'Design System (imported)';
   return page;
 }
 

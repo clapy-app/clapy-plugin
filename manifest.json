@@ -2,9 +2,21 @@
   "name": "Clapy",
   "id": "1062567834134269",
   "api": "1.0.0",
-  "main": "dist/backend.js",
-  "ui": "dist/index.html",
+  "main": "buid/backend.js",
+  "ui": "buid/index.html",
   "editorType": [
     "figma"
+  ],
+  "relaunchButtons": [
+    {
+      "command": "open",
+      "name": "Open Clapy",
+      "multipleSelection": true
+    },
+    {
+      "command": "preview",
+      "name": "Preview with Clapy",
+      "multipleSelection": true
+    }
   ]
 }

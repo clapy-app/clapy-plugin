@@ -11,7 +11,7 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
       console.warn('Node to update not found, ID:', figmaId, '- recreating it.');
       currentNode = figma.createFrame();
       figma.currentPage.appendChild(currentNode);
-      figma.currentPage.selection = [currentNode];
+      // figma.currentPage.selection = [currentNode];
     }
     if (!isLayout(currentNode)) {
       console.warn('Node to update is not in the layout, skipping. ID:', figmaId);
@@ -35,7 +35,7 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string) {
       } else {
         parent.insertChild(i, currentNode);
       }
-      figma.currentPage.selection = [currentNode];
+      // figma.currentPage.selection = [currentNode];
     }
 
     // currentNode.counterAxisSizingMode = 'AUTO';
