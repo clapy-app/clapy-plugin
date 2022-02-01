@@ -11,6 +11,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: pwd
+        run: |
+          pwd
+
+      - name: ls
+        run: |
+          ls
+
       # - name: Archive files
       #   run: |
       #     sudo apt-get update
@@ -24,11 +32,11 @@ jobs:
       #     upload-from: ./
       #     upload-to: /path/to/upload
 
-      - name: Upload to gdrive
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.credentials }}
-          filename: "package.json"
-          folderId: ${{ secrets.folderId }}
-          # name: "documentation.zip" # optional string
-          overwrite: "true" # optional boolean
+      # - name: Upload to gdrive
+      #   uses: adityak74/google-drive-upload-git-action@main
+      #   with:
+      #     credentials: ${{ secrets.credentials }}
+      #     filename: "package.json"
+      #     folderId: ${{ secrets.folderId }}
+      #     # name: "documentation.zip" # optional string
+      #     overwrite: "true" # optional boolean
