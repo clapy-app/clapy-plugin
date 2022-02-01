@@ -1,0 +1,34 @@
+# .github/workflows/main.yml
+name: Main
+on: [push]
+
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # - name: Archive files
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install zip
+      #     zip -r archive.zip *
+
+      # - name: Interact with Google Drive
+      #   uses: satackey/action-google-drive@v1.2.1
+      #   with:
+      #     skicka-tokencache-json: ${{ secrets.SKICKA_TOKENCACHE_JSON }}
+      #     upload-from: ./
+      #     upload-to: /path/to/upload
+
+      - name: Upload to gdrive
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.credentials }}
+          filename: "package.json"
+          folderId: ${{ secrets.folderId }}
+          # name: "documentation.zip" # optional string
+          overwrite: "true" # optional boolean
