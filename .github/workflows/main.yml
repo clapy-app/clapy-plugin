@@ -55,13 +55,16 @@ jobs:
       #     target: package.json
       #     credentials: ${{ secrets.credentials }}
       #     folder: ${{ secrets.folderId }}
+      
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
       - name: Upload to gdrive
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          # filename: "plugin.zip"
           filename: "dist/plugin.zip"
           folderId: ${{ secrets.folderId }}
-          # name: "documentation.zip" # optional string
+          name: "Clapy-${{ steps.date.outputs.date }}.zip"
           overwrite: "false" # optional boolean
