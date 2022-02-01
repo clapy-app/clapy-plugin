@@ -1,6 +1,9 @@
 # .github/workflows/main.yml
 name: Main
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   my_job:
@@ -58,7 +61,7 @@ jobs:
       
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d %H:%M:%S')"
 
       - name: Upload to gdrive
         uses: adityak74/google-drive-upload-git-action@v0.1
@@ -66,5 +69,5 @@ jobs:
           credentials: ${{ secrets.credentials }}
           filename: "dist/plugin.zip"
           folderId: ${{ secrets.folderId }}
-          name: "Clapy-${{ steps.date.outputs.date }}.zip"
+          name: "Clapy plugin ${{ steps.date.outputs.date }}.zip"
           overwrite: "false" # optional boolean
