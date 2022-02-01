@@ -22,17 +22,17 @@ jobs:
         with:
           cmd: build
 
-      - name: Move to top
-        run: |
-          mv dist/Clapy-figma-plugin.zip Clapy-figma-plugin.zip
+      # - name: Move to top
+      #   run: |
+      #     mv dist/Clapy-figma-plugin.zip Clapy-figma-plugin.zip
 
       - name: pwd
         run: |
           pwd
 
-      - name: ls
+      - name: ls dist
         run: |
-          ls
+          ls dist
 
       # - name: Archive files
       #   run: |
@@ -51,7 +51,7 @@ jobs:
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          filename: "Clapy-figma-plugin.zip"
+          filename: "dist/Clapy-figma-plugin.zip"
           folderId: ${{ secrets.folderId }}
           # name: "documentation.zip" # optional string
           overwrite: "true" # optional boolean
