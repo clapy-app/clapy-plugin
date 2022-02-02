@@ -1,4 +1,4 @@
-import type { _Routes, _Subscriptions } from '../backend/backend';
+import { _Routes, _Subscriptions } from '../backend/routes';
 
 export interface Dict<T> {
   [key: string]: T;

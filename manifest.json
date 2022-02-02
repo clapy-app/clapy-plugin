@@ -2,8 +2,8 @@
   "name": "Clapy",
   "id": "1062567834134269",
   "api": "1.0.0",
-  "main": "buid/backend.js",
-  "ui": "buid/index.html",
+  "main": "build/backend.js",
+  "ui": "build/index.html",
   "editorType": [
     "figma"
   ],
