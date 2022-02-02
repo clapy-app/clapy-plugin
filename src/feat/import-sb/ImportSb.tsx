@@ -48,9 +48,9 @@ export const ImportSb: FC = memo(() => {
     fetchPlugin('importStories', sbSelection)
       .then(async (insertedComponents) => {
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, url } of insertedComponents) {
+        for (const { figmaId, url, storyId } of insertedComponents) {
           const nodes = await fetchCNodes(url);
-          await fetchPlugin('updateCanvas', nodes, figmaId);
+          await fetchPlugin('updateCanvas', nodes, figmaId, storyId);
         }
       })
       .catch(handleError);
@@ -89,17 +89,17 @@ export const ImportSb: FC = memo(() => {
 });
 
 export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selection }) => {
-  const { name, url, figmaId } = selection;
+  const { name, url, figmaId, id: storyId } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!url) return;
+        if (!url || !storyId) return;
         setLoadingTxt('Serializing on API...');
         const nodes = await fetchCNodes(url);
         setLoadingTxt('Updating canvas...');
-        await fetchPlugin('updateCanvas', nodes, figmaId);
+        await fetchPlugin('updateCanvas', nodes, figmaId, storyId);
       } catch (err) {
         handleError(err);
       } finally {
