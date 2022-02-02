@@ -1,29 +1,28 @@
 import { NextFn, SbCompSelection } from '../../../common/app-models';
 import { SbSelection, StoriesObj, storiesSamples } from './import-model';
-import { createRectangles, getLayoutCompKeyOrUndef, getOrCreatePage, getSbUrlNode, RectangleCreated, StoryEntries, updateOrCreateSbUrlNode } from './import-sb-detail';
+import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries } from './import-sb-detail';
 
 export function getStoriesSamples() {
   const samples = Object.entries(storiesSamples).map(([key, entry]) => [key as SbSelection, entry.label] as const);
   return samples;
 }
 
-export async function importStories(sbSelection: SbSelection): Promise<RectangleCreated[]> {
-  const { stories: storiesWrapper, baseUrl } = storiesSamples[sbSelection];
+export async function importStories(sbSelection: SbSelection): Promise<FrameCreated[]> {
+  const { stories: storiesWrapper, sbUrl } = storiesSamples[sbSelection];
   const stories: StoryEntries = Object.entries(storiesWrapper.stories as StoriesObj)
     // Alternative: filter on !story.parameters.docsOnly
     .filter(([_, story]) => story.parameters.__isArgsStory)
     .slice(0, 7)
     ;
 
-  const page = getOrCreatePage(baseUrl);
-  figma.currentPage = page;
-  // TODO remove, should be on each node? Or keep, and when looking for the URL in the node, if not found there, check the page as fallback.
-  page.setPluginData('sbUrl', baseUrl);
+  const page = getOrCreatePage();
+  page.setPluginData('sbUrl', sbUrl);
+  page.name = `Design System (${sbUrl})`;
   page.setRelaunchData({ open: '' });
+  figma.currentPage = page;
 
-  await updateOrCreateSbUrlNode(page, baseUrl);
-
-  return createRectangles(stories, baseUrl);
+  // Create placeholders for components that will be imported.
+  return createFrames(stories, sbUrl);
 }
 
 
@@ -41,18 +40,18 @@ export function selectedSbComp(next: NextFn<SbCompSelection[]>) {
 }
 
 function prepareSbCompSelection(): SbCompSelection[] {
-  const sbUrlNode = getSbUrlNode(figma.currentPage);
-  const baseUrl = sbUrlNode?.characters;
+  const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
 
   const selectedSbComp = figma.currentPage.selection
     .reduce((selection, node) => {
-      const [name, id] = getLayoutCompKeyOrUndef(node);
-      if (id && baseUrl) {
+      const storyId = getLayoutStoryId(node);
+      const sbUrl = node.getPluginData('sbUrl') || pageSbUrl;
+      if (storyId && sbUrl) {
         // &args=kind:secondary;size:xxs
-        const url = `${baseUrl}/iframe.html?id=${id}&viewMode=story`;
+        const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
         selection.push({
-          id,
-          name: name as string,
+          id: storyId,
+          name: node.name,
           url: url,
           figmaId: node.id,
         });

@@ -19,6 +19,6 @@ export interface SbCompSelection {
   id?: string;
   name?: string;
   url?: string;
-  // baseUrl if required?
+  // sbUrl if required?
   figmaId: string;
 }

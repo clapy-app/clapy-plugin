@@ -7,12 +7,12 @@ export const storiesSamples = {
   reactstrap: {
     label: 'Reactstrap',
     stories: reactstrapStories,
-    baseUrl: 'https://reactstrap.github.io',
+    sbUrl: 'https://reactstrap.github.io',
   },
   vibe: {
     label: 'Monday Vibe',
     stories: vibeStories,
-    baseUrl: 'https://style.monday.com',
+    sbUrl: 'https://style.monday.com',
   },
 };
 

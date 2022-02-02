@@ -21,6 +21,7 @@
       "./src/typings"
     ],
     "strict": true,
+    "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
