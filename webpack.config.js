@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const webpack = require('webpack');
 const path = require('path');
+const { writeFile } = require('fs/promises');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -13,6 +14,20 @@ module.exports = (env, argv) => {
   const appEnv = env.APP_ENV || 'production';
   const isBrowser = previewEnv === 'browser';
   // If not production and not browser, it's a normal dev env in Figma.
+
+  // Update manifest.json with the bundle folder name.
+  const distFolder = 'build';
+  // const distFolder = 'build';
+  editJsonFile('./manifest.json', file => {
+    const { main, ui } = file;
+    const mainSplit = file.main.split('/');
+    mainSplit[0] = distFolder;
+    file.main = mainSplit.join('/');
+    const uiSplit = file.ui.split('/');
+    uiSplit[0] = distFolder;
+    file.ui = uiSplit.join('/');
+  }).catch(e => console.error(e));
+
 
   return {
     mode: isProduction ? 'production' : 'development',
@@ -29,7 +44,7 @@ module.exports = (env, argv) => {
 
     devServer: {
       static: {
-        directory: path.join(__dirname, 'build'),
+        directory: path.join(__dirname, distFolder),
       },
       open: true,
       hot: true,
@@ -79,7 +94,7 @@ module.exports = (env, argv) => {
 
     output: {
       filename: '[name].js',
-      path: path.resolve(__dirname, 'build'), // Compile into a folder called "build"
+      path: path.resolve(__dirname, distFolder), // Compile into a folder called "build"
     },
 
     // Tells Webpack to generate "ui.html" and to inline "ui.ts" into it
@@ -92,6 +107,7 @@ module.exports = (env, argv) => {
         filename: 'index.html',
         inlineSource: '.(js)$',
         chunks: ['front'],
+        cache: false,
       }),
       !isBrowser && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/front/]),
       new webpack.DefinePlugin({
@@ -103,3 +119,9 @@ module.exports = (env, argv) => {
     ].filter(Boolean),
   };
 };
+
+async function editJsonFile(fileName, editor) {
+  let file = require(fileName);
+  editor(file);
+  await writeFile(fileName, JSON.stringify(file, null, 2));
+}
