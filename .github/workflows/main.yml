@@ -1,9 +1,9 @@
 # .github/workflows/main.yml
-name: Main
+name: Master
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   my_job:
