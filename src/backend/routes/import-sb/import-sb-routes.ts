@@ -1,29 +1,31 @@
 import { NextFn, SbCompSelection } from '../../../common/app-models';
-import { SbSelection, StoriesObj, storiesSamples } from './import-model';
+import { SbStoriesWrapper, storiesSamples } from './import-model';
 import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries } from './import-sb-detail';
 
 export function getStoriesSamples() {
-  const samples = Object.entries(storiesSamples).map(([key, entry]) => [key as SbSelection, entry.label] as const);
-  return samples;
+  return storiesSamples;
 }
 
-export async function importStories(sbSelection: SbSelection): Promise<FrameCreated[]> {
-  const { stories: storiesWrapper, sbUrl } = storiesSamples[sbSelection];
-  const stories: StoryEntries = Object.entries(storiesWrapper.stories as StoriesObj)
-    // Alternative: filter on !story.parameters.docsOnly
-    .filter(([_, story]) => story.parameters.__isArgsStory)
-    .slice(0, 7)
-    ;
+export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrapper): Promise<FrameCreated[]> {
+  try {
+    const stories: StoryEntries = Object.entries(storiesWrapper.stories)
+      // Alternative: filter on !story.parameters.docsOnly
+      .filter(([_, story]) => story.parameters.__isArgsStory)
+      .slice(0, 7)
+      ;
 
-  const page = getOrCreatePage(sbUrl);
-  page.setPluginData('sbUrl', sbUrl);
-  page.setPluginData('baseUrl', '');
-  page.name = `Design System (${sbUrl})`;
-  page.setRelaunchData({ open: '' });
-  figma.currentPage = page;
+    const page = getOrCreatePage(sbUrl);
+    page.setPluginData('sbUrl', sbUrl);
+    page.setPluginData('baseUrl', '');
+    page.name = `Design System (${sbUrl})`;
+    page.setRelaunchData({ open: '' });
+    figma.currentPage = page;
 
-  // Create placeholders for components that will be imported.
-  return createFrames(stories, sbUrl);
+    // Create placeholders for components that will be imported.
+    return createFrames(stories, sbUrl);
+  } finally {
+    figma.commitUndo();
+  }
 }
 
 

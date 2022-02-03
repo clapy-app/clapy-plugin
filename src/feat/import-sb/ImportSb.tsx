@@ -1,5 +1,6 @@
-import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useState } from 'react';
+import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { SbSelection, SbStoriesWrapper, StoriesSamples } from '../../backend/routes/import-sb/import-model';
 import { CNode } from '../../backend/routes/import-sb/sb-serialize.model';
 import { SbCompSelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
@@ -10,8 +11,6 @@ import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
 
-const fake = () => fetchPlugin('getStoriesSamples');
-type SbSelection = ReturnType<typeof fake> extends Promise<(readonly [infer Keys, string])[]> ? Keys : never;
 
 export const ImportSb: FC = memo(() => {
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
@@ -31,14 +30,15 @@ export const ImportSb: FC = memo(() => {
       .catch(handleError);
   }, []);
 
+  const storiesSamplesRef = useRef<StoriesSamples>();
+
   useEffect(() => {
-    const storiesSamplesP = fetchPlugin('getStoriesSamples');
-    storiesSamplesP
-      .then((samples) => {
-        setOptions(samples.map(([key, label]) =>
-          <option key={key} value={key}>{label}</option>
-        ));
-      })
+    fetchPlugin('getStoriesSamples').then((samples) => {
+      storiesSamplesRef.current = samples;
+      setOptions(Object.entries(samples).map(([key, { label }]) =>
+        <option key={key} value={key}>{label}</option>
+      ));
+    })
       .catch(handleError);
   }, []);
 
@@ -46,8 +46,17 @@ export const ImportSb: FC = memo(() => {
     setSbSelection(e.target.value as SbSelection);
   }, []);
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
-    setLoadingTxt('Prepare stories placeholders...');
-    fetchPlugin('importStories', sbSelection)
+    if (!storiesSamplesRef.current || !sbSelection) {
+      console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
+      return;
+    }
+    const { sbUrl } = storiesSamplesRef.current[sbSelection];
+    setLoadingTxt('Fetch stories available...');
+    fetchStories(sbUrl)
+      .then(stories => {
+        setLoadingTxt('Prepare stories placeholders...');
+        return fetchPlugin('importStories', sbUrl, stories);
+      })
       .then(async (insertedComponents) => {
         // Could be done in parallel, with a pool to not overload the API.
         for (const { figmaId, url, storyId } of insertedComponents) {
@@ -134,4 +143,8 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
 
 async function fetchCNodes(url: string) {
   return (await apiGet<CNode[]>('stories/serialize', { query: { url } })).data;
+}
+
+async function fetchStories(sbUrl: string) {
+  return (await apiGet<SbStoriesWrapper>('stories/fetch-list', { query: { sbUrl } })).data;
 }

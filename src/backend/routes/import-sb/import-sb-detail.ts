@@ -1,7 +1,7 @@
 import { isLayout } from './canvas-utils';
-import { StoryObj } from './import-model';
+import { SbStory } from './import-model';
 
-export type StoryEntry = [string, StoryObj];
+export type StoryEntry = [string, SbStory];
 export type StoryEntries = StoryEntry[];
 
 export function getLayoutStoryId(node: SceneNode) {
