@@ -15,8 +15,9 @@ export async function importStories(sbSelection: SbSelection): Promise<FrameCrea
     .slice(0, 7)
     ;
 
-  const page = getOrCreatePage();
+  const page = getOrCreatePage(sbUrl);
   page.setPluginData('sbUrl', sbUrl);
+  page.setPluginData('baseUrl', '');
   page.name = `Design System (${sbUrl})`;
   page.setRelaunchData({ open: '' });
   figma.currentPage = page;

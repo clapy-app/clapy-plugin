@@ -63,9 +63,9 @@ export function getCompFrame(page: PageNode, storyId: string) {
   return null;
 }
 
-export function getOrCreatePage() {
+export function getOrCreatePage(sbUrl: string) {
   for (const p of figma.root.children) {
-    if (p.getPluginData('sbUrl')) {
+    if (p.getPluginData('sbUrl') === sbUrl) {
       return p;
     }
   }
