@@ -1,40 +1,52 @@
 import { Dict } from '../../../common/app-models';
-import reactstrapStories from './sample-stories/reactstrap/stories.json';
-import vibeStories from './sample-stories/vibe/stories.json';
 import { CNode } from './sb-serialize.model';
 
 export const storiesSamples = {
   reactstrap: {
     label: 'Reactstrap',
-    stories: reactstrapStories,
     sbUrl: 'https://reactstrap.github.io',
   },
   vibe: {
     label: 'Monday Vibe',
-    stories: vibeStories,
     sbUrl: 'https://style.monday.com',
   },
-};
+} as const;
 
-export type SbSelection = keyof typeof storiesSamples;
+export type StoriesSamples = typeof storiesSamples;
+export type SbSelection = keyof StoriesSamples;
+export type StoriesSample = StoriesSamples[SbSelection];
 
 // type StoriesObj = typeof storiesSamples[SbSelection]['stories']['stories'];
-export interface StoryObj {
-  id: string;
-  name: string;
-  title?: string;
-  importPath?: string;
+export interface SbStory {
+  // argTypes,
+  // args,
+  // componentId,
+  // id: string;
   kind: string;
-  story: string;
+  name: string;
   parameters: {
-    fileName?: string;
-    framework?: 'react';
-    docsOnly?: boolean,
-    __id: string;
+    // docs,
+    // docsOnly,
+    // fileName,
+    // framework,
+    // options,
+    // themes,
+    // viewMode,
+    // __id,
     __isArgsStory: boolean;
-  };
+  },
+  story: string;
+  title: string;
 }
-export type StoriesObj = Dict<StoryObj>;
+export type SbStories = Dict<SbStory>;
+
+export interface SbStoriesWrapper {
+  // globalParameters: {};
+  // globals: {};
+  // kindParameters: {};
+  stories: SbStories;
+  v: number;
+}
 
 export interface BorderWidths {
   borderBottomWidth: number;

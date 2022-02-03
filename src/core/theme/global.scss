@@ -37,8 +37,9 @@ button {
 
   &:disabled {
     background: #ebebeb;
-    color: #5e5e5e;
-    border: solid 1px #5e5e5e;
+    color: #747474;
+    border: solid 1px #747474;
+    cursor: default;
   }
 }
 .container {
