@@ -418,7 +418,13 @@ export function applyTransform(transform: Properties['transform'], node: FrameNo
     [b, d, ty],
   ];
 
-  node.relativeTransform = transformationMatrix;
+  try {
+    node.relativeTransform = transformationMatrix;
+  } catch (err) {
+    console.error('Error while applying relativeTransform. The transformation is ignored and the rendering continues without it.');
+    console.error(err);
+    // Ignore transform and continue.
+  }
 }
 
 export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRightRadius, borderBottomLeftRadius, borderBottomRightRadius }: MyStyles) {

@@ -14,6 +14,7 @@ const fake = () => fetchPlugin('getStoriesSamples');
 type SbSelection = ReturnType<typeof fake> extends Promise<(readonly [infer Keys, string])[]> ? Keys : never;
 
 export const ImportSb: FC = memo(() => {
+  const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
   const loginBtn = useCallback(() => login(), []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
@@ -45,15 +46,18 @@ export const ImportSb: FC = memo(() => {
     setSbSelection(e.target.value as SbSelection);
   }, []);
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
+    setLoadingTxt('Prepare stories placeholders...');
     fetchPlugin('importStories', sbSelection)
       .then(async (insertedComponents) => {
         // Could be done in parallel, with a pool to not overload the API.
         for (const { figmaId, url, storyId } of insertedComponents) {
+          setLoadingTxt(`Render story ${storyId}...`);
           const nodes = await fetchCNodes(url);
           await fetchPlugin('updateCanvas', nodes, figmaId, storyId);
         }
       })
-      .catch(handleError);
+      .catch(handleError)
+      .finally(() => setLoadingTxt(undefined));
   }, [sbSelection]);
 
   // Show selection
@@ -72,11 +76,12 @@ export const ImportSb: FC = memo(() => {
         ? <p>Loading available stories...</p>
         : authLoading ? <p>Loading...</p> :
           !isSignedIn ? <Button onClick={loginBtn}>Auth</Button> : <>
-            <select onChange={setSbSelectionHandler} defaultValue={sbSelection}>
+            <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
               {options}
             </select>
-            <button onClick={runImport}>Import</button>
+            <button onClick={runImport} disabled={!!loadingTxt}>Import</button>
           </>}</div>
+      {!!loadingTxt && <p>{loadingTxt}</p>}
       <hr />
       {!selectedSbComp?.length
         ? <p>Select an element to preview the Storybook version here.</p>
@@ -128,5 +133,5 @@ export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selectio
 });
 
 async function fetchCNodes(url: string) {
-  return (await apiGet<CNode[]>('serialize', { query: { url } })).data;
+  return (await apiGet<CNode[]>('stories/serialize', { query: { url } })).data;
 }

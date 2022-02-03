@@ -18,14 +18,17 @@ module.exports = (env, argv) => {
   // Update manifest.json with the bundle folder name.
   const distFolder = 'build';
   // const distFolder = 'build';
-  editJsonFile('./manifest.json', file => {
-    const { main, ui } = file;
-    const mainSplit = file.main.split('/');
+  editJsonFile('./manifest.json', manifest => {
+    const { main, ui } = manifest;
+    const mainSplit = manifest.main.split('/');
     mainSplit[0] = distFolder;
-    file.main = mainSplit.join('/');
-    const uiSplit = file.ui.split('/');
+    manifest.main = mainSplit.join('/');
+    const uiSplit = manifest.ui.split('/');
     uiSplit[0] = distFolder;
-    file.ui = uiSplit.join('/');
+    manifest.ui = uiSplit.join('/');
+
+    manifest.name = 'Clapy';
+    manifest.id = '1062567834134269';
   }).catch(e => console.error(e));
 
 

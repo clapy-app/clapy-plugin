@@ -44,6 +44,7 @@ export interface BorderWidths {
 }
 
 export interface RenderContext {
+  storyId: string;
   figmaParentNode: FrameNode;
   sbParentNode: CNode | null;
   previousInlineNode?: TextNode;

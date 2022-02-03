@@ -1,6 +1,6 @@
 {
-  "name": "Clapy",
-  "id": "1062567834134269",
+  "name": "Clapy dev",
+  "id": "1",
   "api": "1.0.0",
   "main": "build/backend.js",
   "ui": "build/index.html",
