@@ -67,14 +67,14 @@ export const ImportSb: FC = memo(() => {
       })
       .then(async (insertedComponents) => {
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, storyUrl, storyId, pageId, storyTitle } of insertedComponents) {
+        for (const { figmaId, storyUrl, storyId, pageId } of insertedComponents) {
           if (interruptRef.current) {
             setError('Interrupted');
             return;
           }
           setLoadingTxt(`Render story ${storyId}...`);
           const nodes = await fetchCNodes(storyUrl);
-          await fetchPlugin('updateCanvas', nodes, figmaId, storyId, storyTitle, pageId);
+          await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         }
 
         setError(undefined);
@@ -118,18 +118,18 @@ export const ImportSb: FC = memo(() => {
 });
 
 export const PreviewArea: FC<{ selection: SbAnySelection; }> = memo(({ selection }) => {
-  const { storyLabel, storyTitle, storyUrl, figmaId, storyId, pageId } = selection;
+  const { storyLabel, storyUrl, figmaId, storyId, pageId } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
   const [error, setError] = useState<string | undefined>();
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!storyUrl || !storyId || !storyTitle) return;
+        if (!storyUrl || !storyId) return;
         setLoadingTxt('Serializing on API...');
         const nodes = await fetchCNodes(storyUrl);
         setLoadingTxt('Updating canvas...');
-        await fetchPlugin('updateCanvas', nodes, figmaId, storyId, storyTitle, pageId);
+        await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         setError(undefined);
       } catch (err) {
         handleError(err => { handleError(err); setError(err?.message || 'Unknown error'); });

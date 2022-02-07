@@ -16,12 +16,7 @@ export function getLayoutStoryId(node: SceneNode) {
   return getLayoutPluginData(node, 'storyId');
 }
 
-export interface FrameCreated extends SbCompSelection {
-  // Should have the same fields as SbCompSelection, but with some fields required (the ones used for the import batch)
-  storyId: string;
-  storyTitle: string;
-  storyUrl: string;
-}
+export type FrameCreated = SbCompSelection;
 
 export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNode) {
   const nodes: FrameNode[] = [];
@@ -73,7 +68,6 @@ export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNod
       figmaId: frame.id,
       pageId: page.id,
       storyId,
-      storyTitle: storyTitle,
       storyLabel: frame.name,
       storyUrl: url,
     });
@@ -188,13 +182,4 @@ export function getOrCreatePage(sbUrl: string) {
   }
   const page = figma.createPage();
   return page;
-}
-
-// For backward compatibility - should be removed soon
-export function storyTitleFromLabel(label: string) {
-  let separatorIndex = label.indexOf('_');
-  if (separatorIndex === -1) {
-    separatorIndex = label.indexOf(' ');
-  }
-  return label.slice(0, separatorIndex);
 }

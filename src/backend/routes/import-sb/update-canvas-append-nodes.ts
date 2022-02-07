@@ -22,7 +22,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         continue;
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing } = sbNode.styles;
+      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine } = sbNode.styles;
 
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
@@ -57,6 +57,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         node.setRangeFontName(start, end, newFont);
 
         node.setRangeFontSize(start, end, sizeWithUnitToPx(fontSize!));
+
+        if (textDecorationLine === 'underline') {
+          node.setRangeTextDecoration(start, end, 'UNDERLINE');
+        }
 
         if (lineHeight !== 'normal') {
           node.setRangeLineHeight(start, end, { value: sizeWithUnitToPx(lineHeight as string), unit: 'PIXELS' });

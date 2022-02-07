@@ -1,6 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
 import { storiesSamples } from './import-model';
-import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries, storyTitleFromLabel } from './import-sb-detail';
+import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries } from './import-sb-detail';
 import { SbStoriesWrapper } from './sb-serialize.model';
 
 export function getStoriesSamples() {
@@ -53,13 +53,11 @@ function prepareSbCompSelection()/* : SbCompSelection[] */ {
     .reduce((selections, node) => {
       const storyId = getLayoutStoryId(node);
       const sbUrl = node.getPluginData('sbUrl') || pageSbUrl;
-      const storyTitle = node.getPluginData('storyTitle') || storyTitleFromLabel(node.name);
       if (storyId && sbUrl) {
         // &args=kind:secondary;size:xxs
         const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
         const selection: SbCompSelection = {
           storyId,
-          storyTitle,
           storyLabel: node.name,
           storyUrl,
           figmaId: node.id,

@@ -6,7 +6,7 @@ import { appendNodes } from './update-canvas-append-nodes';
 import { sizeWithUnitToPx } from './update-canvas-utils';
 
 
-export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string, storyTitle: String, pageId: string) {
+export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string, pageId: string) {
   try {
     const page = pageId ? getPageById(pageId) : figma.currentPage;
     let currentNode = figma.getNodeById(figmaId);

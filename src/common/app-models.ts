@@ -20,7 +20,6 @@ export interface SbOtherSelection {
   pageId: string;
 
   storyId?: undefined;
-  storyTitle?: undefined;
   storyLabel?: undefined;
   storyUrl?: undefined;
 }
@@ -30,7 +29,6 @@ export interface SbCompSelection {
   pageId: string;
 
   storyId: string;
-  storyTitle: string;
   storyLabel: string;
   storyUrl: string;
   // sbUrl - base URL, if required?
