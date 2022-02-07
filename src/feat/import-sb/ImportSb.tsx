@@ -1,8 +1,8 @@
 import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { SbSelection, SbStoriesWrapper, StoriesSamples } from '../../backend/routes/import-sb/import-model';
-import { CNode } from '../../backend/routes/import-sb/sb-serialize.model';
-import { SbCompSelection } from '../../common/app-models';
+import { SbSampleSelection, StoriesSamples } from '../../backend/routes/import-sb/import-model';
+import { CNode, SbStoriesWrapper } from '../../backend/routes/import-sb/sb-serialize.model';
+import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
@@ -14,10 +14,11 @@ import classes from './ImportSb.module.scss';
 
 export const ImportSb: FC = memo(() => {
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
+  const [error, setError] = useState<string | undefined>();
   const loginBtn = useCallback(() => login(), []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [sbSelection, setSbSelection] = useState<SbSelection>('reactstrap');
+  const [sbSelection, setSbSelection] = useState<SbSampleSelection>('reactstrap');
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()
@@ -26,8 +27,9 @@ export const ImportSb: FC = memo(() => {
         if (isSignedIn !== _isSignedIn) {
           setIsSignedIn(_isSignedIn);
         }
+        setError(undefined);
       })
-      .catch(handleError);
+      .catch(err => { handleError(err); setError(err?.message || 'Unknown error'); });
   }, []);
 
   const storiesSamplesRef = useRef<StoriesSamples>();
@@ -38,13 +40,18 @@ export const ImportSb: FC = memo(() => {
       setOptions(Object.entries(samples).map(([key, { label }]) =>
         <option key={key} value={key}>{label}</option>
       ));
+      setError(undefined);
     })
-      .catch(handleError);
+      .catch(err => { handleError(err); setError(err?.message || 'Unknown error'); });
   }, []);
 
   const setSbSelectionHandler: ChangeEventHandler<HTMLSelectElement> = useCallback(e => {
-    setSbSelection(e.target.value as SbSelection);
+    setSbSelection(e.target.value as SbSampleSelection);
   }, []);
+
+  const interruptRef = useRef(false);
+  const interrupt = useCallback(() => interruptRef.current = true, []);
+
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     if (!storiesSamplesRef.current || !sbSelection) {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
@@ -52,6 +59,7 @@ export const ImportSb: FC = memo(() => {
     }
     const { sbUrl } = storiesSamplesRef.current[sbSelection];
     setLoadingTxt('Fetch stories available...');
+    interruptRef.current = false;
     fetchStories(sbUrl)
       .then(stories => {
         setLoadingTxt('Prepare stories placeholders...');
@@ -59,18 +67,24 @@ export const ImportSb: FC = memo(() => {
       })
       .then(async (insertedComponents) => {
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, url, storyId } of insertedComponents) {
+        for (const { figmaId, storyUrl, storyId, pageId, storyTitle } of insertedComponents) {
+          if (interruptRef.current) {
+            setError('Interrupted');
+            return;
+          }
           setLoadingTxt(`Render story ${storyId}...`);
-          const nodes = await fetchCNodes(url);
-          await fetchPlugin('updateCanvas', nodes, figmaId, storyId);
+          const nodes = await fetchCNodes(storyUrl);
+          await fetchPlugin('updateCanvas', nodes, figmaId, storyId, storyTitle, pageId);
         }
+
+        setError(undefined);
       })
-      .catch(handleError)
+      .catch(err => { handleError(err); setError(err?.message || 'Unknown error'); })
       .finally(() => setLoadingTxt(undefined));
   }, [sbSelection]);
 
   // Show selection
-  const [selectedSbComp, setSelectedSbComp] = useState<SbCompSelection[]>([]);
+  const [selectedSbComp, setSelectedSbComp] = useState<SbAnySelection[]>([]);
   useEffect(() => {
     const dispose = subscribePlugin('selectedSbComp', (_, nodes) => {
       setSelectedSbComp(nodes);
@@ -90,7 +104,8 @@ export const ImportSb: FC = memo(() => {
             </select>
             <button onClick={runImport} disabled={!!loadingTxt}>Import</button>
           </>}</div>
-      {!!loadingTxt && <p>{loadingTxt}</p>}
+      {!!loadingTxt && <><div><button onClick={interrupt}>Interrupt</button></div><p>{loadingTxt}</p></>}
+      {!!error && <p>{error}</p>}
       <hr />
       {!selectedSbComp?.length
         ? <p>Select an element to preview the Storybook version here.</p>
@@ -102,42 +117,48 @@ export const ImportSb: FC = memo(() => {
   );
 });
 
-export const PreviewArea: FC<{ selection: SbCompSelection; }> = memo(({ selection }) => {
-  const { name, url, figmaId, id: storyId } = selection;
+export const PreviewArea: FC<{ selection: SbAnySelection; }> = memo(({ selection }) => {
+  const { storyLabel, storyTitle, storyUrl, figmaId, storyId, pageId } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
+  const [error, setError] = useState<string | undefined>();
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!url || !storyId) return;
+        if (!storyUrl || !storyId || !storyTitle) return;
         setLoadingTxt('Serializing on API...');
-        const nodes = await fetchCNodes(url);
+        const nodes = await fetchCNodes(storyUrl);
         setLoadingTxt('Updating canvas...');
-        await fetchPlugin('updateCanvas', nodes, figmaId, storyId);
+        await fetchPlugin('updateCanvas', nodes, figmaId, storyId, storyTitle, pageId);
+        setError(undefined);
       } catch (err) {
-        handleError(err);
+        handleError(err => { handleError(err); setError(err?.message || 'Unknown error'); });
       } finally {
         setLoadingTxt(undefined);
       }
     })();
-  }, [url, figmaId]);
+  }, [storyUrl, figmaId]);
 
-  if (!url) {
+  if (!storyUrl) {
     return <p>Figma ID: {figmaId}</p>;
   }
 
   return <>
-    <div>{name} <a href={url} target='_blank'>(preview)</a></div>
+    <div>{storyLabel} <a href={storyUrl} target='_blank'>(preview)</a></div>
     <iframe
       title="Preview"
-      src={url}
+      src={storyUrl}
       width="300"
       height="200">
     </iframe>
     <button onClick={runImport}>Update Canvas</button>
     {loadingTxt
       ? <p>{loadingTxt}</p>
-      : <p>Figma ID: {figmaId}</p>}
+      : <>
+        <p>Figma ID: {figmaId}</p>
+        <p>Storybook ID: {storyId}</p>
+      </>}
+    {!!error && <p>{error}</p>}
   </>;
 });
 

@@ -1,25 +1,28 @@
-import { isFrame, isLayout } from './canvas-utils';
+import { getPageById, isFrame, isLayout } from './canvas-utils';
 import { RenderContext } from './import-model';
-import { getCompFrame } from './import-sb-detail';
-import { CNode } from './sb-serialize.model';
+import { getCompNode } from './import-sb-detail';
+import { CNode, cssDefaults, isCElementNode } from './sb-serialize.model';
 import { appendNodes } from './update-canvas-append-nodes';
 import { sizeWithUnitToPx } from './update-canvas-utils';
 
 
-export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string) {
+export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string, storyTitle: String, pageId: string) {
   try {
+    const page = pageId ? getPageById(pageId) : figma.currentPage;
     let currentNode = figma.getNodeById(figmaId);
     try {
 
       if (!currentNode) {
         console.warn('Node to update not found by Figma ID, checking by storyId.');
-        currentNode = getCompFrame(figma.currentPage, storyId);
+        // Passing a container more specific than `page` may optimise a bit.
+        currentNode = getCompNode(page, page, storyId);
       }
       if (!currentNode) {
         console.warn('Node to update still not found, ID:', figmaId, '- recreating it.');
+        // TODO review with the container logic
         currentNode = figma.createFrame();
         currentNode.y = 700;
-        figma.currentPage.appendChild(currentNode);
+        page.appendChild(currentNode);
       }
       if (!isLayout(currentNode)) {
         console.warn('Node to update is not in the layout, skipping. ID:', figmaId);
@@ -31,7 +34,7 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
         f.x = currentNode.x;
         f.y = currentNode.y;
         f.name = currentNode.name;
-        const parent = currentNode.parent || figma.currentPage;
+        const parent = currentNode.parent || page;
         const i = parent.children.indexOf(currentNode);
 
         currentNode.remove();
@@ -44,6 +47,10 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
         }
       }
 
+      addCssDefaults(sbNodes);
+
+      const padding = 32;
+
       let maxWidth = -1;
       for (const node of sbNodes) {
         const w = sizeWithUnitToPx(node.styles.width!);
@@ -52,15 +59,38 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
         }
       }
       currentNode.fills = [];
-      currentNode.resizeWithoutConstraints(maxWidth, currentNode.height);
+      if (maxWidth !== -1) {
+        currentNode.resizeWithoutConstraints(maxWidth + padding * 2, currentNode.height);
+      }
+      // Else it's likely a series of inline elements. Let's hug contents instead of fixed width.
+      // TODO review once we better know how to handle those cases.
+
       // Apply flex. The top container behaves as if the parent had horizontal direction.
       currentNode.layoutMode = 'VERTICAL';
       // Width: fixed
       currentNode.layoutGrow = 0;
-      currentNode.counterAxisSizingMode = 'FIXED';
+      currentNode.counterAxisSizingMode = maxWidth !== -1 ? 'FIXED' : 'AUTO';
       // Height: hug content
       currentNode.layoutAlign = 'INHERIT';
       currentNode.primaryAxisSizingMode = 'AUTO';
+
+      currentNode.paddingBottom = padding;
+      currentNode.paddingLeft = padding;
+      currentNode.paddingTop = padding;
+      currentNode.paddingRight = padding;
+      currentNode.strokeAlign = 'INSIDE';
+      currentNode.strokeWeight = 1;
+      currentNode.dashPattern = [5, 10];
+      currentNode.strokes = [{
+        type: 'SOLID',
+        color: { r: 0.5, g: 0.5, b: 0.5 },
+        opacity: 1,
+      }];
+      // currentNode.fills = [{
+      //   type: 'SOLID',
+      //   color: hexToRgb(['FFFFFF', 'FBFBFB', 'F7F7F7'][depth - 1]),
+      //   opacity: 1,
+      // }];
 
       // Delete previous children
       for (const node of currentNode.children) {
@@ -86,5 +116,18 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
 
   } finally {
     figma.commitUndo();
+  }
+}
+
+function addCssDefaults(nodes: CNode[]) {
+  for (const sbNode of nodes) {
+    for (const [cssKey, defaultValue] of Object.entries(cssDefaults)) {
+      if (!sbNode.styles[cssKey]) {
+        sbNode.styles[cssKey] = defaultValue;
+      }
+    }
+    if (isCElementNode(sbNode) && sbNode.children) {
+      addCssDefaults(sbNode.children);
+    }
   }
 }

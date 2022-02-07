@@ -185,8 +185,12 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       console.error('Error while rendering story', context.storyId, ' sbNode', sbNode);
 
       // Clean nodes not appended yet because of errors
-      node?.remove();
-      context.previousInlineNode?.remove();
+      if (node && !node.removed) {
+        node.remove();
+      }
+      if (context.previousInlineNode && !context.previousInlineNode.removed) {
+        context.previousInlineNode.remove();
+      }
 
       throw err;
     }

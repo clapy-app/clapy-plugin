@@ -1,3 +1,7 @@
+export function getPageById(pageId: string) {
+  return figma.getNodeById(pageId) as PageNode;
+}
+
 const layoutTypes = new Set(['GROUP', 'SLICE', 'RECTANGLE', 'ELLIPSE', 'POLYGON', 'STAR', 'VECTOR', 'TEXT', 'BOOLEAN_OPERATION', 'STAMP', 'COMPONENT_SET', 'FRAME', 'COMPONENT', 'INSTANCE']);
 
 export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {

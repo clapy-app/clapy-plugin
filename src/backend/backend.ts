@@ -3,6 +3,8 @@ import { routes, subscriptions } from './routes';
 
 const isPreviewInFigma = process.env.PREVIEW_ENV === 'figma';
 
+figma.skipInvisibleInstanceChildren = true;
+
 figma.showUI(__html__);
 if (isPreviewInFigma) {
   figma.ui.resize(300, 200);
