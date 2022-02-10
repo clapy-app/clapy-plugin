@@ -1,4 +1,4 @@
-import { CNode, SbStory } from './sb-serialize.model';
+import { CElementNode, SbStory } from './sb-serialize.model';
 
 export const storiesSamples = {
   reactstrap: {
@@ -8,6 +8,10 @@ export const storiesSamples = {
   vibe: {
     label: 'Monday Vibe',
     sbUrl: 'https://style.monday.com',
+  },
+  equisafe: {
+    label: 'Equisafe',
+    sbUrl: 'http://localhost:9009',
   },
 } as const;
 
@@ -27,7 +31,7 @@ export interface BorderWidths {
 export interface RenderContext {
   storyId: string;
   figmaParentNode: FrameNode;
-  sbParentNode: CNode | null;
+  sbParentNode: CElementNode | null;
   previousInlineNode?: TextNode;
   absoluteAncestor: FrameNode;
   absoluteAncestorBorders: BorderWidths;

@@ -13,7 +13,7 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
       // Alternative: filter on !story.parameters.docsOnly
       .filter(([_, story]) => story.parameters.__isArgsStory)
       // .filter(([storyId, _]) => storyId === 'components-tooltip--multi')
-      // .slice(0, 7)
+      .slice(0, 1)
       ;
 
     const page = getOrCreatePage(sbUrl);
@@ -30,6 +30,12 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
   }
 }
 
+export function detachPage() {
+  const page = figma.currentPage;
+  page.setRelaunchData({});
+  page.setPluginData('sbUrl', '');
+  page.name = `${page.name} - detached`;
+}
 
 export async function getSbCompSelection() {
   sendSbCompSelection?.();

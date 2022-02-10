@@ -1,9 +1,9 @@
 import { getPageById, isFrame, isLayout } from './canvas-utils';
 import { RenderContext } from './import-model';
 import { getCompNode } from './import-sb-detail';
-import { CNode, cssDefaults, isCElementNode } from './sb-serialize.model';
+import { CElementNode, CNode, cssDefaults, isCElementNode } from './sb-serialize.model';
 import { appendNodes } from './update-canvas-append-nodes';
-import { sizeWithUnitToPx } from './update-canvas-utils';
+import { nodeStyles, sizeWithUnitToPx } from './update-canvas-utils';
 
 
 export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string, pageId: string) {
@@ -47,13 +47,13 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
         }
       }
 
-      addCssDefaults(sbNodes);
+      addCssDefaults(sbNodes, null);
 
       const padding = 32;
 
       let maxWidth = -1;
       for (const node of sbNodes) {
-        const w = sizeWithUnitToPx(node.styles.width!);
+        const w = sizeWithUnitToPx(nodeStyles(node, null).width!);
         if (maxWidth < w) {
           maxWidth = w;
         }
@@ -70,9 +70,9 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
       // Width: fixed
       currentNode.layoutGrow = 0;
       currentNode.counterAxisSizingMode = maxWidth !== -1 ? 'FIXED' : 'AUTO';
-      // Height: hug content
+      // Height: fixed
       currentNode.layoutAlign = 'INHERIT';
-      currentNode.primaryAxisSizingMode = 'AUTO';
+      currentNode.primaryAxisSizingMode = 'FIXED'; // 'AUTO' for hug contents
 
       currentNode.paddingBottom = padding;
       currentNode.paddingLeft = padding;
@@ -91,6 +91,8 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
       //   color: hexToRgb(['FFFFFF', 'FBFBFB', 'F7F7F7'][depth - 1]),
       //   opacity: 1,
       // }];
+
+      currentNode.expanded = false;
 
       // Delete previous children
       for (const node of currentNode.children) {
@@ -114,20 +116,35 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
     };
     await appendNodes(sbNodes, context);
 
+    // If none of the direct children have fill container for height, we could set currentNode to hug contents (primary axis)
+    if (!atLeastOneChildFillsContainerVertically(currentNode)) {
+      currentNode.primaryAxisSizingMode = 'AUTO';
+    }
+
   } finally {
     figma.commitUndo();
   }
 }
 
-function addCssDefaults(nodes: CNode[]) {
+function addCssDefaults(nodes: CNode[], sbParentNode: CElementNode | null) {
   for (const sbNode of nodes) {
     for (const [cssKey, defaultValue] of Object.entries(cssDefaults)) {
-      if (!sbNode.styles[cssKey]) {
-        sbNode.styles[cssKey] = defaultValue;
+      const styles = nodeStyles(sbNode, sbParentNode);
+      if (!styles[cssKey]) {
+        styles[cssKey] = defaultValue;
       }
     }
     if (isCElementNode(sbNode) && sbNode.children) {
-      addCssDefaults(sbNode.children);
+      addCssDefaults(sbNode.children, sbNode);
     }
   }
+}
+
+function atLeastOneChildFillsContainerVertically(currentNode: FrameNode) {
+  for (const child of currentNode.children) {
+    if (isFrame(child) && child.layoutMode !== 'NONE' && child.layoutGrow === 1) {
+      return true;
+    }
+  }
+  return false;
 }

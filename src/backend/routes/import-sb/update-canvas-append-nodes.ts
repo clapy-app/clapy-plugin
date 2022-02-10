@@ -1,6 +1,6 @@
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, prepareBorderWidths, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -22,14 +22,14 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         continue;
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine } = sbNode.styles;
+      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine } = nodeStyles(sbNode, context.sbParentNode);
 
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
         context.previousInlineNode = newTextNode();
       }
 
-      const { previousInlineNode } = context;
+      const { previousInlineNode, sbParentNode } = context;
 
       if (isCTextNode(sbNode)) {
         // Have a look at createTextStyle?
@@ -39,10 +39,12 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (typeof start !== 'number') {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
         }
-        const len = sbNode.value.length;
-        if (typeof len !== 'number') {
-          console.warn('Cannot read length from text value. length:', len, 'characters:', sbNode.value);
+        let characters = sbNode.value?.trim();
+        if (typeof characters !== 'string') {
+          console.warn('sbNode.value is not a valid string:', characters);
+          characters = '';
         }
+        const len = characters?.length;
         const end = start + len;
 
         const fontName = start > 0 ? node.getRangeFontName(0, 1) : node.fontName;
@@ -52,7 +54,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         await ensureFontIsLoaded(family, 'Regular');
         const newFont = await ensureFontIsLoaded(family, style);
 
-        node.insertCharacters(start, sbNode.value);
+        node.insertCharacters(start, characters);
 
         node.setRangeFontName(start, end, newFont);
 
@@ -107,7 +109,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings);
         node = svgNode || figma.createFrame();
-        node.name = sbNode.name;
+        node.name = isCElementNode(sbNode) && sbNode.className ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
 
         if (display === 'none') {
           node.visible = false;
@@ -136,7 +138,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         //   - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
 
         // if (!isNaN(w) && !isNaN(h)) {
-        //   node.resize(w, h);
+        //   node.resizeWithoutConstraints(w, h);
         // }
 
         const hasChildren = isCElementNode(sbNode) && !!sbNode.children;
@@ -188,12 +190,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
     } catch (err) {
       console.error('Error while rendering story', context.storyId, ' sbNode', sbNode);
 
-      // Clean nodes not appended yet because of errors
-      if (node && !node.removed) {
-        node.remove();
-      }
-      if (context.previousInlineNode && !context.previousInlineNode.removed) {
-        context.previousInlineNode.remove();
+      try {
+        // Clean nodes not appended yet because of errors
+        if (node && !node.removed) {
+          node.remove();
+        }
+        if (context.previousInlineNode && !context.previousInlineNode.removed) {
+          context.previousInlineNode.remove();
+        }
+      } catch (error) {
+        console.warn('Failed to clean up node', node?.name, 'or temporary inline node `previousInlineNode` in the error catch. Sub-error:', error);
       }
 
       throw err;

@@ -1,4 +1,5 @@
-import { Properties as CSSProperties } from 'csstype';
+import type { Properties as CSSProperties } from 'csstype';
+export type { Property } from 'csstype';
 export type Properties = CSSProperties;
 
 interface Dict<T = any> {
@@ -10,7 +11,7 @@ const backWithOp = 'rgba(0, 0, 0, 0)';
 const zeroPx = '0px';
 
 // Playground with auto-completed values:
-// const playground: CSSProperties = {
+// const playground: Properties = {
 //   display: 'block',
 // };
 
@@ -19,9 +20,9 @@ export const cssDefaults = makeCssDefaults({
   flexDirection: 'row',
   width: 'auto',
   height: 'auto',
-  fontSize: undefined,
+  fontSize: null,
   fontWeight: '400',
-  lineHeight: undefined,
+  lineHeight: null,
   textAlign: 'start',
   color: black,
   backgroundColor: backWithOp,
@@ -62,9 +63,15 @@ export const cssDefaults = makeCssDefaults({
   textDecorationThickness: 'auto',
   textDecorationStyle: 'solid',
   textDecorationColor: black,
+  alignItems: 'normal',
+  justifyContent: 'normal',
 });
 
-function makeCssDefaults<T extends CSSProperties>(rules: T): T {
+type PropertiesOrNull = {
+  [P in keyof Properties]: Properties[P] | null;
+};
+
+function makeCssDefaults<T extends PropertiesOrNull>(rules: T): T {
   return rules;
 }
 
@@ -73,7 +80,7 @@ export type CssDefaults = typeof cssDefaults;
 const cssKeys = Object.keys(cssDefaults) as (keyof typeof cssDefaults)[];
 type CssKeys = typeof cssKeys;
 
-export type MyStyles = Pick<CSSProperties, CssKeys[number]>;
+export type MyStyles = Pick<Properties, CssKeys[number]>;
 
 const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;
@@ -83,18 +90,20 @@ export interface CElementNode {
   name: string;
   type: typeof ELEMENT_NODE;
   styles: MyStyles;
+  styleRules: Properties;
+  className: string | undefined;
   children?: CNode[];
 }
 export interface CPseudoElementNode {
   name: string;
   type: typeof PSEUDO_ELEMENT_NODE;
   styles: MyStyles;
+  styleRules: Properties;
 }
 export interface CTextNode {
   name: '#text';
   type: typeof TEXT_NODE;
-  styles: MyStyles;
-  value: string;
+  value: string | null;
 }
 export type CNode = CElementNode | CPseudoElementNode | CTextNode;
 

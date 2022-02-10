@@ -18,7 +18,7 @@ export const ImportSb: FC = memo(() => {
   const loginBtn = useCallback(() => login(), []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [sbSelection, setSbSelection] = useState<SbSampleSelection>('reactstrap');
+  const [sbSelection, setSbSelection] = useState<SbSampleSelection>('equisafe');
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()
@@ -93,6 +93,10 @@ export const ImportSb: FC = memo(() => {
     return dispose;
   }, []);
 
+  const detachPage = useCallback(() => {
+    fetchPlugin('detachPage').catch(handleError);
+  }, []);
+
   return (
     <div className={classes.container}>
       <div>{!options
@@ -113,6 +117,7 @@ export const ImportSb: FC = memo(() => {
           ? <p>Select a single element to preview the Storybook version here.</p>
           : <PreviewArea selection={selectedSbComp[0]} />
       }
+      <button onClick={detachPage}>Detach page</button>
     </div>
   );
 });

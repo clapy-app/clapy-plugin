@@ -1,5 +1,5 @@
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
-import { getSbCompSelection, getStoriesSamples, importStories, selectedSbComp } from './routes/import-sb/import-sb-routes';
+import { detachPage, getSbCompSelection, getStoriesSamples, importStories, selectedSbComp } from './routes/import-sb/import-sb-routes';
 import { updateCanvas } from "./routes/import-sb/update-canvas";
 import { createText, getText, selectedTextNodes, updateText } from './routes/text-node-routes';
 
@@ -19,6 +19,7 @@ export const routes = {
   // Import storybook
   getStoriesSamples: getStoriesSamples,
   importStories: importStories,
+  detachPage: detachPage,
   getSbCompSelection: getSbCompSelection,
   updateCanvas: updateCanvas,
 };

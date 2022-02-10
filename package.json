@@ -30,6 +30,7 @@
     "@types/sha.js": "^2.4.0",
     "bestzip": "^2.2.0",
     "css-loader": "^6.5.1",
+    "csstype": "^3.0.10",
     "fork-ts-checker-webpack-plugin": "^6.5.0",
     "html-webpack-plugin": "^5.5.0",
     "mkdirp": "^1.0.4",
