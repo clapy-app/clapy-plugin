@@ -18,18 +18,23 @@ module.exports = (env, argv) => {
   // Update manifest.json with the bundle folder name.
   const distFolder = 'build';
   // const distFolder = 'build';
-  editJsonFile('./manifest.json', manifest => {
-    const { main, ui } = manifest;
-    const mainSplit = manifest.main.split('/');
-    mainSplit[0] = distFolder;
-    manifest.main = mainSplit.join('/');
-    const uiSplit = manifest.ui.split('/');
-    uiSplit[0] = distFolder;
-    manifest.ui = uiSplit.join('/');
+  if (isProduction) {
+    editJsonFile('./manifest.json', manifest => {
+      const { main, ui } = manifest;
+      const mainSplit = manifest.main.split('/');
+      mainSplit[0] = distFolder;
+      manifest.main = mainSplit.join('/');
+      const uiSplit = manifest.ui.split('/');
+      uiSplit[0] = distFolder;
+      manifest.ui = uiSplit.join('/');
 
-    manifest.name = 'Clapy';
-    manifest.id = '1062567834134269';
-  }).catch(e => console.error(e));
+      manifest.name = 'Clapy';
+      manifest.id = '1062567834134269';
+    }).catch(e => {
+      console.error('Error while building webpack, previewEnv:', previewEnv);
+      console.error(e);
+    });
+  }
 
 
   return {

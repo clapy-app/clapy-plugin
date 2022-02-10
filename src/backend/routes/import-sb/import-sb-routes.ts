@@ -1,6 +1,7 @@
-import { NextFn, SbCompSelection } from '../../../common/app-models';
-import { SbStoriesWrapper, storiesSamples } from './import-model';
+import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
+import { storiesSamples } from './import-model';
 import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries } from './import-sb-detail';
+import { SbStoriesWrapper } from './sb-serialize.model';
 
 export function getStoriesSamples() {
   return storiesSamples;
@@ -11,7 +12,8 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
     const stories: StoryEntries = Object.entries(storiesWrapper.stories)
       // Alternative: filter on !story.parameters.docsOnly
       .filter(([_, story]) => story.parameters.__isArgsStory)
-      .slice(0, 7)
+      // .filter(([storyId, _]) => storyId === 'components-tooltip--multi')
+      // .slice(0, 7)
       ;
 
     const page = getOrCreatePage(sbUrl);
@@ -22,7 +24,7 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
     figma.currentPage = page;
 
     // Create placeholders for components that will be imported.
-    return createFrames(stories, sbUrl);
+    return createFrames(stories, sbUrl, page);
   } finally {
     figma.commitUndo();
   }
@@ -37,34 +39,40 @@ export async function getSbCompSelection() {
 
 let sendSbCompSelection: (() => void) | undefined;
 
-export function selectedSbComp(next: NextFn<SbCompSelection[]>) {
+export function selectedSbComp(next: NextFn<SbAnySelection[]>) {
   sendSbCompSelection = () => next(prepareSbCompSelection());
   figma.on("selectionchange", sendSbCompSelection);
+  // Initial emit, for dev, when the figma plugin is open after the webapp.
+  sendSbCompSelection();
 }
 
-function prepareSbCompSelection(): SbCompSelection[] {
+function prepareSbCompSelection()/* : SbCompSelection[] */ {
   const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
 
   const selectedSbComp = figma.currentPage.selection
-    .reduce((selection, node) => {
+    .reduce((selections, node) => {
       const storyId = getLayoutStoryId(node);
       const sbUrl = node.getPluginData('sbUrl') || pageSbUrl;
       if (storyId && sbUrl) {
         // &args=kind:secondary;size:xxs
-        const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
-        selection.push({
-          id: storyId,
-          name: node.name,
-          url: url,
+        const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
+        const selection: SbCompSelection = {
+          storyId,
+          storyLabel: node.name,
+          storyUrl,
           figmaId: node.id,
-        });
+          pageId: figma.currentPage.id,
+        };
+        selections.push(selection);
       } else {
-        selection.push({
+        const selection: SbOtherSelection = {
           figmaId: node.id,
-        });
+          pageId: figma.currentPage.id,
+        };
+        selections.push(selection);
       }
-      return selection;
-    }, [] as SbCompSelection[]);
+      return selections;
+    }, [] as SbAnySelection[]);
   // To log the selection flex config:
   if (selectedSbComp.length === 1) {
     show(figma.getNodeById(selectedSbComp[0].figmaId) as FrameNode);

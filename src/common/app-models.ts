@@ -15,10 +15,23 @@ export type Subscriptions = _Subscriptions;
 export type NextFn<T> = (value: T) => void;
 export type NextMessage<T = any> = { type: keyof Subscriptions, payload: T; };
 
-export interface SbCompSelection {
-  id?: string;
-  name?: string;
-  url?: string;
-  // sbUrl if required?
+export interface SbOtherSelection {
   figmaId: string;
+  pageId: string;
+
+  storyId?: undefined;
+  storyLabel?: undefined;
+  storyUrl?: undefined;
 }
+
+export interface SbCompSelection {
+  figmaId: string;
+  pageId: string;
+
+  storyId: string;
+  storyLabel: string;
+  storyUrl: string;
+  // sbUrl - base URL, if required?
+}
+
+export type SbAnySelection = SbCompSelection | SbOtherSelection;
