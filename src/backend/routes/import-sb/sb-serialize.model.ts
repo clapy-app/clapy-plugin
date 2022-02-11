@@ -67,6 +67,8 @@ export const cssDefaults = makeCssDefaults({
   justifyContent: 'normal',
   flexGrow: 0,
   flexBasis: 'auto',
+  overflowX: 'visible',
+  overflowY: 'visible',
 });
 
 type PropertiesOrNull = {
@@ -93,6 +95,9 @@ export interface CElementNode {
   type: typeof ELEMENT_NODE;
   styles: MyStyles;
   styleRules: Properties;
+  isFullWidth: boolean; // filled by prepareFullWidthHeightAttr()
+  isFullHeight: boolean;
+
   className: string | undefined;
   children?: CNode[];
 }
@@ -101,6 +106,8 @@ export interface CPseudoElementNode {
   type: typeof PSEUDO_ELEMENT_NODE;
   styles: MyStyles;
   styleRules: Properties;
+  isFullWidth: boolean;
+  isFullHeight: boolean;
 }
 export interface CTextNode {
   name: '#text';

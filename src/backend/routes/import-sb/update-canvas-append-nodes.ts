@@ -1,7 +1,7 @@
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -35,7 +35,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine } = nodeStyles(sbNode, context.sbParentNode);
+      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
 
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
@@ -117,16 +117,23 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           context.previousInlineNode = undefined;
         }
 
+        prepareFullWidthHeightAttr(sbNode);
         const borders = prepareBorderWidths(sbNode.styles);
         const paddings = preparePaddings(sbNode.styles, borders);
+        const margins = prepareMargins(sbNode.styles);
 
-        const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings);
+        const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings, sbNode);
         node = svgNode || figma.createFrame();
         node.name = isCElementNode(sbNode) && sbNode.className ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
 
         if (display === 'none') {
           node.visible = false;
         }
+
+        // if (node.name === 'i.v-icon.notranslate.mdi.mdi-account-check-outline.theme--light') {
+        //   console.log('I want to debug here');
+        //   debugger;
+        // }
 
         const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
         const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
@@ -150,6 +157,12 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         //   - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
         //   - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
 
+        // Workaround: remove negative margins from width/height (not the real spec behavior)
+        if (margins.marginLeft < 0) w += margins.marginLeft;
+        if (margins.marginRight < 0) w += margins.marginRight;
+        if (margins.marginTop < 0) h += margins.marginTop;
+        if (margins.marginBottom < 0) h += margins.marginBottom;
+
         // if (!isNaN(w) && !isNaN(h)) {
         //   node.resizeWithoutConstraints(w, h);
         // }
@@ -163,7 +176,6 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           applyAutoLayout(node, context, sbNode, paddings, svgNode, w, h);
         }
 
-        const margins = prepareMargins(sbNode.styles);
         appendMargins(context, sbNode, margins, previousMargins);
         previousMargins = margins;
 
@@ -180,6 +192,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         applyTransform(transform, node);
 
         applyRadius(node, sbNode.styles);
+
+        node.clipsContent = (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
 
         if (position !== 'absolute') {
           figmaParentNode.appendChild(node);
