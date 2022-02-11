@@ -58,7 +58,7 @@ export const PreviewMode: FC = memo(({ children }) => {
   );
 });
 
-function onWindowMsg(ws: WSRef, msg) {
+function onWindowMsg(ws: WSRef, msg: MessageEvent) {
   if (!msg.data.pluginMessage) return;
   if (isPreviewInBrowser && msg.data.__source === 'figma') return;
 

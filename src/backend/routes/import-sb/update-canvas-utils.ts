@@ -293,71 +293,48 @@ export function appendMargins({ figmaParentNode, sbParentNode }: RenderContext, 
 
 export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
   const { display, flexDirection } = sbNode.styles;
+  const { width, minWidth, height, minHeight } = sbNode.styleRules;
   const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
-  const isInline = !!sbNode.styles.display?.startsWith('inline'); // e.g. inline, inline-block, inline-flex
-  const fixedSize = !!svgNode;
+  const isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
+  const isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
+  const forceFixedWidth = !!svgNode || (!!width && !isFullWidth);
+  const forceFixedHeight = !!svgNode || (!!height && !isFullHeight);
   node.layoutMode = display === 'flex' && flexDirection === 'row'
     ? 'HORIZONTAL' : 'VERTICAL';
 
-  applyFlexWidthHeight(node, context, sbNode, w, h, fixedSize, isInline);
+  applyFlexWidthHeight(node, context, sbNode, w, h, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
 
   if (paddingBottom) node.paddingBottom = paddingBottom;
   if (paddingLeft) node.paddingLeft = paddingLeft;
   if (paddingTop) node.paddingTop = paddingTop;
   if (paddingRight) node.paddingRight = paddingRight;
 
-  if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || fixedSize) && !isNaN(w) && !isNaN(h)) {
+  if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || forceFixedWidth || forceFixedHeight) && !isNaN(w) && !isNaN(h)) {
     node.resizeWithoutConstraints(w, h);
   }
 }
 
-function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, w: number, h: number, forceFixedSize: boolean, isInline: boolean) {
+const counterAxisStretch = new Set<Property.AlignItems>(['inherit', 'initial', 'normal', 'revert', 'stretch', 'unset']);
+
+function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, w: number, h: number, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
   const { figmaParentNode, sbParentNode } = context;
-  const { alignItems = 'normal', justifyContent = 'normal' } = sbNode.styles;
-  const { width, minWidth, height, minHeight } = sbNode.styleRules;
+  const { display: parentDisplay = 'flex', alignItems: parentAlignItems = 'normal' } = sbParentNode?.styles || {};
+  const { display, alignItems, justifyContent, flexGrow, flexBasis } = sbNode.styles;
 
   const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   const parentVertical = !parentHorizontal;
   const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
   const nodeVertical = !nodeHorizontal;
+  const parentIsInlineOrBlock = parentDisplay === 'inline' || parentDisplay === 'inline-block' || parentDisplay === 'block';
+  const parentIsFlex = parentDisplay === 'flex' || parentDisplay === 'inline-flex';
+  const isInline = display.startsWith('inline') // e.g. inline, inline-block, inline-flex
+    && parentIsInlineOrBlock; // Inline has effect only if the parent is inline or block
   const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
 
   // Do we really consider that pseudo-elements have content to hug? To challenge and test (e.g. icons in reactstrap).
   const hasChildrenToHug = !isCElementNode(sbNode) || sbNode.children?.length;
 
-  if (node.name === 'div.v-application--wrap') {
-    console.log(node.name, 'width:', width, 'minWidth:', minWidth, 'height:', height, 'minHeight:', minHeight);
-  }
-
-  // if (node.name === 'span.v-badge__wrapper') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
-
-  // if parent is flex
-  //   primary axis:
-  //     default: hug contents => child / justify-content => parent
-  //     flex-grow 1 (child): fill container => child / ignore justify-content
-  //   counter axis:
-  //     default/AI stretch: fill container => child / ignore align-item
-  //     align-item other: hug contents => child / align-item parent
-  // if parent is block (primary = vertical)
-  //   primary axis:
-  //     hug contents => child / justify-content start => parent
-  //   counter axis:
-  //     fill container => child
-  // 
-  // Overrides on child:
-  // primary axis (flex parent only) flex-grow 1 => fill container, ignore justify-content on the parent
-  // width/height 100% => fill container, ignore justify-content on the parent (if flex parent)
-
-  // Legacy rules to guess if it's full width/height or not. But it's limited for a complex tree with all elements having the same size, some should fill container, some hug contents, some are absolute, and alternate them.
-  // const isFullWidth = !(w < figmaParentNode.width - figmaParentNode.paddingLeft - figmaParentNode.paddingRight);
-  // const isFullHeight = !(h < figmaParentNode.height - figmaParentNode.paddingTop - figmaParentNode.paddingBottom);
-  const isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
-  const isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
-
-  const widthFillContainer = !isInline && isFullWidth;
+  const widthFillContainer = isFullWidth;
   const heightFillContainer = isFullHeight;
 
   // Prepare some intermediate states we need to know to calculate the layout
@@ -371,35 +348,51 @@ function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: C
   // Fill container on both axes (depends on parent direction)
   const parentPrimaryAxisFillContainer =
     // The normal rule to fill container
-    (parentHorizontal && widthFillContainer || parentVertical && heightFillContainer)
+    (
+      // width/height 100%
+      (parentHorizontal && widthFillContainer || parentVertical && heightFillContainer)
+      // or flex equivalent
+      || (parentIsFlex && (flexGrow >= 1 || flexBasis === '100%' || flexBasis === '100vw' || flexBasis === '100vh'))
+    )
     // Exceptions that could prevent fill container
-    && !forceFixedSize
+    && !(parentHorizontal && forceFixedWidth || parentVertical && forceFixedHeight)
     && !parentPrimaryAxisAlreadyHugs;
 
   const parentCounterAxisFillContainer =
     // The normal rule to fill container
-    (parentHorizontal && heightFillContainer || parentVertical && widthFillContainer)
+    (
+      // width/height 100%
+      (parentHorizontal && heightFillContainer || parentVertical && widthFillContainer)
+      // Parent makes counter axis stretch
+      || (parentIsFlex && counterAxisStretch.has(parentAlignItems))
+      || parentIsInlineOrBlock
+    )
     // Exceptions that could prevent fill container
-    && !forceFixedSize
+    && !isInline
+    && !(parentHorizontal && forceFixedHeight || parentVertical && forceFixedWidth)
     && !parentCounterAxisAlreadyHugs;
 
+  // TODO review below to match the constraints I've added above
 
   // Hug contents on both axes (depends on this node direction)
   const nodePrimaryAxisHugContents =
-    // The normal rule to hug contents
-    (nodePrimaryAxisHuggedByParent ||
-      !(nodeHorizontal && widthFillContainer || nodeVertical && heightFillContainer))
+    // The normal rule to hug contents: no fill container in the same axis
+    ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
     // Exceptions that could prevent hug contents
-    && !forceFixedSize
+    && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
     && hasChildrenToHug;
 
   const nodeCounterAxisHugContents =
-    // The normal rule to hug contents
-    (nodeCounterAxisHuggedByParent
-      || !(nodeHorizontal && heightFillContainer || nodeVertical && widthFillContainer))
+    // The normal rule to hug contents: no fill container in the same axis
+    ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
     // Exceptions that could prevent hug contents
-    && !forceFixedSize
+    && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
     && hasChildrenToHug;
+
+  // if (node.name === 'div.v-avatar') {
+  //   console.log('I want to debug here');
+  //   debugger;
+  // }
 
 
   // Translate into Figma properties:
@@ -431,18 +424,26 @@ const justifyContentMap: Partial<{
   center: 'CENTER',
   start: 'MIN',
   end: 'MAX',
-  stretch: 'SPACE_BETWEEN',
+  'flex-start': 'MIN',
+  'flex-end': 'MIN',
+  'space-between': 'SPACE_BETWEEN',
+  'space-around': 'SPACE_BETWEEN',
+  // stretch: 'MIN',
 };
 // counter axis
 const alignItemsMap: Partial<{
   [K in Property.AlignItems]: BaseFrameMixin['counterAxisAlignItems'];
 }> = {
+  inherit: 'MIN', // stretch
+  initial: 'MIN', // stretch
+  normal: 'MIN', // stretch
+  revert: 'MIN', // stretch
+  stretch: 'MIN', // stretch
+  unset: 'MIN', // stretch
   baseline: 'MIN',
-  normal: 'MIN',
   center: 'CENTER',
   start: 'MIN',
   end: 'MAX',
-  stretch: 'MIN',
 };
 
 export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings) {

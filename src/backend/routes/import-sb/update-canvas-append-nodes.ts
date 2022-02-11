@@ -1,3 +1,4 @@
+import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
 import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
@@ -13,6 +14,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
   // TODO append there consecutive inline-block elements if parent is block (to test on jsfiddle how it behaves if the parent is flex or other), as we do for text & inline elements. Consecutive ones should be wrapped in a frame for horizontal autolayout while keeping a vertical autolayout for the rest which is not inline-block. Exception: if all children are inline-block, don't wrap, just set the parent's direction to horizontal.
   // const consecutiveInlineBlocks = [];
 
+  // TODO a mix of multiple inlines and blocks is not handled well. They will all stack as blocks instead of grouping inlines on the same line.
+
   for (const sbNode of sbNodes) {
     let node: SceneNode | undefined = undefined;
     try {
@@ -22,6 +25,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         continue;
       }
 
+      // Replace inherited styleRules with parent's, before reading any value
+      if (isCElementNode(sbNode) || isCPseudoElementNode(sbNode)) {
+        for (const [ruleName, value] of entries(sbNode.styleRules)) {
+          if (value === 'inherit') {
+            // @ts-ignore
+            sbNode.styleRules[ruleName] = sbParentNode?.styleRules[ruleName] || sbParentNode?.styles[ruleName];
+          }
+        }
+      }
+
       const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine } = nodeStyles(sbNode, context.sbParentNode);
 
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
@@ -29,7 +42,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         context.previousInlineNode = newTextNode();
       }
 
-      const { previousInlineNode, sbParentNode } = context;
+      const { previousInlineNode } = context;
 
       if (isCTextNode(sbNode)) {
         // Have a look at createTextStyle?

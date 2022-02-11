@@ -65,6 +65,8 @@ export const cssDefaults = makeCssDefaults({
   textDecorationColor: black,
   alignItems: 'normal',
   justifyContent: 'normal',
+  flexGrow: 0,
+  flexBasis: 'auto',
 });
 
 type PropertiesOrNull = {
@@ -80,7 +82,7 @@ export type CssDefaults = typeof cssDefaults;
 const cssKeys = Object.keys(cssDefaults) as (keyof typeof cssDefaults)[];
 type CssKeys = typeof cssKeys;
 
-export type MyStyles = Pick<Properties, CssKeys[number]>;
+export type MyStyles = Required<Pick<Properties, CssKeys[number]>>;
 
 const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;

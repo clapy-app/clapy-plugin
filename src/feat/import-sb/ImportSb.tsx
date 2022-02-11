@@ -137,7 +137,7 @@ export const PreviewArea: FC<{ selection: SbAnySelection; }> = memo(({ selection
         await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         setError(undefined);
       } catch (err) {
-        handleError(err => { handleError(err); setError(err?.message || 'Unknown error'); });
+        handleError((err: any) => { handleError(err); setError(err?.message || 'Unknown error'); });
       } finally {
         setLoadingTxt(undefined);
       }

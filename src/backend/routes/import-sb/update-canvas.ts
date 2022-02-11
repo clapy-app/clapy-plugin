@@ -1,3 +1,4 @@
+import { entries } from '../../../common/general-utils';
 import { getPageById, isFrame, isLayout } from './canvas-utils';
 import { RenderContext } from './import-model';
 import { getCompNode } from './import-sb-detail';
@@ -47,6 +48,7 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
         }
       }
 
+      // If the construction of the currentNode is delegated to appendNodes(), we could add CSS defaults within appendNodes() and avoid this extra recursion.
       addCssDefaults(sbNodes, null);
 
       const padding = 32;
@@ -128,9 +130,10 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
 
 function addCssDefaults(nodes: CNode[], sbParentNode: CElementNode | null) {
   for (const sbNode of nodes) {
-    for (const [cssKey, defaultValue] of Object.entries(cssDefaults)) {
+    for (const [cssKey, defaultValue] of entries(cssDefaults)) {
       const styles = nodeStyles(sbNode, sbParentNode);
       if (!styles[cssKey]) {
+        // @ts-ignore
         styles[cssKey] = defaultValue;
       }
     }
