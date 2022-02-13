@@ -7,6 +7,7 @@ import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { Button } from '../../components/Button';
+import { env } from '../../environment/env';
 import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
@@ -18,7 +19,7 @@ export const ImportSb: FC = memo(() => {
   const loginBtn = useCallback(() => login(), []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [sbSelection, setSbSelection] = useState<SbSampleSelection>('reactstrap');
+  const [sbSelection, setSbSelection] = useState<SbSampleSelection>(env.isDev ? 'equisafe' : 'reactstrap');
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()
@@ -93,6 +94,10 @@ export const ImportSb: FC = memo(() => {
     return dispose;
   }, []);
 
+  const detachPage = useCallback(() => {
+    fetchPlugin('detachPage').catch(handleError);
+  }, []);
+
   return (
     <div className={classes.container}>
       <div>{!options
@@ -113,6 +118,7 @@ export const ImportSb: FC = memo(() => {
           ? <p>Select a single element to preview the Storybook version here.</p>
           : <PreviewArea selection={selectedSbComp[0]} />
       }
+      <button onClick={detachPage}>Detach page</button>
     </div>
   );
 });
@@ -132,7 +138,7 @@ export const PreviewArea: FC<{ selection: SbAnySelection; }> = memo(({ selection
         await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         setError(undefined);
       } catch (err) {
-        handleError(err => { handleError(err); setError(err?.message || 'Unknown error'); });
+        handleError((err: any) => { handleError(err); setError(err?.message || 'Unknown error'); });
       } finally {
         setLoadingTxt(undefined);
       }

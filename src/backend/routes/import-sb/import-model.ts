@@ -1,4 +1,5 @@
-import { CNode, SbStory } from './sb-serialize.model';
+import { env } from '../../../environment/env';
+import { CElementNode, SbStory } from './sb-serialize.model';
 
 export const storiesSamples = {
   reactstrap: {
@@ -9,9 +10,15 @@ export const storiesSamples = {
     label: 'Monday Vibe',
     sbUrl: 'https://style.monday.com',
   },
+  ...(env.isDev && {
+    equisafe: {
+    label: 'Equisafe',
+    sbUrl: 'http://localhost:9009',
+  }
+  }),
 } as const;
 
-export type StoriesSamples = typeof storiesSamples;
+export type StoriesSamples = Required<typeof storiesSamples>;
 export type SbSampleSelection = keyof StoriesSamples;
 export type StoriesSample = StoriesSamples[SbSampleSelection];
 
@@ -27,7 +34,7 @@ export interface BorderWidths {
 export interface RenderContext {
   storyId: string;
   figmaParentNode: FrameNode;
-  sbParentNode: CNode | null;
+  sbParentNode: CElementNode | null;
   previousInlineNode?: TextNode;
   absoluteAncestor: FrameNode;
   absoluteAncestorBorders: BorderWidths;

@@ -152,7 +152,7 @@ function getOrCreateCompFrame(container: FrameNode, page: PageNode, storyId: str
     frame = figma.createFrame();
     frame.y = 100;
     frame.x = i * 550;
-    frame.resize(500, 300);
+    frame.resizeWithoutConstraints(500, 300);
     frame.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
     container.appendChild(frame);
   }

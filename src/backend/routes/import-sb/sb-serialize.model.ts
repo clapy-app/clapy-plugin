@@ -1,8 +1,16 @@
-import { Properties as CSSProperties } from 'csstype';
-export type Properties = CSSProperties;
+export type { Property } from 'csstype';
+
+// import type { Properties as CSSProperties } from 'csstype';
+// export type Properties = CSSProperties;
+
+// Instead of above the type that is exhaustive (but heavy), let's try below simplification to see if TypeScript is much faster without the full CSS typing.
+export type Properties = Dict<any>;
+
+// Another option: Partial<CSSStyleDeclaration>
+// but with it, assigning a string value causes a typing error, I don't know how to solve it without over-engineering the typing.
 
 interface Dict<T = any> {
-  [key: string]: T;
+  [key: string | number | symbol]: T;
 }
 
 const black = 'rgb(0, 0, 0)';
@@ -10,7 +18,7 @@ const backWithOp = 'rgba(0, 0, 0, 0)';
 const zeroPx = '0px';
 
 // Playground with auto-completed values:
-// const playground: CSSProperties = {
+// const playground: Properties = {
 //   display: 'block',
 // };
 
@@ -19,9 +27,9 @@ export const cssDefaults = makeCssDefaults({
   flexDirection: 'row',
   width: 'auto',
   height: 'auto',
-  fontSize: undefined,
+  fontSize: null,
   fontWeight: '400',
-  lineHeight: undefined,
+  lineHeight: null,
   textAlign: 'start',
   color: black,
   backgroundColor: backWithOp,
@@ -62,9 +70,21 @@ export const cssDefaults = makeCssDefaults({
   textDecorationThickness: 'auto',
   textDecorationStyle: 'solid',
   textDecorationColor: black,
+  alignItems: 'normal',
+  justifyContent: 'normal',
+  flexGrow: '0',
+  flexBasis: 'auto',
+  overflowX: 'visible',
+  overflowY: 'visible',
+  opacity: '1',
+  fontFamily: null,
 });
 
-function makeCssDefaults<T extends CSSProperties>(rules: T): T {
+type PropertiesOrNull = {
+  [P in keyof Properties]: Properties[P] | null;
+};
+
+function makeCssDefaults<T extends PropertiesOrNull>(rules: T): T {
   return rules;
 }
 
@@ -73,7 +93,21 @@ export type CssDefaults = typeof cssDefaults;
 const cssKeys = Object.keys(cssDefaults) as (keyof typeof cssDefaults)[];
 type CssKeys = typeof cssKeys;
 
-export type MyStyles = Pick<CSSProperties, CssKeys[number]>;
+export type MyStyles = Required<Pick<Properties, CssKeys[number]>>;
+export type MyStylesPE = MyStyles & { content: string; };
+export type MyStyleRules = Properties;
+export type MyCSSVariables = MyStyleRules/* Dict<string> */;
+
+export type StyleKey = Exclude<keyof MyStyleRules, 'length' | 'parentRule'>;
+
+// type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+// type OptionalExcept<T, K extends keyof T> = Pick<T, K> & Omit<Partial<T>, K>;
+type CSSStyleDeclarationMethods = 'getPropertyPriority' | 'getPropertyValue' | 'item' | 'removeProperty' | 'setProperty';
+
+// export type MyCSSStyleDeclaration = OptionalExcept<CSSStyleDeclaration, CSSStyleDeclarationMethods>;
+
+// Adding src which is missing in the original typing, surprisingly, although it's a valid key for font faces.
+export type CSSStyleDeclarationNoMethod = Partial<Omit<CSSStyleDeclaration & { src: string; }, CSSStyleDeclarationMethods>>;
 
 const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;
@@ -83,18 +117,25 @@ export interface CElementNode {
   name: string;
   type: typeof ELEMENT_NODE;
   styles: MyStyles;
+  styleRules: MyStyleRules;
+  isFullWidth: boolean; // filled by prepareFullWidthHeightAttr()
+  isFullHeight: boolean;
+
+  className: string | undefined;
   children?: CNode[];
 }
-export interface CPseudoElementNode {
+export type CPseudoElementNode = {
   name: string;
   type: typeof PSEUDO_ELEMENT_NODE;
-  styles: MyStyles;
-}
+  styles: MyStylesPE;
+  styleRules: MyStyleRules;
+  isFullWidth: boolean;
+  isFullHeight: boolean;
+} & ({ isFontIcon: false; } | { isFontIcon: true; svg: string; });
 export interface CTextNode {
   name: '#text';
   type: typeof TEXT_NODE;
-  styles: MyStyles;
-  value: string;
+  value: string | null;
 }
 export type CNode = CElementNode | CPseudoElementNode | CTextNode;
 

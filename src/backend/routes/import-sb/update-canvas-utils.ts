@@ -1,6 +1,6 @@
 import { isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, MyStyles, Properties } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -105,13 +105,19 @@ function areBordersTheSame(borderMapping: BorderMapping[]) {
   return true;
 }
 
-export function applyBackgroundColor(node: FrameNode, backgroundColor: Properties['backgroundColor']) {
+export function applyBackgroundColor(node: FrameNode | VectorNode, backgroundColor: Properties['backgroundColor'], opacity: Property.Opacity) {
   const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
   node.fills = a > 0 ? [{
     type: 'SOLID',
     color: { r, g, b },
-    opacity: a,
+    opacity: a * parseFloat(opacity as string) ?? 1,
   }] : [];
+}
+
+export function prepareFullWidthHeightAttr(context: RenderContext, sbNode: CElementNode | CPseudoElementNode) {
+  const { width, minWidth, height, minHeight } = sbNode.styleRules;
+  sbNode.isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
+  sbNode.isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
 }
 
 export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: MyStyles) {
@@ -123,7 +129,7 @@ export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, border
   } as BorderWidths;
 }
 
-export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
+export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle, opacity }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
   const borderMapping: BorderMapping[] = [
     {
       color: borderBottomColor,
@@ -154,6 +160,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       y: 0,
     },
   ];
+  const op = parseFloat(opacity as string) ?? 1;
 
   // If all borders are the same, we could apply real borders with strokes.
   if (areBordersTheSame(borderMapping)) {
@@ -165,7 +172,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       node.strokes = [{
         type: 'SOLID',
         color: { r, g, b },
-        opacity: a,
+        opacity: a * op,
       }];
     }
   } else {
@@ -176,7 +183,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
           type: 'INNER_SHADOW',
           spread: 0,
           radius: 0,
-          color: { r, g, b, a },
+          color: { r, g, b, a: a * op },
           offset: {
             x: x * width,
             y: y * width,
@@ -256,14 +263,14 @@ export function prepareMargins({ marginBottom, marginLeft, marginTop, marginRigh
   } as Margins;
 }
 
-export function appendMargins({ figmaParentNode }: RenderContext, sbNode: CNode, margins: Margins | undefined, previousMargins: Margins | undefined) {
+export function appendMargins({ figmaParentNode, sbParentNode }: RenderContext, sbNode: CNode, margins: Margins | undefined, previousMargins: Margins | undefined) {
   if (isCPseudoElementNode(sbNode)) {
     // Hack because we can't recognize margin: auto with computed CSS.
     // Let's assume it's typically used with pseudo elements.
     // Later, to replace with a check of the source CSS rule.
     return;
   }
-  const { display } = sbNode.styles;
+  const { display } = nodeStyles(sbNode, sbParentNode);
   let margin = 0, width = 0, height = 0;
   if (figmaParentNode.layoutMode === 'HORIZONTAL') {
     margin = (previousMargins?.marginRight || 0) + (margins?.marginLeft || 0);
@@ -280,7 +287,7 @@ export function appendMargins({ figmaParentNode }: RenderContext, sbNode: CNode,
     const space = figma.createFrame();
     space.name = `Margin ${margin}px`;
     // Add a transparent frame taking the margin space, stretching in counter axis.
-    space.resize(width, height);
+    space.resizeWithoutConstraints(width, height);
     space.fills = [{
       type: 'SOLID',
       color: { r: 1, g: 1, b: 1 },
@@ -292,73 +299,180 @@ export function appendMargins({ figmaParentNode }: RenderContext, sbNode: CNode,
 }
 
 export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, paddings: Paddings, svgNode: FrameNode | undefined, w: number, h: number) {
-  const { display, flexDirection } = sbNode.styles;
+  const { figmaParentNode } = context;
+  const { display, flexDirection, position } = sbNode.styles;
+  const { isFullWidth, isFullHeight } = sbNode;
   const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
-  const fixedSize = !!svgNode;
-  node.layoutMode = display === 'flex' && flexDirection === 'row'
-    ? 'HORIZONTAL' : 'VERTICAL';
+  const { width, height } = sbNode.styleRules;
+  const forceFixedWidth = !!svgNode || (!!width && !isFullWidth);
+  const forceFixedHeight = !!svgNode || (!!height && !isFullHeight);
 
-  applyFlexWidthHeight(node, context, sbNode, fixedSize);
+  // For SVG nodes, we don't apply auto-layout. For the rest, we do.
+  if (!svgNode) {
+    node.layoutMode = display === 'flex' && flexDirection === 'row'
+      ? 'HORIZONTAL' : 'VERTICAL';
+  }
+
+  applyFlexWidthHeight(node, context, sbNode, w, h, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
 
   if (paddingBottom) node.paddingBottom = paddingBottom;
   if (paddingLeft) node.paddingLeft = paddingLeft;
   if (paddingTop) node.paddingTop = paddingTop;
   if (paddingRight) node.paddingRight = paddingRight;
 
-  if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || fixedSize) && !isNaN(w) && !isNaN(h)) {
-    node.resize(w, h);
+  // if (node.name === 'i:after') {
+  //   console.log('I want to debug here');
+  //   debugger;
+  // }
+
+  if (!!svgNode && (!forceFixedWidth || !forceFixedHeight)) {
+    console.warn('A SVG node does not have a fixed size. This is a case to study to ensure we render it well.');
+    console.warn('Node name:', node.name);
+  }
+
+  if (position === 'absolute' && (isFullWidth || isFullHeight)) {
+    const w2 = isFullWidth ? figmaParentNode.width : w;
+    const h2 = isFullHeight ? figmaParentNode.height : h;
+    node.resizeWithoutConstraints(w2, h2);
+  } else if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || forceFixedWidth || forceFixedHeight) && !isNaN(w) && !isNaN(h)) {
+    if ((forceFixedWidth && forceFixedHeight) || !!svgNode) {
+      node.resize(w, h);
+    } else {
+      node.resizeWithoutConstraints(w, h);
+    }
   }
 }
 
-function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, fixedSize: boolean) {
-  const { figmaParentNode, sbParentNode } = context;
+const counterAxisStretch = new Set<Property.AlignItems>(['inherit', 'initial', 'normal', 'revert', 'stretch', 'unset']);
 
-  // const widthFillContainer = isWidth100P;
-  // const heightFillContainer = isHeight100P;
-  // sbNode.parent
-  const widthFillContainer = !(sbParentNode?.styles.display === 'block' && sbNode.styles.display === 'inline-block'); // true unless block parent and inline-block child
-  const heightFillContainer = false; // Hug contents
+function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, w: number, h: number, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
+  const { figmaParentNode, sbParentNode } = context;
+  const { display: parentDisplay = 'flex', alignItems: parentAlignItems = 'normal' } = sbParentNode?.styles || {};
+  const { display, alignItems, justifyContent, flexGrow, flexBasis, position } = sbNode.styles;
+
   const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   const parentVertical = !parentHorizontal;
   const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
   const nodeVertical = !nodeHorizontal;
+  const parentIsInlineOrBlock = parentDisplay === 'inline' || parentDisplay === 'inline-block' || parentDisplay === 'block';
+  const parentIsFlex = parentDisplay === 'flex' || parentDisplay === 'inline-flex';
+  const isInline = display.startsWith('inline') // e.g. inline, inline-block, inline-flex
+    && parentIsInlineOrBlock; // Inline has effect only if the parent is inline or block
+  const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
 
-  // layoutGrow = 1 si (0 sinon) si pas fixe et :
-  // - Parent vertical && Height fill container
-  // - ou Parent horizontal && width fill container
-  node.layoutGrow = !fixedSize
-    && ((parentVertical && heightFillContainer)
-      || (parentHorizontal && widthFillContainer))
-    ? 1 : 0;
+  const hasChildrenToHug = isCElementNode(sbNode) && !!sbNode.children?.length;
 
-  // layoutAlign = STRETCH (INHERIT sinon) si pas fixe et :
-  // - Parent vertical && width fill container
-  // - ou Parent horizontal && height fill container
-  node.layoutAlign = !fixedSize
-    && ((parentVertical && widthFillContainer)
-      || (parentHorizontal && heightFillContainer))
-    ? 'STRETCH' : 'INHERIT';
+  const widthFillContainer = isFullWidth;
+  const heightFillContainer = isFullHeight;
+
+  // Prepare some intermediate states we need to know to calculate the layout
+  const isAbsolute = position === 'absolute';
+  const parentPrimaryAxisAlreadyHugs = !isAbsolute && figmaParentNode.primaryAxisSizingMode === 'AUTO';
+  const parentCounterAxisAlreadyHugs = !isAbsolute && figmaParentNode.counterAxisSizingMode === 'AUTO';
+
+  // Calculate the final states that directly translate into Figma layout properties
+
+  // Fill container on both axes (depends on parent direction)
+  const parentPrimaryAxisFillContainer =
+    // The normal rule to fill container
+    (
+      // width/height 100%
+      (parentHorizontal && widthFillContainer || parentVertical && heightFillContainer)
+      // or flex equivalent
+      || (parentIsFlex && (flexGrow >= 1 || flexBasis === '100%' || flexBasis === '100vw' || flexBasis === '100vh'))
+    )
+    // Exceptions that could prevent fill container
+    && !(parentHorizontal && forceFixedWidth || parentVertical && forceFixedHeight)
+    && !parentPrimaryAxisAlreadyHugs;
+
+  const parentCounterAxisFillContainer =
+    // The normal rule to fill container
+    (
+      // width/height 100%
+      (parentHorizontal && heightFillContainer || parentVertical && widthFillContainer)
+      // Parent makes counter axis stretch
+      || (parentIsFlex && counterAxisStretch.has(parentAlignItems))
+      || parentIsInlineOrBlock
+    )
+    // Exceptions that could prevent fill container
+    && !isInline
+    && !(parentHorizontal && forceFixedHeight || parentVertical && forceFixedWidth)
+    && !parentCounterAxisAlreadyHugs;
+
+  // Hug contents on both axes (depends on this node direction)
+  const nodePrimaryAxisHugContents =
+    // The normal rule to hug contents: no fill container in the same axis
+    ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
+    // Exceptions that could prevent hug contents
+    && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
+    && hasChildrenToHug;
+
+  const nodeCounterAxisHugContents =
+    // The normal rule to hug contents: no fill container in the same axis
+    ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
+    // Exceptions that could prevent hug contents
+    && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
+    && hasChildrenToHug;
+
+  // if (node.name === 'i:after') {
+  //   console.log('I want to debug here');
+  //   debugger;
+  // }
+
+
+  // Translate into Figma properties:
+  node.layoutGrow = parentPrimaryAxisFillContainer ? 1 : 0;
+  node.layoutAlign = parentCounterAxisFillContainer ? 'STRETCH' : 'INHERIT';
 
   // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
   // - Enfant vertical && height fill container
   // - ou Enfant horizontal && width fill container
   // - ou pas d'enfants (e.g. <hr />)
-  node.primaryAxisSizingMode = fixedSize
-    || (nodeVertical && heightFillContainer)
-    || (nodeHorizontal && widthFillContainer)
-    || (isCElementNode(sbNode) && !sbNode.children?.length)
-    ? 'FIXED' : 'AUTO';
+  node.primaryAxisSizingMode = nodePrimaryAxisHugContents ? 'AUTO' : 'FIXED';
 
   // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
   // - Enfant vertical && width fill container
   // - ou Enfant horizontal && height fill container
-  node.counterAxisSizingMode = fixedSize
-    || (nodeVertical && widthFillContainer)
-    || (nodeHorizontal && heightFillContainer)
-    ? 'FIXED' : 'AUTO';
+  node.counterAxisSizingMode = nodeCounterAxisHugContents ? 'AUTO' : 'FIXED';
+
+  // To adjust based on flex properties like align-items / justify-content 
+  node.primaryAxisAlignItems = justifyContentMap[justifyContent] || 'MIN';
+  node.counterAxisAlignItems = alignItemsMap[alignItems] || 'MIN';
 }
 
-export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings) {
+// primary axis
+const justifyContentMap: Partial<{
+  [K in Property.JustifyContent]: BaseFrameMixin['primaryAxisAlignItems'];
+}> = {
+  baseline: 'MIN',
+  normal: 'MIN',
+  center: 'CENTER',
+  start: 'MIN',
+  end: 'MAX',
+  'flex-start': 'MIN',
+  'flex-end': 'MIN',
+  'space-between': 'SPACE_BETWEEN',
+  'space-around': 'SPACE_BETWEEN',
+  // stretch: 'MIN',
+};
+// counter axis
+const alignItemsMap: Partial<{
+  [K in Property.AlignItems]: BaseFrameMixin['counterAxisAlignItems'];
+}> = {
+  inherit: 'MIN', // stretch
+  initial: 'MIN', // stretch
+  normal: 'MIN', // stretch
+  revert: 'MIN', // stretch
+  stretch: 'MIN', // stretch
+  unset: 'MIN', // stretch
+  baseline: 'MIN',
+  center: 'CENTER',
+  start: 'MIN',
+  end: 'MAX',
+};
+
+function svgFromBackground(sbNode: CElementNode | CPseudoElementNode) {
+  const { backgroundImage } = sbNode.styles;
   if (backgroundImage === 'none') {
     return;
   }
@@ -369,12 +483,28 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
     console.warn('Incorrect background-image value from CSS:', backgroundImage);
     return;
   }
+  return decodeURIComponent(match[1]);
+}
 
-  // Required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
+function svgFromFontIcon(sbNode: CElementNode | CPseudoElementNode) {
+  return isCPseudoElementNode(sbNode) && sbNode.isFontIcon ? sbNode.svg : undefined;
+}
+
+export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
+  const svg = svgFromBackground(sbNode) || svgFromFontIcon(sbNode);
+  if (!svg) {
+    return;
+  }
+
+  const { color, opacity } = sbNode.styles;
+
+  // Wrapper required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
   const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
   const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
   const shouldWrap = borderBottomWidth > 0 || borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || paddingBottom > 0 || paddingLeft > 0 || paddingTop > 0 || paddingRight > 0;
-  let node = figma.createNodeFromSvg(decodeURIComponent(match[1]));
+  let node = figma.createNodeFromSvg(svg);
+  const svgNode = node.children[0] as VectorNode;
+
   if (shouldWrap) {
     node.name = 'SVG wrapper';
     node.layoutMode = 'VERTICAL';
@@ -386,9 +516,14 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
     svgWrapper.appendChild(node);
     node = svgWrapper;
   }
-  // Center, because we mainly use autolayout (wrapper or not).
-  node.primaryAxisAlignItems = 'CENTER';
-  node.counterAxisAlignItems = 'CENTER';
+
+  // Some properties like fill should be applied directly to the SVG.
+  applyBackgroundColor(svgNode, color, opacity);
+
+  // Center SVG in the container. We consider background images are centered by default. To review if we have different cases.
+  // We set it in the style to let applyAutoLayout translate into Figma props with the rest (e.g. paddings).
+  sbNode.styles.alignItems = 'center';
+  sbNode.styles.justifyContent = 'center';
   return node;
 }
 
@@ -438,10 +573,26 @@ function prepareAbsoluteConstraints(styles: MyStyles) {
   const { bottom, left, top, right } = styles;
   return {
     bottom: sizeWithUnitToPx(bottom as string),
-    left: sizeWithUnitToPx(left as string),
-    top: sizeWithUnitToPx(top as string),
+    left: left === 'auto' ? 0 : sizeWithUnitToPx(left as string),
+    top: top === 'auto' ? 0 : sizeWithUnitToPx(top as string),
     right: sizeWithUnitToPx(right as string),
   };
+}
+
+function setTo0px(frame: FrameNode) {
+  frame.resizeWithoutConstraints(0.01, 0.01);
+
+  // https://figmaplugins.slack.com/archives/CM11GSRAT/p1629228050013600?thread_ts=1611754495.005200&cid=CM11GSRAT
+  // I found another way to get 0px frame through api.
+  // The steps are as follow:
+  // 1. Create or get a line / vector 0px width or height;
+  // 2. Create a frame and append the line in this frame (the size doesn't matter)
+  // 3. Change frame frame.layoutMode = "HORIZONTAL" | "VERTICAL"
+  // 4. Change frame back to none frame.layoutMode = "NONE"  to have basic frame.
+  // 5. Append the items you need in this frame.
+  // ** In case you leave the frame.layoutMode !== "NONE" , then you'll need to change also one or both of the following props:
+  // frame.primaryAxisSizingMode = "FIXED"
+  // frame.counterAxisSizingMode = "FIXED"
 }
 
 export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElementNode | CPseudoElementNode, context: RenderContext) {
@@ -453,8 +604,8 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   } else {
     wrapper = figma.createFrame();
     wrapper.name = 'Absolute position wrapper';
-    // 1x1 px (resize() rounds to 1 px, although it doesn't with the UI :( )
-    wrapper.resize(0.01, 0.01);
+    wrapper.layoutAlign = 'STRETCH';
+    setTo0px(wrapper);
     // So we set to transparent. The tradeoff is that there is 1px shift for the rest.
     // We could work around it by reducing paddings, margins... (if any) by 1px (not implemented)
     wrapper.fills = [{
@@ -468,6 +619,15 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   }
 
   figmaParentNode.appendChild(wrapper);
+
+  const { isFullWidth, isFullHeight, styles, styleRules } = sbNode;
+
+  // if (node.name === 'span.v-badge__badge.success') {
+  //   console.log('I want to debug here');
+  //   debugger;
+  // }
+
+  const { width, height } = node;
 
   // Sum the x and y coordinates of intermediates nodes to have the distance between the absolute node and the ancestor.
   let n: BaseNode & ChildrenMixin | null = wrapper;
@@ -484,32 +644,53 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
     dy = 0;
   }
 
-  const { width, height } = node;
   const { width: parentWidth, height: parentHeight } = absoluteAncestor;
-  const { bottom, left, top, right } = prepareAbsoluteConstraints(sbNode.styles);
-  if (top < bottom) {
-    node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
-  } else if (bottom < top) {
-    node.y = -dy + parentHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
-  } else if (top === bottom) {
+  const { bottom, left, top, right } = prepareAbsoluteConstraints(styles);
+  const { bottom: ruleBottom = 'auto', left: ruleLeft = 'auto', top: ruleTop = 'auto', right: ruleRight = 'auto' } = styleRules;
+  const attachTop = ruleTop !== 'auto' || isFullHeight;
+  const attachBottom = ruleBottom !== 'auto' || isFullHeight;
+  const attachLeft = ruleLeft !== 'auto' || isFullWidth;
+  const attachRight = ruleRight !== 'auto' || isFullWidth;
+  let vertical: ConstraintType = 'MIN';
+  let horizontal: ConstraintType = 'MIN';
+  if (attachTop && attachBottom) { // old: top === bottom
     const parentShift = (parentHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth) / 2;
     node.y = -dy + absoluteAncestorBorders.borderTopWidth + parentShift - height / 2;
+    vertical = 'CENTER';
+  } else if (attachBottom) { // old: bottom < top
+    node.y = -dy + parentHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
+    vertical = 'MAX';
+  } else { // old: top < bottom - also for the case when there is neither top nor bottom defined.
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
+    vertical = 'MIN';
   }
 
-  if (left < right) {
-    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
-  } else if (right < left) {
-    node.x = -dx + parentWidth - absoluteAncestorBorders.borderRightWidth - right - width;
-  } else if (left === right) {
+  if (attachLeft && attachRight) { // old: left === right
     const parentShift = (parentWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth) / 2;
     node.x = -dx + absoluteAncestorBorders.borderLeftWidth + parentShift - width / 2;
+    horizontal = 'CENTER';
+  } else if (attachRight) { // old: right < left
+    node.x = -dx + parentWidth - absoluteAncestorBorders.borderRightWidth - right - width;
+    horizontal = 'MAX';
+  } else { // old: left < right - also for the case when there is neither top nor bottom defined.
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
+    horizontal = 'MIN';
   }
+
+  node.constraints = {
+    horizontal,
+    vertical,
+  };
 
 }
 
-export function sizeWithUnitToPx(size: Exclude<Properties['width'], undefined>) {
+export function sizeWithUnitToPx(size: NonNullable<Property.Width>) {
   if (size == null) return 0;
   return parseInt(size as string);
+}
+
+export function nodeStyles(sbNode: CNode, sbParentNode: CElementNode | null) {
+  return isCTextNode(sbNode) ? sbParentNode!.styles : sbNode.styles;
 }
 
 function isNumeric(n: string) {
