@@ -105,19 +105,37 @@ function areBordersTheSame(borderMapping: BorderMapping[]) {
   return true;
 }
 
-export function applyBackgroundColor(node: FrameNode, backgroundColor: Properties['backgroundColor']) {
+export function applyBackgroundColor(node: FrameNode | VectorNode, backgroundColor: Properties['backgroundColor'], opacity: Property.Opacity) {
   const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
   node.fills = a > 0 ? [{
     type: 'SOLID',
     color: { r, g, b },
-    opacity: a,
+    opacity: a * parseInt(opacity as string) ?? 1,
   }] : [];
 }
 
-export function prepareFullWidthHeightAttr(sbNode: CElementNode | CPseudoElementNode) {
+export function prepareFullWidthHeightAttr(context: RenderContext, sbNode: CElementNode | CPseudoElementNode) {
   const { width, minWidth, height, minHeight } = sbNode.styleRules;
   sbNode.isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
   sbNode.isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
+}
+
+export function adjustFullWidthHeightForPseudoElement(context: RenderContext, sbNode: CElementNode | CPseudoElementNode, node: FrameNode, w: number, h: number) {
+  const { figmaParentNode } = context;
+  if (isCPseudoElementNode(sbNode)) {
+    if (w >= figmaParentNode.width - figmaParentNode.paddingLeft - figmaParentNode.paddingRight) {
+      sbNode.isFullWidth = true;
+    }
+    if (h >= figmaParentNode.height - figmaParentNode.paddingTop - figmaParentNode.paddingBottom) {
+      sbNode.isFullHeight = true;
+    }
+  }
+
+  // if (node.name === 'i:after') {
+  //   console.log('I want to debug here');
+  //   debugger;
+  // }
+
 }
 
 export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: MyStyles) {
@@ -129,7 +147,7 @@ export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, border
   } as BorderWidths;
 }
 
-export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
+export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle, opacity }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
   const borderMapping: BorderMapping[] = [
     {
       color: borderBottomColor,
@@ -160,6 +178,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       y: 0,
     },
   ];
+  const op = parseInt(opacity as string) ?? 1;
 
   // If all borders are the same, we could apply real borders with strokes.
   if (areBordersTheSame(borderMapping)) {
@@ -171,7 +190,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       node.strokes = [{
         type: 'SOLID',
         color: { r, g, b },
-        opacity: a,
+        opacity: a * op,
       }];
     }
   } else {
@@ -182,7 +201,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
           type: 'INNER_SHADOW',
           spread: 0,
           radius: 0,
-          color: { r, g, b, a },
+          color: { r, g, b, a: a * op },
           offset: {
             x: x * width,
             y: y * width,
@@ -305,8 +324,12 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
   const { width, height } = sbNode.styleRules;
   const forceFixedWidth = !!svgNode || (!!width && !isFullWidth);
   const forceFixedHeight = !!svgNode || (!!height && !isFullHeight);
-  node.layoutMode = display === 'flex' && flexDirection === 'row'
-    ? 'HORIZONTAL' : 'VERTICAL';
+
+  // For SVG nodes, we don't apply auto-layout. For the rest, we do.
+  if (!svgNode) {
+    node.layoutMode = display === 'flex' && flexDirection === 'row'
+      ? 'HORIZONTAL' : 'VERTICAL';
+  }
 
   applyFlexWidthHeight(node, context, sbNode, w, h, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
 
@@ -320,12 +343,21 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
   //   debugger;
   // }
 
+  if (!!svgNode && (!forceFixedWidth || !forceFixedHeight)) {
+    console.warn('A SVG node does not have a fixed size. This is a case to study to ensure we render it well.');
+    console.warn('Node name:', node.name);
+  }
+
   if (position === 'absolute' && (isFullWidth || isFullHeight)) {
     const w2 = isFullWidth ? figmaParentNode.width : w;
     const h2 = isFullHeight ? figmaParentNode.height : h;
     node.resizeWithoutConstraints(w2, h2);
   } else if ((/* node.layoutMode === 'NONE' || */  (isCElementNode(sbNode) && !sbNode.children?.length) || forceFixedWidth || forceFixedHeight) && !isNaN(w) && !isNaN(h)) {
-    node.resizeWithoutConstraints(w, h);
+    if ((forceFixedWidth && forceFixedHeight) || !!svgNode) {
+      node.resize(w, h);
+    } else {
+      node.resizeWithoutConstraints(w, h);
+    }
   }
 }
 
@@ -457,7 +489,8 @@ const alignItemsMap: Partial<{
   end: 'MAX',
 };
 
-export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
+function svgFromBackground(sbNode: CElementNode | CPseudoElementNode) {
+  const { backgroundImage } = sbNode.styles;
   if (backgroundImage === 'none') {
     return;
   }
@@ -468,12 +501,28 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
     console.warn('Incorrect background-image value from CSS:', backgroundImage);
     return;
   }
+  return decodeURIComponent(match[1]);
+}
 
-  // Required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
+function svgFromFontIcon(sbNode: CElementNode | CPseudoElementNode) {
+  return isCPseudoElementNode(sbNode) && sbNode.isFontIcon ? sbNode.svg : undefined;
+}
+
+export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
+  const svg = svgFromBackground(sbNode) || svgFromFontIcon(sbNode);
+  if (!svg) {
+    return;
+  }
+
+  const { color, opacity } = sbNode.styles;
+
+  // Wrapper required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
   const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
   const { paddingBottom, paddingLeft, paddingTop, paddingRight } = paddings;
   const shouldWrap = borderBottomWidth > 0 || borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || paddingBottom > 0 || paddingLeft > 0 || paddingTop > 0 || paddingRight > 0;
-  let node = figma.createNodeFromSvg(decodeURIComponent(match[1]));
+  let node = figma.createNodeFromSvg(svg);
+  const svgNode = node.children[0] as VectorNode;
+
   if (shouldWrap) {
     node.name = 'SVG wrapper';
     node.layoutMode = 'VERTICAL';
@@ -485,6 +534,10 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
     svgWrapper.appendChild(node);
     node = svgWrapper;
   }
+
+  // Some properties like fill should be applied directly to the SVG.
+  applyBackgroundColor(svgNode, color, opacity);
+
   // Center SVG in the container. We consider background images are centered by default. To review if we have different cases.
   // We set it in the style to let applyAutoLayout translate into Figma props with the rest (e.g. paddings).
   sbNode.styles.alignItems = 'center';
@@ -645,7 +698,7 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   node.constraints = {
     horizontal,
     vertical,
-  }
+  };
 
 }
 

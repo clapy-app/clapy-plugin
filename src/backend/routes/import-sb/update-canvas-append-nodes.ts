@@ -1,7 +1,7 @@
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { adjustFullWidthHeightForPseudoElement, appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -35,7 +35,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
+      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, opacity, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
 
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
@@ -62,10 +62,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         const fontName = start > 0 ? node.getRangeFontName(0, 1) : node.fontName;
         const family = (<FontName>fontName).family;
-        const style = cssFontWeightToFigmaValue(fontWeight as string);
+        const fontStyle = cssFontWeightToFigmaValue(fontWeight as string);
 
         await ensureFontIsLoaded(family, 'Regular');
-        const newFont = await ensureFontIsLoaded(family, style);
+        const newFont = await ensureFontIsLoaded(family, fontStyle);
 
         node.insertCharacters(start, characters);
 
@@ -117,13 +117,14 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           context.previousInlineNode = undefined;
         }
 
-        prepareFullWidthHeightAttr(sbNode);
+        prepareFullWidthHeightAttr(context, sbNode);
         const borders = prepareBorderWidths(sbNode.styles);
         const paddings = preparePaddings(sbNode.styles, borders);
         const margins = prepareMargins(sbNode.styles);
 
         const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings, sbNode);
         node = svgNode || figma.createFrame();
+
         node.name = isCElementNode(sbNode) && sbNode.className ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
 
         if (display === 'none') {
@@ -163,6 +164,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (margins.marginTop < 0) h += margins.marginTop;
         if (margins.marginBottom < 0) h += margins.marginBottom;
 
+        adjustFullWidthHeightForPseudoElement(context, sbNode, node, w, h);
+
         // if (!isNaN(w) && !isNaN(h)) {
         //   node.resizeWithoutConstraints(w, h);
         // }
@@ -179,7 +182,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         appendMargins(context, sbNode, margins, previousMargins);
         previousMargins = margins;
 
-        applyBackgroundColor(node, backgroundColor);
+        applyBackgroundColor(node, backgroundColor, opacity);
 
         const effects: Effect[] = [];
 
