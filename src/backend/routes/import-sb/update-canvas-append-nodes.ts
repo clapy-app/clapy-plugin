@@ -1,7 +1,7 @@
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { adjustFullWidthHeightForPseudoElement, appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -163,8 +163,6 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (margins.marginRight < 0) w += margins.marginRight;
         if (margins.marginTop < 0) h += margins.marginTop;
         if (margins.marginBottom < 0) h += margins.marginBottom;
-
-        adjustFullWidthHeightForPseudoElement(context, sbNode, node, w, h);
 
         // if (!isNaN(w) && !isNaN(h)) {
         //   node.resizeWithoutConstraints(w, h);

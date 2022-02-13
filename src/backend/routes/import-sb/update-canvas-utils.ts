@@ -118,24 +118,9 @@ export function prepareFullWidthHeightAttr(context: RenderContext, sbNode: CElem
   const { width, minWidth, height, minHeight } = sbNode.styleRules;
   sbNode.isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
   sbNode.isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
-}
-
-export function adjustFullWidthHeightForPseudoElement(context: RenderContext, sbNode: CElementNode | CPseudoElementNode, node: FrameNode, w: number, h: number) {
-  const { figmaParentNode } = context;
   if (isCPseudoElementNode(sbNode)) {
-    if (w >= figmaParentNode.width - figmaParentNode.paddingLeft - figmaParentNode.paddingRight) {
-      sbNode.isFullWidth = true;
-    }
-    if (h >= figmaParentNode.height - figmaParentNode.paddingTop - figmaParentNode.paddingBottom) {
-      sbNode.isFullHeight = true;
-    }
+    debugger;
   }
-
-  // if (node.name === 'i:after') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
-
 }
 
 export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: MyStyles) {
