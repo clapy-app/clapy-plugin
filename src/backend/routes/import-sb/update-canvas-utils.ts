@@ -572,11 +572,16 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
 function prepareAbsoluteConstraints(styles: MyStyles) {
   const { bottom, left, top, right } = styles;
   return {
-    bottom: sizeWithUnitToPx(bottom as string),
-    left: left === 'auto' ? 0 : sizeWithUnitToPx(left as string),
-    top: top === 'auto' ? 0 : sizeWithUnitToPx(top as string),
-    right: sizeWithUnitToPx(right as string),
+    // replaceNaNWith0 because with display: none, those properties can still contain the original formula like calc(100% - 12px), not calculated until the component is displayed.
+    bottom: replaceNaNWith0(sizeWithUnitToPx(bottom as string)),
+    left: replaceNaNWith0(left === 'auto' ? 0 : sizeWithUnitToPx(left as string)),
+    top: replaceNaNWith0(top === 'auto' ? 0 : sizeWithUnitToPx(top as string)),
+    right: replaceNaNWith0(sizeWithUnitToPx(right as string)),
   };
+}
+
+function replaceNaNWith0(num: number): number {
+  return isNaN(num) ? 0 : num;
 }
 
 function setTo0px(frame: FrameNode) {
