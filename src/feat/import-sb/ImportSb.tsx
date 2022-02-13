@@ -7,6 +7,7 @@ import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { Button } from '../../components/Button';
+import { env } from '../../environment/env';
 import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
@@ -18,7 +19,7 @@ export const ImportSb: FC = memo(() => {
   const loginBtn = useCallback(() => login(), []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [sbSelection, setSbSelection] = useState<SbSampleSelection>('equisafe');
+  const [sbSelection, setSbSelection] = useState<SbSampleSelection>(env.isDev ? 'equisafe' : 'reactstrap');
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()

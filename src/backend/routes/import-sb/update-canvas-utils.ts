@@ -573,8 +573,8 @@ function prepareAbsoluteConstraints(styles: MyStyles) {
   const { bottom, left, top, right } = styles;
   return {
     bottom: sizeWithUnitToPx(bottom as string),
-    left: sizeWithUnitToPx(left as string),
-    top: sizeWithUnitToPx(top as string),
+    left: left === 'auto' ? 0 : sizeWithUnitToPx(left as string),
+    top: top === 'auto' ? 0 : sizeWithUnitToPx(top as string),
     right: sizeWithUnitToPx(right as string),
   };
 }

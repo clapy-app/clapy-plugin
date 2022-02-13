@@ -133,7 +133,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings, sbNode);
         node = svgNode || figma.createFrame();
 
-        node.name = isCElementNode(sbNode) && sbNode.className ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
+        // Bug: className is an object for SVG?
+        // Reactstrap, component components-toast--toast-header-icon
+        node.name = isCElementNode(sbNode) && typeof sbNode.className === 'string' ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
 
         if (display === 'none') {
           node.visible = false;
@@ -180,8 +182,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (w === 0 && h === 0 && !hasChildren) {
           node.visible = false;
         } else {
-          if (w === 0) w = 0.01;
-          if (h === 0) h = 0.01;
+          // `<=` because, with negative margins, negative dimensions can happen.
+          if (w <= 0) w = 0.01;
+          if (h <= 0) h = 0.01;
           applyAutoLayout(node, context, sbNode, paddings, svgNode, w, h);
         }
 
