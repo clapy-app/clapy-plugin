@@ -37,6 +37,11 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
       const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, opacity, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
 
+      if (display === 'none') {
+        // Let's skip the elements not displayed for now. We will see later if there is a good reason to render them.
+        continue;
+      }
+
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
         context.previousInlineNode = newTextNode();
@@ -52,7 +57,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (typeof start !== 'number') {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
         }
-        let characters = sbNode.value;
+        let characters = sbNode.value?.replace(/\s+/g, ' ');
+        if (characters !== ' ') characters = characters?.trim();
         if (typeof characters !== 'string') {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
@@ -137,9 +143,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         // Reactstrap, component components-toast--toast-header-icon
         node.name = isCElementNode(sbNode) && typeof sbNode.className === 'string' ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
 
-        if (display === 'none') {
-          node.visible = false;
-        }
+        // if (display === 'none') {
+        //   node.visible = false;
+        // }
 
         // if (node.name === 'i.v-icon.notranslate.mdi.mdi-account-check-outline.theme--light') {
         //   console.log('I want to debug here');
