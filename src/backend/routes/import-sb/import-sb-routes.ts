@@ -4,7 +4,7 @@ import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEnt
 import { SbStoriesWrapper } from './sb-serialize.model';
 
 export function getStoriesSamples() {
-  return storiesSamples;
+  return storiesSamples as Required<typeof storiesSamples>;
 }
 
 export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrapper): Promise<FrameCreated[]> {

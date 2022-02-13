@@ -1,3 +1,4 @@
+import { env } from '../../../environment/env';
 import { CElementNode, SbStory } from './sb-serialize.model';
 
 export const storiesSamples = {
@@ -9,13 +10,15 @@ export const storiesSamples = {
     label: 'Monday Vibe',
     sbUrl: 'https://style.monday.com',
   },
-  equisafe: {
+  ...(env.isDev && {
+    equisafe: {
     label: 'Equisafe',
     sbUrl: 'http://localhost:9009',
-  },
+  }
+  }),
 } as const;
 
-export type StoriesSamples = typeof storiesSamples;
+export type StoriesSamples = Required<typeof storiesSamples>;
 export type SbSampleSelection = keyof StoriesSamples;
 export type StoriesSample = StoriesSamples[SbSampleSelection];
 
