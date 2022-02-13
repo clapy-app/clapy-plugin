@@ -52,11 +52,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         if (typeof start !== 'number') {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
         }
-        let characters = sbNode.value?.trim();
+        let characters = sbNode.value;
         if (typeof characters !== 'string') {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
         }
+        if (!characters) {
+          // Empty text node, we skip it.
+          continue;
+        }
+
         const len = characters?.length;
         const end = start + len;
 

@@ -118,9 +118,6 @@ export function prepareFullWidthHeightAttr(context: RenderContext, sbNode: CElem
   const { width, minWidth, height, minHeight } = sbNode.styleRules;
   sbNode.isFullWidth = width === '100%' || width === '100vw' || minWidth === '100%' || minWidth === '100vw';
   sbNode.isFullHeight = height === '100%' || height === '100vh' || minHeight === '100%' || minHeight === '100vh';
-  if (isCPseudoElementNode(sbNode)) {
-    debugger;
-  }
 }
 
 export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: MyStyles) {

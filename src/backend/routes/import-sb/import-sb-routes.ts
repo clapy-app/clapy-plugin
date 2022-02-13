@@ -13,7 +13,7 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
       // Alternative: filter on !story.parameters.docsOnly
       .filter(([_, story]) => story.parameters.__isArgsStory)
       // .filter(([storyId, _]) => storyId === 'components-tooltip--multi')
-      .slice(0, 1)
+      // .slice(0, 1)
       ;
 
     const page = getOrCreatePage(sbUrl);
