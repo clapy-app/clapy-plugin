@@ -80,6 +80,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         if (textDecorationLine === 'underline') {
           node.setRangeTextDecoration(start, end, 'UNDERLINE');
+        } else {
+          // It seems to inherit from the decoration of the previous text, so we explicitly define "none".
+          node.setRangeTextDecoration(start, end, 'NONE');
         }
 
         if (lineHeight !== 'normal') {

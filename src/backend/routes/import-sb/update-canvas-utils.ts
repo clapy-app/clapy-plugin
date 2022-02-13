@@ -110,7 +110,7 @@ export function applyBackgroundColor(node: FrameNode | VectorNode, backgroundCol
   node.fills = a > 0 ? [{
     type: 'SOLID',
     color: { r, g, b },
-    opacity: a * parseInt(opacity as string) ?? 1,
+    opacity: a * parseFloat(opacity as string) ?? 1,
   }] : [];
 }
 
@@ -160,7 +160,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       y: 0,
     },
   ];
-  const op = parseInt(opacity as string) ?? 1;
+  const op = parseFloat(opacity as string) ?? 1;
 
   // If all borders are the same, we could apply real borders with strokes.
   if (areBordersTheSame(borderMapping)) {
