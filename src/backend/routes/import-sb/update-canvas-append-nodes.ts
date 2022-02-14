@@ -58,11 +58,11 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
         }
         let characters = sbNode.value?.replace(/\s+/g, ' ');
-        if (characters !== ' ') characters = characters?.trim();
         if (typeof characters !== 'string') {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
         }
+        if (characters !== ' ') characters = characters?.trim();
         if (!characters) {
           // Empty text node, we skip it.
           continue;
@@ -75,7 +75,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const family = (<FontName>fontName).family;
         const fontStyle = cssFontWeightToFigmaValue(fontWeight as string);
 
-        await ensureFontIsLoaded(family, 'Regular');
+        if (fontStyle !== 'Regular') {
+          await ensureFontIsLoaded(family, 'Regular');
+        }
         const newFont = await ensureFontIsLoaded(family, fontStyle);
 
         node.insertCharacters(start, characters);
@@ -203,7 +205,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         appendBackgroundColor(backgroundColor, fills);
 
         appendBackgroundImage(sbNode, fills);
-        node.fills = fills
+        node.fills = fills;
 
         const effects: Effect[] = [];
 

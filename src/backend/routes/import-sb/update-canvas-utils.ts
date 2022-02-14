@@ -491,27 +491,8 @@ const alignItemsMap: Partial<{
   end: 'MAX',
 };
 
-function svgFromBackground(sbNode: CElementNode | CPseudoElementNode) {
-  const { backgroundImage } = sbNode.styles;
-  if (backgroundImage === 'none') {
-    return;
-  }
-  // Extract svg string
-  const dataUrlRegex = /^url\("data:[^,]+,(.*?)"\)$/;
-  const match = dataUrlRegex.exec(backgroundImage as string);
-  if (match == null || !match[1]) {
-    console.warn('Incorrect background-image value from CSS:', backgroundImage);
-    return;
-  }
-  return decodeURIComponent(match[1]);
-}
-
-function svgFromFontIcon(sbNode: CElementNode | CPseudoElementNode) {
-  return isCPseudoElementNode(sbNode) && sbNode.isFontIcon ? sbNode.svg : undefined;
-}
-
 export function getSvgNode(borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
-  const svg = svgFromBackground(sbNode) || svgFromFontIcon(sbNode);
+  const svg = sbNode.svg;
   if (!svg) {
     return;
   }

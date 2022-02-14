@@ -122,6 +122,7 @@ interface CEltSharedInterface {
     type: 'Buffer';
     data: number[];
   };
+  svg?: string;
 }
 
 export interface CElementNode extends CEltSharedInterface {
@@ -135,8 +136,9 @@ export interface CElementNode extends CEltSharedInterface {
 export type CPseudoElementNode = CEltSharedInterface & {
   type: typeof PSEUDO_ELEMENT_NODE;
   styles: MyStylesPE;
+  isFontIcon: boolean;
 
-} & ({ isFontIcon: false; } | { isFontIcon: true; svg: string; });
+};
 
 export interface CTextNode {
   name: '#text';
