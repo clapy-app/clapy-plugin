@@ -113,25 +113,31 @@ const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;
 const TEXT_NODE = 3; /* Node.TEXT_NODE */
 
-export interface CElementNode {
+interface CEltSharedInterface {
   name: string;
-  type: typeof ELEMENT_NODE;
-  styles: MyStyles;
   styleRules: MyStyleRules;
   isFullWidth: boolean; // filled by prepareFullWidthHeightAttr()
   isFullHeight: boolean;
+  image?: {
+    type: 'Buffer';
+    data: number[];
+  };
+}
+
+export interface CElementNode extends CEltSharedInterface {
+  type: typeof ELEMENT_NODE;
+  styles: MyStyles;
 
   className: string | undefined;
   children?: CNode[];
 }
-export type CPseudoElementNode = {
-  name: string;
+
+export type CPseudoElementNode = CEltSharedInterface & {
   type: typeof PSEUDO_ELEMENT_NODE;
   styles: MyStylesPE;
-  styleRules: MyStyleRules;
-  isFullWidth: boolean;
-  isFullHeight: boolean;
+
 } & ({ isFontIcon: false; } | { isFontIcon: true; svg: string; });
+
 export interface CTextNode {
   name: '#text';
   type: typeof TEXT_NODE;
