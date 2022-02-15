@@ -1,6 +1,6 @@
-import { isLayout } from './canvas-utils';
+import { isFrame, isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyleRules, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -49,21 +49,109 @@ export function cssFontWeightToFigmaValue(fontWeight: string) {
   }
 }
 
-export function cssTextAlignToFigmaValue(textAlign: Properties['textAlign']): "LEFT" | "CENTER" | "RIGHT" | "JUSTIFIED" {
-  switch (textAlign) {
-    default:
-    case 'start':
-    case 'left':
-      return 'LEFT';
-    case 'center':
-      return 'CENTER';
-    case 'right':
-    case 'end':
-      return 'RIGHT';
-    case 'justify':
-      return 'JUSTIFIED';
+type TextAlignHorizontal = TextNode['textAlignHorizontal'];
+type TextAlignVertical = TextNode['textAlignVertical'];
+
+export function calcTextAlignVertical(node: TextNode, context: RenderContext, sbNode: CTextNode): [TextAlignHorizontal, TextAlignVertical] {
+  const { figmaParentNode, sbParentNode } = context;
+  if (!sbParentNode) {
+    return ['LEFT', 'TOP'];
+  }
+  const { textAlign, alignItems, justifyContent } = sbParentNode.styles;
+  const ta: Property.TextAlign = textAlign;
+  const ai: Property.AlignItems = alignItems;
+  const jc: Property.AlignItems = justifyContent;
+  const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
+  // If parent layout is horizontal:
+  //   text horizontal alignment:
+  //     With multi line: only text-align applies
+  //     With single line: Only justify content affects it (text-align has no effect).
+  //   text vertical alignment: only align items affects it.
+  // If parent layout is vertical:
+  //   text horizontal alignment: 
+  //     With multi line: only text-align applies (align items has no effect)
+  //     With single line: align items has the priority, if not defined (or default) text-align applies.
+  //   text vertical alignment: only justify content affects it.
+  // We can't handle the single/multi-line subtleties, so let's give priority to text-align in all cases.
+  if (parentHorizontal) {
+    return [
+      textAlignToTextHorizontal[ta] || justifyContentToTextHorizontal[jc] || 'LEFT',
+      alignItemsToTextVertical[ai] || 'TOP',
+    ];
+  } else {
+    return [
+      textAlignToTextHorizontal[ta] || alignItemsToTextHorizontal[ai] || 'LEFT',
+      justifyContentToTextVertical[jc] || 'TOP',
+    ];
   }
 }
+
+const textAlignToTextHorizontal: Partial<{
+  [K in Property.TextAlign]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  right: 'RIGHT',
+  end: 'RIGHT',
+  justify: 'JUSTIFIED',
+  left: 'LEFT',
+  start: 'LEFT',
+};
+
+const justifyContentToTextHorizontal: Partial<{
+  [K in Property.JustifyContent]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  "space-around": 'CENTER',
+  "space-evenly": 'CENTER',
+  "flex-end": 'RIGHT',
+  end: 'RIGHT',
+  right: 'RIGHT',
+  left: 'LEFT',
+  start: 'LEFT',
+  "flex-start": 'LEFT',
+  "space-between": 'LEFT',
+};
+
+const alignItemsToTextVertical: Partial<{
+  [K in Property.AlignItems]: TextAlignVertical;
+}> = {
+  center: 'CENTER',
+  end: 'BOTTOM',
+  "flex-end": 'BOTTOM',
+  "self-end": 'BOTTOM',
+  baseline: 'TOP',
+  start: 'TOP',
+  "flex-start": 'TOP',
+  "self-start": 'TOP',
+};
+
+const alignItemsToTextHorizontal: Partial<{
+  [K in Property.AlignItems]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  end: 'RIGHT',
+  "flex-end": 'RIGHT',
+  "self-end": 'RIGHT',
+  baseline: 'LEFT',
+  start: 'LEFT',
+  "flex-start": 'LEFT',
+  "self-start": 'LEFT',
+};
+
+const justifyContentToTextVertical: Partial<{
+  [K in Property.JustifyContent]: TextAlignVertical;
+}> = {
+  center: 'CENTER',
+  "space-around": 'CENTER',
+  "space-evenly": 'CENTER',
+  "flex-end": 'BOTTOM',
+  end: 'BOTTOM',
+  right: 'BOTTOM',
+  left: 'TOP',
+  start: 'TOP',
+  "flex-start": 'TOP',
+  "space-between": 'TOP',
+};
 
 const rgbaRegex = 'rgba?\\((\\d{1,3}),\\s*(\\d{1,3}),\\s*(\\d{1,3})(,\\s*(\\d*\\.?\\d+))?\\)';
 const sizeRegex = '(-?\\d*\\.?\\d+)(px)';
@@ -214,36 +302,43 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
   }
 }
 
-const shadowRegex = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
+const shadowRegexStr = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
+const shadowRegex = new RegExp(shadowRegexStr, 'g');
 
 export function applyShadowToEffects(boxShadow: string, effects: Effect[]) {
   if (boxShadow === 'none') {
     return;
   }
-  const matchShadow = new RegExp(shadowRegex);
-  const match = matchShadow.exec(boxShadow);
-  if (match == null) {
+
+  let match: RegExpExecArray | null;
+  let matchedAtLeastOne = false;
+  while (match = shadowRegex.exec(boxShadow)) {
+    matchedAtLeastOne = true;
+
+    const { r, g, b, a } = rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
+    const x = sizeWithUnitToPx(match[6]);
+    const y = sizeWithUnitToPx(match[8]);
+    const blur = sizeWithUnitToPx(match[10]);
+    const spread = sizeWithUnitToPx(match[12]);
+    const hasInner = match[15] === 'inset';
+    effects.push({
+      type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
+      spread,
+      radius: blur,
+      color: { r, g, b, a },
+      offset: {
+        x,
+        y,
+      },
+      visible: true,
+      blendMode: 'NORMAL',
+    });
+  }
+
+  if (!matchedAtLeastOne) {
     console.warn('Incorrect box-shadow value from CSS:', boxShadow);
     return;
   }
-  const { r, g, b, a } = rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
-  const x = sizeWithUnitToPx(match[6]);
-  const y = sizeWithUnitToPx(match[8]);
-  const blur = sizeWithUnitToPx(match[10]);
-  const spread = sizeWithUnitToPx(match[12]);
-  const hasInner = match[15] === 'inset';
-  effects.push({
-    type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
-    spread,
-    radius: blur,
-    color: { r, g, b, a },
-    offset: {
-      x,
-      y,
-    },
-    visible: true,
-    blendMode: 'NORMAL',
-  });
 }
 
 interface Paddings {
@@ -326,22 +421,18 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
   const forceFixedHeight = !!svgNode || (!!height && !isFullHeight);
 
   // For SVG nodes, we don't apply auto-layout. For the rest, we do.
-  if (!svgNode) {
+  const svgNodeHasWrapper = isFrame(svgNode?.children[0]);
+  if (!svgNode || svgNodeHasWrapper) {
     node.layoutMode = display === 'flex' && flexDirection === 'row'
       ? 'HORIZONTAL' : 'VERTICAL';
   }
 
-  applyFlexWidthHeight(node, context, sbNode, w, h, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
+  applyFlexWidthHeight(node, context, sbNode, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
 
   if (paddingBottom) node.paddingBottom = paddingBottom;
   if (paddingLeft) node.paddingLeft = paddingLeft;
   if (paddingTop) node.paddingTop = paddingTop;
   if (paddingRight) node.paddingRight = paddingRight;
-
-  // if (node.name === 'i:after') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
 
   if (!!svgNode && (!forceFixedWidth || !forceFixedHeight)) {
     console.warn('A SVG node does not have a fixed size. This is a case to study to ensure we render it well.');
@@ -363,22 +454,17 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
 
 const counterAxisStretch = new Set<Property.AlignItems>(['inherit', 'initial', 'normal', 'revert', 'stretch', 'unset']);
 
-function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, w: number, h: number, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
+export function applyFlexWidthHeight(node: FrameNode | TextNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode | CTextNode, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
   const { figmaParentNode, sbParentNode } = context;
   const { display: parentDisplay = 'flex', alignItems: parentAlignItems = 'normal' } = sbParentNode?.styles || {};
-  const { display, alignItems, justifyContent, flexGrow, flexBasis, position } = sbNode.styles;
+  const { display, alignItems, justifyContent, flexGrow, flexBasis, position } = nodeStyles(sbNode, sbParentNode);
 
   const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   const parentVertical = !parentHorizontal;
-  const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
-  const nodeVertical = !nodeHorizontal;
   const parentIsInlineOrBlock = parentDisplay === 'inline' || parentDisplay === 'inline-block' || parentDisplay === 'block';
   const parentIsFlex = parentDisplay === 'flex' || parentDisplay === 'inline-flex';
   const isInline = display.startsWith('inline') // e.g. inline, inline-block, inline-flex
     && parentIsInlineOrBlock; // Inline has effect only if the parent is inline or block
-  const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
-
-  const hasChildrenToHug = isCElementNode(sbNode) && !!sbNode.children?.length;
 
   const widthFillContainer = isFullWidth;
   const heightFillContainer = isFullHeight;
@@ -417,49 +503,56 @@ function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: C
     && !(parentHorizontal && forceFixedHeight || parentVertical && forceFixedWidth)
     && !parentCounterAxisAlreadyHugs;
 
-  // Hug contents on both axes (depends on this node direction)
-  const nodePrimaryAxisHugContents =
-    // The normal rule to hug contents: no fill container in the same axis
-    ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
-    // Exceptions that could prevent hug contents
-    && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
-    && hasChildrenToHug;
-
-  const nodeCounterAxisHugContents =
-    // The normal rule to hug contents: no fill container in the same axis
-    ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
-    // Exceptions that could prevent hug contents
-    && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
-    && hasChildrenToHug;
-
-  // if (node.name === 'i:after') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
-
-
   // Translate into Figma properties:
   node.layoutGrow = parentPrimaryAxisFillContainer ? 1 : 0;
   node.layoutAlign = parentCounterAxisFillContainer ? 'STRETCH' : 'INHERIT';
 
-  // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
-  // - Enfant vertical && height fill container
-  // - ou Enfant horizontal && width fill container
-  // - ou pas d'enfants (e.g. <hr />)
-  node.primaryAxisSizingMode = nodePrimaryAxisHugContents ? 'AUTO' : 'FIXED';
 
-  // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
-  // - Enfant vertical && width fill container
-  // - ou Enfant horizontal && height fill container
-  node.counterAxisSizingMode = nodeCounterAxisHugContents ? 'AUTO' : 'FIXED';
+  // auto-layout frame nodes properties, for the relation with their children:
 
-  // To adjust based on flex properties like align-items / justify-content 
-  node.primaryAxisAlignItems = justifyContentMap[justifyContent] || 'MIN';
-  node.counterAxisAlignItems = alignItemsMap[alignItems] || 'MIN';
+  if (isFrame(node)) {
+
+    const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
+    const nodeVertical = !nodeHorizontal;
+
+    const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
+    const hasChildrenToHug = isCElementNode(sbNode) && !!sbNode.children?.length;
+
+    // Hug contents on both axes (depends on this node direction)
+    const nodePrimaryAxisHugContents =
+      // The normal rule to hug contents: no fill container in the same axis
+      ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
+      // Exceptions that could prevent hug contents
+      && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
+      && hasChildrenToHug;
+
+    const nodeCounterAxisHugContents =
+      // The normal rule to hug contents: no fill container in the same axis
+      ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
+      // Exceptions that could prevent hug contents
+      && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
+      && hasChildrenToHug;
+
+    // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
+    // - Enfant vertical && height fill container
+    // - ou Enfant horizontal && width fill container
+    // - ou pas d'enfants (e.g. <hr />)
+    node.primaryAxisSizingMode = nodePrimaryAxisHugContents ? 'AUTO' : 'FIXED';
+
+    // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
+    // - Enfant vertical && width fill container
+    // - ou Enfant horizontal && height fill container
+    node.counterAxisSizingMode = nodeCounterAxisHugContents ? 'AUTO' : 'FIXED';
+
+    // To adjust based on flex properties like align-items / justify-content 
+    node.primaryAxisAlignItems = justifyContentToPrimaryAlign[justifyContent] || 'MIN';
+    node.counterAxisAlignItems = alignItemsToCounterAlign[alignItems] || 'MIN';
+
+  }
 }
 
 // primary axis
-const justifyContentMap: Partial<{
+const justifyContentToPrimaryAlign: Partial<{
   [K in Property.JustifyContent]: BaseFrameMixin['primaryAxisAlignItems'];
 }> = {
   baseline: 'MIN',
@@ -474,7 +567,7 @@ const justifyContentMap: Partial<{
   // stretch: 'MIN',
 };
 // counter axis
-const alignItemsMap: Partial<{
+const alignItemsToCounterAlign: Partial<{
   [K in Property.AlignItems]: BaseFrameMixin['counterAxisAlignItems'];
 }> = {
   inherit: 'MIN', // stretch
@@ -568,7 +661,7 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
   node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
 }
 
-function prepareAbsoluteConstraints(styles: MyStyles) {
+function prepareAbsoluteConstraints(styles: MyStyles | MyStyleRules) {
   const { bottom, left, top, right } = styles;
   return {
     // replaceNaNWith0 because with display: none, those properties can still contain the original formula like calc(100% - 12px), not calculated until the component is displayed.
@@ -648,21 +741,23 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
     dy = 0;
   }
 
-  const { width: parentWidth, height: parentHeight } = absoluteAncestor;
+  const { width: ancestorWidth, height: ancestorHeight } = absoluteAncestor;
   const { bottom, left, top, right } = prepareAbsoluteConstraints(styles);
-  const { bottom: ruleBottom = 'auto', left: ruleLeft = 'auto', top: ruleTop = 'auto', right: ruleRight = 'auto' } = styleRules;
-  const attachTop = ruleTop !== 'auto' || isFullHeight;
-  const attachBottom = ruleBottom !== 'auto' || isFullHeight;
-  const attachLeft = ruleLeft !== 'auto' || isFullWidth;
-  const attachRight = ruleRight !== 'auto' || isFullWidth;
+  const { bottom: ruleBottomRaw = 'auto', left: ruleLeftRaw = 'auto', top: ruleTopRaw = 'auto', right: ruleRightRaw = 'auto' } = styleRules;
+  const { bottom: ruleBottom, left: ruleLeft, top: ruleTop, right: ruleRight } = prepareAbsoluteConstraints(styleRules);
+  const attachTop = ruleTopRaw !== 'auto' || isFullHeight;
+  const attachBottom = ruleBottomRaw !== 'auto' || isFullHeight;
+  const attachLeft = ruleLeftRaw !== 'auto' || isFullWidth;
+  const attachRight = ruleRightRaw !== 'auto' || isFullWidth;
   let vertical: ConstraintType = 'MIN';
   let horizontal: ConstraintType = 'MIN';
+  let resizeWidth = 0, resizeHeight = 0;
   if (attachTop && attachBottom) { // old: top === bottom
-    const parentShift = (parentHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth) / 2;
-    node.y = -dy + absoluteAncestorBorders.borderTopWidth + parentShift - height / 2;
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + ruleTop;
+    resizeHeight = ancestorHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth - ruleTop - ruleBottom;
     vertical = 'CENTER';
   } else if (attachBottom) { // old: bottom < top
-    node.y = -dy + parentHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
+    node.y = -dy + ancestorHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
     vertical = 'MAX';
   } else { // old: top < bottom - also for the case when there is neither top nor bottom defined.
     node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
@@ -670,15 +765,19 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   }
 
   if (attachLeft && attachRight) { // old: left === right
-    const parentShift = (parentWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth) / 2;
-    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + parentShift - width / 2;
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + ruleLeft;
+    resizeWidth = ancestorWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth - ruleLeft - ruleRight;
     horizontal = 'CENTER';
   } else if (attachRight) { // old: right < left
-    node.x = -dx + parentWidth - absoluteAncestorBorders.borderRightWidth - right - width;
+    node.x = -dx + ancestorWidth - absoluteAncestorBorders.borderRightWidth - right - width;
     horizontal = 'MAX';
   } else { // old: left < right - also for the case when there is neither top nor bottom defined.
     node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
     horizontal = 'MIN';
+  }
+
+  if (resizeWidth > 0 || resizeHeight > 0) {
+    node.resizeWithoutConstraints(resizeWidth || node.width, resizeHeight || node.height);
   }
 
   node.constraints = {
