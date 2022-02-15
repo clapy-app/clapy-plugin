@@ -1,7 +1,7 @@
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendMargins, applyAutoLayout, applyBackgroundColor, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNodeFromBackground, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, appendMargins, applyAutoLayout, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNode, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -35,7 +35,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, opacity, boxShadow, backgroundImage, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
+      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
 
       if (display === 'none') {
         // Let's skip the elements not displayed for now. We will see later if there is a good reason to render them.
@@ -58,11 +58,11 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
         }
         let characters = sbNode.value?.replace(/\s+/g, ' ');
-        if (characters !== ' ') characters = characters?.trim();
         if (typeof characters !== 'string') {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
         }
+        if (characters !== ' ') characters = characters?.trim();
         if (!characters) {
           // Empty text node, we skip it.
           continue;
@@ -75,7 +75,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const family = (<FontName>fontName).family;
         const fontStyle = cssFontWeightToFigmaValue(fontWeight as string);
 
-        await ensureFontIsLoaded(family, 'Regular');
+        if (fontStyle !== 'Regular') {
+          await ensureFontIsLoaded(family, 'Regular');
+        }
         const newFont = await ensureFontIsLoaded(family, fontStyle);
 
         node.insertCharacters(start, characters);
@@ -136,7 +138,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const paddings = preparePaddings(sbNode.styles, borders);
         const margins = prepareMargins(sbNode.styles);
 
-        const svgNode = getSvgNodeFromBackground(backgroundImage, borders, paddings, sbNode);
+        const svgNode = getSvgNode(borders, paddings, sbNode);
         node = svgNode || figma.createFrame();
 
         // Bug: className is an object for SVG?
@@ -197,7 +199,13 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         appendMargins(context, sbNode, margins, previousMargins);
         previousMargins = margins;
 
-        applyBackgroundColor(node, backgroundColor, opacity);
+        node.opacity = parseFloat(opacity as string);
+
+        const fills: Paint[] = [];
+        appendBackgroundColor(backgroundColor, fills);
+
+        appendBackgroundImage(sbNode, fills);
+        node.fills = fills;
 
         const effects: Effect[] = [];
 

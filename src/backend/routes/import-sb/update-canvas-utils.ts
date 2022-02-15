@@ -105,13 +105,32 @@ function areBordersTheSame(borderMapping: BorderMapping[]) {
   return true;
 }
 
-export function applyBackgroundColor(node: FrameNode | VectorNode, backgroundColor: Properties['backgroundColor'], opacity: Property.Opacity) {
+export function appendBackgroundColor(backgroundColor: Properties['backgroundColor'], fills: Paint[]) {
   const { r, g, b, a } = cssRGBAToFigmaValue(backgroundColor as string);
-  node.fills = a > 0 ? [{
-    type: 'SOLID',
-    color: { r, g, b },
-    opacity: a * parseFloat(opacity as string) ?? 1,
-  }] : [];
+  if (a > 0) {
+    fills.push({
+      type: 'SOLID',
+      color: { r, g, b },
+      opacity: a ?? 1,
+    });
+  }
+  return fills;
+}
+
+export function appendBackgroundImage(sbNode: CElementNode | CPseudoElementNode, fills: Paint[]) {
+  if (!sbNode.image) {
+    return fills;
+  }
+
+  const uint8ArrayData = new Uint8Array(sbNode.image.data);
+  const imageHash = figma.createImage(uint8ArrayData).hash;
+  fills.push({
+    type: 'IMAGE',
+    opacity: 1,
+    blendMode: 'NORMAL',
+    scaleMode: 'FILL',
+    imageHash: imageHash,
+  });
 }
 
 export function prepareFullWidthHeightAttr(context: RenderContext, sbNode: CElementNode | CPseudoElementNode) {
@@ -129,7 +148,7 @@ export function prepareBorderWidths({ borderBottomWidth, borderLeftWidth, border
   } as BorderWidths;
 }
 
-export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle, opacity }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
+export function applyBordersToEffects(node: FrameNode, { borderBottomColor, borderBottomStyle, borderLeftColor, borderLeftStyle, borderTopColor, borderTopStyle, borderRightColor, borderRightStyle }: MyStyles, { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth }: BorderWidths, effects: Effect[]) {
   const borderMapping: BorderMapping[] = [
     {
       color: borderBottomColor,
@@ -160,7 +179,6 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       y: 0,
     },
   ];
-  const op = parseFloat(opacity as string) ?? 1;
 
   // If all borders are the same, we could apply real borders with strokes.
   if (areBordersTheSame(borderMapping)) {
@@ -172,7 +190,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
       node.strokes = [{
         type: 'SOLID',
         color: { r, g, b },
-        opacity: a * op,
+        opacity: a,
       }];
     }
   } else {
@@ -183,7 +201,7 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
           type: 'INNER_SHADOW',
           spread: 0,
           radius: 0,
-          color: { r, g, b, a: a * op },
+          color: { r, g, b, a: a },
           offset: {
             x: x * width,
             y: y * width,
@@ -471,32 +489,13 @@ const alignItemsMap: Partial<{
   end: 'MAX',
 };
 
-function svgFromBackground(sbNode: CElementNode | CPseudoElementNode) {
-  const { backgroundImage } = sbNode.styles;
-  if (backgroundImage === 'none') {
-    return;
-  }
-  // Extract svg string
-  const dataUrlRegex = /^url\("data:[^,]+,(.*?)"\)$/;
-  const match = dataUrlRegex.exec(backgroundImage as string);
-  if (match == null || !match[1]) {
-    console.warn('Incorrect background-image value from CSS:', backgroundImage);
-    return;
-  }
-  return decodeURIComponent(match[1]);
-}
-
-function svgFromFontIcon(sbNode: CElementNode | CPseudoElementNode) {
-  return isCPseudoElementNode(sbNode) && sbNode.isFontIcon ? sbNode.svg : undefined;
-}
-
-export function getSvgNodeFromBackground(backgroundImage: Properties['backgroundImage'], borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
-  const svg = svgFromBackground(sbNode) || svgFromFontIcon(sbNode);
+export function getSvgNode(borders: BorderWidths, paddings: Paddings, sbNode: CElementNode | CPseudoElementNode) {
+  const svg = sbNode.svg;
   if (!svg) {
     return;
   }
 
-  const { color, opacity } = sbNode.styles;
+  const { color } = sbNode.styles;
 
   // Wrapper required for cases when the svg container has padding, because createNodeFromSvg renders the SVG in the container with the right position (don't try to resize the svg, you will distort it), but it ignores the padding and renders in the whole node area. So the padding should be applied on a parent node.
   const { borderBottomWidth, borderLeftWidth, borderTopWidth, borderRightWidth } = borders;
@@ -518,7 +517,7 @@ export function getSvgNodeFromBackground(backgroundImage: Properties['background
   }
 
   // Some properties like fill should be applied directly to the SVG.
-  applyBackgroundColor(svgNode, color, opacity);
+  svgNode.fills = appendBackgroundColor(color, []);
 
   // Center SVG in the container. We consider background images are centered by default. To review if we have different cases.
   // We set it in the style to let applyAutoLayout translate into Figma props with the rest (e.g. paddings).
