@@ -1,6 +1,6 @@
-import { isLayout } from './canvas-utils';
+import { isFrame, isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyleRules, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -326,7 +326,8 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
   const forceFixedHeight = !!svgNode || (!!height && !isFullHeight);
 
   // For SVG nodes, we don't apply auto-layout. For the rest, we do.
-  if (!svgNode) {
+  const svgNodeHasWrapper = isFrame(svgNode?.children[0]);
+  if (!svgNode || svgNodeHasWrapper) {
     node.layoutMode = display === 'flex' && flexDirection === 'row'
       ? 'HORIZONTAL' : 'VERTICAL';
   }
@@ -337,11 +338,6 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
   if (paddingLeft) node.paddingLeft = paddingLeft;
   if (paddingTop) node.paddingTop = paddingTop;
   if (paddingRight) node.paddingRight = paddingRight;
-
-  // if (node.name === 'i:after') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
 
   if (!!svgNode && (!forceFixedWidth || !forceFixedHeight)) {
     console.warn('A SVG node does not have a fixed size. This is a case to study to ensure we render it well.');
@@ -568,7 +564,7 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
   node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
 }
 
-function prepareAbsoluteConstraints(styles: MyStyles) {
+function prepareAbsoluteConstraints(styles: MyStyles | MyStyleRules) {
   const { bottom, left, top, right } = styles;
   return {
     // replaceNaNWith0 because with display: none, those properties can still contain the original formula like calc(100% - 12px), not calculated until the component is displayed.
@@ -648,21 +644,23 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
     dy = 0;
   }
 
-  const { width: parentWidth, height: parentHeight } = absoluteAncestor;
+  const { width: ancestorWidth, height: ancestorHeight } = absoluteAncestor;
   const { bottom, left, top, right } = prepareAbsoluteConstraints(styles);
-  const { bottom: ruleBottom = 'auto', left: ruleLeft = 'auto', top: ruleTop = 'auto', right: ruleRight = 'auto' } = styleRules;
-  const attachTop = ruleTop !== 'auto' || isFullHeight;
-  const attachBottom = ruleBottom !== 'auto' || isFullHeight;
-  const attachLeft = ruleLeft !== 'auto' || isFullWidth;
-  const attachRight = ruleRight !== 'auto' || isFullWidth;
+  const { bottom: ruleBottomRaw = 'auto', left: ruleLeftRaw = 'auto', top: ruleTopRaw = 'auto', right: ruleRightRaw = 'auto' } = styleRules;
+  const { bottom: ruleBottom, left: ruleLeft, top: ruleTop, right: ruleRight } = prepareAbsoluteConstraints(styleRules);
+  const attachTop = ruleTopRaw !== 'auto' || isFullHeight;
+  const attachBottom = ruleBottomRaw !== 'auto' || isFullHeight;
+  const attachLeft = ruleLeftRaw !== 'auto' || isFullWidth;
+  const attachRight = ruleRightRaw !== 'auto' || isFullWidth;
   let vertical: ConstraintType = 'MIN';
   let horizontal: ConstraintType = 'MIN';
+  let resizeWidth = 0, resizeHeight = 0;
   if (attachTop && attachBottom) { // old: top === bottom
-    const parentShift = (parentHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth) / 2;
-    node.y = -dy + absoluteAncestorBorders.borderTopWidth + parentShift - height / 2;
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + ruleTop;
+    resizeHeight = ancestorHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth - ruleTop - ruleBottom;
     vertical = 'CENTER';
   } else if (attachBottom) { // old: bottom < top
-    node.y = -dy + parentHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
+    node.y = -dy + ancestorHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
     vertical = 'MAX';
   } else { // old: top < bottom - also for the case when there is neither top nor bottom defined.
     node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
@@ -670,15 +668,19 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   }
 
   if (attachLeft && attachRight) { // old: left === right
-    const parentShift = (parentWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth) / 2;
-    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + parentShift - width / 2;
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + ruleLeft;
+    resizeWidth = ancestorWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth - ruleLeft - ruleRight;
     horizontal = 'CENTER';
   } else if (attachRight) { // old: right < left
-    node.x = -dx + parentWidth - absoluteAncestorBorders.borderRightWidth - right - width;
+    node.x = -dx + ancestorWidth - absoluteAncestorBorders.borderRightWidth - right - width;
     horizontal = 'MAX';
   } else { // old: left < right - also for the case when there is neither top nor bottom defined.
     node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
     horizontal = 'MIN';
+  }
+
+  if (resizeWidth > 0 || resizeHeight > 0) {
+    node.resizeWithoutConstraints(resizeWidth || node.width, resizeHeight || node.height);
   }
 
   node.constraints = {
