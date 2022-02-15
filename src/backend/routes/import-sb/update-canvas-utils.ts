@@ -1,6 +1,6 @@
 import { isFrame, isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyleRules, MyStyles, Properties, Property } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyleRules, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -49,21 +49,109 @@ export function cssFontWeightToFigmaValue(fontWeight: string) {
   }
 }
 
-export function cssTextAlignToFigmaValue(textAlign: Properties['textAlign']): "LEFT" | "CENTER" | "RIGHT" | "JUSTIFIED" {
-  switch (textAlign) {
-    default:
-    case 'start':
-    case 'left':
-      return 'LEFT';
-    case 'center':
-      return 'CENTER';
-    case 'right':
-    case 'end':
-      return 'RIGHT';
-    case 'justify':
-      return 'JUSTIFIED';
+type TextAlignHorizontal = TextNode['textAlignHorizontal'];
+type TextAlignVertical = TextNode['textAlignVertical'];
+
+export function calcTextAlignVertical(node: TextNode, context: RenderContext, sbNode: CTextNode): [TextAlignHorizontal, TextAlignVertical] {
+  const { figmaParentNode, sbParentNode } = context;
+  if (!sbParentNode) {
+    return ['LEFT', 'TOP'];
+  }
+  const { textAlign, alignItems, justifyContent } = sbParentNode.styles;
+  const ta: Property.TextAlign = textAlign;
+  const ai: Property.AlignItems = alignItems;
+  const jc: Property.AlignItems = justifyContent;
+  const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
+  // If parent layout is horizontal:
+  //   text horizontal alignment:
+  //     With multi line: only text-align applies
+  //     With single line: Only justify content affects it (text-align has no effect).
+  //   text vertical alignment: only align items affects it.
+  // If parent layout is vertical:
+  //   text horizontal alignment: 
+  //     With multi line: only text-align applies (align items has no effect)
+  //     With single line: align items has the priority, if not defined (or default) text-align applies.
+  //   text vertical alignment: only justify content affects it.
+  // We can't handle the single/multi-line subtleties, so let's give priority to text-align in all cases.
+  if (parentHorizontal) {
+    return [
+      textAlignToTextHorizontal[ta] || justifyContentToTextHorizontal[jc] || 'LEFT',
+      alignItemsToTextVertical[ai] || 'TOP',
+    ];
+  } else {
+    return [
+      textAlignToTextHorizontal[ta] || alignItemsToTextHorizontal[ai] || 'LEFT',
+      justifyContentToTextVertical[jc] || 'TOP',
+    ];
   }
 }
+
+const textAlignToTextHorizontal: Partial<{
+  [K in Property.TextAlign]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  right: 'RIGHT',
+  end: 'RIGHT',
+  justify: 'JUSTIFIED',
+  left: 'LEFT',
+  start: 'LEFT',
+};
+
+const justifyContentToTextHorizontal: Partial<{
+  [K in Property.JustifyContent]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  "space-around": 'CENTER',
+  "space-evenly": 'CENTER',
+  "flex-end": 'RIGHT',
+  end: 'RIGHT',
+  right: 'RIGHT',
+  left: 'LEFT',
+  start: 'LEFT',
+  "flex-start": 'LEFT',
+  "space-between": 'LEFT',
+};
+
+const alignItemsToTextVertical: Partial<{
+  [K in Property.AlignItems]: TextAlignVertical;
+}> = {
+  center: 'CENTER',
+  end: 'BOTTOM',
+  "flex-end": 'BOTTOM',
+  "self-end": 'BOTTOM',
+  baseline: 'TOP',
+  start: 'TOP',
+  "flex-start": 'TOP',
+  "self-start": 'TOP',
+};
+
+const alignItemsToTextHorizontal: Partial<{
+  [K in Property.AlignItems]: TextAlignHorizontal;
+}> = {
+  center: 'CENTER',
+  end: 'RIGHT',
+  "flex-end": 'RIGHT',
+  "self-end": 'RIGHT',
+  baseline: 'LEFT',
+  start: 'LEFT',
+  "flex-start": 'LEFT',
+  "self-start": 'LEFT',
+};
+
+const justifyContentToTextVertical: Partial<{
+  [K in Property.JustifyContent]: TextAlignVertical;
+}> = {
+  center: 'CENTER',
+  "space-around": 'CENTER',
+  "space-evenly": 'CENTER',
+  "flex-end": 'BOTTOM',
+  end: 'BOTTOM',
+  right: 'BOTTOM',
+  left: 'TOP',
+  start: 'TOP',
+  "flex-start": 'TOP',
+  "space-between": 'TOP',
+};
 
 const rgbaRegex = 'rgba?\\((\\d{1,3}),\\s*(\\d{1,3}),\\s*(\\d{1,3})(,\\s*(\\d*\\.?\\d+))?\\)';
 const sizeRegex = '(-?\\d*\\.?\\d+)(px)';
@@ -214,36 +302,43 @@ export function applyBordersToEffects(node: FrameNode, { borderBottomColor, bord
   }
 }
 
-const shadowRegex = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
+const shadowRegexStr = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
+const shadowRegex = new RegExp(shadowRegexStr, 'g');
 
 export function applyShadowToEffects(boxShadow: string, effects: Effect[]) {
   if (boxShadow === 'none') {
     return;
   }
-  const matchShadow = new RegExp(shadowRegex);
-  const match = matchShadow.exec(boxShadow);
-  if (match == null) {
+
+  let match: RegExpExecArray | null;
+  let matchedAtLeastOne = false;
+  while (match = shadowRegex.exec(boxShadow)) {
+    matchedAtLeastOne = true;
+
+    const { r, g, b, a } = rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
+    const x = sizeWithUnitToPx(match[6]);
+    const y = sizeWithUnitToPx(match[8]);
+    const blur = sizeWithUnitToPx(match[10]);
+    const spread = sizeWithUnitToPx(match[12]);
+    const hasInner = match[15] === 'inset';
+    effects.push({
+      type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
+      spread,
+      radius: blur,
+      color: { r, g, b, a },
+      offset: {
+        x,
+        y,
+      },
+      visible: true,
+      blendMode: 'NORMAL',
+    });
+  }
+
+  if (!matchedAtLeastOne) {
     console.warn('Incorrect box-shadow value from CSS:', boxShadow);
     return;
   }
-  const { r, g, b, a } = rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
-  const x = sizeWithUnitToPx(match[6]);
-  const y = sizeWithUnitToPx(match[8]);
-  const blur = sizeWithUnitToPx(match[10]);
-  const spread = sizeWithUnitToPx(match[12]);
-  const hasInner = match[15] === 'inset';
-  effects.push({
-    type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
-    spread,
-    radius: blur,
-    color: { r, g, b, a },
-    offset: {
-      x,
-      y,
-    },
-    visible: true,
-    blendMode: 'NORMAL',
-  });
 }
 
 interface Paddings {
@@ -332,7 +427,7 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
       ? 'HORIZONTAL' : 'VERTICAL';
   }
 
-  applyFlexWidthHeight(node, context, sbNode, w, h, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
+  applyFlexWidthHeight(node, context, sbNode, isFullWidth, isFullHeight, forceFixedWidth, forceFixedHeight);
 
   if (paddingBottom) node.paddingBottom = paddingBottom;
   if (paddingLeft) node.paddingLeft = paddingLeft;
@@ -359,22 +454,17 @@ export function applyAutoLayout(node: FrameNode, context: RenderContext, sbNode:
 
 const counterAxisStretch = new Set<Property.AlignItems>(['inherit', 'initial', 'normal', 'revert', 'stretch', 'unset']);
 
-function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode, w: number, h: number, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
+export function applyFlexWidthHeight(node: FrameNode | TextNode, context: RenderContext, sbNode: CElementNode | CPseudoElementNode | CTextNode, isFullWidth: boolean, isFullHeight: boolean, forceFixedWidth: boolean, forceFixedHeight: boolean) {
   const { figmaParentNode, sbParentNode } = context;
   const { display: parentDisplay = 'flex', alignItems: parentAlignItems = 'normal' } = sbParentNode?.styles || {};
-  const { display, alignItems, justifyContent, flexGrow, flexBasis, position } = sbNode.styles;
+  const { display, alignItems, justifyContent, flexGrow, flexBasis, position } = nodeStyles(sbNode, sbParentNode);
 
   const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   const parentVertical = !parentHorizontal;
-  const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
-  const nodeVertical = !nodeHorizontal;
   const parentIsInlineOrBlock = parentDisplay === 'inline' || parentDisplay === 'inline-block' || parentDisplay === 'block';
   const parentIsFlex = parentDisplay === 'flex' || parentDisplay === 'inline-flex';
   const isInline = display.startsWith('inline') // e.g. inline, inline-block, inline-flex
     && parentIsInlineOrBlock; // Inline has effect only if the parent is inline or block
-  const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
-
-  const hasChildrenToHug = isCElementNode(sbNode) && !!sbNode.children?.length;
 
   const widthFillContainer = isFullWidth;
   const heightFillContainer = isFullHeight;
@@ -413,49 +503,56 @@ function applyFlexWidthHeight(node: FrameNode, context: RenderContext, sbNode: C
     && !(parentHorizontal && forceFixedHeight || parentVertical && forceFixedWidth)
     && !parentCounterAxisAlreadyHugs;
 
-  // Hug contents on both axes (depends on this node direction)
-  const nodePrimaryAxisHugContents =
-    // The normal rule to hug contents: no fill container in the same axis
-    ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
-    // Exceptions that could prevent hug contents
-    && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
-    && hasChildrenToHug;
-
-  const nodeCounterAxisHugContents =
-    // The normal rule to hug contents: no fill container in the same axis
-    ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
-    // Exceptions that could prevent hug contents
-    && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
-    && hasChildrenToHug;
-
-  // if (node.name === 'i:after') {
-  //   console.log('I want to debug here');
-  //   debugger;
-  // }
-
-
   // Translate into Figma properties:
   node.layoutGrow = parentPrimaryAxisFillContainer ? 1 : 0;
   node.layoutAlign = parentCounterAxisFillContainer ? 'STRETCH' : 'INHERIT';
 
-  // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
-  // - Enfant vertical && height fill container
-  // - ou Enfant horizontal && width fill container
-  // - ou pas d'enfants (e.g. <hr />)
-  node.primaryAxisSizingMode = nodePrimaryAxisHugContents ? 'AUTO' : 'FIXED';
 
-  // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
-  // - Enfant vertical && width fill container
-  // - ou Enfant horizontal && height fill container
-  node.counterAxisSizingMode = nodeCounterAxisHugContents ? 'AUTO' : 'FIXED';
+  // auto-layout frame nodes properties, for the relation with their children:
 
-  // To adjust based on flex properties like align-items / justify-content 
-  node.primaryAxisAlignItems = justifyContentMap[justifyContent] || 'MIN';
-  node.counterAxisAlignItems = alignItemsMap[alignItems] || 'MIN';
+  if (isFrame(node)) {
+
+    const nodeHorizontal = node.layoutMode === 'HORIZONTAL';
+    const nodeVertical = !nodeHorizontal;
+
+    const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
+    const hasChildrenToHug = isCElementNode(sbNode) && !!sbNode.children?.length;
+
+    // Hug contents on both axes (depends on this node direction)
+    const nodePrimaryAxisHugContents =
+      // The normal rule to hug contents: no fill container in the same axis
+      ((parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer))
+      // Exceptions that could prevent hug contents
+      && !(nodeHorizontal && forceFixedWidth || nodeVertical && forceFixedHeight)
+      && hasChildrenToHug;
+
+    const nodeCounterAxisHugContents =
+      // The normal rule to hug contents: no fill container in the same axis
+      ((parentAndNodeHaveSameDirection && !parentCounterAxisFillContainer) || (!parentAndNodeHaveSameDirection && !parentPrimaryAxisFillContainer))
+      // Exceptions that could prevent hug contents
+      && !(nodeHorizontal && forceFixedHeight || nodeVertical && forceFixedWidth)
+      && hasChildrenToHug;
+
+    // primaryAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
+    // - Enfant vertical && height fill container
+    // - ou Enfant horizontal && width fill container
+    // - ou pas d'enfants (e.g. <hr />)
+    node.primaryAxisSizingMode = nodePrimaryAxisHugContents ? 'AUTO' : 'FIXED';
+
+    // counterAxisSizingMode = FIXED (AUTO sinon) si pas fixe et :
+    // - Enfant vertical && width fill container
+    // - ou Enfant horizontal && height fill container
+    node.counterAxisSizingMode = nodeCounterAxisHugContents ? 'AUTO' : 'FIXED';
+
+    // To adjust based on flex properties like align-items / justify-content 
+    node.primaryAxisAlignItems = justifyContentToPrimaryAlign[justifyContent] || 'MIN';
+    node.counterAxisAlignItems = alignItemsToCounterAlign[alignItems] || 'MIN';
+
+  }
 }
 
 // primary axis
-const justifyContentMap: Partial<{
+const justifyContentToPrimaryAlign: Partial<{
   [K in Property.JustifyContent]: BaseFrameMixin['primaryAxisAlignItems'];
 }> = {
   baseline: 'MIN',
@@ -470,7 +567,7 @@ const justifyContentMap: Partial<{
   // stretch: 'MIN',
 };
 // counter axis
-const alignItemsMap: Partial<{
+const alignItemsToCounterAlign: Partial<{
   [K in Property.AlignItems]: BaseFrameMixin['counterAxisAlignItems'];
 }> = {
   inherit: 'MIN', // stretch

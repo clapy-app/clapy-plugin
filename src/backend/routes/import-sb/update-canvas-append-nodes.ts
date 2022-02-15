@@ -1,7 +1,7 @@
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
 import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, appendMargins, applyAutoLayout, applyBordersToEffects, applyRadius, applyShadowToEffects, applyTransform, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, cssTextAlignToFigmaValue, ensureFontIsLoaded, getSvgNode, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, appendMargins, applyAutoLayout, applyBordersToEffects, applyFlexWidthHeight, applyRadius, applyShadowToEffects, applyTransform, calcTextAlignVertical, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, ensureFontIsLoaded, getSvgNode, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -42,17 +42,18 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         continue;
       }
 
+      let isFirstTextFragment = false;
+
       if ((isCTextNode(sbNode) || display === 'inline') && !context.previousInlineNode) {
         // Mutate the current loop context to reuse the node in the next loop runs
         context.previousInlineNode = newTextNode();
+        isFirstTextFragment = true;
       }
-
-      const { previousInlineNode } = context;
 
       if (isCTextNode(sbNode)) {
         // Have a look at createTextStyle?
 
-        node = previousInlineNode!;
+        node = context.previousInlineNode!;
         const start = node.characters.length;
         if (typeof start !== 'number') {
           console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
@@ -62,7 +63,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
         }
-        if (characters !== ' ') characters = characters?.trim();
+        if (isFirstTextFragment) characters = characters.trimStart();
         if (!characters) {
           // Empty text node, we skip it.
           continue;
@@ -97,7 +98,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           node.setRangeLineHeight(start, end, { value: sizeWithUnitToPx(lineHeight as string), unit: 'PIXELS' });
         }
 
-        node.textAlignHorizontal = cssTextAlignToFigmaValue(textAlign);
+        const [textAlignHorizontal, textAlignVertical] = calcTextAlignVertical(node, context, sbNode);
+        node.textAlignHorizontal = textAlignHorizontal;
+        node.textAlignVertical = textAlignVertical;
 
         const { r, g, b, a } = cssRGBAToFigmaValue(color as string);
         node.setRangeFills(start, end, a > 0 ? [{
@@ -106,14 +109,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           opacity: a,
         }] : []);
 
-        const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
-        const parentVertical = !parentHorizontal;
-        const widthFillContainer = !(sbParentNode?.styles.display === 'inline-block'); // true unless the containing tag is inline-block
-        node.layoutAlign = parentVertical && widthFillContainer
-          ? 'STRETCH'
-          : 'INHERIT';
-        node.layoutGrow = parentHorizontal
-          ? 1 : 0;
+        applyFlexWidthHeight(node, context, sbNode, true, true, false, false);
 
       } else if (isCElementNode(sbNode) && display === 'inline') {
 
@@ -128,10 +124,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
       } else { // sbNode is element or pseudo-element
 
-        if (previousInlineNode) {
-          figmaParentNode.appendChild(previousInlineNode);
-          context.previousInlineNode = undefined;
-        }
+        appendTextNode(context);
 
         prepareFullWidthHeightAttr(context, sbNode);
         const borders = prepareBorderWidths(sbNode.styles);
@@ -260,10 +253,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
   }
 
-  if (context.previousInlineNode) {
-    figmaParentNode.appendChild(context.previousInlineNode);
-    // previousInlineNode = undefined;
-  }
+  appendTextNode(context);
 
   if (sbNodes.length >= 1) {
     appendMargins(context, sbNodes[sbNodes.length - 1], undefined, previousMargins);
@@ -284,4 +274,12 @@ function newTextNode() {
   const node = figma.createText();
   node.name = 'text';
   return node;
+}
+
+function appendTextNode(context: RenderContext) {
+  const { figmaParentNode, previousInlineNode } = context;
+  if (previousInlineNode) {
+    figmaParentNode.appendChild(previousInlineNode);
+    context.previousInlineNode = undefined;
+  }
 }
