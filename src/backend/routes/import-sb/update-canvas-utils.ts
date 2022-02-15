@@ -1,6 +1,6 @@
 import { isFrame, isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyleRules, MyStyles, Properties, Property } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -377,10 +377,13 @@ export function prepareMargins({ marginBottom, marginLeft, marginTop, marginRigh
 }
 
 export function appendMargins({ figmaParentNode, sbParentNode }: RenderContext, sbNode: CNode, margins: Margins | undefined, previousMargins: Margins | undefined) {
-  if (isCPseudoElementNode(sbNode)) {
+  if (isCPseudoElementNode(sbNode) || (isCElementNode(sbNode) && sbNode.styles.position === 'absolute')) {
+    // Old (we should be able to fix it now):
     // Hack because we can't recognize margin: auto with computed CSS.
     // Let's assume it's typically used with pseudo elements.
     // Later, to replace with a check of the source CSS rule.
+
+    // Second exclusion: margins on absolute position has a different effect. Instead of adding a space in the main flow, it impacts the position (like top/left). Ignore the margin here, it will be processed in the position.
     return;
   }
   const { display } = nodeStyles(sbNode, sbParentNode);
@@ -661,14 +664,16 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
   node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
 }
 
-function prepareAbsoluteConstraints(styles: MyStyles | MyStyleRules) {
+function prepareAbsoluteConstraints(styles: MyStyles) {
   const { bottom, left, top, right } = styles;
+  const { marginBottom, marginLeft, marginTop, marginRight } = prepareMargins(styles);
   return {
     // replaceNaNWith0 because with display: none, those properties can still contain the original formula like calc(100% - 12px), not calculated until the component is displayed.
-    bottom: replaceNaNWith0(sizeWithUnitToPx(bottom as string)),
-    left: replaceNaNWith0(left === 'auto' ? 0 : sizeWithUnitToPx(left as string)),
-    top: replaceNaNWith0(top === 'auto' ? 0 : sizeWithUnitToPx(top as string)),
-    right: replaceNaNWith0(sizeWithUnitToPx(right as string)),
+    // Also, let's add the margins here. I don't see the difference with top/left/... rules, except it sums up.
+    bottom: replaceNaNWith0(sizeWithUnitToPx(bottom as string)) + marginBottom,
+    left: replaceNaNWith0(left === 'auto' ? 0 : sizeWithUnitToPx(left as string)) + marginLeft,
+    top: replaceNaNWith0(top === 'auto' ? 0 : sizeWithUnitToPx(top as string)) + marginTop,
+    right: replaceNaNWith0(sizeWithUnitToPx(right as string)) + marginRight,
   };
 }
 
@@ -743,35 +748,34 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
 
   const { width: ancestorWidth, height: ancestorHeight } = absoluteAncestor;
   const { bottom, left, top, right } = prepareAbsoluteConstraints(styles);
-  const { bottom: ruleBottomRaw = 'auto', left: ruleLeftRaw = 'auto', top: ruleTopRaw = 'auto', right: ruleRightRaw = 'auto' } = styleRules;
-  const { bottom: ruleBottom, left: ruleLeft, top: ruleTop, right: ruleRight } = prepareAbsoluteConstraints(styleRules);
-  const attachTop = ruleTopRaw !== 'auto' || isFullHeight;
-  const attachBottom = ruleBottomRaw !== 'auto' || isFullHeight;
-  const attachLeft = ruleLeftRaw !== 'auto' || isFullWidth;
-  const attachRight = ruleRightRaw !== 'auto' || isFullWidth;
+  const { bottom: ruleBottom = 'auto', left: ruleLeft = 'auto', top: ruleTop = 'auto', right: ruleRight = 'auto' } = styleRules;
+  const attachTop = ruleTop !== 'auto' || isFullHeight;
+  const attachBottom = ruleBottom !== 'auto' || isFullHeight;
+  const attachLeft = ruleLeft !== 'auto' || isFullWidth;
+  const attachRight = ruleRight !== 'auto' || isFullWidth;
   let vertical: ConstraintType = 'MIN';
   let horizontal: ConstraintType = 'MIN';
   let resizeWidth = 0, resizeHeight = 0;
-  if (attachTop && attachBottom) { // old: top === bottom
-    node.y = -dy + absoluteAncestorBorders.borderTopWidth + ruleTop;
-    resizeHeight = ancestorHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth - ruleTop - ruleBottom;
+  if (attachTop && attachBottom) {
+    node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
+    resizeHeight = ancestorHeight - absoluteAncestorBorders.borderTopWidth - absoluteAncestorBorders.borderBottomWidth - top - bottom;
     vertical = 'CENTER';
-  } else if (attachBottom) { // old: bottom < top
+  } else if (attachBottom) {
     node.y = -dy + ancestorHeight - absoluteAncestorBorders.borderBottomWidth - bottom - height;
     vertical = 'MAX';
-  } else { // old: top < bottom - also for the case when there is neither top nor bottom defined.
+  } else { // defaults to attach top
     node.y = -dy + absoluteAncestorBorders.borderTopWidth + top;
     vertical = 'MIN';
   }
 
-  if (attachLeft && attachRight) { // old: left === right
-    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + ruleLeft;
-    resizeWidth = ancestorWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth - ruleLeft - ruleRight;
+  if (attachLeft && attachRight) {
+    node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
+    resizeWidth = ancestorWidth - absoluteAncestorBorders.borderLeftWidth - absoluteAncestorBorders.borderRightWidth - left - right;
     horizontal = 'CENTER';
-  } else if (attachRight) { // old: right < left
+  } else if (attachRight) {
     node.x = -dx + ancestorWidth - absoluteAncestorBorders.borderRightWidth - right - width;
     horizontal = 'MAX';
-  } else { // old: left < right - also for the case when there is neither top nor bottom defined.
+  } else { // defaults to attach left
     node.x = -dx + absoluteAncestorBorders.borderLeftWidth + left;
     horizontal = 'MIN';
   }
