@@ -1,4 +1,5 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
+import { isPage } from './canvas-utils';
 import { storiesSamples } from './import-model';
 import { createFrames, FrameCreated, getLayoutStoryId, getOrCreatePage, StoryEntries } from './import-sb-detail';
 import { SbStoriesWrapper } from './sb-serialize.model';
@@ -56,10 +57,16 @@ function prepareSbCompSelection()/* : SbCompSelection[] */ {
   const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
 
   const selectedSbComp = figma.currentPage.selection
-    .reduce((selections, node) => {
-      const storyId = getLayoutStoryId(node);
-      const sbUrl = node.getPluginData('sbUrl') || pageSbUrl;
-      if (storyId && sbUrl) {
+    .reduce((selections, node0) => {
+      let storyId: string | undefined = undefined;
+      const sbUrl = node0.getPluginData('sbUrl') || pageSbUrl;
+      let node: SceneNode | null = node0;
+      if (sbUrl) {
+        while (node && !isPage(node) && !(storyId = getLayoutStoryId(node))) {
+          node = node.parent as SceneNode;
+        }
+      }
+      if (storyId && sbUrl && node) {
         // &args=kind:secondary;size:xxs
         const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
         const selection: SbCompSelection = {
