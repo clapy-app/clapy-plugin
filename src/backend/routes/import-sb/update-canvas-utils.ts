@@ -118,9 +118,7 @@ export function appendBackgroundColor(backgroundColor: Properties['backgroundCol
 }
 
 export function appendBackgroundImage(sbNode: CElementNode | CPseudoElementNode, fills: Paint[]) {
-  const { backgroundImage } = sbNode.styles;
-
-  if (backgroundImage === 'none' || !sbNode.image) {
+  if (!sbNode.image) {
     return fills;
   }
 
