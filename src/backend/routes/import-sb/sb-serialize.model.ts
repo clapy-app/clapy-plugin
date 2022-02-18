@@ -28,6 +28,9 @@ export const cssDefaults = makeCssDefaults({
   width: 'auto',
   height: 'auto',
   fontSize: null,
+  fontFamily: null,
+  fontStretch: 'normal',
+  fontStyle: 'normal',
   fontWeight: '400',
   lineHeight: null,
   textAlign: 'start',
@@ -77,7 +80,6 @@ export const cssDefaults = makeCssDefaults({
   overflowX: 'visible',
   overflowY: 'visible',
   opacity: '1',
-  fontFamily: null,
 });
 
 type PropertiesOrNull = {
@@ -109,7 +111,7 @@ type CSSStyleDeclarationMethods = 'getPropertyPriority' | 'getPropertyValue' | '
 // Adding src which is missing in the original typing, surprisingly, although it's a valid key for font faces.
 export type CSSStyleDeclarationNoMethod = Partial<Omit<CSSStyleDeclaration & { src: string; }, CSSStyleDeclarationMethods>>;
 
-const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
+export const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;
 const TEXT_NODE = 3; /* Node.TEXT_NODE */
 
@@ -130,6 +132,7 @@ export interface CElementNode extends CEltSharedInterface {
   styles: MyStyles;
 
   className: string | undefined;
+  src?: string;
   children?: CNode[];
 }
 

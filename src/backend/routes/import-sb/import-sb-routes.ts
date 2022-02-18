@@ -74,6 +74,7 @@ function prepareSbCompSelection()/* : SbCompSelection[] */ {
           storyLabel: node.name,
           storyUrl,
           figmaId: node.id,
+          tagFigmaId: node0.id,
           pageId: figma.currentPage.id,
         };
         selections.push(selection);
@@ -88,7 +89,7 @@ function prepareSbCompSelection()/* : SbCompSelection[] */ {
     }, [] as SbAnySelection[]);
   // To log the selection flex config:
   if (selectedSbComp.length === 1) {
-    show(figma.getNodeById(selectedSbComp[0].figmaId) as FrameNode);
+    show(figma.getNodeById(selectedSbComp[0].tagFigmaId || selectedSbComp[0].figmaId) as FrameNode);
   }
   return selectedSbComp;
 }
@@ -96,10 +97,4 @@ function prepareSbCompSelection()/* : SbCompSelection[] */ {
 function show(node: FrameNode) {
   console.log('--------------');
   console.log(node.name, ' =>', node);
-
-  // console.log(node.name, ' => layoutMode:', node.layoutMode);
-  // console.log('layoutGrow:', node.layoutGrow);
-  // console.log('counterAxisSizingMode:', node.counterAxisSizingMode);
-  // console.log('layoutAlign:', node.layoutAlign);
-  // console.log('primaryAxisSizingMode:', node.primaryAxisSizingMode);
 }

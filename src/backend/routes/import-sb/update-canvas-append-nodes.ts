@@ -1,7 +1,12 @@
+import { Property } from 'csstype';
+import { Nil } from '../../../common/app-models';
 import { entries } from '../../../common/general-utils';
 import { RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, isCElementNode, isCPseudoElementNode, isCTextNode } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, appendMargins, applyAutoLayout, applyBordersToEffects, applyFlexWidthHeight, applyRadius, applyShadowToEffects, applyTransform, calcTextAlignVertical, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, ensureFontIsLoaded, getSvgNode, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx } from './update-canvas-utils';
+import { CElementNode, CNode, CPseudoElementNode, ELEMENT_NODE, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles } from './sb-serialize.model';
+import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, appendMargins, applyAutoLayout, applyBordersToEffects, applyFlexWidthHeight, applyRadius, applyShadowToEffects, applyTransform, calcTextAlignVertical, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, ensureFontIsLoaded, getSvgNode, Margins, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx, withDefaultProps } from './update-canvas-utils';
+import { cssToFontStyle } from './update-canvas/fonts';
+
+type MyNode = TextNode | FrameNode;
 
 export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
@@ -9,12 +14,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
   let absoluteElementsToAdd: { node: FrameNode, sbNode: (CElementNode | CPseudoElementNode); }[] = [];
   let previousMargins: Margins | undefined = undefined;
 
+  const consecutiveInlineNodes: MyNode[] = [];
+
   // TODO append there, and process them after the loop (after text, before absolute positioning).
   // const floatElements = [];
-  // TODO append there consecutive inline-block elements if parent is block (to test on jsfiddle how it behaves if the parent is flex or other), as we do for text & inline elements. Consecutive ones should be wrapped in a frame for horizontal autolayout while keeping a vertical autolayout for the rest which is not inline-block. Exception: if all children are inline-block, don't wrap, just set the parent's direction to horizontal.
-  // const consecutiveInlineBlocks = [];
-
-  // TODO a mix of multiple inlines and blocks is not handled well. They will all stack as blocks instead of grouping inlines on the same line.
 
   for (const sbNode of sbNodes) {
     let node: SceneNode | undefined = undefined;
@@ -35,7 +38,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
       }
 
-      const { display, width, height, fontSize, fontWeight, lineHeight, textAlign, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
+      const { display, width, height, fontSize, fontFamily, fontStretch, fontWeight, fontStyle, lineHeight, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
 
       if (display === 'none') {
         // Let's skip the elements not displayed for now. We will see later if there is a good reason to render them.
@@ -72,18 +75,19 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const len = characters?.length;
         const end = start + len;
 
-        const fontName = start > 0 ? node.getRangeFontName(0, 1) : node.fontName;
-        const family = (<FontName>fontName).family;
-        const fontStyle = cssFontWeightToFigmaValue(fontWeight as string);
+        const defaultFontFamily = ((start > 0 ? node.getRangeFontName(0, 1) : node.fontName) as FontName).family;
+        const fontStyleFigma = cssFontWeightToFigmaValue(fontWeight as string);
+        const loadedFont = await cssToFontStyle(fontFamily, fontStretch, fontWeight, fontStyle);
+        const font: FontName = loadedFont || { family: defaultFontFamily, style: fontStyleFigma };
 
-        if (fontStyle !== 'Regular') {
-          await ensureFontIsLoaded(family, 'Regular');
+        if (font.family !== defaultFontFamily || font.style !== 'Regular') {
+          await ensureFontIsLoaded({ family: defaultFontFamily, style: 'Regular' });
         }
-        const newFont = await ensureFontIsLoaded(family, fontStyle);
+        await ensureFontIsLoaded(font);
 
         node.insertCharacters(start, characters);
 
-        node.setRangeFontName(start, end, newFont);
+        node.setRangeFontName(start, end, font);
 
         node.setRangeFontSize(start, end, sizeWithUnitToPx(fontSize!));
 
@@ -112,6 +116,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         applyFlexWidthHeight(node, context, sbNode, true, true, false, false);
 
       } else if (isCElementNode(sbNode) && display === 'inline') {
+        // Inline pseudo-elements may be considered as well.
 
         if (sbNode.children) {
           await appendNodes(sbNode.children, {
@@ -123,8 +128,6 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
 
       } else { // sbNode is element or pseudo-element
-
-        appendTextNode(context);
 
         prepareFullWidthHeightAttr(context, sbNode);
         const borders = prepareBorderWidths(sbNode.styles);
@@ -157,27 +160,12 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           + (boxSizing! === 'content-box' ? paddingLeft + paddingRight : 0);
         let h = cssHeight + borderTopWidth + borderBottomWidth
           + (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
-        // Parent nodes are considered 100% width (we'll see if the assumption is wrong).
-        // For child nodes, it's considered width: 100% if the width is the same as the parent width minus the padding.
-        // If we want those variables, review them using Figma width/height instead, since they are already numbers. Keep in mind that Figma padding includes border width.
-        // const isWidth100P = sbParentNode === null
-        //   || w === sizeWithUnitToPx(sbParentNode.styles.width!)
-        //   - sizeWithUnitToPx(sbParentNode.styles.paddingLeft!)
-        //   - sizeWithUnitToPx(sbParentNode.styles.paddingRight!);
-        // const isHeight100P = sbParentNode === null
-        //   || h === sizeWithUnitToPx(sbParentNode.styles.height!)
-        //   - sizeWithUnitToPx(sbParentNode.styles.paddingTop!)
-        //   - sizeWithUnitToPx(sbParentNode.styles.paddingBottom!);
 
         // Workaround: remove negative margins from width/height (not the real spec behavior)
         if (margins.marginLeft < 0) w += margins.marginLeft;
         if (margins.marginRight < 0) w += margins.marginRight;
         if (margins.marginTop < 0) h += margins.marginTop;
         if (margins.marginBottom < 0) h += margins.marginBottom;
-
-        // if (!isNaN(w) && !isNaN(h)) {
-        //   node.resizeWithoutConstraints(w, h);
-        // }
 
         const hasChildren = isCElementNode(sbNode) && !!sbNode.children;
         if (w === 0 && h === 0 && !hasChildren) {
@@ -214,10 +202,20 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         node.clipsContent = (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
 
-        if (position !== 'absolute') {
-          figmaParentNode.appendChild(node);
-        } else {
+        if (position === 'absolute') {
           absoluteElementsToAdd.push({ node, sbNode });
+
+        } else {
+
+          queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
+
+          if (hasBlockParent(sbParentNode) && isInline(display)) {
+            // Inline is only applicable if the parent is a block
+            queueInlineNode(consecutiveInlineNodes, node);
+          } else {
+            appendInlineNodes(context, consecutiveInlineNodes);
+            figmaParentNode.appendChild(node);
+          }
         }
 
         if (isCElementNode(sbNode) && sbNode.children) {
@@ -253,7 +251,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
   }
 
-  appendTextNode(context);
+  queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
+  appendInlineNodes(context, consecutiveInlineNodes);
 
   if (sbNodes.length >= 1) {
     appendMargins(context, sbNodes[sbNodes.length - 1], undefined, previousMargins);
@@ -276,10 +275,60 @@ function newTextNode() {
   return node;
 }
 
-function appendTextNode(context: RenderContext) {
-  const { figmaParentNode, previousInlineNode } = context;
+function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
+  const { previousInlineNode } = context;
   if (previousInlineNode) {
-    figmaParentNode.appendChild(previousInlineNode);
+    queueInlineNode(inlineNodes, previousInlineNode);
     context.previousInlineNode = undefined;
   }
+}
+
+function queueInlineNode(inlineNodes: MyNode[], node: TextNode | FrameNode) {
+  inlineNodes.push(node);
+}
+
+function appendInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
+  const { sbParentNode, figmaParentNode } = context;
+  if (!inlineNodes?.length) {
+    return;
+  }
+  if (!hasBlockParent(sbParentNode)) {
+    console.warn('Has inline elements to append, but the parent is not a block. Bug!');
+  }
+
+  let wrapper = figmaParentNode;
+  if (inlineNodes.length > 1) {
+    wrapper = withDefaultProps(figma.createFrame());
+    wrapper.name = 'Inline wrapper';
+    wrapper.layoutMode = 'HORIZONTAL';
+
+    const sbNode = {
+      styles: {
+        display: 'block',
+      } as MyStyles,
+      type: ELEMENT_NODE,
+      children: [{}] as CNode[], // Fake a non-empty array so that hug contents works
+    } as CElementNode;
+    applyFlexWidthHeight(wrapper, context, sbNode, true, false, false, false);
+    figmaParentNode.appendChild(wrapper);
+  } else {
+    // TODO check those empty texts and why a text already handled is here.
+    console.log(inlineNodes[0]);
+  }
+  // TODO margins
+
+  for (const node of inlineNodes) {
+    wrapper.appendChild(node);
+  }
+
+  // Empty the array
+  inlineNodes.length = 0;
+}
+
+function hasBlockParent(sbParentNode: CElementNode | Nil) {
+  return !sbParentNode || sbParentNode.styles.display === 'block' || sbParentNode.styles.display === 'inline-block';
+}
+
+function isInline(display: Property.Display) {
+  return display.startsWith('inline');
 }

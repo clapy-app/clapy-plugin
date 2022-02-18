@@ -66,6 +66,7 @@ export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNod
     const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
     response.push({
       figmaId: frame.id,
+      tagFigmaId: frame.id,
       pageId: page.id,
       storyId,
       storyLabel: frame.name,

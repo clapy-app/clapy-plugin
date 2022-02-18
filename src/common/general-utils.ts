@@ -6,3 +6,7 @@ type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
 export function entries<T>(o: T): Entry<T>[] {
   return Object.entries(o) as unknown as Entry<T>[];
 }
+
+export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
+  return str ? str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T : str;
+}

@@ -4,18 +4,16 @@ import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isC
 
 const loadedFonts = new Map<string, Promise<void>>();
 
-export async function ensureFontIsLoaded(family: string, style: string) {
-  const fontCacheKey = `${family}_${style}`;
-  const newFont: FontName = { family, style };
+export async function ensureFontIsLoaded(font: FontName) {
+  const fontCacheKey = `${font.family}_${font.style}`;
   if (!loadedFonts.has(fontCacheKey)) {
-    const p = figma.loadFontAsync(newFont);
+    const p = figma.loadFontAsync(font);
     loadedFonts.set(fontCacheKey, p);
     // Loading fonts takes time. We are in a loop and we don't want other loop runs to also load the font. So the cache returns the promise of the font we are already loading, so that everybody awaits a shared font loading.
     await p;
   } else {
     await loadedFonts.get(fontCacheKey);
   }
-  return newFont;
 }
 
 export function cssFontWeightToFigmaValue(fontWeight: string) {
@@ -602,6 +600,7 @@ export function getSvgNode(borders: BorderWidths, paddings: Paddings, sbNode: CE
 
   if (shouldWrap) {
     node.name = 'SVG wrapper';
+    withDefaultProps(node);
     node.layoutMode = 'VERTICAL';
     node.layoutGrow = 1;
     node.layoutAlign = 'STRETCH';
@@ -704,19 +703,13 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
     // No need to wrap if the parent is not auto-layout (e.g. an absolute position right within an absolutely positioned node)
     wrapper = node;
   } else {
-    wrapper = figma.createFrame();
+    wrapper = withDefaultProps(figma.createFrame());
     wrapper.name = 'Absolute position wrapper';
     wrapper.layoutAlign = 'STRETCH';
-    setTo0px(wrapper);
     // So we set to transparent. The tradeoff is that there is 1px shift for the rest.
     // We could work around it by reducing paddings, margins... (if any) by 1px (not implemented)
-    wrapper.fills = [{
-      type: 'SOLID',
-      color: { r: 1, g: 1, b: 1 },
-      opacity: 0,
-    }];
+    setTo0px(wrapper);
 
-    wrapper.clipsContent = false;
     wrapper.appendChild(node);
   }
 
@@ -791,7 +784,7 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
 
 }
 
-export function sizeWithUnitToPx(size: NonNullable<Property.Width>) {
+export function sizeWithUnitToPx(size: NonNullable<Property.Width> | string | number) {
   if (size == null) return 0;
   return parseInt(size as string);
 }
@@ -814,4 +807,10 @@ function rgbaRawMatchToFigma(rRaw: string, gRaw: string, bRaw: string, aRaw: str
   const b = parseFloat(bRaw) / 255;
   const a = aRaw ? parseFloat(aRaw) : 1;
   return { r, g, b, a };
+}
+
+export function withDefaultProps<T extends BaseFrameMixin>(node: T) {
+  node.clipsContent = false;
+  node.fills = [];
+  return node;
 }
