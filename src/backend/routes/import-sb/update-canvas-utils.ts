@@ -1,6 +1,6 @@
 import { isFrame, isLayout } from './canvas-utils';
 import { BorderWidths, RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
+import { CElementNode, CNode, CPseudoElementNode, CTextNode, isCElementNode, isCTextNode, MyStyles, Properties, Property } from './sb-serialize.model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -374,41 +374,68 @@ export function prepareMargins({ marginBottom, marginLeft, marginTop, marginRigh
   } as Margins;
 }
 
-export function appendMargins({ figmaParentNode, sbParentNode }: RenderContext, sbNode: CNode, margins: Margins | undefined, previousMargins: Margins | undefined) {
-  if (isCPseudoElementNode(sbNode) || (isCElementNode(sbNode) && sbNode.styles.position === 'absolute')) {
-    // Old (we should be able to fix it now):
-    // Hack because we can't recognize margin: auto with computed CSS.
-    // Let's assume it's typically used with pseudo elements.
-    // Later, to replace with a check of the source CSS rule.
+export function wrapWithMargin(context: RenderContext, node: FrameNode, sbNode: CElementNode | CPseudoElementNode, margins: Margins | undefined) {
+  const { figmaParentNode, sbParentNode } = context;
 
-    // Second exclusion: margins on absolute position has a different effect. Instead of adding a space in the main flow, it impacts the position (like top/left). Ignore the margin here, it will be processed in the position.
-    return;
+
+  // TODO `margin: auto` has various special behaviors depending on where it is used (block, flex, position absolute...)
+  // I should look for documentation online listing those behaviors to implement them here.
+
+  let { marginBottom = 0, marginLeft = 0, marginTop = 0, marginRight = 0 } = margins || {};
+  if (marginBottom === 0 && marginLeft === 0 && marginTop === 0 && marginRight === 0) {
+    return { wrapperNode: node, innerNode: node };
   }
-  const { display } = nodeStyles(sbNode, sbParentNode);
-  let margin = 0, width = 0, height = 0;
-  if (figmaParentNode.layoutMode === 'HORIZONTAL') {
-    margin = (previousMargins?.marginRight || 0) + (margins?.marginLeft || 0);
-    width = margin;
-    height = 1;
-  } else if (figmaParentNode.layoutMode === 'VERTICAL') {
-    const m1 = previousMargins?.marginBottom || 0;
-    const m2 = margins?.marginTop || 0;
-    margin = display === 'block' ? Math.max(m1, m2) : m1 + m2;
-    width = 1;
-    height = margin;
+
+  // Let's support a special case of negative margin: when we can reduce the parent padding instead.
+  if (sbParentNode?.children) {
+    if (marginTop < 0 && sbParentNode.children[0] === sbNode) {
+      figmaParentNode.paddingTop = Math.max(0, figmaParentNode.paddingTop + marginTop);
+    }
+    if (marginLeft < 0 && sbParentNode.children[0] === sbNode) {
+      figmaParentNode.paddingLeft = Math.max(0, figmaParentNode.paddingLeft + marginLeft);
+    }
+    if (marginBottom < 0 && sbParentNode.children[sbParentNode.children.length - 1] === sbNode) {
+      figmaParentNode.paddingBottom = Math.max(0, figmaParentNode.paddingBottom + marginBottom);
+    }
+    if (marginRight < 0 && sbParentNode.children[sbParentNode.children.length - 1] === sbNode) {
+      figmaParentNode.paddingRight = Math.max(0, figmaParentNode.paddingRight + marginRight);
+    }
   }
-  if (margin > 0) {
-    const space = figma.createFrame();
-    space.name = `Margin ${margin}px`;
-    // Add a transparent frame taking the margin space, stretching in counter axis.
-    space.resizeWithoutConstraints(width, height);
-    space.fills = [{
-      type: 'SOLID',
-      color: { r: 1, g: 1, b: 1 },
-      opacity: 0,
-    }];
-    space.layoutAlign = 'STRETCH';
-    figmaParentNode.appendChild(space);
+
+  // Negative margin is not supported with the current approach (except the case above).
+  // We could use absolute position on the wrapper to support negative margins, but we would lose the hug contents responsiveness, e.g. having the parent adapt to the child text length.
+  if (marginBottom < 0) marginBottom = 0;
+  if (marginLeft < 0) marginLeft = 0;
+  if (marginTop < 0) marginTop = 0;
+  if (marginRight < 0) marginRight = 0;
+
+  // At least one of the borders has margin. Let's wrap with a frame that will use padding instead, without borders, to simulate the margin.
+  // Margin collapsing may be added later.
+  const wrapper = withDefaultProps(figma.createFrame());
+  wrapper.name = 'Margin wrapper';
+  if (marginBottom > 0) wrapper.paddingBottom = marginBottom;
+  if (marginLeft > 0) wrapper.paddingLeft = marginLeft;
+  if (marginTop > 0) wrapper.paddingTop = marginTop;
+  if (marginRight > 0) wrapper.paddingRight = marginRight;
+
+  // Copy the node layout
+  copyAutoLayout(wrapper, node);
+  wrapper.resizeWithoutConstraints(node.width + marginLeft + marginRight, node.height + marginTop + marginBottom);
+
+  wrapper.appendChild(node);
+  return { wrapperNode: wrapper, innerNode: node };
+}
+
+function copyAutoLayout(node: FrameNode, fromNode: FrameNode, copySize = false) {
+  node.layoutMode = fromNode.layoutMode;
+  node.layoutGrow = fromNode.layoutGrow;
+  node.layoutAlign = fromNode.layoutAlign;
+  node.primaryAxisSizingMode = fromNode.primaryAxisSizingMode;
+  node.counterAxisSizingMode = fromNode.counterAxisSizingMode;
+  node.primaryAxisAlignItems = fromNode.primaryAxisAlignItems;
+  node.counterAxisAlignItems = fromNode.counterAxisAlignItems;
+  if (copySize) {
+    node.resizeWithoutConstraints(fromNode.width, fromNode.height);
   }
 }
 
