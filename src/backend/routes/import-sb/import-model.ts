@@ -38,6 +38,7 @@ export interface RenderContext {
   previousInlineNode?: TextNode;
   absoluteAncestor: FrameNode;
   absoluteAncestorBorders: BorderWidths;
+  appendInline?: boolean;
 }
 
 export interface SbStoryWithFolder extends SbStory {

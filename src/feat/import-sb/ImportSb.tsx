@@ -8,7 +8,7 @@ import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
-import { getTokens, login } from '../auth/auth-service';
+import { getTokens, login, logout } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
 
@@ -16,7 +16,13 @@ import classes from './ImportSb.module.scss';
 export const ImportSb: FC = memo(() => {
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
-  const loginBtn = useCallback(() => login(), []);
+  const loginBtn = useCallback(() => login()
+    .then(() => setIsSignedIn(true))
+    .catch(err => { handleError(err); setError(err?.message || 'Unknown error'); }), []);
+  const logoutBtn = useCallback(() => {
+    logout();
+    setIsSignedIn(false);
+  }, []);
   const authLoading = useSelector(selectAuthLoading);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const [sbSelection, setSbSelection] = useState<SbSampleSelection>(env.isDev ? 'equisafe' : 'reactstrap');
@@ -67,6 +73,8 @@ export const ImportSb: FC = memo(() => {
         return fetchPlugin('importStories', sbUrl, stories);
       })
       .then(async (insertedComponents) => {
+        setError(undefined);
+
         // Could be done in parallel, with a pool to not overload the API.
         for (const { figmaId, storyUrl, storyId, pageId } of insertedComponents) {
           if (interruptRef.current) {
@@ -78,7 +86,6 @@ export const ImportSb: FC = memo(() => {
           await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         }
 
-        setError(undefined);
       })
       .catch(err => { handleError(err); setError(err?.message || 'Unknown error'); })
       .finally(() => setLoadingTxt(undefined));
@@ -119,6 +126,7 @@ export const ImportSb: FC = memo(() => {
           : <PreviewArea selection={selectedSbComp[0]} />
       }
       <button onClick={detachPage}>Detach page</button>
+      {isSignedIn && <button className={classes.textButton} onClick={logoutBtn}>Logout</button>}
     </div>
   );
 });

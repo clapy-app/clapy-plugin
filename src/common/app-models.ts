@@ -3,6 +3,11 @@ import { _Routes, _Subscriptions } from '../backend/routes';
 export interface Dict<T> {
   [key: string]: T;
 }
+export type Dict2<Key extends string | number | symbol, Value> = {
+  [key in Key]: Value;
+};
+
+export type Nil = null | undefined;
 
 // Can be read from both client and server. It shares the controller model to help typing the client code.
 export type Routes = _Routes;
@@ -22,6 +27,7 @@ export interface SbOtherSelection {
   storyId?: undefined;
   storyLabel?: undefined;
   storyUrl?: undefined;
+  tagFigmaId?: string;
 }
 
 export interface SbCompSelection {
@@ -31,6 +37,7 @@ export interface SbCompSelection {
   storyId: string;
   storyLabel: string;
   storyUrl: string;
+  tagFigmaId: string;
   // sbUrl - base URL, if required?
 }
 
