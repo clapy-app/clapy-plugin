@@ -162,6 +162,12 @@ export function isCTextNode(node: CNode): node is CTextNode {
   return node.type === TEXT_NODE;
 }
 
+export interface ArgType {
+  control: { type: string; /* 'boolean' */ };
+  name: string; /* "active" */
+  type: { name: string; /* 'boolean' */ };
+}
+
 export interface SbStory {
   // argTypes,
   // args,
@@ -178,6 +184,7 @@ export interface SbStory {
     // themes,
     // viewMode,
     // __id,
+    argTypes: Dict<ArgType>;
     __isArgsStory: boolean;
   },
   story: string;

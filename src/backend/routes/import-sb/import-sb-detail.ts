@@ -18,7 +18,7 @@ export function getLayoutStoryId(node: SceneNode) {
 
 export type FrameCreated = SbCompSelection;
 
-export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNode) {
+export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: PageNode) {
   const nodes: FrameNode[] = [];
   const response: FrameCreated[] = [];
 
@@ -26,8 +26,8 @@ export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNod
 
   let hasSingleTopFolder = true;
   let previousTopFolder: string | undefined = undefined;
-  for (let i = 0; i < stories.length; i++) {
-    const [storyId, story] = stories[i];
+  for (let i = 0; i < storyEntries.length; i++) {
+    const [storyId, story] = storyEntries[i];
     const storyTitle = story.title || story.kind;
     const fragments = storyTitle.split('/');
     story.folders = fragments;
@@ -39,8 +39,8 @@ export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNod
   }
   const indexShift = hasSingleTopFolder ? 1 : 0;
 
-  for (let i = 0; i < stories.length; i++) {
-    const [storyId, story] = stories[i];
+  for (let i = 0; i < storyEntries.length; i++) {
+    const [storyId, story] = storyEntries[i];
     const storyTitle = story.title || story.kind;
 
     const fragments = story.folders || storyTitle.split('/');
@@ -118,9 +118,9 @@ function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name
     color: { r: 0, g: 0, b: 0 },
     opacity: 1,
   }];
-  frame.fills = [{
+  frame.fills = depth === 1 ? [] : [{
     type: 'SOLID',
-    color: hexToRgb(['FFFFFF', 'FBFBFB', 'F7F7F7'][depth - 1]),
+    color: hexToRgb(['FFFFFF', 'FBFBFB', 'F7F7F7', 'FFFFFF', 'FBFBFB', 'F7F7F7'][depth - 2]),
     opacity: 1,
   }];
 
