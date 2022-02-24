@@ -62,6 +62,7 @@ export function createFrames(stories: StoryEntries, sbUrl: string, page: PageNod
     frame.setPluginData('storyId', storyId);
     frame.setPluginData('storyTitle', storyTitle);
     frame.setRelaunchData({ preview: '' });
+    frame.expanded = false;
     nodes.push(frame);
     const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
     response.push({
@@ -124,6 +125,7 @@ function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name
   }];
 
   frame.setPluginData('containerId', containerId);
+  frame.expanded = true;
   return frame;
 }
 
