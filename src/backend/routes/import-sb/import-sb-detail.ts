@@ -120,7 +120,7 @@ function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name
   }];
   frame.fills = depth === 1 ? [] : [{
     type: 'SOLID',
-    color: hexToRgb(['FFFFFF', 'FBFBFB', 'F7F7F7', 'FFFFFF', 'FBFBFB', 'F7F7F7'][depth - 2]),
+    color: hexToRgb(['FBFBFB', 'F7F7F7', 'F3F3F3', 'EEEEEE', 'EAEAEA'][depth - 2]),
     opacity: 1,
   }];
 
