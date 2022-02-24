@@ -365,12 +365,14 @@ export interface Margins {
   marginRight: number;
 }
 
-export function prepareMargins({ marginBottom, marginLeft, marginTop, marginRight }: MyStyles) {
+export function prepareMargins(sbNode: CElementNode | CPseudoElementNode) {
+  const { marginBottom, marginLeft, marginTop, marginRight } = sbNode.styles;
+  const { marginBottom: mBottomRule, marginLeft: mLeftRule, marginTop: mTopRule, marginRight: mRightRule } = sbNode.styleRules;
   return {
-    marginBottom: sizeWithUnitToPx(marginBottom as string),
-    marginLeft: sizeWithUnitToPx(marginLeft as string),
-    marginTop: sizeWithUnitToPx(marginTop as string),
-    marginRight: sizeWithUnitToPx(marginRight as string),
+    marginBottom: mBottomRule === 'auto' ? 0 : sizeWithUnitToPx(marginBottom as string),
+    marginLeft: mLeftRule === 'auto' ? 0 : sizeWithUnitToPx(marginLeft as string),
+    marginTop: mTopRule === 'auto' ? 0 : sizeWithUnitToPx(marginTop as string),
+    marginRight: mRightRule === 'auto' ? 0 : sizeWithUnitToPx(marginRight as string),
   } as Margins;
 }
 
@@ -690,9 +692,9 @@ export function applyRadius(node: FrameNode, { borderTopLeftRadius, borderTopRig
   node.bottomRightRadius = sizeWithUnitToPx(borderBottomRightRadius as string);
 }
 
-function prepareAbsoluteConstraints(styles: MyStyles) {
-  const { bottom, left, top, right } = styles;
-  const { marginBottom, marginLeft, marginTop, marginRight } = prepareMargins(styles);
+function prepareAbsoluteConstraints(sbNode: CElementNode | CPseudoElementNode) {
+  const { bottom, left, top, right } = sbNode.styles;
+  const { marginBottom, marginLeft, marginTop, marginRight } = prepareMargins(sbNode);
   return {
     // replaceNaNWith0 because with display: none, those properties can still contain the original formula like calc(100% - 12px), not calculated until the component is displayed.
     // Also, let's add the margins here. I don't see the difference with top/left/... rules, except it sums up.
@@ -767,7 +769,7 @@ export function appendAbsolutelyPositionedNode(node: FrameNode, sbNode: CElement
   }
 
   const { width: ancestorWidth, height: ancestorHeight } = absoluteAncestor;
-  const { bottom, left, top, right } = prepareAbsoluteConstraints(styles);
+  const { bottom, left, top, right } = prepareAbsoluteConstraints(sbNode);
   const { bottom: ruleBottom = 'auto', left: ruleLeft = 'auto', top: ruleTop = 'auto', right: ruleRight = 'auto' } = styleRules;
   const attachTop = ruleTop !== 'auto' || isFullHeight;
   const attachBottom = ruleBottom !== 'auto' || isFullHeight;

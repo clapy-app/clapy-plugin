@@ -19,7 +19,9 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
   // TODO append there, and process them after the loop (after text, before absolute positioning).
   // const floatElements = [];
 
+  let i = -1;
   for (const sbNode of sbNodes) {
+    ++i;
     let node: SceneNode | undefined = undefined;
     try {
 
@@ -38,7 +40,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
       }
 
-      const { display, width, height, fontSize, fontFamily, fontStretch, fontWeight, fontStyle, lineHeight, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, context.sbParentNode);
+      const { display, width, height, fontSize, fontFamily, fontStretch, fontWeight, fontStyle, lineHeight, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, sbParentNode);
 
       if (display === 'none') {
         // Let's skip the elements not displayed for now. We will see later if there is a good reason to render them.
@@ -66,7 +68,14 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           console.warn('sbNode.value is not a valid string:', characters);
           characters = '';
         }
-        if (isFirstTextFragment) characters = characters.trimStart();
+        const previousNode: CNode | undefined = sbNodes[i - 1];
+        if (!isInlineNode(previousNode)) {
+          characters = characters.trimStart();
+        }
+        const nextNode: CNode | undefined = sbNodes[i + 1];
+        if (!isInlineNode(nextNode)) {
+          characters = characters.trimEnd();
+        }
         if (!characters) {
           // Empty text node, we skip it.
           continue;
@@ -137,7 +146,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         prepareFullWidthHeightAttr(context, sbNode);
         const borders = prepareBorderWidths(sbNode.styles);
         const paddings = preparePaddings(sbNode.styles, borders);
-        const margins = prepareMargins(sbNode.styles);
+        const margins = prepareMargins(sbNode);
 
         const hasChildren = isCElementNode(sbNode) && !!sbNode.children;
 
@@ -282,9 +291,8 @@ function newTextNode() {
 
 function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
   const { previousInlineNode, sbParentNode, figmaParentNode } = context;
-  const textTrimmed = previousInlineNode?.characters.trim();
-  if (previousInlineNode && textTrimmed) {
-    previousInlineNode.characters = textTrimmed;
+  const characters = previousInlineNode?.characters;
+  if (characters) {
     context.previousInlineNode = undefined;
 
     if (hasBlockParent(sbParentNode)) {
@@ -306,14 +314,6 @@ function appendInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
   }
   if (!hasBlockParent(sbParentNode)) {
     console.warn('Has inline elements to append, but the parent is not a block. Bug!');
-  }
-  const first = inlineNodes[0];
-  if (isText(first)) {
-    first.characters = first.characters.trimStart();
-  }
-  const last = inlineNodes[inlineNodes.length - 1];
-  if (isText(last)) {
-    last.characters = last.characters.trimEnd();
   }
   inlineNodes = inlineNodes.filter(n => !isText(n) || !!n.characters);
   if (!inlineNodes?.length) {
@@ -352,6 +352,10 @@ function hasBlockParent(sbParentNode: CElementNode | Nil) {
   return !sbParentNode || sbParentNode.styles.display === 'block' || sbParentNode.styles.display === 'inline-block';
 }
 
-function isInline(display: Property.Display) {
-  return display.startsWith('inline');
+function isInline(display: Property.Display | undefined) {
+  return !!display?.startsWith('inline');
+}
+
+function isInlineNode(node: CNode) {
+  return !!(node && (isCTextNode(node) || isInline(node.styles.display)));
 }
