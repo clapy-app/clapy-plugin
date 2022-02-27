@@ -1,5 +1,5 @@
 import { sha256 } from 'sha.js';
-import { Dict } from '../../common/app-models';
+import { Dict } from '../../backend/routes/import-sb/sb-serialize.model';
 
 export function mkUrl(baseAndPath: string, queryObject?: Dict<string>) {
   if (!queryObject) return baseAndPath;

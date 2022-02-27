@@ -1,4 +1,5 @@
 import { env } from '../../../environment/env';
+import { MyCompNode } from './canvas-utils';
 import { CElementNode, SbStory } from './sb-serialize.model';
 
 export const storiesSamples = {
@@ -12,9 +13,9 @@ export const storiesSamples = {
   },
   ...(env.isDev && {
     equisafe: {
-    label: 'Equisafe',
-    sbUrl: 'http://localhost:9009',
-  }
+      label: 'Equisafe',
+      sbUrl: 'http://localhost:9009',
+    },
   }),
 } as const;
 
@@ -33,10 +34,10 @@ export interface BorderWidths {
 
 export interface RenderContext {
   storyId: string;
-  figmaParentNode: FrameNode;
+  figmaParentNode: MyCompNode;
   sbParentNode: CElementNode | null;
   previousInlineNode?: TextNode;
-  absoluteAncestor: FrameNode;
+  absoluteAncestor: MyCompNode;
   absoluteAncestorBorders: BorderWidths;
   appendInline?: boolean;
 }

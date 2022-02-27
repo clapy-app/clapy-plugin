@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Dict } from '../backend/routes/import-sb/sb-serialize.model';
 import { env } from '../environment/env';
 import { mkUrl } from '../feat/auth/auth-service.utils';
-import { Dict } from './app-models';
 import { wait } from './general-utils';
 
 export interface ApiRequestConfig extends RequestInit {
