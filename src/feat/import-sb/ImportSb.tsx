@@ -34,6 +34,7 @@ export const ImportSb: FC = memo(() => {
   const [sbSelection, setSbSelection] = useState<SbSampleSelection>(
     env.isDev ? 'reactstrap' /* 'equisafe' */ : 'reactstrap',
   );
+  const [sbUrl, setSbUrl] = useState<string>();
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()
@@ -75,6 +76,10 @@ export const ImportSb: FC = memo(() => {
     setSbSelection(e.target.value as SbSampleSelection);
   }, []);
 
+  const setSbUrlHandler: ChangeEventHandler<HTMLInputElement> = useCallback(e => {
+    setSbUrl(e.target.value);
+  }, []);
+
   const interruptRef = useRef(false);
   const interrupt = useCallback(() => (interruptRef.current = true), []);
 
@@ -93,65 +98,75 @@ export const ImportSb: FC = memo(() => {
   }, []);
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
-    if (!storiesSamplesRef.current || !sbSelection) {
+    if (!storiesSamplesRef.current || (!sbSelection && !sbUrl)) {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
       return;
     }
-    const { sbUrl } = storiesSamplesRef.current[sbSelection];
+    const sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
     setLoadingTxt('Fetch stories available...');
     interruptRef.current = false;
-    fetchStories(sbUrl)
+    fetchStories(sbUrlToImport)
       .then(stories => {
         setLoadingTxt('Prepare stories placeholders...');
-        return fetchPlugin('importStories', sbUrl, stories);
+        return fetchPlugin('importStories', sbUrlToImport, stories);
       })
       .then(async insertedComponents => {
         setError(undefined);
 
+        let consecutiveErrors = 0;
         // Could be done in parallel, with a pool to not overload the API.
         for (const { figmaId, storyUrl, storyId, pageId, argTypes } of insertedComponents) {
-          if (interruptRef.current) {
-            setError('Interrupted');
-            return;
-          }
-          if (!env.isDev) {
-            setLoadingTxt(`Render story ${storyId}...`);
-          }
+          try {
+            if (interruptRef.current) {
+              setError('Interrupted');
+              return;
+            }
+            if (!env.isDev) {
+              setLoadingTxt(`Render story ${storyId}...`);
+            }
 
-          const argsMatrix = buildArgsMatrix(argTypes);
-          console.log(argsMatrix);
-          if (argsMatrix) {
-            // Render each variant
-            for (let i = 0; i < argsMatrix.length; i++) {
-              const row = argsMatrix[i];
-              for (let j = 0; j < row.length; j++) {
-                const args = row[j];
-                const query = Object.entries(args)
-                  .map(([key, value]) => `${key}:${value}`)
-                  .join(';');
-                const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
-                if (env.isDev) {
-                  setLoadingTxt(`Render story ${storyId} variant (web)...`);
-                }
-                const nodes = await fetchCNodes(url);
-                await fetchPlugin('updateCanvasVariant', nodes, figmaId, storyId, pageId, argTypes, args, i, j);
-              }
+            // const argsMatrix = buildArgsMatrix(argTypes);
+            // if (argsMatrix) {
+            //   // Render each variant
+            //   for (let i = 0; i < argsMatrix.length; i++) {
+            //     const row = argsMatrix[i];
+            //     for (let j = 0; j < row.length; j++) {
+            //       const args = row[j];
+            //       const query = Object.entries(args)
+            //         .map(([key, value]) => `${key}:${value}`)
+            //         .join(';');
+            //       const url = `${sbUrlToImport}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
+            //       if (env.isDev) {
+            //         setLoadingTxt(`Render story ${storyId} variant (web)...`);
+            //       }
+            //       const nodes = await fetchCNodes(url);
+            //       await fetchPlugin('updateCanvasVariant', nodes, figmaId, storyId, pageId, argTypes, args, i, j);
+            //     }
+            //   }
+            // }
+
+            if (env.isDev) {
+              setLoadingTxt(`Render story ${storyId} (web)...`);
+            }
+
+            // Render the story in the API in web format via puppeteer and get HTML/CSS
+            const nodes = await fetchCNodes(storyUrl);
+
+            if (env.isDev) {
+              setLoadingTxt(`Render story ${storyId} (figma)...`);
+            }
+
+            // Render in Figma, translating HTML/CSS to Figma nodes
+            await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
+            consecutiveErrors = 0;
+          } catch (error) {
+            console.error('Failed to render story', storyId);
+            console.error(error);
+            ++consecutiveErrors;
+            if (consecutiveErrors >= 3) {
+              throw new Error(`3 consecutive errors, stop rendering components. Exiting the loop.`);
             }
           }
-
-          if (env.isDev) {
-            setLoadingTxt(`Render story ${storyId} (web)...`);
-          }
-
-          // Render the story in the API in web format via puppeteer and get HTML/CSS
-          const nodes = await fetchCNodes(storyUrl);
-
-          if (env.isDev) {
-            setLoadingTxt(`Render story ${storyId} (figma)...`);
-          }
-
-          // Render in Figma, translating HTML/CSS to Figma nodes
-          await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
         }
       })
       .catch(err => {
@@ -159,7 +174,7 @@ export const ImportSb: FC = memo(() => {
         setError(err?.message || 'Unknown error');
       })
       .finally(() => setLoadingTxt(undefined));
-  }, [sbSelection]);
+  }, [sbSelection, sbUrl]);
 
   const detachPage = useCallback(() => {
     fetchPlugin('detachPage').catch(handleError);
@@ -167,7 +182,7 @@ export const ImportSb: FC = memo(() => {
 
   return (
     <div className={classes.container}>
-      <div>
+      <div className={classes.topBar}>
         {!options ? (
           <p>Loading available stories...</p>
         ) : authLoading ? (
@@ -176,9 +191,12 @@ export const ImportSb: FC = memo(() => {
           <Button onClick={loginBtn}>Auth</Button>
         ) : (
           <>
-            <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
-              {options}
-            </select>
+            <div className={classes.storybookTextInput}>
+              <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
+                {options}
+              </select>
+              <input type='text' placeholder='Or Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
+            </div>
             <button onClick={runImport} disabled={!!loadingTxt}>
               Import
             </button>
@@ -199,13 +217,13 @@ export const ImportSb: FC = memo(() => {
       {!!error && <p>{error}</p>}
       <hr />
       {!selectedSbComp?.length ? (
-        <p>Select an element to preview the Storybook version here.</p>
+        <p>Select a component to preview the Storybook version here.</p>
       ) : selectedSbComp.length > 1 ? (
-        <p>Select a single element to preview the Storybook version here.</p>
+        <p>Select a single node to preview the Storybook version here.</p>
       ) : (
         <PreviewArea selection={selectedSbComp[0]} />
       )}
-      <button onClick={detachPage}>Detach page</button>
+      {env.isDev ? <button onClick={detachPage}>Detach page</button> : null}
       {isSignedIn && (
         <button className={classes.textButton} onClick={logoutBtn}>
           Logout
@@ -241,27 +259,27 @@ export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(({ selection 
   }, [storyUrl, figmaId]);
 
   if (!storyUrl) {
-    return <p>Figma ID: {figmaId}</p>;
+    return env.isDev ? <p>Figma ID: {figmaId}</p> : null;
   }
 
   return (
     <>
       <div>
-        {storyLabel}{' '}
+        Selected: {storyLabel}{' '}
         <a href={storyUrl} target='_blank'>
           (preview)
         </a>
       </div>
       <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
-      <button onClick={runImport}>Update Canvas</button>
+      <button onClick={runImport}>Update component</button>
       {loadingTxt ? (
         <p>{loadingTxt}</p>
-      ) : (
+      ) : env.isDev ? (
         <>
           <p>Figma ID: {figmaId}</p>
           <p>Storybook ID: {storyId}</p>
         </>
-      )}
+      ) : null}
       {!!error && <p>{error}</p>}
     </>
   );
@@ -273,19 +291,6 @@ async function fetchCNodes(url: string) {
 
 async function fetchStories(sbUrl: string) {
   return (await apiGet<SbStoriesWrapper>('stories/fetch-list', { query: { sbUrl } })).data;
-}
-
-// playground
-playground();
-function playground() {
-  const argTypes = {
-    active: { control: { type: 'boolean' } },
-    disabled: { control: { type: 'boolean' } },
-    outline: { control: { type: 'boolean' } },
-  };
-  const argsMatrix = buildArgsMatrix(argTypes as unknown as ArgTypes);
-
-  console.log(argsMatrix);
 }
 
 function buildArgsMatrix(argTypes: ArgTypes) {
