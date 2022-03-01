@@ -4,7 +4,7 @@ import { RenderContext } from '../import-model';
 import { CElementNode, CNode, cssDefaults, isCElementNode } from '../sb-serialize.model';
 import { appendChildNodes } from './2-append-child-nodes';
 import { horizontalFixedSize, verticalHugContents } from './autolayout-utils';
-import { nodeStyles, resizeNode, sizeWithUnitToPx } from './update-canvas-utils';
+import { nodeStyles, removeNode, resizeNode, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], storyId: string, isVariant?: boolean) {
   try {
@@ -66,7 +66,7 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
     // Delete previous children
     for (const childNode of node.children) {
       console.log('Delete childNode', childNode.name, ':', childNode);
-      childNode.remove();
+      removeNode(childNode);
     }
 
     const context: RenderContext = {
@@ -90,7 +90,7 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
   } catch (err) {
     console.error('Error while rendering story', storyId, 'in the root component.');
     // Clean nodes not appended yet because of errors
-    // currentNode?.remove();
+    removeNode(node);
     throw err;
   }
 }

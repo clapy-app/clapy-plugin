@@ -11,7 +11,7 @@ import {
   isCElementNode,
   isCPseudoElementNode,
   isCTextNode,
-  MyStyles,
+  MyStyles
 } from '../sb-serialize.model';
 import { cssToFontStyle } from './fonts';
 import {
@@ -34,9 +34,10 @@ import {
   prepareFullWidthHeightAttr,
   prepareMargins,
   preparePaddings,
+  removeNode,
   sizeWithUnitToPx,
   withDefaultProps,
-  wrapWithMargin,
+  wrapWithMargin
 } from './update-canvas-utils';
 
 type MyNode = TextNode | FrameNode;
@@ -335,12 +336,8 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
       try {
         // Clean nodes not appended yet because of errors
-        if (node && !node.removed) {
-          node.remove();
-        }
-        if (context.previousInlineNode && !context.previousInlineNode.removed) {
-          context.previousInlineNode.remove();
-        }
+        removeNode(node);
+        removeNode(context.previousInlineNode);
       } catch (error) {
         console.warn(
           'Failed to clean up node',

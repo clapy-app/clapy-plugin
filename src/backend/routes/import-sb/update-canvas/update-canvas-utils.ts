@@ -1,3 +1,4 @@
+import { Nil } from '../../../../common/app-models';
 import { isFrame, isLayout, isText, LayoutNode } from '../canvas-utils';
 import { BorderWidths, RenderContext } from '../import-model';
 import {
@@ -962,4 +963,10 @@ export function withDefaultProps<T extends FrameNode | TextNode | ComponentNode>
   node.fills = [];
   node.setRelaunchData({ preview: '' });
   return node;
+}
+
+export function removeNode(node: BaseNode | Nil) {
+  if (node && !node.removed) {
+    node.remove();
+  }
 }

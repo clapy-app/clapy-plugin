@@ -1,6 +1,6 @@
 import { getPageById, isFrame, isLayout } from '../canvas-utils';
 import { getCompNode } from '../import-sb-detail';
-import { withDefaultProps } from './update-canvas-utils';
+import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: string) {
   const page = pageId ? getPageById(pageId) : figma.currentPage;
@@ -31,7 +31,7 @@ export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: str
     const parent = node.parent || page;
     const i = parent.children.indexOf(node);
 
-    node.remove();
+    removeNode(node);
     node = f;
     if (i == null || i === -1) {
       console.warn(
