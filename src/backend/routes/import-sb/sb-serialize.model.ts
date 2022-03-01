@@ -29,12 +29,12 @@ export const cssDefaults = makeCssDefaults({
   flexDirection: 'row',
   width: 'auto',
   height: 'auto',
-  fontSize: null,
-  fontFamily: null,
+  fontSize: '16px',
+  fontFamily: 'Times New Roman',
   fontStretch: 'normal',
   fontStyle: 'normal',
   fontWeight: '400',
-  lineHeight: null,
+  lineHeight: '16px',
   textAlign: 'start',
   color: black,
   backgroundColor: backWithOp,
@@ -84,11 +84,12 @@ export const cssDefaults = makeCssDefaults({
   opacity: '1',
 });
 
-type PropertiesOrNull = {
-  [P in keyof Properties]: Properties[P] | null;
-};
+// If we need to enable null. But it's a dangerious scenario, because there are cases of top-level text nodes which styles are the default styles. What's done above is that default text styles are provided when there is no clear default.
+// type PropertiesOrNull = {
+//   [P in keyof Properties]: Properties[P] | null;
+// };
 
-function makeCssDefaults<T extends PropertiesOrNull>(rules: T): T {
+function makeCssDefaults<T extends Properties>(rules: T): T {
   return rules;
 }
 

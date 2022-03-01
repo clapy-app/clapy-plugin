@@ -6,6 +6,7 @@ import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import { getTokens, login, logout } from '../auth/auth-service';
@@ -93,16 +94,17 @@ export const ImportSb: FC = memo(() => {
     return dispose;
   }, []);
 
-  const runGrid: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
-    return fetchPlugin('runGrid');
-  }, []);
+  // const runGrid: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
+  //   return fetchPlugin('runGrid');
+  // }, []);
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     if (!storiesSamplesRef.current || (!sbSelection && !sbUrl)) {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
       return;
     }
-    const sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
+    let sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
+    sbUrlToImport = sanitizeSbUrl(sbUrlToImport);
     setLoadingTxt('Fetch stories available...');
     interruptRef.current = false;
     fetchStories(sbUrlToImport)
@@ -192,9 +194,11 @@ export const ImportSb: FC = memo(() => {
         ) : (
           <>
             <div className={classes.storybookTextInput}>
-              <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
-                {options}
-              </select>
+              {!sbUrl && (
+                <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
+                  {options}
+                </select>
+              )}
               <input type='text' placeholder='Or Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
             </div>
             <button onClick={runImport} disabled={!!loadingTxt}>
@@ -301,7 +305,7 @@ function buildArgsMatrix(argTypes: ArgTypes) {
     // if (argName !== 'active' && argName !== 'outline') {
     //   continue;
     // }
-    if (argType.control.type !== 'boolean') {
+    if (argType.control?.type !== 'boolean') {
       continue;
     }
     ++i;

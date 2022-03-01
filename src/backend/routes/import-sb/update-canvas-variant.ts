@@ -3,7 +3,7 @@ import { Args, ArgTypes, CNode } from './sb-serialize.model';
 import { renderParentNode } from './update-canvas/1-render-parent-node';
 import { getPageAndNode } from './update-canvas/get-page-and-node';
 import { alignItemsInGrid, getMaxIJ, getWidthHeight, indexToCoord, resizeGrid } from './update-canvas/grid-utils';
-import { withDefaultProps } from './update-canvas/update-canvas-utils';
+import { removeNode, resizeNode, withDefaultProps } from './update-canvas/update-canvas-utils';
 
 export async function updateCanvasVariant(
   sbNodes: CNode[],
@@ -52,7 +52,7 @@ export async function updateCanvasVariant(
       y = indexToCoord(j, height, gap);
       const foundByCoordinates = componentSet.children.find(c => c.x === x && c.y === y);
       if (foundByName && foundByCoordinates && foundByName !== foundByCoordinates) {
-        foundByCoordinates.remove();
+        removeNode(foundByCoordinates);
       }
       const found = foundByName || foundByCoordinates;
 
@@ -61,7 +61,7 @@ export async function updateCanvasVariant(
       } else {
         if (found) {
           console.warn('Child found is not a component in component set, bug? Removing it.');
-          found.remove();
+          removeNode(found);
         }
         // Not found, let's create it.
         comp = withDefaultProps(figma.createComponent());
@@ -93,7 +93,7 @@ export async function updateCanvasVariant(
     // resize component set after resizing (or not) the grid
     const gridWidth = indexToCoord(maxI, width, gap) + width + gap;
     const gridHeight = indexToCoord(maxJ, height, gap) + height + gap;
-    componentSet.resizeWithoutConstraints(gridWidth, gridHeight);
+    resizeNode(componentSet, gridWidth, gridHeight);
   } finally {
     figma.commitUndo();
   }

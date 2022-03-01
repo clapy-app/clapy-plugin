@@ -41,7 +41,10 @@ export type LayoutNode =
   | ComponentSetNode
   | FrameNode
   | ComponentNode
-  | InstanceNode
+  | InstanceNode;
+
+type LayoutNodeExtended =
+  | LayoutNode
   // Types I'm not sure it's part of the layout (LayoutMixin), but causing typescript errors otherwise:
   | StickyNode
   | ConnectorNode
@@ -55,63 +58,63 @@ export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: LayoutNode | Nil): node is GroupNode {
+export function isGroup(node: LayoutNodeExtended | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
 
-export function isSlice(node: LayoutNode | Nil): node is SliceNode {
+export function isSlice(node: LayoutNodeExtended | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
-export function isRectangle(node: LayoutNode | Nil): node is RectangleNode {
+export function isRectangle(node: LayoutNodeExtended | Nil): node is RectangleNode {
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: LayoutNode | Nil): node is LineNode {
+export function isLine(node: LayoutNodeExtended | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
-export function isEllipse(node: LayoutNode | Nil): node is EllipseNode {
+export function isEllipse(node: LayoutNodeExtended | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
-export function isPolygon(node: LayoutNode | Nil): node is PolygonNode {
+export function isPolygon(node: LayoutNodeExtended | Nil): node is PolygonNode {
   return node?.type === 'POLYGON';
 }
 
-export function isStar(node: LayoutNode | Nil): node is StarNode {
+export function isStar(node: LayoutNodeExtended | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: LayoutNode | Nil): node is VectorNode {
+export function isVector(node: LayoutNodeExtended | Nil): node is VectorNode {
   return node?.type === 'VECTOR';
 }
 
-export function isText(node: LayoutNode | Nil): node is TextNode {
+export function isText(node: LayoutNodeExtended | Nil): node is TextNode {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: LayoutNode | Nil): node is BooleanOperationNode {
+export function isBooleanOperation(node: LayoutNodeExtended | Nil): node is BooleanOperationNode {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
-export function isStamp(node: LayoutNode | Nil): node is StampNode {
+export function isStamp(node: LayoutNodeExtended | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
-export function isComponentSet(node: LayoutNode | Nil): node is ComponentSetNode {
+export function isComponentSet(node: LayoutNodeExtended | Nil): node is ComponentSetNode {
   return node?.type === 'COMPONENT_SET';
 }
 
-export function isFrame(node: LayoutNode | Nil /* BaseNode | BaseFrameMixin | undefined */): node is FrameNode {
+export function isFrame(node: LayoutNodeExtended | Nil /* BaseNode | BaseFrameMixin | undefined */): node is FrameNode {
   return (node as BaseNode)?.type === 'FRAME';
 }
 
-export function isComponent(node: LayoutNode | Nil): node is ComponentNode {
+export function isComponent(node: LayoutNodeExtended | Nil): node is ComponentNode {
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: LayoutNode | Nil): node is InstanceNode {
+export function isInstance(node: LayoutNodeExtended | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
 

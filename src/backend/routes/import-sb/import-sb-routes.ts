@@ -1,4 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
+import { objectIsNotEmpty } from '../../../common/general-utils';
+import { sanitizeSbUrl } from '../../../common/storybook-utils';
 import { env } from '../../../environment/env';
 import { isPage } from './canvas-utils';
 import { storiesSamples } from './import-model';
@@ -10,11 +12,12 @@ export function getStoriesSamples() {
 }
 
 export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrapper): Promise<FrameCreated[]> {
-  const { title, stories } = storiesWrapper;
   try {
+    const { title, stories } = storiesWrapper;
+    sbUrl = sanitizeSbUrl(sbUrl);
     const storyEntries: StoryEntries = Object.entries(stories)
       // Alternative: filter on !story.parameters.docsOnly
-      .filter(([_, story]) => story.parameters.__isArgsStory);
+      .filter(([_, story]) => story.parameters?.__isArgsStory || objectIsNotEmpty(story.parameters?.argTypes));
 
     // Dev filters
     // .filter(([storyId, _]) => storyId === 'components-button--button');

@@ -10,3 +10,7 @@ export function entries<T>(o: T): Entry<T>[] {
 export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
   return str ? str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T : str;
 }
+
+export function objectIsNotEmpty(obj: any) {
+  return !!obj && typeof obj === 'object' && Object.getOwnPropertyNames(obj).length > 0;
+}
