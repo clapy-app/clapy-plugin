@@ -1,6 +1,6 @@
 import { unquoteAndTrimString } from '../../../../common/general-utils';
 import { Property } from '../sb-serialize.model';
-import { sizeWithUnitToPx } from '../update-canvas-utils';
+import { sizeWithUnitToPx } from './update-canvas-utils';
 
 
 const fontWeights = ['Regular', 'Thin', 'ExtraLight', 'Light', 'SemiLight', 'DemiLight', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'].map(w => w.toLowerCase());

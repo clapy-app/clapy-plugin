@@ -1,3 +1,4 @@
 {
-  "git.allowForcePush": true
+  "git.allowForcePush": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

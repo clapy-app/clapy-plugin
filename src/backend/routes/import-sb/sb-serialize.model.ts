@@ -9,9 +9,11 @@ export type Properties = Dict<any>;
 // Another option: Partial<CSSStyleDeclaration>
 // but with it, assigning a string value causes a typing error, I don't know how to solve it without over-engineering the typing.
 
-interface Dict<T = any> {
+export interface Dict<T = any> {
   [key: string | number | symbol]: T;
 }
+
+export type Intersect<T, U> = Extract<T, U>;
 
 const black = 'rgb(0, 0, 0)';
 const backWithOp = 'rgba(0, 0, 0, 0)';
@@ -96,20 +98,27 @@ const cssKeys = Object.keys(cssDefaults) as (keyof typeof cssDefaults)[];
 type CssKeys = typeof cssKeys;
 
 export type MyStyles = Required<Pick<Properties, CssKeys[number]>>;
-export type MyStylesPE = MyStyles & { content: string; };
+export type MyStylesPE = MyStyles & { content: string };
 export type MyStyleRules = Properties;
-export type MyCSSVariables = MyStyleRules/* Dict<string> */;
+export type MyCSSVariables = MyStyleRules /* Dict<string> */;
 
 export type StyleKey = Exclude<keyof MyStyleRules, 'length' | 'parentRule'>;
 
 // type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 // type OptionalExcept<T, K extends keyof T> = Pick<T, K> & Omit<Partial<T>, K>;
-type CSSStyleDeclarationMethods = 'getPropertyPriority' | 'getPropertyValue' | 'item' | 'removeProperty' | 'setProperty';
+type CSSStyleDeclarationMethods =
+  | 'getPropertyPriority'
+  | 'getPropertyValue'
+  | 'item'
+  | 'removeProperty'
+  | 'setProperty';
 
 // export type MyCSSStyleDeclaration = OptionalExcept<CSSStyleDeclaration, CSSStyleDeclarationMethods>;
 
 // Adding src which is missing in the original typing, surprisingly, although it's a valid key for font faces.
-export type CSSStyleDeclarationNoMethod = Partial<Omit<CSSStyleDeclaration & { src: string; }, CSSStyleDeclarationMethods>>;
+export type CSSStyleDeclarationNoMethod = Partial<
+  Omit<CSSStyleDeclaration & { src: string }, CSSStyleDeclarationMethods>
+>;
 
 export const ELEMENT_NODE = 1; /* Node.ELEMENT_NODE */
 const PSEUDO_ELEMENT_NODE = -1;
@@ -140,7 +149,6 @@ export type CPseudoElementNode = CEltSharedInterface & {
   type: typeof PSEUDO_ELEMENT_NODE;
   styles: MyStylesPE;
   isFontIcon: boolean;
-
 };
 
 export interface CTextNode {
@@ -163,15 +171,17 @@ export function isCTextNode(node: CNode): node is CTextNode {
 }
 
 export interface ArgType {
-  control: { type: string; /* 'boolean' */ };
-  name: string; /* "active" */
-  type: { name: string; /* 'boolean' */ };
+  control: { type: string /* 'boolean' */ };
+  name: string /* "active" */;
+  type: { name: string /* 'boolean' */ };
 }
+export type ArgTypes = Dict<ArgType>;
+export type Args = Dict<any>; // key: arg name, value: arg value
 
 export interface SbStory {
   // argTypes,
   // args,
-  // componentId,
+  componentId: string;
   // id: string;
   kind: string;
   name: string;
@@ -184,9 +194,9 @@ export interface SbStory {
     // themes,
     // viewMode,
     // __id,
-    argTypes: Dict<ArgType>;
+    argTypes: ArgTypes;
     __isArgsStory: boolean;
-  },
+  };
   story: string;
   title: string;
 }

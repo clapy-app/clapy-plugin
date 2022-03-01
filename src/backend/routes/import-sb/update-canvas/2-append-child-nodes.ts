@@ -1,18 +1,52 @@
 import { Property } from 'csstype';
-import { Nil } from '../../../common/app-models';
-import { entries } from '../../../common/general-utils';
-import { isText } from './canvas-utils';
-import { RenderContext } from './import-model';
-import { CElementNode, CNode, CPseudoElementNode, ELEMENT_NODE, isCElementNode, isCPseudoElementNode, isCTextNode, MyStyles } from './sb-serialize.model';
-import { appendAbsolutelyPositionedNode, appendBackgroundColor, appendBackgroundImage, applyAutoLayout, applyBordersToEffects, applyFlexWidthHeight, applyRadius, applyShadowToEffects, applyTransform, calcTextAlignVertical, cssFontWeightToFigmaValue, cssRGBAToFigmaValue, ensureFontIsLoaded, getSvgNode, nodeStyles, prepareBorderWidths, prepareFullWidthHeightAttr, prepareMargins, preparePaddings, sizeWithUnitToPx, withDefaultProps, wrapWithMargin } from './update-canvas-utils';
-import { cssToFontStyle } from './update-canvas/fonts';
+import { Nil } from '../../../../common/app-models';
+import { entries } from '../../../../common/general-utils';
+import { isText } from '../canvas-utils';
+import { RenderContext } from '../import-model';
+import {
+  CElementNode,
+  CNode,
+  CPseudoElementNode,
+  ELEMENT_NODE,
+  isCElementNode,
+  isCPseudoElementNode,
+  isCTextNode,
+  MyStyles,
+} from '../sb-serialize.model';
+import { cssToFontStyle } from './fonts';
+import {
+  appendAbsolutelyPositionedNode,
+  appendBackgroundColor,
+  appendBackgroundImage,
+  applyAutoLayout,
+  applyBordersToEffects,
+  applyFlexWidthHeight,
+  applyRadius,
+  applyShadowToEffects,
+  applyTransform,
+  calcTextAlignVertical,
+  cssFontWeightToFigmaValue,
+  cssRGBAToFigmaValue,
+  ensureFontIsLoaded,
+  getSvgNode,
+  nodeStyles,
+  prepareBorderWidths,
+  prepareFullWidthHeightAttr,
+  prepareMargins,
+  preparePaddings,
+  sizeWithUnitToPx,
+  withDefaultProps,
+  wrapWithMargin,
+} from './update-canvas-utils';
 
 type MyNode = TextNode | FrameNode;
 
-export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
-
+export async function appendChildNodes(sbNodes: CNode[], context: RenderContext) {
   const { figmaParentNode, sbParentNode, appendInline } = context;
-  let absoluteElementsToAdd: { node: FrameNode, sbNode: (CElementNode | CPseudoElementNode); }[] = [];
+  let absoluteElementsToAdd: {
+    node: FrameNode;
+    sbNode: CElementNode | CPseudoElementNode;
+  }[] = [];
 
   const consecutiveInlineNodes: MyNode[] = [];
 
@@ -24,7 +58,6 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
     ++i;
     let node: SceneNode | undefined = undefined;
     try {
-
       if (!isCElementNode(sbNode) && !isCPseudoElementNode(sbNode) && !isCTextNode(sbNode)) {
         console.warn('Unknown node type:', (sbNode as any).type, '- skipping.');
         continue;
@@ -34,13 +67,35 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       if (isCElementNode(sbNode) || isCPseudoElementNode(sbNode)) {
         for (const [ruleName, value] of entries(sbNode.styleRules)) {
           if (value === 'inherit') {
-            // @ts-ignore
-            sbNode.styleRules[ruleName] = sbParentNode?.styleRules[ruleName] || sbParentNode?.styles[ruleName];
+            sbNode.styleRules[ruleName] =
+              sbParentNode?.styleRules[ruleName] ||
+              // @ts-ignore
+              sbParentNode?.styles[ruleName];
           }
         }
       }
 
-      const { display, width, height, fontSize, fontFamily, fontStretch, fontWeight, fontStyle, lineHeight, color, backgroundColor, opacity, boxShadow, transform, position, boxSizing, textDecorationLine, overflowX, overflowY } = nodeStyles(sbNode, sbParentNode);
+      const {
+        display,
+        width,
+        height,
+        fontSize,
+        fontFamily,
+        fontStretch,
+        fontWeight,
+        fontStyle,
+        lineHeight,
+        color,
+        backgroundColor,
+        opacity,
+        boxShadow,
+        transform,
+        position,
+        boxSizing,
+        textDecorationLine,
+        overflowX,
+        overflowY,
+      } = nodeStyles(sbNode, sbParentNode);
 
       if (display === 'none') {
         // Let's skip the elements not displayed for now. We will see later if there is a good reason to render them.
@@ -56,12 +111,15 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       }
 
       if (isCTextNode(sbNode)) {
-        // Have a look at createTextStyle?
-
         node = context.previousInlineNode!;
         const start = node.characters.length;
         if (typeof start !== 'number') {
-          console.warn('Cannot read characters length from previousInlineNode. length:', start, 'characters:', node.characters);
+          console.warn(
+            'Cannot read characters length from previousInlineNode. length:',
+            start,
+            'characters:',
+            node.characters,
+          );
         }
         let characters = sbNode.value?.replace(/\s+/g, ' ');
         if (typeof characters !== 'string') {
@@ -87,10 +145,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const defaultFontFamily = ((start > 0 ? node.getRangeFontName(0, 1) : node.fontName) as FontName).family;
         const fontStyleFigma = cssFontWeightToFigmaValue(fontWeight as string);
         const loadedFont = await cssToFontStyle(fontFamily, fontStretch, fontWeight, fontStyle);
-        const font: FontName = loadedFont || { family: defaultFontFamily, style: fontStyleFigma };
+        const font: FontName = loadedFont || {
+          family: defaultFontFamily,
+          style: fontStyleFigma,
+        };
 
         if (font.family !== defaultFontFamily || font.style !== 'Regular') {
-          await ensureFontIsLoaded({ family: defaultFontFamily, style: 'Regular' });
+          await ensureFontIsLoaded({
+            family: defaultFontFamily,
+            style: 'Regular',
+          });
         }
         await ensureFontIsLoaded(font);
 
@@ -108,7 +172,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
 
         if (lineHeight !== 'normal') {
-          node.setRangeLineHeight(start, end, { value: sizeWithUnitToPx(lineHeight as string), unit: 'PIXELS' });
+          node.setRangeLineHeight(start, end, {
+            value: sizeWithUnitToPx(lineHeight as string),
+            unit: 'PIXELS',
+          });
         }
 
         const [textAlignHorizontal, textAlignVertical] = calcTextAlignVertical(node, context, sbNode);
@@ -116,19 +183,27 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         node.textAlignVertical = textAlignVertical;
 
         const { r, g, b, a } = cssRGBAToFigmaValue(color as string);
-        node.setRangeFills(start, end, a > 0 ? [{
-          type: 'SOLID',
-          color: { r, g, b },
-          opacity: a,
-        }] : []);
+        node.setRangeFills(
+          start,
+          end,
+          a > 0
+            ? [
+                {
+                  type: 'SOLID',
+                  color: { r, g, b },
+                  opacity: a,
+                },
+              ]
+            : [],
+        );
 
+        // TODO shouldn't we always hug contents? Beware of not breaking components like reactstrap accordion header with icon.
         applyFlexWidthHeight(node, context, sbNode, true, true, false, false);
-
       } else if (isCElementNode(sbNode) && display === 'inline') {
         // Inline pseudo-elements may be considered as well.
 
         if (sbNode.children) {
-          await appendNodes(sbNode.children, {
+          await appendChildNodes(sbNode.children, {
             ...context,
             sbParentNode: sbNode,
             appendInline: true,
@@ -136,11 +211,13 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
             // previousInlineNode does not change
           });
         }
-
-      } else { // sbNode is element or pseudo-element
+      } else {
+        // sbNode is element or pseudo-element
 
         if (appendInline) {
-          console.warn('Block elements inside inline detected. It is not supported well and will cause unexpected results.');
+          console.warn(
+            'Block elements inside inline detected. It is not supported well and will cause unexpected results.',
+          );
         }
 
         prepareFullWidthHeightAttr(context, sbNode);
@@ -151,11 +228,14 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const hasChildren = isCElementNode(sbNode) && !!sbNode.children;
 
         const svgNode = getSvgNode(borders, paddings, sbNode);
-        node = svgNode || figma.createFrame();
+        node = svgNode || withDefaultProps(figma.createFrame());
 
         // Bug: className is an object for SVG?
         // Reactstrap, component components-toast--toast-header-icon
-        node.name = isCElementNode(sbNode) && typeof sbNode.className === 'string' ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}` : sbNode.name;
+        node.name =
+          isCElementNode(sbNode) && typeof sbNode.className === 'string'
+            ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}`
+            : sbNode.name;
 
         // if (display === 'none') {
         //   node.visible = false;
@@ -186,7 +266,8 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         applyRadius(node, sbNode.styles);
 
-        node.clipsContent = (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
+        node.clipsContent =
+          (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
 
         // Layout
 
@@ -196,10 +277,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         const cssHeight = sizeWithUnitToPx(height!);
         // In figma, inside borders are on top of the padding, although in CSS it's an extra layer.
         // So we increase the padding to cover the borders. It also affects the width/height.
-        let w = cssWidth + borderLeftWidth + borderRightWidth
-          + (boxSizing! === 'content-box' ? paddingLeft + paddingRight : 0);
-        let h = cssHeight + borderTopWidth + borderBottomWidth
-          + (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
+        let w =
+          cssWidth +
+          borderLeftWidth +
+          borderRightWidth +
+          (boxSizing! === 'content-box' ? paddingLeft + paddingRight : 0);
+        let h =
+          cssHeight +
+          borderTopWidth +
+          borderBottomWidth +
+          (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
 
         // `<=` because, with negative margins, negative dimensions can happen.
         if (w <= 0 && h <= 0 && !hasChildren) {
@@ -220,9 +307,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
 
         if (position === 'absolute') {
           absoluteElementsToAdd.push({ node: wrapperNode, sbNode });
-
         } else {
-
           queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
 
           if (hasBlockParent(sbParentNode) && isInline(display)) {
@@ -235,7 +320,7 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
         }
 
         if (isCElementNode(sbNode) && sbNode.children) {
-          await appendNodes(sbNode.children, {
+          await appendChildNodes(sbNode.children, {
             ...context,
             figmaParentNode: innerNode,
             sbParentNode: sbNode,
@@ -259,12 +344,16 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
           context.previousInlineNode.remove();
         }
       } catch (error) {
-        console.warn('Failed to clean up node', node?.name, 'or temporary inline node `previousInlineNode` in the error catch. Sub-error:', error);
+        console.warn(
+          'Failed to clean up node',
+          node?.name,
+          'or temporary inline node `previousInlineNode` in the error catch. Sub-error:',
+          error,
+        );
       }
 
       throw err;
     }
-
   }
 
   if (!appendInline) {
@@ -280,11 +369,10 @@ export async function appendNodes(sbNodes: CNode[], context: RenderContext) {
       appendAbsolutelyPositionedNode(node, sbNode, context);
     }
   }
-
 }
 
 function newTextNode() {
-  const node = figma.createText();
+  const node = withDefaultProps(figma.createText());
   node.name = 'text';
   return node;
 }
@@ -336,8 +424,6 @@ function appendInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
     applyFlexWidthHeight(wrapper, context, sbNode, true, false, false, false);
 
     figmaParentNode.appendChild(wrapper);
-  } else {
-    console.log(inlineNodes[0]);
   }
 
   for (const node of inlineNodes) {

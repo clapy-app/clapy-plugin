@@ -5,6 +5,15 @@
   row-gap: 1rem;
 }
 
+.topBar {
+  display: flex;
+}
+
 .textButton {
   border: none;
+}
+
+.storybookTextInput {
+  display: flex;
+  flex-direction: column;
 }

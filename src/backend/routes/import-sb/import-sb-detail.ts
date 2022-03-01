@@ -1,6 +1,7 @@
 import { SbCompSelection } from '../../../common/app-models';
 import { isFrame, isLayout } from './canvas-utils';
 import { SbStoryWithFolder } from './import-model';
+import { ArgTypes } from './sb-serialize.model';
 
 type StoryEntry = [string, SbStoryWithFolder];
 export type StoryEntries = StoryEntry[];
@@ -61,9 +62,13 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
     frame.setPluginData('sbUrl', sbUrl);
     frame.setPluginData('storyId', storyId);
     frame.setPluginData('storyTitle', storyTitle);
+    // Store argTypes to generate variants - may not be useful, to challenge later.
+    const argTypes: ArgTypes = story.parameters.argTypes || {};
+    frame.setPluginData('storyArgTypes', JSON.stringify(argTypes));
     frame.setRelaunchData({ preview: '' });
     frame.expanded = false;
     nodes.push(frame);
+    // &args=kind:secondary;size:xxs
     const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
     response.push({
       figmaId: frame.id,
@@ -72,6 +77,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
       storyId,
       storyLabel: frame.name,
       storyUrl: url,
+      argTypes,
     });
   }
 
@@ -79,7 +85,13 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
   return response;
 }
 
-function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name: string, containerId: string, depth: number) {
+function getOrCreateContainer(
+  page: PageNode,
+  parent: FrameNode | PageNode,
+  name: string,
+  containerId: string,
+  depth: number,
+) {
   let frame = parent.findChild(node => getLayoutPluginData(node, 'containerId') === containerId);
   if (!frame) {
     frame = page.findOne(node => getLayoutPluginData(node, 'containerId') === containerId);
@@ -93,7 +105,8 @@ function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name
   }
   if (!frame) {
     frame = figma.createFrame();
-    if (parent === page) { // depth === 1
+    if (parent === page) {
+      // depth === 1
       frame.y = 100;
       frame.x = 0;
     }
@@ -113,16 +126,23 @@ function getOrCreateContainer(page: PageNode, parent: FrameNode | PageNode, name
   frame.strokeAlign = 'INSIDE';
   frame.strokeWeight = 5 / depth;
   frame.dashPattern = [10, 10];
-  frame.strokes = [{
-    type: 'SOLID',
-    color: { r: 0, g: 0, b: 0 },
-    opacity: 1,
-  }];
-  frame.fills = depth === 1 ? [] : [{
-    type: 'SOLID',
-    color: hexToRgb(['FBFBFB', 'F7F7F7', 'F3F3F3', 'EEEEEE', 'EAEAEA'][depth - 2]),
-    opacity: 1,
-  }];
+  frame.strokes = [
+    {
+      type: 'SOLID',
+      color: { r: 0, g: 0, b: 0 },
+      opacity: 1,
+    },
+  ];
+  frame.fills =
+    depth === 1
+      ? []
+      : [
+          {
+            type: 'SOLID',
+            color: hexToRgb(['FBFBFB', 'F7F7F7', 'F3F3F3', 'EEEEEE', 'EAEAEA'][depth - 2]),
+            opacity: 1,
+          },
+        ];
 
   frame.setPluginData('containerId', containerId);
   frame.expanded = true;
@@ -156,7 +176,7 @@ function getOrCreateCompFrame(container: FrameNode, page: PageNode, storyId: str
     frame.y = 100;
     frame.x = i * 550;
     frame.resizeWithoutConstraints(500, 300);
-    frame.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
+    frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
     container.appendChild(frame);
   }
   return frame;

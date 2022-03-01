@@ -1,3 +1,6 @@
+import { Nil } from '../../../common/app-models';
+import { Intersect } from './sb-serialize.model';
+
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }
@@ -6,68 +9,120 @@ export function isPage(node: BaseNode | undefined): node is PageNode {
   return node?.type === 'PAGE';
 }
 
-const layoutTypes = new Set(['GROUP', 'SLICE', 'RECTANGLE', 'ELLIPSE', 'POLYGON', 'STAR', 'VECTOR', 'TEXT', 'BOOLEAN_OPERATION', 'STAMP', 'COMPONENT_SET', 'FRAME', 'COMPONENT', 'INSTANCE']);
+const layoutTypes = new Set([
+  'GROUP',
+  'SLICE',
+  'RECTANGLE',
+  'ELLIPSE',
+  'POLYGON',
+  'STAR',
+  'VECTOR',
+  'TEXT',
+  'BOOLEAN_OPERATION',
+  'STAMP',
+  'COMPONENT_SET',
+  'FRAME',
+  'COMPONENT',
+  'INSTANCE',
+]);
+
+export type LayoutNode =
+  | GroupNode
+  | SliceNode
+  | RectangleNode
+  | LineNode
+  | EllipseNode
+  | PolygonNode
+  | StarNode
+  | VectorNode
+  | TextNode
+  | BooleanOperationNode
+  | StampNode
+  | ComponentSetNode
+  | FrameNode
+  | ComponentNode
+  | InstanceNode
+  // Types I'm not sure it's part of the layout (LayoutMixin), but causing typescript errors otherwise:
+  | StickyNode
+  | ConnectorNode
+  | ShapeWithTextNode
+  | CodeBlockNode
+  | WidgetNode
+  | EmbedNode
+  | LinkUnfurlNode;
 
 export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: BaseNode | undefined): node is GroupNode {
+export function isGroup(node: LayoutNode | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
 
-export function isSlice(node: BaseNode | undefined): node is SliceNode {
+export function isSlice(node: LayoutNode | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
-export function isRectangle(node: BaseNode | undefined): node is RectangleNode {
+export function isRectangle(node: LayoutNode | Nil): node is RectangleNode {
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: BaseNode | undefined): node is LineNode {
+export function isLine(node: LayoutNode | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
-export function isEllipse(node: BaseNode | undefined): node is EllipseNode {
+export function isEllipse(node: LayoutNode | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
-export function isPolygon(node: BaseNode | undefined): node is PolygonNode {
+export function isPolygon(node: LayoutNode | Nil): node is PolygonNode {
   return node?.type === 'POLYGON';
 }
 
-export function isStar(node: BaseNode | undefined): node is StarNode {
+export function isStar(node: LayoutNode | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: BaseNode | undefined): node is VectorNode {
+export function isVector(node: LayoutNode | Nil): node is VectorNode {
   return node?.type === 'VECTOR';
 }
 
-export function isText(node: BaseNode | undefined): node is TextNode {
+export function isText(node: LayoutNode | Nil): node is TextNode {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: BaseNode | undefined): node is BooleanOperationNode {
+export function isBooleanOperation(node: LayoutNode | Nil): node is BooleanOperationNode {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
-export function isStamp(node: BaseNode | undefined): node is StampNode {
+export function isStamp(node: LayoutNode | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
-export function isComponentSet(node: BaseNode | undefined): node is ComponentSetNode {
+export function isComponentSet(node: LayoutNode | Nil): node is ComponentSetNode {
   return node?.type === 'COMPONENT_SET';
 }
 
-export function isFrame(node: BaseNode | undefined): node is FrameNode {
-  return node?.type === 'FRAME';
+export function isFrame(node: LayoutNode | Nil /* BaseNode | BaseFrameMixin | undefined */): node is FrameNode {
+  return (node as BaseNode)?.type === 'FRAME';
 }
 
-export function isComponent(node: BaseNode | undefined): node is ComponentNode {
+export function isComponent(node: LayoutNode | Nil): node is ComponentNode {
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: BaseNode | undefined): node is InstanceNode {
+export function isInstance(node: LayoutNode | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
+
+export function isBaseFrameMixin(node: BaseNode | BaseFrameMixin | Nil): node is BaseFrameMixin {
+  return !!(node as BaseFrameMixin)?.layoutMode;
+}
+
+export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is ChildrenMixin {
+  return !!(node as ChildrenMixin)?.children;
+}
+
+export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
+
+export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;

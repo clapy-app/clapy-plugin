@@ -1,6 +1,8 @@
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 import { detachPage, getSbCompSelection, getStoriesSamples, importStories, selectedSbComp } from './routes/import-sb/import-sb-routes';
 import { updateCanvas } from "./routes/import-sb/update-canvas";
+import { updateCanvasVariant } from './routes/import-sb/update-canvas-variant';
+import { runGrid } from './routes/import-sb/update-canvas/grid-utils';
 import { createText, getText, selectedTextNodes, updateText } from './routes/text-node-routes';
 
 export const routes = {
@@ -22,6 +24,9 @@ export const routes = {
   detachPage: detachPage,
   getSbCompSelection: getSbCompSelection,
   updateCanvas: updateCanvas,
+  updateCanvasVariant: updateCanvasVariant,
+
+  runGrid: runGrid,
 };
 
 export const subscriptions = {
