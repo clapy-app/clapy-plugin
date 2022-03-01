@@ -1,8 +1,7 @@
 import { Property } from 'csstype';
-import { Nil } from '../../../../common/app-models';
-import { entries } from '../../../../common/general-utils';
-import { isGroup, isText } from '../canvas-utils';
-import { RenderContext } from '../import-model';
+import { Nil } from '../../../common/app-models';
+import { entries } from '../../../common/general-utils';
+import { isGroup, isText } from '../../common/canvas-utils';
 import {
   CElementNode,
   CNode,
@@ -12,7 +11,8 @@ import {
   isCPseudoElementNode,
   isCTextNode,
   MyStyles,
-} from '../sb-serialize.model';
+} from '../../common/sb-serialize.model';
+import { RenderContext } from '../1-import-stories/import-model';
 import { cssToFontStyle } from './fonts';
 import {
   appendAbsolutelyPositionedNode,
@@ -233,10 +233,9 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         // Bug: className is an object for SVG?
         // Reactstrap, component components-toast--toast-header-icon
+        const className = isCElementNode(sbNode) ? sbNode.className?.trim?.() : undefined;
         node.name =
-          isCElementNode(sbNode) && typeof sbNode.className === 'string'
-            ? `${sbNode.name}.${sbNode.className.split(' ').join('.')}`
-            : sbNode.name;
+          className && typeof className === 'string' ? `${sbNode.name}.${className.split(' ').join('.')}` : sbNode.name;
 
         // if (display === 'none') {
         //   node.visible = false;

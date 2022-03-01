@@ -1,5 +1,5 @@
+import { ArgTypes } from '../backend/common/sb-serialize.model';
 import { _Routes, _Subscriptions } from '../backend/routes';
-import { ArgTypes } from '../backend/routes/import-sb/sb-serialize.model';
 
 export type Dict2<Key extends string | number | symbol, Value> = {
   [key in Key]: Value;

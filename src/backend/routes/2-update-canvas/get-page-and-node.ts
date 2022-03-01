@@ -1,5 +1,5 @@
-import { getPageById, isFrame, isLayout } from '../canvas-utils';
-import { getCompNode } from '../import-sb-detail';
+import { getPageById, isLayout, isMyComp } from '../../common/canvas-utils';
+import { getCompNode } from '../1-import-stories/2-import-sb-detail';
 import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: string) {
@@ -22,7 +22,7 @@ export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: str
     console.warn('Node to update is not in the layout, skipping. ID:', figmaNodeId);
     return {};
   }
-  if (!isFrame(node)) {
+  if (!isMyComp(node)) {
     console.warn('Node is not a frame, recreating it.');
     const f = withDefaultProps(figma.createFrame());
     f.x = node.x;

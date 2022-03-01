@@ -1,13 +1,15 @@
-import { isComponent, isComponentSet } from './canvas-utils';
-import { Args, ArgTypes, CNode } from './sb-serialize.model';
-import { renderParentNode } from './update-canvas/1-render-parent-node';
-import { getPageAndNode } from './update-canvas/get-page-and-node';
-import { alignItemsInGrid, getMaxIJ, getWidthHeight, indexToCoord, resizeGrid } from './update-canvas/grid-utils';
-import { removeNode, resizeNode, withDefaultProps } from './update-canvas/update-canvas-utils';
+import { isComponent, isComponentSet } from '../../common/canvas-utils';
+import { Args, ArgTypes, CNode } from '../../common/sb-serialize.model';
+import { setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
+import { renderParentNode } from './3-render-parent-node';
+import { getPageAndNode } from './get-page-and-node';
+import { alignItemsInGrid, getMaxIJ, getWidthHeight, indexToCoord, resizeGrid } from './grid-utils';
+import { removeNode, resizeNode, withDefaultProps } from './update-canvas-utils';
 
 export async function updateCanvasVariant(
   sbNodes: CNode[],
   storyFigmaId: string,
+  sbUrl: string,
   storyId: string,
   pageId: string,
   argTypes: ArgTypes,
@@ -24,8 +26,12 @@ export async function updateCanvasVariant(
     const parent = storyNode.parent;
     const siblings = parent.children;
     const childPosition = siblings.indexOf(storyNode);
-    // Check previous child, if it is a frame
-    let componentSet = siblings[childPosition - 1];
+
+    let componentSet = isComponentSet(storyNode)
+      ? storyNode
+      : // Check previous child, if it is a frame
+        siblings[childPosition - 1];
+
     let comp: ComponentNode | undefined = undefined;
     const name = Object.entries(args)
       .sort()
@@ -69,7 +75,17 @@ export async function updateCanvasVariant(
       }
     }
 
-    componentSet.name = storyNode.name;
+    // parent node properties
+    setStoryFrameProperties(
+      componentSet,
+      storyNode.name,
+      sbUrl,
+      storyId,
+      storyNode.getPluginData('storyTitle'),
+      argTypes,
+    );
+
+    // Variant node properties
     comp.name = name;
     comp.x = x;
     comp.y = y;
@@ -94,6 +110,11 @@ export async function updateCanvasVariant(
     const gridWidth = indexToCoord(maxI, width, gap) + width + gap;
     const gridHeight = indexToCoord(maxJ, height, gap) + height + gap;
     resizeNode(componentSet, gridWidth, gridHeight);
+
+    // TODO once ready
+    // if (storyNode !== componentSet) {
+    //   removeNode(storyNode);
+    // }
   } finally {
     figma.commitUndo();
   }

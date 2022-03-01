@@ -1,7 +1,7 @@
 import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { SbSampleSelection, StoriesSamples } from '../../backend/routes/import-sb/import-model';
-import { Args, ArgTypes, CNode, SbStoriesWrapper } from '../../backend/routes/import-sb/sb-serialize.model';
+import { Args, ArgTypes, CNode, SbStoriesWrapper } from '../../backend/common/sb-serialize.model';
+import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
@@ -127,39 +127,53 @@ export const ImportSb: FC = memo(() => {
               setLoadingTxt(`Render story ${storyId}...`);
             }
 
-            // const argsMatrix = buildArgsMatrix(argTypes);
-            // if (argsMatrix) {
-            //   // Render each variant
-            //   for (let i = 0; i < argsMatrix.length; i++) {
-            //     const row = argsMatrix[i];
-            //     for (let j = 0; j < row.length; j++) {
-            //       const args = row[j];
-            //       const query = Object.entries(args)
-            //         .map(([key, value]) => `${key}:${value}`)
-            //         .join(';');
-            //       const url = `${sbUrlToImport}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
-            //       if (env.isDev) {
-            //         setLoadingTxt(`Render story ${storyId} variant (web)...`);
-            //       }
-            //       const nodes = await fetchCNodes(url);
-            //       await fetchPlugin('updateCanvasVariant', nodes, figmaId, storyId, pageId, argTypes, args, i, j);
-            //     }
-            //   }
-            // }
+            const argsMatrix = buildArgsMatrix(argTypes);
+            if (argsMatrix) {
+              // Render each variant
+              for (let i = 0; i < argsMatrix.length; i++) {
+                const row = argsMatrix[i];
+                for (let j = 0; j < row.length; j++) {
+                  const args = row[j];
+                  const query = Object.entries(args)
+                    .map(([key, value]) => `${key}:${value}`)
+                    .join(';');
+                  const url = `${sbUrlToImport}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
+                  if (env.isDev) {
+                    setLoadingTxt(`Render story ${storyId} variant (web)...`);
+                  }
+                  const nodes = await fetchCNodes(url);
+                  if (env.isDev) {
+                    setLoadingTxt(`Render story ${storyId} variant (figma)...`);
+                  }
+                  await fetchPlugin(
+                    'updateCanvasVariant',
+                    nodes,
+                    figmaId,
+                    sbUrlToImport,
+                    storyId,
+                    pageId,
+                    argTypes,
+                    args,
+                    i,
+                    j,
+                  );
+                }
+              }
+            } else {
+              if (env.isDev) {
+                setLoadingTxt(`Render story ${storyId} (web)...`);
+              }
 
-            if (env.isDev) {
-              setLoadingTxt(`Render story ${storyId} (web)...`);
+              // Render the story in the API in web format via puppeteer and get HTML/CSS
+              const nodes = await fetchCNodes(storyUrl);
+
+              if (env.isDev) {
+                setLoadingTxt(`Render story ${storyId} (figma)...`);
+              }
+
+              // Render in Figma, translating HTML/CSS to Figma nodes
+              await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
             }
-
-            // Render the story in the API in web format via puppeteer and get HTML/CSS
-            const nodes = await fetchCNodes(storyUrl);
-
-            if (env.isDev) {
-              setLoadingTxt(`Render story ${storyId} (figma)...`);
-            }
-
-            // Render in Figma, translating HTML/CSS to Figma nodes
-            await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
             consecutiveErrors = 0;
           } catch (error) {
             console.error('Failed to render story', storyId);

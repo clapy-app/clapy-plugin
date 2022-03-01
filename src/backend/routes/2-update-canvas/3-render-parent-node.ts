@@ -1,8 +1,8 @@
-import { entries } from '../../../../common/general-utils';
-import { isFrame, MyCompNode } from '../canvas-utils';
-import { RenderContext } from '../import-model';
-import { CElementNode, CNode, cssDefaults, isCElementNode } from '../sb-serialize.model';
-import { appendChildNodes } from './2-append-child-nodes';
+import { entries } from '../../../common/general-utils';
+import { isFrame, MyCompNode } from '../../common/canvas-utils';
+import { CElementNode, CNode, cssDefaults, isCElementNode } from '../../common/sb-serialize.model';
+import { RenderContext } from '../1-import-stories/import-model';
+import { appendChildNodes } from './4-append-child-nodes';
 import { horizontalFixedSize, verticalHugContents } from './autolayout-utils';
 import { nodeStyles, removeNode, resizeNode, sizeWithUnitToPx } from './update-canvas-utils';
 
@@ -65,7 +65,6 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
 
     // Delete previous children
     for (const childNode of node.children) {
-      console.log('Delete childNode', childNode.name, ':', childNode);
       removeNode(childNode);
     }
 

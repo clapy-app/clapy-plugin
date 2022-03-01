@@ -1,4 +1,4 @@
-import { isChildrenMixin, WithChildrenNode } from '../canvas-utils';
+import { isChildrenMixin, WithChildrenNode } from '../../common/canvas-utils';
 
 // The front gives the index (i = 0, 1, 2...) of the component to insert.
 // For each new argType, new blocks of components are added, by adding extra rows or extra columns depending on the axis on which the argType is added.
