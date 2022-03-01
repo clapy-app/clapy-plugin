@@ -1,7 +1,7 @@
 import { Property } from 'csstype';
 import { Nil } from '../../../../common/app-models';
 import { entries } from '../../../../common/general-utils';
-import { isText } from '../canvas-utils';
+import { isGroup, isText } from '../canvas-utils';
 import { RenderContext } from '../import-model';
 import {
   CElementNode,
@@ -11,7 +11,7 @@ import {
   isCElementNode,
   isCPseudoElementNode,
   isCTextNode,
-  MyStyles
+  MyStyles,
 } from '../sb-serialize.model';
 import { cssToFontStyle } from './fonts';
 import {
@@ -37,15 +37,15 @@ import {
   removeNode,
   sizeWithUnitToPx,
   withDefaultProps,
-  wrapWithMargin
+  wrapWithMargin,
 } from './update-canvas-utils';
 
-type MyNode = TextNode | FrameNode;
+type MyNode = TextNode | FrameNode | GroupNode;
 
 export async function appendChildNodes(sbNodes: CNode[], context: RenderContext) {
   const { figmaParentNode, sbParentNode, appendInline } = context;
   let absoluteElementsToAdd: {
-    node: FrameNode;
+    node: FrameNode | GroupNode;
     sbNode: CElementNode | CPseudoElementNode;
   }[] = [];
 
@@ -253,7 +253,9 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
         appendBackgroundColor(backgroundColor, fills);
 
         appendBackgroundImage(sbNode, fills);
-        node.fills = fills;
+        if (!isGroup(node)) {
+          node.fills = fills;
+        }
 
         const effects: Effect[] = [];
 
@@ -265,10 +267,14 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         applyTransform(transform, node);
 
-        applyRadius(node, sbNode.styles);
+        if (!isGroup(node)) {
+          applyRadius(node, sbNode.styles);
+        }
 
-        node.clipsContent =
-          (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
+        if (!isGroup(node)) {
+          node.clipsContent =
+            (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
+        }
 
         // Layout
 
@@ -318,7 +324,10 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
           }
         }
 
-        if (isCElementNode(sbNode) && sbNode.children) {
+        // !isGroup(innerNode) explanation: it can be a GroupNode when the node is a SVG. But in that case,
+        // it cannot have children. To simplify the typing, let's add the condition here and sbParentNode
+        // don't take the GroupNode type.
+        if (isCElementNode(sbNode) && sbNode.children && !isGroup(innerNode)) {
           await appendChildNodes(sbNode.children, {
             ...context,
             figmaParentNode: innerNode,
@@ -386,7 +395,7 @@ function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[
   }
 }
 
-function queueInlineNode(inlineNodes: MyNode[], node: TextNode | FrameNode) {
+function queueInlineNode(inlineNodes: MyNode[], node: TextNode | FrameNode | GroupNode) {
   inlineNodes.push(node);
 }
 

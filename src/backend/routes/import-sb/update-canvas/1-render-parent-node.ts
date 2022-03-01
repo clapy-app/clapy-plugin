@@ -89,8 +89,9 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
     }
   } catch (err) {
     console.error('Error while rendering story', storyId, 'in the root component.');
-    // Clean nodes not appended yet because of errors
-    removeNode(node);
+    // In case of error, let's keep the parent node to make the update easier.
+    // Child nodes should be removed by the appendChildNodes() method.
+    // removeNode(node);
     throw err;
   }
 }

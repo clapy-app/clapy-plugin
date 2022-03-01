@@ -94,9 +94,9 @@ export const ImportSb: FC = memo(() => {
     return dispose;
   }, []);
 
-  const runGrid: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
-    return fetchPlugin('runGrid');
-  }, []);
+  // const runGrid: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
+  //   return fetchPlugin('runGrid');
+  // }, []);
 
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     if (!storiesSamplesRef.current || (!sbSelection && !sbUrl)) {
@@ -194,9 +194,11 @@ export const ImportSb: FC = memo(() => {
         ) : (
           <>
             <div className={classes.storybookTextInput}>
-              <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
-                {options}
-              </select>
+              {!sbUrl && (
+                <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
+                  {options}
+                </select>
+              )}
               <input type='text' placeholder='Or Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
             </div>
             <button onClick={runImport} disabled={!!loadingTxt}>
