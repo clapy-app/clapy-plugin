@@ -3,7 +3,7 @@ import { Args, ArgTypes, CNode } from './sb-serialize.model';
 import { renderParentNode } from './update-canvas/1-render-parent-node';
 import { getPageAndNode } from './update-canvas/get-page-and-node';
 import { alignItemsInGrid, getMaxIJ, getWidthHeight, indexToCoord, resizeGrid } from './update-canvas/grid-utils';
-import { withDefaultProps } from './update-canvas/update-canvas-utils';
+import { resizeNode, withDefaultProps } from './update-canvas/update-canvas-utils';
 
 export async function updateCanvasVariant(
   sbNodes: CNode[],
@@ -93,7 +93,7 @@ export async function updateCanvasVariant(
     // resize component set after resizing (or not) the grid
     const gridWidth = indexToCoord(maxI, width, gap) + width + gap;
     const gridHeight = indexToCoord(maxJ, height, gap) + height + gap;
-    componentSet.resizeWithoutConstraints(gridWidth, gridHeight);
+    resizeNode(componentSet, gridWidth, gridHeight);
   } finally {
     figma.commitUndo();
   }

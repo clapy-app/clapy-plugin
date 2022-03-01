@@ -4,7 +4,7 @@ import { RenderContext } from '../import-model';
 import { CElementNode, CNode, cssDefaults, isCElementNode } from '../sb-serialize.model';
 import { appendChildNodes } from './2-append-child-nodes';
 import { horizontalFixedSize, verticalHugContents } from './autolayout-utils';
-import { nodeStyles, sizeWithUnitToPx } from './update-canvas-utils';
+import { nodeStyles, resizeNode, sizeWithUnitToPx } from './update-canvas-utils';
 
 export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], storyId: string, isVariant?: boolean) {
   try {
@@ -22,7 +22,7 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
     }
     node.fills = [];
     if (maxWidth !== -1) {
-      node.resizeWithoutConstraints(maxWidth + padding * 2, node.height);
+      resizeNode(node, maxWidth + padding * 2, node.height);
     }
     // Else it's likely a series of inline elements. Let's hug contents instead of fixed width.
     // TODO review once we better know how to handle those cases.

@@ -289,11 +289,9 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
           (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
 
         // `<=` because, with negative margins, negative dimensions can happen.
-        if (w <= 0 && h <= 0 && !hasChildren) {
+        if (w < 0.01 && h < 0.01 && !hasChildren) {
           node.visible = false;
         } else {
-          if (w <= 0) w = 0.01;
-          if (h <= 0) h = 0.01;
           applyAutoLayout(node, context, sbNode, paddings, svgNode, w, h);
         }
 

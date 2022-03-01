@@ -6,6 +6,7 @@ import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import { getTokens, login, logout } from '../auth/auth-service';
@@ -102,7 +103,8 @@ export const ImportSb: FC = memo(() => {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
       return;
     }
-    const sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
+    let sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
+    sbUrlToImport = sanitizeSbUrl(sbUrlToImport);
     setLoadingTxt('Fetch stories available...');
     interruptRef.current = false;
     fetchStories(sbUrlToImport)
@@ -301,7 +303,7 @@ function buildArgsMatrix(argTypes: ArgTypes) {
     // if (argName !== 'active' && argName !== 'outline') {
     //   continue;
     // }
-    if (argType.control.type !== 'boolean') {
+    if (argType.control?.type !== 'boolean') {
       continue;
     }
     ++i;

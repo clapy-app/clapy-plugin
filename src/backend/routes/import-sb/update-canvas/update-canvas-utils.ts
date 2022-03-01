@@ -1,13 +1,15 @@
-import { isComponent, isFrame, isLayout, isText } from '../canvas-utils';
+import { isFrame, isLayout, isText, LayoutNode } from '../canvas-utils';
 import { BorderWidths, RenderContext } from '../import-model';
 import {
   CElementNode,
   CNode,
   CPseudoElementNode,
+  cssDefaults,
   CTextNode,
   isCElementNode,
   isCTextNode,
   MyStyles,
+  MyStylesPE,
   Properties,
   Property,
 } from '../sb-serialize.model';
@@ -28,7 +30,7 @@ export async function ensureFontIsLoaded(font: FontName) {
 
 export function cssFontWeightToFigmaValue(fontWeight: string) {
   if (!isNumeric(fontWeight)) {
-    throw new Error('Unsupported textual font weight from CSS for now. To implement.');
+    throw new Error(`Unsupported textual font weight from CSS for now. To implement: ${fontWeight}`);
   }
   const weight = roundHundred(sizeWithUnitToPx(fontWeight));
   if (weight < 100) return 'Thin';
@@ -473,7 +475,7 @@ export function wrapWithMargin(
 
   // Copy the node layout
   copyAutoLayout(wrapper, node);
-  wrapper.resizeWithoutConstraints(node.width + marginLeft + marginRight, node.height + marginTop + marginBottom);
+  resizeNode(wrapper, node.width + marginLeft + marginRight, node.height + marginTop + marginBottom);
 
   wrapper.appendChild(node);
   return { wrapperNode: wrapper, innerNode: node };
@@ -488,7 +490,7 @@ function copyAutoLayout(node: FrameNode, fromNode: FrameNode, copySize = false) 
   node.primaryAxisAlignItems = fromNode.primaryAxisAlignItems;
   node.counterAxisAlignItems = fromNode.counterAxisAlignItems;
   if (copySize) {
-    node.resizeWithoutConstraints(fromNode.width, fromNode.height);
+    resizeNode(node, fromNode.width, fromNode.height);
   }
 }
 
@@ -530,7 +532,7 @@ export function applyAutoLayout(
   if (position === 'absolute' && (isFullWidth || isFullHeight)) {
     const w2 = isFullWidth ? figmaParentNode.width : w;
     const h2 = isFullHeight ? figmaParentNode.height : h;
-    node.resizeWithoutConstraints(w2, h2);
+    resizeNode(node, w2, h2);
   } else if (
     /* node.layoutMode === 'NONE' || */ ((isCElementNode(sbNode) && !sbNode.children?.length) ||
       forceFixedWidth ||
@@ -541,7 +543,7 @@ export function applyAutoLayout(
     if ((forceFixedWidth && forceFixedHeight) || !!svgNode) {
       node.resize(w, h);
     } else {
-      node.resizeWithoutConstraints(w, h);
+      resizeNode(node, w, h);
     }
   }
 }
@@ -793,8 +795,14 @@ function replaceNaNWith0(num: number): number {
   return isNaN(num) ? 0 : num;
 }
 
+export function resizeNode(node: LayoutNode, width: number, height: number) {
+  if (width < 0.01) width = 0.01;
+  if (height < 0.01) height = 0.01;
+  node.resizeWithoutConstraints(width, height);
+}
+
 function setTo0px(frame: FrameNode) {
-  frame.resizeWithoutConstraints(0.01, 0.01);
+  resizeNode(frame, 0, 0);
 
   // https://figmaplugins.slack.com/archives/CM11GSRAT/p1629228050013600?thread_ts=1611754495.005200&cid=CM11GSRAT
   // I found another way to get 0px frame through api.
@@ -913,7 +921,7 @@ export function appendAbsolutelyPositionedNode(
   }
 
   if (resizeWidth > 0 || resizeHeight > 0) {
-    node.resizeWithoutConstraints(resizeWidth || node.width, resizeHeight || node.height);
+    resizeNode(node, resizeWidth || node.width, resizeHeight || node.height);
   }
 
   node.constraints = {
@@ -928,7 +936,7 @@ export function sizeWithUnitToPx(size: NonNullable<Property.Width> | string | nu
 }
 
 export function nodeStyles(sbNode: CNode, sbParentNode: CElementNode | null) {
-  return isCTextNode(sbNode) ? sbParentNode!.styles : sbNode.styles;
+  return (isCTextNode(sbNode) ? sbParentNode?.styles || cssDefaults : sbNode.styles) as MyStyles | MyStylesPE;
 }
 
 function isNumeric(n: string) {
