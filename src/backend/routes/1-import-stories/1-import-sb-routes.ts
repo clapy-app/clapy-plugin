@@ -82,6 +82,7 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
       const selection: SbCompSelection = {
         storyId,
         storyLabel: node.name,
+        sbUrl,
         storyUrl,
         argTypes,
         figmaId: node.id,

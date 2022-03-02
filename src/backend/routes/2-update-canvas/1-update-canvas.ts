@@ -9,6 +9,7 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
     if (!page || !node || !node.parent) {
       return;
     }
+
     if (isComponentSet(node)) {
       throw new Error(`Variants update not supported yet.`);
     }

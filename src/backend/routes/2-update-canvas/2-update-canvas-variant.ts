@@ -115,6 +115,7 @@ export async function updateCanvasVariant(
     // if (storyNode !== componentSet) {
     //   removeNode(storyNode);
     // }
+
   } finally {
     figma.commitUndo();
   }

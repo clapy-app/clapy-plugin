@@ -24,7 +24,9 @@ export interface SbOtherSelection {
 
   storyId?: undefined;
   storyLabel?: undefined;
+  sbUrl?: undefined;
   storyUrl?: undefined;
+  argTypes?: undefined;
   tagFigmaId?: undefined;
 }
 
@@ -34,6 +36,7 @@ export interface SbCompSelection {
 
   storyId: string;
   storyLabel: string;
+  sbUrl: string;
   storyUrl: string;
   argTypes: ArgTypes;
   tagFigmaId: string;

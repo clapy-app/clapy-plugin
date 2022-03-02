@@ -71,6 +71,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
       pageId: page.id,
       storyId,
       storyLabel: frame.name,
+      sbUrl,
       storyUrl: url,
       argTypes,
     });
