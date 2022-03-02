@@ -1,4 +1,5 @@
 import { Property } from 'csstype';
+
 import { Nil } from '../../../common/app-models';
 import { entries } from '../../../common/general-utils';
 import { isGroup, isText } from '../../common/canvas-utils';

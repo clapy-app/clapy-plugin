@@ -117,7 +117,6 @@ export async function updateCanvasVariant(
     }
 
     return componentSet.id;
-
   } finally {
     figma.commitUndo();
   }

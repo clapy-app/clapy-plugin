@@ -4,14 +4,14 @@ const port = 9001;
 
 //initialize the WebSocket server instance
 const wss = new WebSocketServer({ port });
-wss.on('connection', (ws) => {
+wss.on('connection', ws => {
   ws.isAlive = true;
   ws.on('pong', () => {
     ws.isAlive = true;
   });
 
   //connection is up, let's add a simple simple event
-  ws.on('message', (message) => {
+  ws.on('message', message => {
     //send back the message to the other clients
     wss.clients.forEach(client => {
       if (client != ws) {
@@ -19,7 +19,6 @@ wss.on('connection', (ws) => {
       }
     });
   });
-
 });
 
 const interval = setInterval(() => {
@@ -32,7 +31,9 @@ const interval = setInterval(() => {
 
 wss.on('close', () => clearInterval(interval));
 
-['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGQUIT', 'uncaughtException'].forEach(signal => process.on(signal, () => {
-  wss.close();
-  process.exit();
-}));
+['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGQUIT', 'uncaughtException'].forEach(signal =>
+  process.on(signal, () => {
+    wss.close();
+    process.exit();
+  }),
+);

@@ -61,7 +61,7 @@ export const ImportSb: FC = memo(function ImportSb() {
         handleError(err);
         setError(err?.message || 'Unknown error');
       });
-  }, []);
+  }, [isSignedIn]);
 
   const storiesSamplesRef = useRef<StoriesSamples>();
 
@@ -277,7 +277,7 @@ export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function Prev
         setLoadingTxt(undefined);
       }
     })();
-  }, [storyUrl, figmaId]);
+  }, [storyUrl, storyId, sbUrl, argTypes, figmaId, pageId]);
 
   if (!storyUrl) {
     return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;

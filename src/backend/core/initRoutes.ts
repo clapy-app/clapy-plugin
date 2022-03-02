@@ -1,4 +1,11 @@
-import { NextMessage, RequestMessage, ResponseMessage, ResponseMessageError, Routes, Subscriptions } from '../../common/app-models';
+import {
+  NextMessage,
+  RequestMessage,
+  ResponseMessage,
+  ResponseMessageError,
+  Routes,
+  Subscriptions,
+} from '../../common/app-models';
 
 export function initRoutes(routes: Routes) {
   figma.ui.onmessage = async ({ type, payload, noResponse }: RequestMessage, props) => {

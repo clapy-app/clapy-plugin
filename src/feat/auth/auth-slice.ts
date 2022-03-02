@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 import { RootState } from '../../core/redux/store';
 
 export interface AuthState {
@@ -13,11 +14,11 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    startLoadingAuth: (state) => {
+    startLoadingAuth: state => {
       state.loading = true;
       state.error = undefined;
     },
-    authSuccess: (state) => {
+    authSuccess: state => {
       state.loading = undefined;
       state.error = undefined;
     },

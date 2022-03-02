@@ -1,5 +1,6 @@
 import { FC, memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SelectedTextNode } from '../../common/text-node-models';
 import { Button } from '../../components/Button';
@@ -10,7 +11,7 @@ import { FetchApiSection } from './FetchApiSection';
 import logo from './logo.svg';
 import styles from './Sample.module.scss';
 
-export const Sample: FC = memo(() => {
+export const Sample: FC = memo(function Sample() {
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
 
@@ -54,22 +55,22 @@ export const Sample: FC = memo(() => {
           Cancel
         </Button>
       </div>
-      {authLoading
-        ? <p>Loading authentication status...</p>
-        : authError
-          ? <p>Could not check the authentication status: {JSON.stringify(authError)}</p>
-          : ''}
+      {authLoading ? (
+        <p>Loading authentication status...</p>
+      ) : authError ? (
+        <p>Could not check the authentication status: {JSON.stringify(authError)}</p>
+      ) : (
+        ''
+      )}
 
       <FetchApiSection />
       <div>
-        {selectedTextNodes.length === 0 && <div className="select-warning">Select some text in Figma that you wish to edit.</div>}
-        <div className="textList">
+        {selectedTextNodes.length === 0 && (
+          <div className='select-warning'>Select some text in Figma that you wish to edit.</div>
+        )}
+        <div className='textList'>
           {selectedTextNodes.map((node, index) => (
-            <TextItem
-              key={index}
-              node={node}
-              handleUpdateText={handleUpdateText}
-            />
+            <TextItem key={index} node={node} handleUpdateText={handleUpdateText} />
           ))}
         </div>
       </div>

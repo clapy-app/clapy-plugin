@@ -1,4 +1,5 @@
 import { sha256 } from 'sha.js';
+
 import { Dict } from '../../backend/common/sb-serialize.model';
 
 export function mkUrl(baseAndPath: string, queryObject?: Dict<string>) {
@@ -18,11 +19,15 @@ export function createVerifier() {
     random += charset[v % charset.length];
   }
   return random;
-};
+}
 
 export function createChallenge(verifier: string) {
-  const b64Chars: { [index: string]: string; } = { '+': '-', '/': '_', '=': '' };
-  return new sha256().update(verifier).digest('base64')
-    // Sanitize characters unsafe for URL
-    .replace(/[+/=]/g, (m: string) => b64Chars[m]);
+  const b64Chars: { [index: string]: string } = { '+': '-', '/': '_', '=': '' };
+  return (
+    new sha256()
+      .update(verifier)
+      .digest('base64')
+      // Sanitize characters unsafe for URL
+      .replace(/[+/=]/g, (m: string) => b64Chars[m])
+  );
 }

@@ -7,7 +7,7 @@ export async function getCachedToken() {
 }
 
 export async function getRefreshToken() {
-  return await figma.clientStorage.getAsync('refreshToken') as string | null;
+  return (await figma.clientStorage.getAsync('refreshToken')) as string | null;
 }
 
 export async function setCachedToken(accessToken: string, tokenType: string, refreshToken: string) {
