@@ -190,12 +190,12 @@ export const ImportSb: FC = memo(() => {
         ) : (
           <>
             <div className={classes.storybookTextInput}>
-              {!sbUrl && (
+              {env.isDev && !sbUrl && (
                 <select onChange={setSbSelectionHandler} defaultValue={sbSelection} disabled={!!loadingTxt}>
                   {options}
                 </select>
               )}
-              <input type='text' placeholder='Or Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
+              <input type='text' placeholder='Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
             </div>
             <button onClick={runImport} disabled={!!loadingTxt}>
               Import
