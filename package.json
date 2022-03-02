@@ -12,7 +12,8 @@
     "_________________ implementation details _________________": "",
     "dev-with-browser:plugin": "webpack --mode=development --env PREVIEW_ENV=figma --env APP_ENV=dev --watch",
     "dev-with-browser:browser": "webpack-dev-server --mode=development --env PREVIEW_ENV=browser --env APP_ENV=dev",
-    "dev-with-browser:server": "nodemon --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js"
+    "dev-with-browser:server": "nodemon --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js",
+    "clean": "sudo kill -9 `sudo lsof -t -i:9001` && sudo kill -9 `sudo lsof -t -i:9000`"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.1",

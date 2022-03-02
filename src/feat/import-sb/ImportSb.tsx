@@ -358,7 +358,21 @@ async function renderComponent(
         if (env.isDev) {
           setLoadingTxt(`Render story ${storyId} variant (figma)...`);
         }
-        await fetchPlugin('updateCanvasVariant', nodes, figmaId, sbUrl, storyId, pageId, argTypes, args, i, j);
+        const newFigmaId = await fetchPlugin(
+          'updateCanvasVariant',
+          nodes,
+          figmaId,
+          sbUrl,
+          storyId,
+          pageId,
+          argTypes,
+          args,
+          i,
+          j,
+        );
+        if (newFigmaId) {
+          figmaId = newFigmaId; // TODO tester
+        }
       }
     }
   } else {

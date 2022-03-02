@@ -112,9 +112,11 @@ export async function updateCanvasVariant(
     resizeNode(componentSet, gridWidth, gridHeight);
 
     // TODO once ready
-    // if (storyNode !== componentSet) {
-    //   removeNode(storyNode);
-    // }
+    if (storyNode !== componentSet) {
+      removeNode(storyNode);
+    }
+
+    return componentSet.id;
 
   } finally {
     figma.commitUndo();
