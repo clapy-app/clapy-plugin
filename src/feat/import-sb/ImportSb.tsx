@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { useSelector } from 'react-redux';
+
 import { Args, ArgTypes, CNode, SbStoriesWrapper } from '../../backend/common/sb-serialize.model';
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { SbAnySelection } from '../../common/app-models';
@@ -23,7 +24,7 @@ import { getTokens, login, logout } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './ImportSb.module.scss';
 
-export const ImportSb: FC = memo(() => {
+export const ImportSb: FC = memo(function ImportSb() {
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const loginBtn = useCallback(
@@ -235,7 +236,7 @@ export const ImportSb: FC = memo(() => {
   );
 });
 
-export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(({ selection }) => {
+export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function PreviewArea({ selection }) {
   const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
   const [error, setError] = useState<string | undefined>();
@@ -286,7 +287,7 @@ export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(({ selection 
     <>
       <div>
         Selected: {storyLabel}{' '}
-        <a href={storyUrl} target='_blank'>
+        <a href={storyUrl} target='_blank' rel='noreferrer'>
           (preview)
         </a>
       </div>
