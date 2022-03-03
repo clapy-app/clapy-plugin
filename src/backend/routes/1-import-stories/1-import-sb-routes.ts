@@ -17,10 +17,10 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
     sbUrl = sanitizeSbUrl(sbUrl);
     const storyEntries: StoryEntries = Object.entries(stories)
       // Alternative: filter on !story.parameters.docsOnly
-      .filter(([_, story]) => story.parameters?.__isArgsStory || objectIsNotEmpty(story.parameters?.argTypes))
+      .filter(([_, story]) => story.parameters?.__isArgsStory || objectIsNotEmpty(story.parameters?.argTypes));
 
-      // Dev filters
-      .filter(([storyId, _]) => storyId === 'components-button--button');
+    // Dev filters
+    // .filter(([storyId, _]) => storyId === 'components-button--button');
     // .slice(0, 1)
 
     const page = getOrCreatePage(sbUrl);

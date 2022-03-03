@@ -17,7 +17,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['react', '@typescript-eslint', 'simple-import-sort', 'import'],
+  plugins: ['react', '@typescript-eslint', 'simple-import-sort', 'import', 'unused-imports'],
   rules: {
     'react/prop-types': 'off',
     'simple-import-sort/imports': 'error',
@@ -25,6 +25,7 @@ module.exports = {
     'import/first': 'error',
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
+    'unused-imports/no-unused-imports': 'error',
   },
   settings: {
     react: {

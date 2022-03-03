@@ -1,17 +1,7 @@
-import {
-  ChangeEventHandler,
-  FC,
-  memo,
-  MouseEventHandler,
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { Args, ArgTypes, CNode, SbStoriesWrapper } from '../../backend/common/sb-serialize.model';
+import { SbStoriesWrapper } from '../../backend/common/sb-serialize.model';
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
@@ -22,7 +12,9 @@ import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import { getTokens, login, logout } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
-import classes from './ImportSb.module.scss';
+import classes from './1-ImportSb.module.scss';
+import { PreviewArea } from './2-PreviewArea';
+import { renderComponent } from './detail/renderComponent';
 
 export const ImportSb: FC = memo(function ImportSb() {
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
@@ -236,210 +228,6 @@ export const ImportSb: FC = memo(function ImportSb() {
   );
 });
 
-export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function PreviewArea({ selection }) {
-  const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes } = selection;
-  const [loadingTxt, setLoadingTxt] = useState<string>();
-  const [error, setError] = useState<string | undefined>();
-
-  const interruptedRef = useRef(false);
-  const [_, setInterrupted] = useState(false); // Only to re-render and enable/disable the button
-  const interrupt = useCallback(() => {
-    setInterrupted(true);
-    interruptedRef.current = true;
-  }, []);
-
-  const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
-    (async () => {
-      try {
-        if (!storyUrl || !storyId || !sbUrl || !argTypes) return;
-
-        setInterrupted(false);
-        interruptedRef.current = false;
-
-        await renderComponent(sbUrl, storyId, argTypes, storyUrl, figmaId, pageId, setLoadingTxt, interruptedRef);
-        if (interruptedRef.current) {
-          setError('Interrupted');
-          return;
-        }
-
-        // setLoadingTxt('Serializing on API...');
-        // const nodes = await fetchCNodes(storyUrl);
-        // setLoadingTxt('Updating canvas...');
-        // await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
-
-        setError(undefined);
-      } catch (err) {
-        handleError((err: any) => {
-          handleError(err);
-          setError(err?.message || 'Unknown error');
-        });
-      } finally {
-        setLoadingTxt(undefined);
-      }
-    })();
-  }, [storyUrl, storyId, sbUrl, argTypes, figmaId, pageId]);
-
-  if (!storyUrl) {
-    return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;
-  }
-
-  return (
-    <>
-      <div>
-        Selected: {storyLabel}{' '}
-        <a href={storyUrl} target='_blank' rel='noreferrer'>
-          (preview)
-        </a>
-      </div>
-      <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
-      {loadingTxt ? (
-        <>
-          <div>
-            <button onClick={interrupt} disabled={interruptedRef.current}>
-              Interrupt
-            </button>
-          </div>
-          <p>{loadingTxt}</p>
-        </>
-      ) : (
-        /* env.isDev ? (
-        <>
-          <p>Figma ID: {figmaId}</p>
-          <p>Storybook ID: {storyId}</p>
-        </>
-      ) : */
-        <button onClick={runImport}>Update component</button>
-      )}
-      {!!error && <p>{error}</p>}
-    </>
-  );
-});
-
-async function fetchCNodes(url: string) {
-  return (await apiGet<CNode[]>('stories/serialize', { query: { url } })).data;
-}
-
 async function fetchStories(sbUrl: string) {
   return (await apiGet<SbStoriesWrapper>('stories/fetch-list', { query: { sbUrl } })).data;
-}
-
-async function renderComponent(
-  sbUrl: string,
-  storyId: string,
-  argTypes: ArgTypes,
-  storyUrl: string,
-  figmaId: string,
-  pageId: string,
-  setLoadingTxt: (label: string) => void,
-  interruptedRef: MutableRefObject<boolean>,
-) {
-  if (!env.isDev) {
-    setLoadingTxt(`Render story ${storyId}...`);
-  }
-
-  const argsMatrix = buildArgsMatrix(argTypes);
-  if (argsMatrix) {
-    // Render each variant
-    for (let i = 0; i < argsMatrix.length; i++) {
-      const row = argsMatrix[i];
-      for (let j = 0; j < row.length; j++) {
-        if (interruptedRef.current) {
-          return;
-        }
-
-        const args = row[j];
-        const query = Object.entries(args)
-          .map(([key, value]) => `${key}:${value}`)
-          .join(';');
-        const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
-        if (env.isDev) {
-          setLoadingTxt(`Render story ${storyId} variant (web)...`);
-        }
-        const nodes = await fetchCNodes(url);
-        if (env.isDev) {
-          setLoadingTxt(`Render story ${storyId} variant (figma)...`);
-        }
-        const newFigmaId = await fetchPlugin(
-          'updateCanvasVariant',
-          nodes,
-          figmaId,
-          sbUrl,
-          storyId,
-          pageId,
-          argTypes,
-          args,
-          i,
-          j,
-        );
-        if (newFigmaId) {
-          figmaId = newFigmaId; // TODO tester
-        }
-      }
-    }
-  } else {
-    if (env.isDev) {
-      setLoadingTxt(`Render story ${storyId} (web)...`);
-    }
-
-    // Render the story in the API in web format via puppeteer and get HTML/CSS
-    const nodes = await fetchCNodes(storyUrl);
-
-    if (env.isDev) {
-      setLoadingTxt(`Render story ${storyId} (figma)...`);
-    }
-
-    // Render in Figma, translating HTML/CSS to Figma nodes
-    await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
-  }
-}
-
-function buildArgsMatrix(argTypes: ArgTypes) {
-  let argsMatrix: Args[][] | undefined = undefined;
-  let i = -1;
-  for (const [argName, argType] of Object.entries(argTypes)) {
-    // TODO dev filter to remove later.
-    // if (argName !== 'active' && argName !== 'outline') {
-    //   continue;
-    // }
-    if (argType.control?.type !== 'boolean') {
-      continue;
-    }
-    ++i;
-    const columnDirection = i % 2 === 0;
-
-    if (!argsMatrix) {
-      argsMatrix = [[{}]];
-    }
-
-    // [[ {} ]]
-
-    // [[ {a: false}, {a: true} ]]
-
-    // [[ {a: false, d: false}, {a: true, d: false} ],
-    //  [ {a: false, d: true}, {a: true, d: true} ]]
-
-    // [[ {a: false, d: false, o: false}, {a: true, d: false, o: false}, {a: false, d: false, o: true}, {a: true, d: false, o: true} ],
-    //  [ {a: false, d: true, o: false}, {a: true, d: true, o: false}, {a: false, d: true, o: true}, {a: true, d: true, o: true} ]]
-
-    if (argType.control.type === 'boolean') {
-      if (columnDirection) {
-        for (const row of argsMatrix) {
-          for (const args of [...row]) {
-            Object.assign(args, { [argName]: false });
-            row.push({ ...args, [argName]: true });
-          }
-        }
-      } else {
-        for (const row of [...argsMatrix]) {
-          const newRow: Args[] = [];
-          argsMatrix.push(newRow);
-          for (const args of row) {
-            Object.assign(args, { [argName]: false });
-            newRow.push({ ...args, [argName]: true });
-          }
-        }
-      }
-    }
-  }
-  return argsMatrix;
 }
