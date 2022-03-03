@@ -1,8 +1,8 @@
-import { Args, ArgType, ArgTypes, isBooleanArgType, isSelectArgType } from '../../../backend/common/sb-serialize.model';
+import { Args, ArgType, ArgTypes, isBooleanArgType, isSelectArgType } from '../../../common/sb-serialize.model';
 
 interface ArgType2 {
   argName: string;
-  argType: ArgType;
+  // argType: ArgType;
   values: ReturnType<typeof argTypesToValues>;
 }
 
@@ -11,7 +11,7 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
   let i = -1;
   const argTypes2: ArgType2[] = Object.entries(argTypes).map(([argName, argType]) => ({
     argName,
-    argType,
+    // argType,
     values: argTypesToValues(argType),
   }));
   argTypes2.sort((a, b) => {
@@ -25,9 +25,8 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
     }
     return 0;
   });
-  console.log('argTypes2:', argTypes2);
   // for (const [argName, argType] of Object.entries(argTypes)) {
-  for (const { argName, argType, values } of argTypes2) {
+  for (const { argName, /* argType, */ values } of argTypes2) {
     // TODO dev filter to remove later.
     // if (argName !== 'active' && argName !== 'outline') {
     //   continue;
@@ -43,7 +42,7 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
 
     // Column first
     // const columnDirection = i % 2 === 0;
-    const rowDirection = !(argsMatrix[0].length > argsMatrix.length);
+    const columnDirection = !(argsMatrix[0].length > argsMatrix.length);
 
     // [[ {} ]]
 
@@ -66,7 +65,7 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
       const firstValue = values[0];
       const otherValues = values.slice(1);
 
-      if (rowDirection) {
+      if (columnDirection) {
         for (const row of argsMatrix) {
           for (const args of [...row]) {
             Object.assign(args, { [argName]: firstValue });
@@ -77,11 +76,11 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
         }
       } else {
         for (const row of [...argsMatrix]) {
-          const newRow: Args[] = [];
-          argsMatrix.push(newRow);
-          for (const args of row) {
-            Object.assign(args, { [argName]: firstValue });
-            for (const val of otherValues) {
+          for (const val of otherValues) {
+            const newRow: Args[] = [];
+            argsMatrix.push(newRow);
+            for (const args of row) {
+              Object.assign(args, { [argName]: firstValue });
               newRow.push({ ...args, [argName]: val });
             }
           }
@@ -113,11 +112,15 @@ function argTypesToValues(argType: ArgType) {
 //     // outline: { control: { type: 'boolean' } },
 //     color: {
 //       control: { type: 'select' },
-//       options: ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'],
+//       options: ['primary', 'secondary', 'success', 'danger'],
+//     },
+//     size: {
+//       control: { type: 'select' },
+//       options: ['', 'sm', 'xl'],
 //     },
 //   };
 //   const argsMatrix = buildArgsMatrix(argTypes as unknown as ArgTypes);
 
-//   console.log(ref === JSON.stringify(argsMatrix));
+//   // console.log(ref === JSON.stringify(argsMatrix));
 //   console.log(argsMatrix);
 // }

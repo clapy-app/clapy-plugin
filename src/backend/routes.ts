@@ -1,10 +1,5 @@
-import {
-  detachPage,
-  getSbCompSelection,
-  getStoriesSamples,
-  importStories,
-  selectedSbComp,
-} from './routes/1-import-stories/1-import-sb-routes';
+import { getSbCompSelection, selectedSbComp } from './routes/1-import-stories/1-select-node';
+import { detachPage, getStoriesSamples, importStories } from './routes/1-import-stories/2-import-sb-routes';
 import { updateCanvas } from './routes/2-update-canvas/1-update-canvas';
 import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-variant';
 import { runGrid } from './routes/2-update-canvas/grid-utils';
@@ -25,10 +20,10 @@ export const routes = {
   getText: getText,
 
   // Import storybook
+  getSbCompSelection: getSbCompSelection,
   getStoriesSamples: getStoriesSamples,
   importStories: importStories,
   detachPage: detachPage,
-  getSbCompSelection: getSbCompSelection,
   updateCanvas: updateCanvas,
   updateCanvasVariant: updateCanvasVariant,
 

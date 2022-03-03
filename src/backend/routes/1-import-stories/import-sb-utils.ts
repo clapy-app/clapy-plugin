@@ -1,5 +1,5 @@
+import { ArgTypes } from '../../../common/sb-serialize.model';
 import { MyCompNode } from '../../common/canvas-utils';
-import { ArgTypes } from '../../common/sb-serialize.model';
 
 export function setStoryFrameProperties(
   frame: MyCompNode,

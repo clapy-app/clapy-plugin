@@ -1,5 +1,5 @@
 import { getPageById, isLayout, isMyComp } from '../../common/canvas-utils';
-import { getCompNode } from '../1-import-stories/2-import-sb-detail';
+import { getCompNode } from '../1-import-stories/3-import-sb-detail';
 import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: string) {

@@ -1,5 +1,5 @@
 import { Nil } from '../../common/app-models';
-import { Intersect } from './sb-serialize.model';
+import { Intersect } from '../../common/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;

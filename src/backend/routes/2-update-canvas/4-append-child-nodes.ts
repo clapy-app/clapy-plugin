@@ -2,7 +2,6 @@ import { Property } from 'csstype';
 
 import { Nil } from '../../../common/app-models';
 import { entries } from '../../../common/general-utils';
-import { isGroup, isText } from '../../common/canvas-utils';
 import {
   CElementNode,
   CNode,
@@ -12,7 +11,8 @@ import {
   isCPseudoElementNode,
   isCTextNode,
   MyStyles,
-} from '../../common/sb-serialize.model';
+} from '../../../common/sb-serialize.model';
+import { isGroup, isText } from '../../common/canvas-utils';
 import { RenderContext } from '../1-import-stories/import-model';
 import { cssToFontStyle } from './fonts';
 import {
