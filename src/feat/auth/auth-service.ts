@@ -82,11 +82,13 @@ export async function refreshTokens() {
 export function logout() {
   _accessToken = null;
   _tokenType = null;
-  const url = mkUrl(`https://${auth0Domain}/v2/logout`, { client_id: auth0ClientId, returnTo: `${apiBaseUrl}/logged-out` });
+  const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
+    client_id: auth0ClientId,
+    returnTo: `${apiBaseUrl}/logged-out`,
+  });
   window.open(url, '_blank');
   fetchPlugin('clearCachedTokens').catch(handleError);
 }
-
 
 // Steps (detail)
 
@@ -115,21 +117,23 @@ function getAuthenticationURL(state: string, challenge: string) {
 
 async function fetchTokensFromCode(code: string, verifier: string, readToken: string) {
   const exchangeOptions = {
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     client_id: auth0ClientId,
     code,
     redirect_uri: redirectUri,
     code_verifier: verifier,
   };
 
-  const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, { headers: { read_token: readToken } });
+  const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, {
+    headers: { read_token: readToken },
+  });
   const { access_token, token_type, refresh_token } = data;
   return { accessToken: access_token, tokenType: token_type, refreshToken: refresh_token };
 }
 
 async function fetchRefreshedTokens(refreshToken: string) {
   const exchangeOptions = {
-    grant_type: "refresh_token",
+    grant_type: 'refresh_token',
     client_id: auth0ClientId,
     scope: 'offline_access',
     refresh_token: refreshToken,
@@ -141,12 +145,12 @@ async function fetchRefreshedTokens(refreshToken: string) {
 }
 
 async function fetchReadWriteKeys() {
-  const { data } = await apiGetUnauthenticated<{ readToken: string, writeToken: string; }>('generate-tokens');
+  const { data } = await apiGetUnauthenticated<{ readToken: string; writeToken: string }>('generate-tokens');
   return data;
 }
 
 async function fetchAuthorizationCode(readToken: string) {
-  const { data } = await apiGetUnauthenticated<{ code: string; }>('read-code', { headers: { read_token: readToken } });
+  const { data } = await apiGetUnauthenticated<{ code: string }>('read-code', { headers: { read_token: readToken } });
   return data?.code;
 }
 
@@ -161,8 +165,12 @@ async function waitForAuthorizationCode(readToken: string) {
 }
 
 async function deleteReadToken(readToken: string) {
-  const { data } = await apiGetUnauthenticated<{ deleted: boolean; }>('delete-read-token', { headers: { read_token: readToken } });
+  const { data } = await apiGetUnauthenticated<{ deleted: boolean }>('delete-read-token', {
+    headers: { read_token: readToken },
+  });
   if (!data?.deleted) {
-    handleError('After getting the authorization token, did not delete the read token. Something is wrong in the workflow.');
+    handleError(
+      'After getting the authorization token, did not delete the read token. Something is wrong in the workflow.',
+    );
   }
 }

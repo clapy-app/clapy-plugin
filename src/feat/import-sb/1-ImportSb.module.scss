@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 1rem;
+}
+
+.topBar {
+  display: flex;
+}
+
+.textButton {
+  border: none;
+}
+
+.storybookTextInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.properties {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+
+  .titleWrapper {
+    display: flex;
+    // flex-direction: row;
+    align-items: center;
+  }
+
+  label {
+    display: flex;
+  }
+
+  input[type="checkbox"] {
+    width: auto;
+  }
+}

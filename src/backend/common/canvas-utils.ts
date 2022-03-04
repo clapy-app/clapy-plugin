@@ -1,5 +1,5 @@
-import { Nil } from '../../../common/app-models';
-import { Intersect } from './sb-serialize.model';
+import { Nil } from '../../common/app-models';
+import { Intersect } from '../../common/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -129,3 +129,7 @@ export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is C
 export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
+
+export function isMyComp(node: LayoutNodeExtended | Nil): node is MyCompNode {
+  return isFrame(node) || isComponentSet(node) || isComponent(node);
+}

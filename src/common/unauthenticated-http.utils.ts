@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Dict } from '../backend/routes/import-sb/sb-serialize.model';
+
 import { env } from '../environment/env';
 import { mkUrl } from '../feat/auth/auth-service.utils';
 import { wait } from './general-utils';
+import { Dict } from './sb-serialize.model';
 
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;
   noRetry?: boolean;
 }
 
-export interface ApiResponse<T> extends Omit<Response, 'json' | 'clone' | 'arrayBuffer' | 'blob' | 'formData' | 'body' | 'text'> {
+export interface ApiResponse<T>
+  extends Omit<Response, 'json' | 'clone' | 'arrayBuffer' | 'blob' | 'formData' | 'body' | 'text'> {
   data: T;
 }
 
@@ -20,23 +22,29 @@ interface UseApiGetResponse<T> {
   refetch: () => Promise<UseApiGetResponse<T>>;
 }
 
-export function useApiGet<T>(url: string,
-  config?: ApiRequestConfig) {
-  const refetch = useCallback(() => apiGetUnauthenticated<T>(url, config)
-    .then(({ data }) => {
-      const newState: UseApiGetResponse<T> = { loading: false, error: undefined, data, refetch };
-      setState(newState);
-      return newState;
-    })
-    .catch(error => {
-      const newState: UseApiGetResponse<T> = { loading: false, error, data: undefined, refetch };
-      setState(newState);
-      return newState;
-    }),
+export function useApiGet<T>(url: string, config?: ApiRequestConfig) {
+  const refetch = useCallback(
+    () =>
+      apiGetUnauthenticated<T>(url, config)
+        .then(({ data }) => {
+          const newState: UseApiGetResponse<T> = { loading: false, error: undefined, data, refetch };
+          setState(newState);
+          return newState;
+        })
+        .catch(error => {
+          const newState: UseApiGetResponse<T> = { loading: false, error, data: undefined, refetch };
+          setState(newState);
+          return newState;
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []);
-  const [loadingErrorData, setState] = useState<UseApiGetResponse<T>>(
-    { loading: true, error: undefined, data: undefined, refetch });
+    [],
+  );
+  const [loadingErrorData, setState] = useState<UseApiGetResponse<T>>({
+    loading: true,
+    error: undefined,
+    data: undefined,
+    refetch,
+  });
   useEffect(() => {
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,9 +57,7 @@ interface UsePostOptions<T> {
   mapData?: (response: ApiResponse<T>) => ApiResponse<T> | void;
 }
 
-export function useApiPost<T>(url: string,
-  body?: any,
-  options?: UsePostOptions<T>) {
+export function useApiPost<T>(url: string, body?: any, options?: UsePostOptions<T>) {
   const { config, mapData } = options || {};
   const [{ loading, error, data }, setState] = useState<{
     loading: boolean;
@@ -76,8 +82,7 @@ export function useApiPost<T>(url: string,
  * @param url API URL
  * @param config eventual Axios config, e.g. to add custom HTTP headers
  */
-export async function apiGetUnauthenticated<T>(url: string,
-  config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+export async function apiGetUnauthenticated<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
   return httpGetUnauthenticated(apiFullUrl(url), config);
 }
 
@@ -87,13 +92,19 @@ export async function apiGetUnauthenticated<T>(url: string,
  * @param body body to include in the POST request
  * @param config eventual Axios config, e.g. to add custom HTTP headers
  */
-export async function apiPostUnauthenticated<T>(url: string, body?: any,
-  config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+export async function apiPostUnauthenticated<T>(
+  url: string,
+  body?: any,
+  config?: ApiRequestConfig,
+): Promise<ApiResponse<T>> {
   return httpPostUnauthenticated(apiFullUrl(url), body, config);
 }
 
-export async function apiPostFile<T>(url: string, body?: Dict<string | Blob>,
-  config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+export async function apiPostFile<T>(
+  url: string,
+  body?: Dict<string | Blob>,
+  config?: ApiRequestConfig,
+): Promise<ApiResponse<T>> {
   const formData = new FormData();
   if (body) {
     for (const [key, value] of Object.entries(body)) {
@@ -106,24 +117,29 @@ export async function apiPostFile<T>(url: string, body?: Dict<string | Blob>,
   });
 }
 
-export async function httpGetUnauthenticated<T>(url: string,
-  config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+export async function httpGetUnauthenticated<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
   return httpReqUnauthenticated(url, config, (url, config) => fetch(url, config));
 }
 
-export async function httpPostUnauthenticated<T>(url: string, body?: any,
-  config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-  return httpReqUnauthenticated(url, config, (url, config) => fetch(url, {
-    ...config,
-    method: 'POST',
-    body: JSON.stringify(body)
-  }));
+export async function httpPostUnauthenticated<T>(
+  url: string,
+  body?: any,
+  config?: ApiRequestConfig,
+): Promise<ApiResponse<T>> {
+  return httpReqUnauthenticated(url, config, (url, config) =>
+    fetch(url, {
+      ...config,
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  );
 }
 
 async function httpReqUnauthenticated<T>(
   url: string,
   config: ApiRequestConfig | undefined,
-  sendRequest: (url: string, config: RequestInit) => Promise<Response>): Promise<ApiResponse<T>> {
+  sendRequest: (url: string, config: RequestInit) => Promise<Response>,
+): Promise<ApiResponse<T>> {
   const { noRetry, query, ...fetchConfig } = config || {};
   url = mkUrl(url, query);
   let resp: ApiResponse<T> | undefined;
@@ -139,9 +155,11 @@ async function httpReqUnauthenticated<T>(
     }
   }
   if (!resp) {
-    console.error(`request to ${url} returned undefined. If this is a test, maybe a missing mock?` +
-      ' Ensure a mock is properly defined at the beginning of this test, e.g.' +
-      ' `mockApiGet(() => ({}));`');
+    console.error(
+      `request to ${url} returned undefined. If this is a test, maybe a missing mock?` +
+        ' Ensure a mock is properly defined at the beginning of this test, e.g.' +
+        ' `mockApiGet(() => ({}));`',
+    );
     throw new Error('Missing mock error');
   }
   if (!resp.ok) {
@@ -164,7 +182,14 @@ async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiRe
   const data: T = await respRaw.json();
   const { bodyUsed, headers, ok, redirected, status, statusText, type, url } = respRaw;
   return {
-    bodyUsed, headers, ok, redirected, status, statusText, type, url,
+    bodyUsed,
+    headers,
+    ok,
+    redirected,
+    status,
+    statusText,
+    type,
+    url,
     data,
   };
 }
@@ -172,13 +197,13 @@ async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiRe
 const requiredHeaders = {
   // CSRF protection if the server requires this token
   'X-Requested-By': env.securityRequestedByHeader,
-  'Accept': 'application/json',
-  'Content-Type': 'application/json'
+  Accept: 'application/json',
+  'Content-Type': 'application/json',
 };
 export const defaultOptions = { headers: requiredHeaders }; // Useful for tests
 
 function extendConfig(config: RequestInit | undefined): RequestInit {
-  const { headers, ...otherConf } = config || {} as RequestInit;
+  const { headers, ...otherConf } = config || ({} as RequestInit);
   return {
     ...otherConf,
     ...(env.allowCorsApi && { credentials: 'include' }),

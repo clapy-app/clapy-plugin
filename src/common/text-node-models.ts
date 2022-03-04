@@ -1,1 +1,1 @@
-export type SelectedTextNode = { figmaNodeID: string, text: string; };
+export type SelectedTextNode = { figmaNodeID: string; text: string };

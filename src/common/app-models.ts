@@ -1,5 +1,5 @@
 import { _Routes, _Subscriptions } from '../backend/routes';
-import { ArgTypes } from '../backend/routes/import-sb/sb-serialize.model';
+import { ArgTypes } from './sb-serialize.model';
 
 export type Dict2<Key extends string | number | symbol, Value> = {
   [key in Key]: Value;
@@ -24,8 +24,11 @@ export interface SbOtherSelection {
 
   storyId?: undefined;
   storyLabel?: undefined;
+  sbUrl?: undefined;
   storyUrl?: undefined;
+  argTypes?: undefined;
   tagFigmaId?: undefined;
+  props?: undefined;
 }
 
 export interface SbCompSelection {
@@ -34,10 +37,18 @@ export interface SbCompSelection {
 
   storyId: string;
   storyLabel: string;
+  sbUrl: string;
   storyUrl: string;
   argTypes: ArgTypes;
   tagFigmaId: string;
+  props: ArgTypeUsed[] | undefined;
   // sbUrl - base URL, if required?
 }
 
 export type SbAnySelection = SbCompSelection | SbOtherSelection;
+
+export interface ArgTypeUsed {
+  argName: string;
+  // argType: ArgType;
+  used: boolean;
+}

@@ -32,7 +32,7 @@ let sendTextSelection: (() => void) | undefined;
 
 export function selectedTextNodes(next: NextFn<SelectedTextNode[]>) {
   sendTextSelection = () => next(getSelectedNodes());
-  figma.on("selectionchange", sendTextSelection);
+  figma.on('selectionchange', sendTextSelection);
 }
 
 // Internal

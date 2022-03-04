@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
 import { apiGet } from '../common/http.utils';
 import { Dispatcher, useAppDispatch } from '../core/redux/hooks';
 import { RootState } from '../core/redux/store';
@@ -45,7 +46,7 @@ const slice = createSlice({
   name: 'sampleApi',
   initialState,
   reducers: {
-    fetchWorksStartLoading: (state) => {
+    fetchWorksStartLoading: state => {
       state.isLoading = true;
       state.error = undefined;
       state.data = undefined;
@@ -76,8 +77,13 @@ export const sampleApi = {
     const dispatch = useAppDispatch();
     useEffect(() => {
       refetch(dispatch);
-    }, []);
-    return { ...state, refetch: () => { refetch(dispatch); } };
+    }, [dispatch]);
+    return {
+      ...state,
+      refetch: () => {
+        refetch(dispatch);
+      },
+    };
   },
 };
 
@@ -91,7 +97,6 @@ function refetch(dispatch: Dispatcher) {
 }
 
 // -- end
-
 
 type SampleApiModel = {
   works: boolean;

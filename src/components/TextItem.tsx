@@ -1,4 +1,5 @@
-import { FC, memo, useEffect, useRef, useState } from "react";
+import { FC, memo, useEffect, useRef, useState } from 'react';
+
 import { SelectedTextNode } from '../common/text-node-models';
 
 interface Prop {
@@ -6,7 +7,7 @@ interface Prop {
   handleUpdateText: (figmaNodeID: string, text: string) => void;
 }
 
-export const TextItem: FC<Prop> = memo(({ node, handleUpdateText }) => {
+export const TextItem: FC<Prop> = memo(function TextItem({ node, handleUpdateText }) {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(node.text);
   const inputRef: any = useRef();
@@ -18,13 +19,9 @@ export const TextItem: FC<Prop> = memo(({ node, handleUpdateText }) => {
   }, [isEditing]);
 
   return (
-    <div className="textItem">
+    <div className='textItem'>
       {!isEditing ? (
-        <div
-          onClick={() => setIsEditing(true)}
-        >
-          {node.text}
-        </div>
+        <div onClick={() => setIsEditing(true)}>{node.text}</div>
       ) : (
         <input
           ref={inputRef}

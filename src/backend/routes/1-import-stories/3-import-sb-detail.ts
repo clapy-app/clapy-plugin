@@ -1,7 +1,8 @@
 import { SbCompSelection } from '../../../common/app-models';
-import { isFrame, isLayout } from './canvas-utils';
+import { isFrame, isLayout, isMyComp, MyCompNode } from '../../common/canvas-utils';
+import { resizeNode } from '../2-update-canvas/update-canvas-utils';
 import { SbStoryWithFolder } from './import-model';
-import { ArgTypes } from './sb-serialize.model';
+import { listVariantProps, setStoryFrameProperties } from './import-sb-utils';
 
 type StoryEntry = [string, SbStoryWithFolder];
 export type StoryEntries = StoryEntry[];
@@ -20,7 +21,7 @@ export function getLayoutStoryId(node: SceneNode) {
 export type FrameCreated = SbCompSelection;
 
 export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: PageNode) {
-  const nodes: FrameNode[] = [];
+  const nodes: MyCompNode[] = [];
   const response: FrameCreated[] = [];
 
   const container = getOrCreateContainer(page, page, 'Design System', 'root', 1);
@@ -57,16 +58,10 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
     }
 
     const frame = getOrCreateCompFrame(folder, page, storyId, i);
-    // frame.name = `${storyTitle}_${story.name || story.story}`;
-    frame.name = story.name || story.story;
-    frame.setPluginData('sbUrl', sbUrl);
-    frame.setPluginData('storyId', storyId);
-    frame.setPluginData('storyTitle', storyTitle);
-    // Store argTypes to generate variants - may not be useful, to challenge later.
-    const argTypes: ArgTypes = story.parameters.argTypes || {};
-    frame.setPluginData('storyArgTypes', JSON.stringify(argTypes));
-    frame.setRelaunchData({ preview: '' });
-    frame.expanded = false;
+
+    const argTypes = story.parameters.argTypes || {};
+    setStoryFrameProperties(frame, story.name || story.story, sbUrl, storyId, storyTitle, argTypes);
+
     nodes.push(frame);
     // &args=kind:secondary;size:xxs
     const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
@@ -76,8 +71,10 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
       pageId: page.id,
       storyId,
       storyLabel: frame.name,
+      sbUrl,
       storyUrl: url,
       argTypes,
+      props: listVariantProps(frame, argTypes),
     });
   }
 
@@ -92,14 +89,7 @@ function getOrCreateContainer(
   containerId: string,
   depth: number,
 ) {
-  let frame = parent.findChild(node => getLayoutPluginData(node, 'containerId') === containerId);
-  if (!frame) {
-    frame = page.findOne(node => getLayoutPluginData(node, 'containerId') === containerId);
-    if (frame) {
-      console.warn('Container', name, 'found, but outside the parent. It is moved to the parent.');
-      parent.appendChild(frame);
-    }
-  }
+  let frame = parent.children.find(node => getLayoutPluginData(node, 'containerId') === containerId);
   if (frame && !isFrame(frame)) {
     throw new Error(`Node found for containerId root is not a frame.`);
   }
@@ -175,13 +165,14 @@ function getOrCreateCompFrame(container: FrameNode, page: PageNode, storyId: str
     frame = figma.createFrame();
     frame.y = 100;
     frame.x = i * 550;
-    frame.resizeWithoutConstraints(500, 300);
+    resizeNode(frame, 500, 300);
     frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
     container.appendChild(frame);
   }
   return frame;
 }
 
+// TODO move to import-sb-utils because it's used in another module
 export function getCompNode(container: FrameNode | PageNode, page: PageNode, storyId: string) {
   let frame = container.findChild(node => getLayoutStoryId(node) === storyId);
   if (!frame) {
@@ -191,7 +182,7 @@ export function getCompNode(container: FrameNode | PageNode, page: PageNode, sto
       container.appendChild(frame);
     }
   }
-  if (frame && !isFrame(frame)) {
+  if (frame && !isMyComp(frame)) {
     throw new Error(`Node found for storyId ${storyId} is not a frame.`);
   }
   return frame;

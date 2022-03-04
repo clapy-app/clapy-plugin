@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { AnyAction } from 'redux';
+
 import { RootState } from './store';
 
 // The store resides in a separate file with nothing else to help prevent circular dependencies.
@@ -20,7 +21,7 @@ export function getStore(): Store {
   if (!_store) {
     throw new Error(
       'Trying to read the store, e.g. to dispatch an action, but the store is not defined yet in storeIsolated.ts.' +
-      ' Too early? This is not supposed to happen: to fix asap.',
+        ' Too early? This is not supposed to happen: to fix asap.',
     );
   }
   return _store;

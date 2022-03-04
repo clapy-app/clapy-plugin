@@ -1,3 +1,5 @@
+import { ArgType, isBooleanArgType, isSelectArgType } from './sb-serialize.model';
+
 export function sanitizeSbUrl(storybookBaseUrl: string) {
   return (
     storybookBaseUrl
@@ -6,4 +8,12 @@ export function sanitizeSbUrl(storybookBaseUrl: string) {
       // Remove trailing slash
       .replace(/\/$/, '')
   );
+}
+
+export function argTypesToValues(argType: ArgType) {
+  if (isBooleanArgType(argType)) {
+    return [false, true];
+  } else if (isSelectArgType(argType)) {
+    return argType.options.map(v => v || 'default');
+  }
 }

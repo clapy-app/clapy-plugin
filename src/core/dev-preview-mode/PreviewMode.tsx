@@ -1,4 +1,5 @@
-import { FC, memo, MutableRefObject, useEffect, useRef, useState } from "react";
+import { FC, memo, MutableRefObject, useEffect, useRef, useState } from 'react';
+
 import styles from './PreviewMode.module.css';
 
 type WSRef = MutableRefObject<WebSocket | undefined>;
@@ -14,7 +15,7 @@ const isPreviewInFigma = previewEnv === 'figma';
  * - the plugin is open in Figma,
  * - the plugin react app is open in the browser.
  * In the project template, `yarn start` does everything.
- * 
+ *
  * @example Wrap the app in index.tsx
  * ```ts
  * render(
@@ -24,7 +25,7 @@ const isPreviewInFigma = previewEnv === 'figma';
  *   , document.getElementById('react-page'));
  * ```
  */
-export const PreviewMode: FC = memo(({ children }) => {
+export const PreviewMode: FC = memo(function PreviewMode({ children }) {
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket>();
 
@@ -49,11 +50,7 @@ export const PreviewMode: FC = memo(({ children }) => {
         <div className={`${styles.previewConnectionStatus} ${isConnected ? styles.statusGreen : ''}`} />
       </div>
 
-      {isPreviewInBrowser && setIsConnected && (
-        <div className={styles.previewPluginWrapper}>
-          {children}
-        </div>
-      )}
+      {isPreviewInBrowser && setIsConnected && <div className={styles.previewPluginWrapper}>{children}</div>}
     </div>
   );
 });
@@ -64,7 +61,7 @@ function onWindowMsg(ws: WSRef, msg: MessageEvent) {
 
   const message = JSON.stringify({
     ...msg.data.pluginMessage,
-    __source: previewEnv
+    __source: previewEnv,
   });
   if (ws.current?.readyState === 1) {
     ws.current.send(message);
@@ -76,7 +73,7 @@ function onWindowMsg(ws: WSRef, msg: MessageEvent) {
 function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void) {
   let isComponentMounted = true;
 
-  ws.current = new WebSocket("ws://localhost:9001/ws");
+  ws.current = new WebSocket('ws://localhost:9001/ws');
   ws.current.onopen = () => {
     setIsConnected(true);
   };
@@ -95,11 +92,11 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
       const data = event.data instanceof Blob ? await event.data.text() : event.data;
       const { __source, ...msg } = JSON.parse(data);
 
-      if (__source === "figma" && !isPreviewInBrowser) {
+      if (__source === 'figma' && !isPreviewInBrowser) {
         console.warn('Source is figma, but we are not in browser! Something is wrong.');
         return;
       }
-      if (__source === "browser" && !isPreviewInFigma) {
+      if (__source === 'browser' && !isPreviewInFigma) {
         console.warn('Source is browser, but we are not in figma! Something is wrong.');
         return;
       }
@@ -110,7 +107,7 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
         window.parent.postMessage({ pluginMessage: msg }, '*');
       }
     } catch (err) {
-      console.error("not a valid message", err);
+      console.error('not a valid message', err);
     }
   };
 
@@ -123,6 +120,6 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
 // Call this method only once, when the component is mounted.
 function listenToPluginBackMessage(ws: WSRef) {
   const aborter = new AbortController();
-  window.addEventListener("message", msg => onWindowMsg(ws, msg), { signal: aborter.signal });
+  window.addEventListener('message', msg => onWindowMsg(ws, msg), { signal: aborter.signal });
   return () => aborter.abort();
 }

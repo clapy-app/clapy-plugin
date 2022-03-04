@@ -1,18 +1,41 @@
-import { unquoteAndTrimString } from '../../../../common/general-utils';
-import { Property } from '../sb-serialize.model';
+import { unquoteAndTrimString } from '../../../common/general-utils';
+import { Property } from '../../../common/sb-serialize.model';
 import { sizeWithUnitToPx } from './update-canvas-utils';
 
-
-const fontWeights = ['Regular', 'Thin', 'ExtraLight', 'Light', 'SemiLight', 'DemiLight', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'].map(w => w.toLowerCase());
+const fontWeights = [
+  'Regular',
+  'Thin',
+  'ExtraLight',
+  'Light',
+  'SemiLight',
+  'DemiLight',
+  'Medium',
+  'SemiBold',
+  'Bold',
+  'ExtraBold',
+  'Black',
+].map(w => w.toLowerCase());
 const fontWeightRegexFragment = fontWeights.join('|');
 
-const fontStretchs = ['UltraCondensed', 'ExtraCondensed', 'Condensed', 'SemiCondensed', /* (normal) ,*/ 'SemiExpanded', 'Expanded', 'ExtraExpanded', 'UltraExpanded'].map(w => w.toLowerCase());
+const fontStretchs = [
+  'UltraCondensed',
+  'ExtraCondensed',
+  'Condensed',
+  'SemiCondensed',
+  /* (normal) ,*/ 'SemiExpanded',
+  'Expanded',
+  'ExtraExpanded',
+  'UltraExpanded',
+].map(w => w.toLowerCase());
 const fontStretchsRegexFragment = fontStretchs.join('|');
 
 const fontItalicStyles = ['Italic', 'Oblique'].map(w => w.toLowerCase());
 const fontItalicStyleRegexFragment = fontItalicStyles.join('|');
 
-const fontStyleRegex = new RegExp(`(Display)?\\s?(${fontStretchsRegexFragment})?\\s*(${fontWeightRegexFragment})?\\s*(${fontItalicStyleRegexFragment})?`, 'i');
+const fontStyleRegex = new RegExp(
+  `(Display)?\\s?(${fontStretchsRegexFragment})?\\s*(${fontWeightRegexFragment})?\\s*(${fontItalicStyleRegexFragment})?`,
+  'i',
+);
 
 interface FontIndexValue {
   systemFontStyle: string;
@@ -39,9 +62,18 @@ async function indexFonts() {
   for (const { fontName } of fontsList) {
     const { family, style } = fontName;
     const match = style.match(fontStyleRegex);
-    const fontStretch = fontStretchMapFontToCSS[match?.[2]?.toLowerCase() as keyof typeof fontStretchMapFontToCSS | undefined || 'nostretch'];
-    const fontWeight = fontWeightMapFontToCSS[match?.[3]?.toLowerCase() as keyof typeof fontWeightMapFontToCSS | undefined || 'regular'];
-    const fontItalicStyle = fontItalicStyleMapFontToCSS[match?.[4]?.toLowerCase() as keyof typeof fontItalicStyleMapFontToCSS | undefined || 'noitalic'];
+    const fontStretch =
+      fontStretchMapFontToCSS[
+        (match?.[2]?.toLowerCase() as keyof typeof fontStretchMapFontToCSS | undefined) || 'nostretch'
+      ];
+    const fontWeight =
+      fontWeightMapFontToCSS[
+        (match?.[3]?.toLowerCase() as keyof typeof fontWeightMapFontToCSS | undefined) || 'regular'
+      ];
+    const fontItalicStyle =
+      fontItalicStyleMapFontToCSS[
+        (match?.[4]?.toLowerCase() as keyof typeof fontItalicStyleMapFontToCSS | undefined) || 'noitalic'
+      ];
     let fontStyles = fontsIndex.get(family);
     if (!fontStyles) {
       fontStyles = [];
@@ -53,7 +85,12 @@ async function indexFonts() {
   return fontsIndex;
 }
 
-export async function cssToFontStyle(fontFamilies: Property.FontFamily, fontStretch: Property.FontStretch, fontWeight: Property.FontWeight, fontStyle: Property.FontStyle) {
+export async function cssToFontStyle(
+  fontFamilies: Property.FontFamily,
+  fontStretch: Property.FontStretch,
+  fontWeight: Property.FontWeight,
+  fontStyle: Property.FontStyle,
+) {
   const fontsIndex = await getFontsIndex();
   const fontFamily = getFirstFontFamilyAvailable(fontFamilies, fontsIndex);
   if (!fontFamily) return undefined;
@@ -61,19 +98,23 @@ export async function cssToFontStyle(fontFamilies: Property.FontFamily, fontStre
   const fontVariants = fontsIndex.get(fontFamily);
   if (!fontVariants) return undefined;
 
-
   const fontStretchN = sizeWithUnitToPx(fontStretch);
   const fontWeightN = sizeWithUnitToPx(fontWeight);
   let selectedFontVariant: FontIndexValue | undefined = undefined;
 
   for (const fontVariant of fontVariants) {
-    if (!selectedFontVariant) { // First iteration
+    if (!selectedFontVariant) {
+      // First iteration
       selectedFontVariant = fontVariant;
       continue;
     }
 
     // Exact match, the perfect case: let's select it and stop looping.
-    if (fontVariant.fontStretch === fontStretchN && fontVariant.fontWeight === fontWeightN && fontVariant.fontStyle === fontStyle) {
+    if (
+      fontVariant.fontStretch === fontStretchN &&
+      fontVariant.fontWeight === fontWeightN &&
+      fontVariant.fontStyle === fontStyle
+    ) {
       selectedFontVariant = fontVariant;
       break; // Break instead of continue, it's already the perfect match.
     }
@@ -121,12 +162,19 @@ function checkItalicOrOblique(fontStyle: Property.FontStyle) {
   return fontStyle === 'italic' || fontStyle.startsWith('oblique');
 }
 
-function isFontStyleCloser(desiredFontStyle: Property.FontStyle, previousFontStyle: Property.FontStyle, currentFontStyle: Property.FontStyle) {
+function isFontStyleCloser(
+  desiredFontStyle: Property.FontStyle,
+  previousFontStyle: Property.FontStyle,
+  currentFontStyle: Property.FontStyle,
+) {
   if (currentFontStyle === desiredFontStyle && previousFontStyle !== desiredFontStyle) {
     return true;
   }
   const desiredIsItalicOrOblique = checkItalicOrOblique(desiredFontStyle);
-  if (checkItalicOrOblique(currentFontStyle) === desiredIsItalicOrOblique && checkItalicOrOblique(previousFontStyle) !== desiredIsItalicOrOblique) {
+  if (
+    checkItalicOrOblique(currentFontStyle) === desiredIsItalicOrOblique &&
+    checkItalicOrOblique(previousFontStyle) !== desiredIsItalicOrOblique
+  ) {
     return true;
   }
 
@@ -186,16 +234,17 @@ const fontWeightMapFontToCSS = {
 
 // font-stretch => UltraCondensed, ExtraCondensed, Condensed, SemiCondensed, (normal), SemiExpanded, Expanded, ExtraExpanded, UltraExpanded
 // https://developer.mozilla.org/fr/docs/Web/CSS/font-stretch
-const fontStretchMapFontToCSS = { // in %
-  'ultracondensed': 50,
-  'extracondensed': 62.5,
-  'condensed': 75,
-  'semicondensed': 87.5,
+const fontStretchMapFontToCSS = {
+  // in %
+  ultracondensed: 50,
+  extracondensed: 62.5,
+  condensed: 75,
+  semicondensed: 87.5,
   nostretch: 100, // Default
-  'semiexpanded': 112.5,
-  'expanded': 125,
-  'extraexpanded': 150,
-  'ultraexpanded': 200,
+  semiexpanded: 112.5,
+  expanded: 125,
+  extraexpanded: 150,
+  ultraexpanded: 200,
 
   // For style rules, we have this equivalence:
   // 'ultracondensed': 'ultra-condensed',
