@@ -2,7 +2,7 @@ import { SbCompSelection } from '../../../common/app-models';
 import { isFrame, isLayout, isMyComp, MyCompNode } from '../../common/canvas-utils';
 import { resizeNode } from '../2-update-canvas/update-canvas-utils';
 import { SbStoryWithFolder } from './import-model';
-import { setStoryFrameProperties } from './import-sb-utils';
+import { listVariantProps, setStoryFrameProperties } from './import-sb-utils';
 
 type StoryEntry = [string, SbStoryWithFolder];
 export type StoryEntries = StoryEntry[];
@@ -74,6 +74,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
       sbUrl,
       storyUrl: url,
       argTypes,
+      props: listVariantProps(frame, argTypes),
     });
   }
 

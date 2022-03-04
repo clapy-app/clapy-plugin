@@ -2,6 +2,7 @@ import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../..
 import { ArgTypes } from '../../../common/sb-serialize.model';
 import { isPage } from '../../common/canvas-utils';
 import { getLayoutStoryId } from './3-import-sb-detail';
+import { listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {
   sendSbCompSelection?.();
@@ -43,6 +44,7 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
         figmaId: node.id,
         tagFigmaId: node0.id,
         pageId: figma.currentPage.id,
+        props: listVariantProps(node, argTypes),
       };
       selections.push(selection);
     } else {
@@ -64,6 +66,3 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
 function show(node: FrameNode) {
   console.log(node.name, '=>', node);
 }
-
-// During the selection, if it is a componentSet with variants, we read the list of current props rendered (with axis and order) + the complete list to have those excluded.
-// The front will merge and render the list.

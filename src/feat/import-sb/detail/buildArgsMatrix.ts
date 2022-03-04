@@ -1,4 +1,5 @@
-import { Args, ArgType, ArgTypes, isBooleanArgType, isSelectArgType } from '../../../common/sb-serialize.model';
+import { Args, ArgTypes } from '../../../common/sb-serialize.model';
+import { argTypesToValues } from '../../../common/storybook-utils';
 
 interface ArgType2 {
   argName: string;
@@ -89,14 +90,6 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
     }
   }
   return argsMatrix;
-}
-
-function argTypesToValues(argType: ArgType) {
-  if (isBooleanArgType(argType)) {
-    return [false, true];
-  } else if (isSelectArgType(argType)) {
-    return argType.options.map(v => v || 'default');
-  }
 }
 
 // playground

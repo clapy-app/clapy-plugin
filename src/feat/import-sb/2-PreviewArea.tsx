@@ -1,7 +1,8 @@
-import { FC, memo, MouseEventHandler, useCallback, useRef, useState } from 'react';
+import { ChangeEvent, FC, memo, MouseEventHandler, useCallback, useRef, useState } from 'react';
 
-import { SbAnySelection } from '../../common/app-models';
+import { ArgTypeUsed, SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
+import classes from './1-ImportSb.module.scss';
 import { renderComponent } from './detail/renderComponent';
 
 export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function PreviewArea({ selection }) {
@@ -60,6 +61,11 @@ export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function Prev
         </a>
       </div>
       <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
+
+      {/* Variants props */}
+      <VariantsProps selection={selection} />
+
+      {/* Update button */}
       {loadingTxt ? (
         <>
           <div>
@@ -82,3 +88,42 @@ export const PreviewArea: FC<{ selection: SbAnySelection }> = memo(function Prev
     </>
   );
 });
+
+const VariantsProps: FC<{ selection: SbAnySelection }> = memo(function VariantsProps({ selection }) {
+  const { props } = selection;
+  const [hasChanged, setHasChanged] = useState(false);
+  const previousRef = useRef<ArgTypeUsed[]>();
+  const changeVariant = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (!hasChanged && !areSameVariantsProps(previousRef.current, props)) {
+        previousRef.current = props;
+        setHasChanged(true);
+      }
+    },
+    [hasChanged, props],
+  );
+  if (!props?.length) return null;
+  console.log('props:', props);
+  return (
+    <div className={classes.properties}>
+      <div className={classes.titleWrapper}>
+        <h3>Properties</h3>
+        {hasChanged && <button>Update</button>}
+      </div>
+      {props.map(({ argName, used }) => (
+        <label key={argName}>
+          <input type={'checkbox'} defaultChecked={used} onChange={changeVariant} /> {argName}
+        </label>
+      ))}
+    </div>
+  );
+});
+
+function areSameVariantsProps(a: ArgTypeUsed[] | undefined, b: ArgTypeUsed[] | undefined) {
+  if (!a && !b) return true;
+  if (!a || !b || a?.length !== b?.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].argName !== b[i].argName || a[i].used !== b[i].used) return false;
+  }
+  return true;
+}
