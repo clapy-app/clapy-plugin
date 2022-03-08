@@ -34,7 +34,7 @@ import { RootState } from '../core/redux/store';
 
 // -- RTK vanilla version
 
-interface FetchWorksState {
+export interface FetchWorksState {
   isLoading?: boolean;
   error?: any;
   data?: SampleApiModel;

@@ -1,3 +1,5 @@
+import { ObjKey } from './app-models';
+
 export function wait(milliseconds?: number) {
   return new Promise<void>(resolve => setTimeout(resolve, milliseconds));
 }
@@ -13,4 +15,13 @@ export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
 
 export function objectIsNotEmpty(obj: any) {
   return !!obj && typeof obj === 'object' && Object.getOwnPropertyNames(obj).length > 0;
+}
+
+export function keyBy<T>(array: T[], field: keyof T) {
+  const indexed = {} as { [key: ObjKey]: T };
+  for (const obj of array) {
+    const key = obj[field] as unknown as ObjKey;
+    indexed[key] = obj;
+  }
+  return indexed;
 }

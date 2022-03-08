@@ -2,21 +2,23 @@ import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect
 import { useSelector } from 'react-redux';
 
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
-import { SbAnySelection } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
+import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
 import { getTokens, login, logout } from '../auth/auth-service';
 import { selectAuthLoading } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { renderComponent } from './detail/renderComponent';
+import { setSelection } from './import-slice';
 
 export const ImportSb: FC = memo(function ImportSb() {
+  const dispatch = useAppDispatch();
   const [loadingTxt, setLoadingTxt] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const loginBtn = useCallback(
@@ -92,14 +94,13 @@ export const ImportSb: FC = memo(function ImportSb() {
   }, []);
 
   // Show selection
-  const [selectedSbComp, setSelectedSbComp] = useState<SbAnySelection[]>([]);
   useEffect(() => {
     const dispose = subscribePlugin('selectedSbComp', (_, nodes) => {
-      setSelectedSbComp(nodes);
+      dispatch(setSelection(nodes));
     });
     fetchPluginNoResponse('getSbCompSelection');
     return dispose;
-  }, []);
+  }, [dispatch]);
 
   // const runGrid: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
   //   return fetchPlugin('runGrid');
@@ -211,13 +212,7 @@ export const ImportSb: FC = memo(function ImportSb() {
       )}
       {!!error && <p>{error}</p>}
       <hr />
-      {!selectedSbComp?.length ? (
-        <p>Select a component to preview the Storybook version here.</p>
-      ) : selectedSbComp.length > 1 ? (
-        <p>Select a single node to preview the Storybook version here.</p>
-      ) : (
-        <PreviewArea selection={selectedSbComp[0]} />
-      )}
+      <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
       {isSignedIn && (
         <button className={classes.textButton} onClick={logoutBtn}>
