@@ -49,6 +49,8 @@ export async function login() {
   }
 }
 
+const interactiveSignInMsg = 'Interactive sign in required';
+
 export async function getTokens() {
   try {
     if (!_accessToken) {
@@ -61,9 +63,13 @@ export async function getTokens() {
     }
     dispatchOther(setSignedInState(!!_accessToken));
     return { accessToken: _accessToken, tokenType: _tokenType };
-  } catch (error) {
-    dispatchOther(setAuthError(error));
-    throw error;
+  } catch (error: any) {
+    if (error.message === interactiveSignInMsg) {
+      dispatchOther(setSignedInState(false));
+      return { accessToken: null, tokenType: null };
+    } else {
+      throw error;
+    }
   }
 }
 
@@ -82,7 +88,7 @@ export async function refreshTokens() {
     return;
   }
   // Otherwise, it fails here. A manual login is required.
-  throw new Error('Interactive sign in required');
+  throw new Error(interactiveSignInMsg);
 }
 
 export function logout() {

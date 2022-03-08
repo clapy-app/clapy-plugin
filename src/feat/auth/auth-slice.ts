@@ -31,10 +31,7 @@ export const authSlice = createSlice({
     },
     setSignedInState: (state, { payload }: PayloadAction<boolean>) => {
       state.isSignedIn = payload;
-      if (!!payload) {
-        state.loading = false;
-        state.error = undefined;
-      }
+      state.loading = false;
     },
   },
 });

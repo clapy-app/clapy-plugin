@@ -167,14 +167,16 @@ export const ImportSb: FC = memo(function ImportSb() {
   }
   if (!isSignedIn) {
     return (
-      <>
-        <p>
-          Welcome to Clapy! After you have signed in, you will be able to import your Storybook components into a Figma
-          page.
-        </p>
-        <p>You will need a Google account or to create an account with an email and password.</p>
+      <div className={classes.container}>
+        <div>
+          <p>
+            Welcome to Clapy! After you have signed in, you will be able to import your Storybook components into a
+            Figma page.
+          </p>
+          <p>You will need a Google account or to create an account with an email and password.</p>
+        </div>
         <Button onClick={loginBtn}>Sign in</Button>
-      </>
+      </div>
     );
   }
 
