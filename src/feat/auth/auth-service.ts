@@ -5,7 +5,7 @@ import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unau
 import { dispatchOther } from '../../core/redux/redux.utils';
 import { env } from '../../environment/env';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
-import { authSuccess, setAuthError, startLoadingAuth } from './auth-slice';
+import { authSuccess, setAuthError, setSignedInState, startLoadingAuth } from './auth-slice';
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
@@ -50,15 +50,21 @@ export async function login() {
 }
 
 export async function getTokens() {
-  if (!_accessToken) {
-    const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
-    _accessToken = accessToken;
-    _tokenType = tokenType;
+  try {
+    if (!_accessToken) {
+      const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
+      _accessToken = accessToken;
+      _tokenType = tokenType;
+    }
+    if (!_accessToken) {
+      await refreshTokens();
+    }
+    dispatchOther(setSignedInState(!!_accessToken));
+    return { accessToken: _accessToken, tokenType: _tokenType };
+  } catch (error) {
+    dispatchOther(setAuthError(error));
+    throw error;
   }
-  if (!_accessToken) {
-    await refreshTokens();
-  }
-  return { accessToken: _accessToken, tokenType: _tokenType };
 }
 
 export async function refreshTokens() {
@@ -88,6 +94,7 @@ export function logout() {
   });
   window.open(url, '_blank');
   fetchPlugin('clearCachedTokens').catch(handleError);
+  dispatchOther(setSignedInState(false));
 }
 
 // Steps (detail)

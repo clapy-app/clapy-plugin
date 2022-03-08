@@ -5,9 +5,23 @@
   color: $COLOR-TEXT-PRIMARY;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 body {
-  font: 16px sans-serif;
-  margin: 20px;
+  font-size: 16px;
+}
+
+/* Must match PreviewMode.module.scss .previewPluginWrapper for children-oriented styles */
+body, #react-page {
+  display: flex;
+  flex-direction: column;
+}
+
+#react-page {
+  flex: 1;
 }
 
 hr {

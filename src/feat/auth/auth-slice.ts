@@ -3,11 +3,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../core/redux/store';
 
 export interface AuthState {
-  loading?: boolean;
+  loading: boolean;
   error?: any;
+  isSignedIn?: boolean;
 }
 
-const initialState: AuthState = {};
+const initialState: AuthState = { loading: true };
 
 // To add to src/core/redux/store.ts
 export const authSlice = createSlice({
@@ -19,17 +20,27 @@ export const authSlice = createSlice({
       state.error = undefined;
     },
     authSuccess: state => {
-      state.loading = undefined;
+      state.loading = false;
       state.error = undefined;
+      state.isSignedIn = true;
     },
     setAuthError: (state, { payload }: PayloadAction<any>) => {
-      state.loading = undefined;
+      state.loading = false;
       state.error = payload;
+      state.isSignedIn = false;
+    },
+    setSignedInState: (state, { payload }: PayloadAction<boolean>) => {
+      state.isSignedIn = payload;
+      if (!!payload) {
+        state.loading = false;
+        state.error = undefined;
+      }
     },
   },
 });
 
-export const { startLoadingAuth, authSuccess, setAuthError } = authSlice.actions;
+export const { startLoadingAuth, authSuccess, setAuthError, setSignedInState } = authSlice.actions;
 
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectAuthError = (state: RootState) => state.auth.error;
+export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;

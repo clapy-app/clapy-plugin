@@ -10,8 +10,8 @@ import { sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
-import { getTokens, login, logout } from '../auth/auth-service';
-import { selectAuthLoading } from '../auth/auth-slice';
+import { getTokens, login } from '../auth/auth-service';
+import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { renderComponent } from './detail/renderComponent';
@@ -23,20 +23,14 @@ export const ImportSb: FC = memo(function ImportSb() {
   const [error, setError] = useState<string | undefined>();
   const loginBtn = useCallback(
     () =>
-      login()
-        .then(() => setIsSignedIn(true))
-        .catch(err => {
-          handleError(err);
-          setError(err?.message || 'Unknown error');
-        }),
+      login().catch(err => {
+        handleError(err);
+        setError(err?.message || 'Unknown error');
+      }),
     [],
   );
-  const logoutBtn = useCallback(() => {
-    logout();
-    setIsSignedIn(false);
-  }, []);
   const authLoading = useSelector(selectAuthLoading);
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+  const isSignedIn = useSelector(selectSignedIn);
   const [sbSelection, setSbSelection] = useState<SbSampleSelection>(
     env.isDev ? 'reactstrap' /* 'equisafe' */ : 'reactstrap',
   );
@@ -44,18 +38,14 @@ export const ImportSb: FC = memo(function ImportSb() {
   const [options, setOptions] = useState<JSX.Element[]>();
   useEffect(() => {
     getTokens()
-      .then(({ accessToken }) => {
-        const _isSignedIn = !!accessToken;
-        if (isSignedIn !== _isSignedIn) {
-          setIsSignedIn(_isSignedIn);
-        }
+      .then(() => {
         setError(undefined);
       })
       .catch(err => {
         handleError(err);
         setError(err?.message || 'Unknown error');
       });
-  }, [isSignedIn]);
+  }, []);
 
   const storiesSamplesRef = useRef<StoriesSamples>();
 
@@ -172,15 +162,27 @@ export const ImportSb: FC = memo(function ImportSb() {
     fetchPlugin('detachPage').catch(handleError);
   }, []);
 
+  if (authLoading) {
+    return <p className={classes.center}>Signing in...</p>;
+  }
+  if (!isSignedIn) {
+    return (
+      <>
+        <p>
+          Welcome to Clapy! After you have signed in, you will be able to import your Storybook components into a Figma
+          page.
+        </p>
+        <p>You will need a Google account or to create an account with an email and password.</p>
+        <Button onClick={loginBtn}>Sign in</Button>
+      </>
+    );
+  }
+
   return (
     <div className={classes.container}>
       <div className={classes.topBar}>
         {!options ? (
           <p>Loading available stories...</p>
-        ) : authLoading ? (
-          <p>Loading...</p>
-        ) : !isSignedIn ? (
-          <Button onClick={loginBtn}>Auth</Button>
         ) : (
           <>
             <div className={classes.storybookTextInput}>
@@ -214,11 +216,6 @@ export const ImportSb: FC = memo(function ImportSb() {
       <hr />
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
-      {isSignedIn && (
-        <button className={classes.textButton} onClick={logoutBtn}>
-          Logout
-        </button>
-      )}
     </div>
   );
 });
