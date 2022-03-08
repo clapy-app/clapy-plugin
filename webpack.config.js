@@ -20,7 +20,6 @@ module.exports = (env, argv) => {
   // const distFolder = 'build';
   if (isProduction) {
     editJsonFile('./manifest.json', manifest => {
-      const { main, ui } = manifest;
       const mainSplit = manifest.main.split('/');
       mainSplit[0] = distFolder;
       manifest.main = mainSplit.join('/');
@@ -28,14 +27,13 @@ module.exports = (env, argv) => {
       uiSplit[0] = distFolder;
       manifest.ui = uiSplit.join('/');
 
-      manifest.name = 'Clapy';
-      manifest.id = '1062567834134269';
+      manifest.name = 'Clapy beta';
+      manifest.id = '1083031796594968801';
     }).catch(e => {
       console.error('Error while building webpack, previewEnv:', previewEnv);
       console.error(e);
     });
   }
-
 
   return {
     mode: isProduction ? 'production' : 'development',
@@ -75,21 +73,22 @@ module.exports = (env, argv) => {
                 getCustomTransformers: () => ({
                   before: [isDevelopment && isBrowser && ReactRefreshTypeScript()].filter(Boolean),
                 }),
-              }
-            }
+              },
+            },
           ],
         },
 
         // Enables including CSS by doing "import './file.css'" in your TypeScript code
         {
-          test: /\.(sa|sc|c)ss$/i, use: [
+          test: /\.(sa|sc|c)ss$/i,
+          use: [
             // Creates `style` nodes from JS strings
-            "style-loader",
+            'style-loader',
             // Translates CSS into CommonJS
-            "css-loader",
+            'css-loader',
             // Compiles Sass to CSS
-            "sass-loader",
-          ]
+            'sass-loader',
+          ],
         },
 
         // Allows you to use "import logo from './logo.svg'" in TypeScript to get a data URI
@@ -110,7 +109,7 @@ module.exports = (env, argv) => {
       isDevelopment && isBrowser && new ReactRefreshPlugin(),
       isBrowser && new ForkTsCheckerWebpackPlugin(),
       new HtmlWebpackPlugin({
-        inject: "body",
+        inject: 'body',
         template: './src/index.html',
         filename: 'index.html',
         inlineSource: '.(js)$',

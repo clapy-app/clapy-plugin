@@ -17,6 +17,10 @@
   width: 400px;
   border: 1px solid black;
   overflow: auto;
+
+  /* Must match global.scss #react-page for children-oriented styles */
+  display: flex;
+  flex-direction: column;
 }
 .select-warning {
   text-align: center;
