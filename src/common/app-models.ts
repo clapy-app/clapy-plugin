@@ -1,7 +1,9 @@
 import { _Routes, _Subscriptions } from '../backend/routes';
 import { ArgTypes } from './sb-serialize.model';
 
-export type Dict2<Key extends string | number | symbol, Value> = {
+export type ObjKey = string | number | symbol;
+
+export type Dict2<Key extends ObjKey, Value> = {
   [key in Key]: Value;
 };
 

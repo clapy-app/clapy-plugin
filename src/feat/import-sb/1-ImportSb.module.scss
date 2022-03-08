@@ -21,16 +21,28 @@
 .properties {
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
+  align-self: stretch;
 
   .titleWrapper {
     display: flex;
-    // flex-direction: row;
     align-items: center;
+    justify-content: space-between;
+  }
+
+  h4 {
+    margin: 0;
+  }
+
+  a {
+    // text-decoration: underline;
+    cursor: pointer;
+    text-decoration: underline;
+    user-select: none;
   }
 
   label {
     display: flex;
+    align-self: flex-start;
   }
 
   input[type="checkbox"] {
