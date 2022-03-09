@@ -2,7 +2,7 @@ import { MutableRefObject } from 'react';
 
 import { apiGet } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
-import { ArgTypes, CNode } from '../../../common/sb-serialize.model';
+import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import { buildArgsMatrix } from './buildArgsMatrix';
 
@@ -10,6 +10,7 @@ export async function renderComponent(
   sbUrl: string,
   storyId: string,
   argTypes: ArgTypes,
+  initialArgs: Args,
   storyUrl: string,
   figmaId: string,
   pageId: string,
@@ -50,6 +51,7 @@ export async function renderComponent(
           storyId,
           pageId,
           argTypes,
+          initialArgs,
           args,
           i,
           j,

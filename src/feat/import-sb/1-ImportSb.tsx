@@ -118,7 +118,7 @@ export const ImportSb: FC = memo(function ImportSb() {
 
         let consecutiveErrors = 0;
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, storyUrl, storyId, pageId, argTypes } of insertedComponents) {
+        for (const { figmaId, storyUrl, storyId, pageId, argTypes, initialArgs } of insertedComponents) {
           try {
             if (interruptedRef.current) {
               setError('Interrupted');
@@ -129,6 +129,7 @@ export const ImportSb: FC = memo(function ImportSb() {
               sbUrlToImport,
               storyId,
               argTypes,
+              initialArgs,
               storyUrl,
               figmaId,
               pageId,

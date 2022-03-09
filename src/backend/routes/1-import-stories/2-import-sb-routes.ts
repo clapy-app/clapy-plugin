@@ -1,4 +1,4 @@
-import { objectIsNotEmpty } from '../../../common/general-utils';
+import { isNonEmptyObject } from '../../../common/general-utils';
 import { SbStoriesWrapper } from '../../../common/sb-serialize.model';
 import { sanitizeSbUrl } from '../../../common/storybook-utils';
 import { env } from '../../../environment/env';
@@ -15,7 +15,7 @@ export async function importStories(sbUrl: string, storiesWrapper: SbStoriesWrap
     sbUrl = sanitizeSbUrl(sbUrl);
     const storyEntries: StoryEntries = Object.entries(stories)
       // Alternative: filter on !story.parameters.docsOnly
-      .filter(([_, story]) => story.parameters?.__isArgsStory || objectIsNotEmpty(story.parameters?.argTypes));
+      .filter(([_, story]) => story.parameters?.__isArgsStory || isNonEmptyObject(story.parameters?.argTypes));
 
     // Dev filters
     // .filter(([storyId, _]) => storyId === 'components-button--button');

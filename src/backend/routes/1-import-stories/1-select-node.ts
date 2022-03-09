@@ -35,12 +35,14 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
       // &args=kind:secondary;size:xxs
       const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
       const argTypes: ArgTypes = JSON.parse(node.getPluginData('storyArgTypes') || '{}');
+      const initialArgs: ArgTypes = JSON.parse(node.getPluginData('storyInitialArgs') || '{}');
       const selection: SbCompSelection = {
         storyId,
         storyLabel: node.name,
         sbUrl,
         storyUrl,
         argTypes,
+        initialArgs,
         figmaId: node.id,
         tagFigmaId: node0.id,
         pageId: figma.currentPage.id,

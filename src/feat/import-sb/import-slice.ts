@@ -34,6 +34,10 @@ export const selectSelectionGuaranteed = createSelector(selectSelections, select
 export const selectPropsObj = createSelector(selectSelectionGuaranteed, selection => propArrayToMap(selection.props));
 
 export const selectStoryId = createSelector(selectSelectionGuaranteed, sel => sel.storyId);
+export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => sel.figmaId);
+export const selectPageId = createSelector(selectSelectionGuaranteed, sel => sel.pageId);
+export const selectArgTypes = createSelector(selectSelectionGuaranteed, sel => sel.argTypes);
+export const selectInitialArgs = createSelector(selectSelectionGuaranteed, sel => sel.initialArgs);
 
 interface ArgTypeObj {
   [key: string]: boolean;

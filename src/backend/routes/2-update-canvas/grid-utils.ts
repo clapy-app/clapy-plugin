@@ -1,4 +1,6 @@
-import { isChildrenMixin, WithChildrenNode } from '../../common/canvas-utils';
+import { Args } from '../../../common/sb-serialize.model';
+import { isComponentSet, WithChildrenNode } from '../../common/canvas-utils';
+import { resizeNode } from './update-canvas-utils';
 
 // The front gives the index (i = 0, 1, 2...) of the component to insert.
 // For each new argType, new blocks of components are added, by adding extra rows or extra columns depending on the axis on which the argType is added.
@@ -8,7 +10,7 @@ import { isChildrenMixin, WithChildrenNode } from '../../common/canvas-utils';
 
 export async function runGrid() {
   const selectedNodes = figma.currentPage.selection;
-  if (selectedNodes.length !== 1 || !isChildrenMixin(selectedNodes[0])) {
+  if (selectedNodes.length !== 1 || !isComponentSet(selectedNodes[0])) {
     console.warn('Not a valid selection for runGrid().');
     return;
   }
@@ -65,7 +67,7 @@ export function getMaxIJ(node: WithChildrenNode, gap: number, width: number, hei
   return { maxI, maxJ };
 }
 
-export function getWidthHeight(node: WithChildrenNode) {
+export function getWidthHeight(node: ComponentSetNode) {
   // First, get highest width and height among children
   let width = 0,
     height = 0;
@@ -81,7 +83,7 @@ export function getWidthHeight(node: WithChildrenNode) {
 }
 
 // alignItemsInGrid : bouger de manière brutale les doublons à la fin de la ligne. En passant sur les cellules, commencer par accumuler les doublons dans une liste séparée. Une fois tous les autres éléments bien alignés, parcourir les doublons et les pousser à la fin de leurs lignes respectives (ou aux premières cases disponibles de la ligne ?)
-export function alignItemsInGrid(node: WithChildrenNode, gap: number = 20) {
+export function alignItemsInGrid(node: ComponentSetNode, gap: number = 20) {
   node.children;
   let { width, height } = getWidthHeight(node);
   // With the gap, width and height, we have a grid.
@@ -103,7 +105,7 @@ export function alignItemsInGrid(node: WithChildrenNode, gap: number = 20) {
   }
 }
 
-function getGridSize(node: WithChildrenNode) {
+function getGridSize(node: ComponentSetNode) {
   const child = node.children[0];
   let { width, height } = getWidthHeight(node);
   const nextNodeX = nextHorizontalNode(child);
@@ -143,6 +145,19 @@ function nextVerticalNode(node: SceneNode) {
   }
 }
 
+export function adjustGridToChildren(
+  componentSet: ComponentSetNode,
+  maxI: number,
+  maxJ: number,
+  width: number,
+  height: number,
+  gap: number,
+) {
+  const gridWidth = indexToCoord(maxI, width, gap) + width + gap;
+  const gridHeight = indexToCoord(maxJ, height, gap) + height + gap;
+  resizeNode(componentSet, gridWidth, gridHeight);
+}
+
 /**
  * @param position x or y
  * @param size width or height in pixels
@@ -174,4 +189,11 @@ export function indexToCoord(index: number, size: number, gap: number) {
 function coordToIndex(position: number, size: number, gap: number) {
   const distanceBetweenTwoChildren = size + gap;
   return Math.round((position - gap) / distanceBetweenTwoChildren);
+}
+
+export function argsToVariantName(args: Args) {
+  return Object.entries(args)
+    .sort()
+    .map(([argName, value]) => `${argName}=${value}`)
+    .join(', ');
 }

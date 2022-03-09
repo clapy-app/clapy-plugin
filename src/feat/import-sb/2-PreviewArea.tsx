@@ -13,11 +13,23 @@ import {
 } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ArgTypeUsed } from '../../common/app-models';
+import { ArgTypeObj, ArgTypeUsed } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
+import { isNonEmptyObject } from '../../common/general-utils';
+import { fetchPlugin } from '../../common/plugin-utils';
 import classes from './1-ImportSb.module.scss';
+import { buildArgsMatrix } from './detail/buildArgsMatrix';
 import { renderComponent } from './detail/renderComponent';
-import { selectPropsObj, selectSelectionGuaranteed, selectSelections, selectStoryId } from './import-slice';
+import {
+  selectArgTypes,
+  selectFigmaId,
+  selectInitialArgs,
+  selectPageId,
+  selectPropsObj,
+  selectSelectionGuaranteed,
+  selectSelections,
+  selectStoryId,
+} from './import-slice';
 
 export const PreviewArea: FC = memo(function PreviewArea() {
   const selections = useSelector(selectSelections);
@@ -32,7 +44,7 @@ export const PreviewArea: FC = memo(function PreviewArea() {
 
 const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
   const selection = useSelector(selectSelectionGuaranteed);
-  const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes } = selection;
+  const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes, initialArgs } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
   const [error, setError] = useState<string | undefined>();
 
@@ -43,15 +55,25 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
     interruptedRef.current = true;
   }, []);
 
-  const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
+  const runUpdate: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!storyUrl || !storyId || !sbUrl || !argTypes) return;
+        if (!storyUrl || !storyId || !sbUrl || !argTypes || !initialArgs) return;
 
         setInterrupted(false);
         interruptedRef.current = false;
 
-        await renderComponent(sbUrl, storyId, argTypes, storyUrl, figmaId, pageId, setLoadingTxt, interruptedRef);
+        await renderComponent(
+          sbUrl,
+          storyId,
+          argTypes,
+          initialArgs,
+          storyUrl,
+          figmaId,
+          pageId,
+          setLoadingTxt,
+          interruptedRef,
+        );
         if (interruptedRef.current) {
           setError('Interrupted');
           return;
@@ -72,7 +94,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
         setLoadingTxt(undefined);
       }
     })();
-  }, [storyUrl, storyId, sbUrl, argTypes, figmaId, pageId]);
+  }, [storyUrl, storyId, sbUrl, argTypes, initialArgs, figmaId, pageId]);
 
   if (!storyUrl) {
     return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;
@@ -90,7 +112,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
       <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
 
       {/* Variants props */}
-      {/* <VariantsProps /> */}
+      <VariantsProps />
 
       {/* Update button */}
       {loadingTxt ? (
@@ -103,7 +125,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
           <p>{loadingTxt}</p>
         </>
       ) : (
-        <button onClick={runImport}>Update component</button>
+        <button onClick={runUpdate}>Update component</button>
       )}
       {/* !!loadingTxt && env.isDev ? (
         <>
@@ -133,6 +155,10 @@ const VariantsPropsInner: FC<{ propsObj: ArgTypeObj }> = memo(function VariantsP
 
   const entries = useSelector(selectPropsEntries)!;
   const storyId = useSelector(selectStoryId);
+  const figmaId = useSelector(selectFigmaId);
+  const pageId = useSelector(selectPageId);
+  const argTypes = useSelector(selectArgTypes);
+  const initialArgs = useSelector(selectInitialArgs);
 
   if (elRefs.current.length !== entries.length) {
     // add or remove refs
@@ -144,17 +170,34 @@ const VariantsPropsInner: FC<{ propsObj: ArgTypeObj }> = memo(function VariantsP
   const [hasUpdates, setHasUpdates] = useState(false);
 
   const applyUpdates = useCallback(() => {
-    // Update node plugin data 'storyArgTypes' (node.getPluginData('storyArgTypes'))
-    // Check if the selection is updated, if not emit again the selection?
-    // Or update directly in the front, on the slice (not the best option).
+    (async () => {
+      try {
+        if (!storyId || !argTypes) return;
 
-    setHasUpdates(false);
-  }, []);
+        // Update node plugin data 'storyArgFilters' (node.getPluginData('storyArgFilters'))
+        // Build the new matrix with the filters
+        // Check if the selection is updated, if not emit again the selection?
+        // Or update directly in the front, on the slice (not the best option).
+        const storyArgFilters = getFormArgTypes(elRefs);
+
+        // TODO storyArgFilters may not be desired. We want all props to be in the matrix keys. But it should use default values for props not selected, instead of adding all values.
+        const argsMatrix = buildArgsMatrix(argTypes, storyArgFilters, initialArgs);
+        if (!isNonEmptyObject(argsMatrix?.[0]?.[0])) {
+          return;
+        }
+        await fetchPlugin('updateFilters', figmaId, storyId, pageId, storyArgFilters, argsMatrix!);
+
+        setHasUpdates(false);
+      } catch (err) {
+        handleError((err: any) => {
+          handleError(err);
+        });
+      }
+    })();
+  }, [argTypes, figmaId, initialArgs, pageId, storyId]);
 
   const checkChanges = useCallback(
     (hasUpdates: boolean) => {
-      // TODO called multiple times with select all/none?
-
       const currentFormProps = getFormArgTypes(elRefs);
       const keysSelection = Object.keys(currentFormProps);
       const atLeastOnePropEnabled = !!keysSelection.find(k => currentFormProps[k]);
@@ -260,10 +303,6 @@ function areSameVariantsProps(
 
 // console.log(areSameVariantsProps(propArrayToMap(arr1), propArrayToMap(arr2)));
 // console.log(propArrayToMap(arr1));
-
-interface ArgTypeObj {
-  [key: string]: boolean;
-}
 
 function propArrayToMap<T>(array: ArgTypeUsed[] | undefined) {
   if (!array) return undefined;

@@ -1,19 +1,31 @@
+import { ArgTypeObj } from '../../../common/app-models';
 import { Args, ArgTypes } from '../../../common/sb-serialize.model';
-import { argTypesToValues } from '../../../common/storybook-utils';
+import { argTypesToValuesFiltered } from '../../../common/storybook-utils';
 
 interface ArgType2 {
   argName: string;
   // argType: ArgType;
-  values: ReturnType<typeof argTypesToValues>;
+  values: ReturnType<typeof argTypesToValuesFiltered>;
 }
 
-export function buildArgsMatrix(argTypes: ArgTypes) {
+/**
+ * @param argTypes The argTypes from Storybook, used to calculate the variants available. argTypes of type boolean or select are used, others are ignored.
+ * @param storyArgFilters optional filter to use only some properties instead of all properties available in argTypes.
+ * @param initialArgs optional initial args for properties not kept by storyArgFilters. If storyArgFilters is provided, you must also provide initialArgs.
+ * @returns `undefined` if there are no argTypes available (empty object), a matrix of Args otherwise, each cell representing a variant to render with the values to use for each arg on that variant.
+ */
+export function buildArgsMatrix(argTypes: ArgTypes, storyArgFilters?: ArgTypeObj, initialArgs?: Args) {
+  if (storyArgFilters && !initialArgs)
+    throw new Error(
+      'You must provide initialArgs because storyArgFilters was provided. Or remove storyArgFilters if filtering is not expected.',
+    );
   let argsMatrix: Args[][] | undefined = undefined;
   let i = -1;
-  const argTypes2: ArgType2[] = Object.entries(argTypes).map(([argName, argType]) => ({
+  let entries = Object.entries(argTypes);
+  const argTypes2: ArgType2[] = entries.map(([argName, argType]) => ({
     argName,
     // argType,
-    values: argTypesToValues(argType),
+    values: argTypesToValuesFiltered(argName, argType, storyArgFilters, initialArgs),
   }));
   argTypes2.sort((a, b) => {
     if (!b.values) return 1;
@@ -63,26 +75,35 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
     // }
 
     if (values) {
-      const firstValue = values[0];
-      const otherValues = values.slice(1);
-
       if (columnDirection) {
         for (const row of argsMatrix) {
-          for (const args of [...row]) {
-            Object.assign(args, { [argName]: firstValue });
-            for (const val of otherValues) {
-              row.push({ ...args, [argName]: val });
+          const originalRow = [...row];
+          for (let i = 0; i < values.length; i++) {
+            const val = values[i];
+            for (const args of originalRow) {
+              if (i === 0) {
+                Object.assign(args, { [argName]: val });
+              } else {
+                row.push({ ...args, [argName]: val });
+              }
             }
           }
         }
       } else {
-        for (const row of [...argsMatrix]) {
-          for (const val of otherValues) {
-            const newRow: Args[] = [];
-            argsMatrix.push(newRow);
-            for (const args of row) {
-              Object.assign(args, { [argName]: firstValue });
-              newRow.push({ ...args, [argName]: val });
+        const originalMatrix = [...argsMatrix];
+        for (let i = 0; i < values.length; i++) {
+          const val = values[i];
+          for (const row of originalMatrix) {
+            if (i === 0) {
+              for (const args of row) {
+                Object.assign(args, { [argName]: val });
+              }
+            } else {
+              const newRow: Args[] = [];
+              argsMatrix.push(newRow);
+              for (const args of row) {
+                newRow.push({ ...args, [argName]: val });
+              }
             }
           }
         }
@@ -95,8 +116,70 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
 // playground
 
 // const ref =
-//   '[[{"active":false,"disabled":false,"outline":false},{"active":true,"disabled":false,"outline":false},{"active":false,"disabled":false,"outline":true},{"active":true,"disabled":false,"outline":true}],[{"active":false,"disabled":true,"outline":false},{"active":true,"disabled":true,"outline":false},{"active":false,"disabled":true,"outline":true},{"active":true,"disabled":true,"outline":true}]]';
-//
+//   '[[{"color":"primary","size":"default","active":false,"disabled":false},{"color":"secondary","size":"default","active":false,"disabled":false},{"color":"success","size":"default","active":false,"disabled":false},{"color":"danger","size":"default","active":false,"disabled":false},{"color":"primary","size":"default","active":false,"disabled":true},{"color":"secondary","size":"default","active":false,"disabled":true},{"color":"success","size":"default","active":false,"disabled":true},{"color":"danger","size":"default","active":false,"disabled":true}],[{"color":"primary","size":"sm","active":false,"disabled":false},{"color":"secondary","size":"sm","active":false,"disabled":false},{"color":"success","size":"sm","active":false,"disabled":false},{"color":"danger","size":"sm","active":false,"disabled":false},{"color":"primary","size":"sm","active":false,"disabled":true},{"color":"secondary","size":"sm","active":false,"disabled":true},{"color":"success","size":"sm","active":false,"disabled":true},{"color":"danger","size":"sm","active":false,"disabled":true}],[{"color":"primary","size":"xl","active":false,"disabled":false},{"color":"secondary","size":"xl","active":false,"disabled":false},{"color":"success","size":"xl","active":false,"disabled":false},{"color":"danger","size":"xl","active":false,"disabled":false},{"color":"primary","size":"xl","active":false,"disabled":true},{"color":"secondary","size":"xl","active":false,"disabled":true},{"color":"success","size":"xl","active":false,"disabled":true},{"color":"danger","size":"xl","active":false,"disabled":true}],[{"color":"primary","size":"default","active":true,"disabled":false},{"color":"secondary","size":"default","active":true,"disabled":false},{"color":"success","size":"default","active":true,"disabled":false},{"color":"danger","size":"default","active":true,"disabled":false},{"color":"primary","size":"default","active":true,"disabled":true},{"color":"secondary","size":"default","active":true,"disabled":true},{"color":"success","size":"default","active":true,"disabled":true},{"color":"danger","size":"default","active":true,"disabled":true}],[{"color":"primary","size":"sm","active":true,"disabled":false},{"color":"secondary","size":"sm","active":true,"disabled":false},{"color":"success","size":"sm","active":true,"disabled":false},{"color":"danger","size":"sm","active":true,"disabled":false},{"color":"primary","size":"sm","active":true,"disabled":true},{"color":"secondary","size":"sm","active":true,"disabled":true},{"color":"success","size":"sm","active":true,"disabled":true},{"color":"danger","size":"sm","active":true,"disabled":true}],[{"color":"primary","size":"xl","active":true,"disabled":false},{"color":"secondary","size":"xl","active":true,"disabled":false},{"color":"success","size":"xl","active":true,"disabled":false},{"color":"danger","size":"xl","active":true,"disabled":false},{"color":"primary","size":"xl","active":true,"disabled":true},{"color":"secondary","size":"xl","active":true,"disabled":true},{"color":"success","size":"xl","active":true,"disabled":true},{"color":"danger","size":"xl","active":true,"disabled":true}]]';
+// const ref2 = [
+//   [
+//     { color: 'primary', size: 'default', active: false, disabled: false },
+//     { color: 'secondary', size: 'default', active: false, disabled: false },
+//     { color: 'success', size: 'default', active: false, disabled: false },
+//     { color: 'danger', size: 'default', active: false, disabled: false },
+//     { color: 'primary', size: 'default', active: false, disabled: true },
+//     { color: 'secondary', size: 'default', active: false, disabled: true },
+//     { color: 'success', size: 'default', active: false, disabled: true },
+//     { color: 'danger', size: 'default', active: false, disabled: true },
+//   ],
+//   [
+//     { color: 'primary', size: 'sm', active: false, disabled: false },
+//     { color: 'secondary', size: 'sm', active: false, disabled: false },
+//     { color: 'success', size: 'sm', active: false, disabled: false },
+//     { color: 'danger', size: 'sm', active: false, disabled: false },
+//     { color: 'primary', size: 'sm', active: false, disabled: true },
+//     { color: 'secondary', size: 'sm', active: false, disabled: true },
+//     { color: 'success', size: 'sm', active: false, disabled: true },
+//     { color: 'danger', size: 'sm', active: false, disabled: true },
+//   ],
+//   [
+//     { color: 'primary', size: 'xl', active: false, disabled: false },
+//     { color: 'secondary', size: 'xl', active: false, disabled: false },
+//     { color: 'success', size: 'xl', active: false, disabled: false },
+//     { color: 'danger', size: 'xl', active: false, disabled: false },
+//     { color: 'primary', size: 'xl', active: false, disabled: true },
+//     { color: 'secondary', size: 'xl', active: false, disabled: true },
+//     { color: 'success', size: 'xl', active: false, disabled: true },
+//     { color: 'danger', size: 'xl', active: false, disabled: true },
+//   ],
+//   [
+//     { color: 'primary', size: 'default', active: true, disabled: false },
+//     { color: 'secondary', size: 'default', active: true, disabled: false },
+//     { color: 'success', size: 'default', active: true, disabled: false },
+//     { color: 'danger', size: 'default', active: true, disabled: false },
+//     { color: 'primary', size: 'default', active: true, disabled: true },
+//     { color: 'secondary', size: 'default', active: true, disabled: true },
+//     { color: 'success', size: 'default', active: true, disabled: true },
+//     { color: 'danger', size: 'default', active: true, disabled: true },
+//   ],
+//   [
+//     { color: 'primary', size: 'sm', active: true, disabled: false },
+//     { color: 'secondary', size: 'sm', active: true, disabled: false },
+//     { color: 'success', size: 'sm', active: true, disabled: false },
+//     { color: 'danger', size: 'sm', active: true, disabled: false },
+//     { color: 'primary', size: 'sm', active: true, disabled: true },
+//     { color: 'secondary', size: 'sm', active: true, disabled: true },
+//     { color: 'success', size: 'sm', active: true, disabled: true },
+//     { color: 'danger', size: 'sm', active: true, disabled: true },
+//   ],
+//   [
+//     { color: 'primary', size: 'xl', active: true, disabled: false },
+//     { color: 'secondary', size: 'xl', active: true, disabled: false },
+//     { color: 'success', size: 'xl', active: true, disabled: false },
+//     { color: 'danger', size: 'xl', active: true, disabled: false },
+//     { color: 'primary', size: 'xl', active: true, disabled: true },
+//     { color: 'secondary', size: 'xl', active: true, disabled: true },
+//     { color: 'success', size: 'xl', active: true, disabled: true },
+//     { color: 'danger', size: 'xl', active: true, disabled: true },
+//   ],
+// ];
+
 // playground();
 // function playground() {
 //   const argTypes: ArgTypes = {
@@ -114,6 +197,8 @@ export function buildArgsMatrix(argTypes: ArgTypes) {
 //   };
 //   const argsMatrix = buildArgsMatrix(argTypes as unknown as ArgTypes);
 
-//   // console.log(ref === JSON.stringify(argsMatrix));
+//   console.log(JSON.stringify(argsMatrix));
+
+//   console.log(ref === JSON.stringify(argsMatrix));
 //   console.log(argsMatrix);
 // }

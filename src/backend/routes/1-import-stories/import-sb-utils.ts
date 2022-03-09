@@ -1,5 +1,5 @@
 import { ArgTypeUsed } from '../../../common/app-models';
-import { ArgTypes } from '../../../common/sb-serialize.model';
+import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues } from '../../../common/storybook-utils';
 import { isComponentSet, MyCompNode } from '../../common/canvas-utils';
 
@@ -10,6 +10,7 @@ export function setStoryFrameProperties(
   storyId: string,
   storyTitle: string,
   argTypes: ArgTypes,
+  initialArgs: Args,
 ) {
   // frame.name = `${storyTitle}_${story.name || story.story}`;
   frame.name = storyName;
@@ -18,6 +19,7 @@ export function setStoryFrameProperties(
   frame.setPluginData('storyTitle', storyTitle);
   // Store argTypes to generate variants - may not be useful, to challenge later.
   frame.setPluginData('storyArgTypes', JSON.stringify(argTypes));
+  frame.setPluginData('storyInitialArgs', JSON.stringify(initialArgs));
   frame.setRelaunchData({ preview: '' });
   frame.expanded = false;
 }
@@ -30,6 +32,7 @@ export function listVariantProps(node: SceneNode, argTypes: ArgTypes) {
     return undefined;
   }
   if (!node.children?.length) {
+    console.warn('Component set with no child? I thought it was impossible.');
     return [];
   }
   const firstChild = node.children[0];
