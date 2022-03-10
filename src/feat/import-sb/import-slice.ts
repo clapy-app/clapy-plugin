@@ -1,6 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { ArgTypeUsed, SbAnySelection } from '../../common/app-models';
+import { Args } from '../../common/sb-serialize.model';
 import { RootState } from '../../core/redux/store';
 
 export interface ImportState {
@@ -37,7 +38,7 @@ export const selectStoryId = createSelector(selectSelectionGuaranteed, sel => se
 export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => sel.figmaId);
 export const selectPageId = createSelector(selectSelectionGuaranteed, sel => sel.pageId);
 export const selectArgTypes = createSelector(selectSelectionGuaranteed, sel => sel.argTypes);
-export const selectInitialArgs = createSelector(selectSelectionGuaranteed, sel => sel.initialArgs);
+export const selectInitialArgs = createSelector(selectSelectionGuaranteed, sel => sel.initialArgs as Args);
 
 interface ArgTypeObj {
   [key: string]: boolean;

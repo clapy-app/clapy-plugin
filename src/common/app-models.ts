@@ -58,5 +58,5 @@ export interface ArgTypeUsed {
 }
 
 export interface ArgTypeObj {
-  [key: string]: boolean;
+  [argName: string]: boolean;
 }

@@ -3,7 +3,7 @@ import { detachPage, getStoriesSamples, importStories } from './routes/1-import-
 import { updateCanvas } from './routes/2-update-canvas/1-update-canvas';
 import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-variant';
 import { runGrid } from './routes/2-update-canvas/grid-utils';
-import { updateFilters } from './routes/3-properties/1-update-filters';
+import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 import { createText, getText, selectedTextNodes, updateText } from './routes/text-node-routes';
 
@@ -28,7 +28,7 @@ export const routes = {
   updateCanvas: updateCanvas,
   updateCanvasVariant: updateCanvasVariant,
 
-  updateFilters: updateFilters,
+  updateVariantsFromFilters: updateVariantsFromFilters,
 
   runGrid: runGrid,
 };

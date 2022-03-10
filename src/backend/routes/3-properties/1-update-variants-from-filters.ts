@@ -1,16 +1,20 @@
 import { appConfig } from '../../../common/app-config';
 import { ArgTypeObj } from '../../../common/app-models';
-import { Args, Dict } from '../../../common/sb-serialize.model';
+import { Args, ArgTypes, Dict } from '../../../common/sb-serialize.model';
+import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
 import { isComponentSet } from '../../common/canvas-utils';
+import { getSbCompSelection } from '../1-import-stories/1-select-node';
 import { getPageAndNode } from '../2-update-canvas/get-page-and-node';
 import { adjustGridToChildren, argsToVariantName, getWidthHeight, indexToCoord } from '../2-update-canvas/grid-utils';
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 
-export async function updateFilters(
+export async function updateVariantsFromFilters(
   storyFigmaId: string,
   storyId: string,
   pageId: string,
+  argTypes: ArgTypes,
   storyArgFilters: ArgTypeObj,
+  initialArgs: Args,
   argsMatrix: Args[][],
 ) {
   try {
@@ -25,7 +29,7 @@ export async function updateFilters(
     }
 
     // TODO required? Or derived from the component set children when selected?
-    storyNode.setPluginData('storyArgFilters', JSON.stringify(storyArgFilters));
+    // storyNode.setPluginData('storyArgFilters', JSON.stringify(storyArgFilters));
 
     // Render each variant
     const variantNameToCoordMap: Dict<Coord> = {};
@@ -41,13 +45,13 @@ export async function updateFilters(
     const gap = appConfig.variantsGridGap;
     let { width, height } = getWidthHeight(storyNode);
 
-    let maxI: number = 0,
-      maxJ: number = 0;
+    let maxI: number = -1,
+      maxJ: number = -1;
     for (const child of storyNode.children) {
-      aaaaa;
-      // TODO we should not just normalize, but also add default values of props excluded from node name
-      // See argTypesToValuesFiltered for inspiration (not sure we can reuse because we compare :( )
-      const childName = normalizeVariantName(child.name);
+      const args = variantNameToArgs(child.name);
+      addDefaultsToArgs(args, argTypes, initialArgs);
+      const childName = argsToVariantName(args);
+
       const coord = variantNameToCoordMap[childName];
       if (!coord) {
         removeNode(child);
@@ -57,12 +61,14 @@ export async function updateFilters(
         const y = indexToCoord(j, height, gap);
         child.x = x;
         child.y = y;
+        child.name = argsToVariantName(filterArgs(args, storyArgFilters));
+
         if (i > maxI) maxI = i;
         if (j > maxJ) maxJ = j;
       }
     }
 
-    if (maxI === 0 || maxJ === 0) {
+    if (maxI === -1 || maxJ === -1) {
       if (!storyNode.removed) {
         console.warn(
           'No child left in the variants componentSet, but the component set is not marked as removed. Bug?',
@@ -70,15 +76,12 @@ export async function updateFilters(
       }
       return;
     }
-    if (maxI > 0 && maxJ > 0) {
-      // ^ Condition might be equivalent to !storyNode.removed (because if all children are removed from a componentSet, the componentSet itself is removed)
-      adjustGridToChildren(storyNode, maxI, maxJ, width, height, gap);
-    }
+    adjustGridToChildren(storyNode, maxI, maxJ, width, height, gap);
 
-    // TODO see above comment with normalization
-    // Then rename variant nodes to keep only the properties filtered
+    // Re-emit a refreshed selection to the front. Useful to update the `props` in the selection
+    getSbCompSelection();
 
-    // Then check that the props are updated in the node, the selection and the front (react/redux state).
+    // TODO re-add missing variants
 
     // TODO From the argsMatrix, I know the expected locations of variants.
     // Now I should loop over existing variants.
@@ -102,11 +105,33 @@ interface Coord {
   j: number;
 }
 
-function normalizeVariantName(name: string) {
+function variantNameToArgs(name: string) {
   const args: Args = {};
   for (const prop of name.split(',')) {
     const [argName, value] = prop.split('=').map(kv => kv.trim());
     args[argName] = value;
   }
-  return argsToVariantName(args);
+  return args;
+}
+
+function addDefaultsToArgs(args: Args, argTypes: ArgTypes, initialArgs: Args) {
+  for (const [argName, argType] of Object.entries(argTypes)) {
+    const values = argTypeToValues(argType);
+    // values undefined => unsupported argType (not a boolean or a list)
+    if (!values) continue;
+    const defaultValue = getArgDefaultValue(argName, initialArgs, values);
+    if (!args[argName]) {
+      args[argName] = defaultValue;
+    }
+  }
+}
+
+function filterArgs(args: Args, storyArgFilters: ArgTypeObj) {
+  const argsFiltered: Args = {};
+  for (const [argName, arg] of Object.entries(args)) {
+    if (storyArgFilters[argName]) {
+      argsFiltered[argName] = arg;
+    }
+  }
+  return argsFiltered;
 }

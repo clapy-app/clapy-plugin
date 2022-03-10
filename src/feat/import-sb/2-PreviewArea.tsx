@@ -185,7 +185,16 @@ const VariantsPropsInner: FC<{ propsObj: ArgTypeObj }> = memo(function VariantsP
         if (!isNonEmptyObject(argsMatrix?.[0]?.[0])) {
           return;
         }
-        await fetchPlugin('updateFilters', figmaId, storyId, pageId, storyArgFilters, argsMatrix!);
+        await fetchPlugin(
+          'updateVariantsFromFilters',
+          figmaId,
+          storyId,
+          pageId,
+          argTypes,
+          storyArgFilters,
+          initialArgs,
+          argsMatrix!,
+        );
 
         setHasUpdates(false);
       } catch (err) {

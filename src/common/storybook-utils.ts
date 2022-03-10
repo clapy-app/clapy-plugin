@@ -22,7 +22,7 @@ export function argTypesToValuesFiltered(
 
   if (storyArgFilters && initialArgs && !storyArgFilters[argName]) {
     // Filtering props is enabled and this arg should not be displayed. We only keep the default value in this case.
-    const defaultValue = initialArgs[argName] || values[0];
+    const defaultValue = getArgDefaultValue(argName, initialArgs, values);
     // The default value is not always provided in initialArgs (storybook fact). Consider getting them from argType.table.defaultValue.summary (to JSON-parse) when not available in initialArgs.
     return [defaultValue];
   }
@@ -49,4 +49,8 @@ function getSelectArgTypeOptions(argType: ArgType) {
   } else {
     return Array.isArray(argType.type.value) ? argType.type.value : undefined;
   }
+}
+
+export function getArgDefaultValue(argName: string, initialArgs: Args, values: any[]) {
+  return initialArgs[argName] || values[0];
 }
