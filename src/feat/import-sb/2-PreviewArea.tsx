@@ -19,7 +19,9 @@ import { isNonEmptyObject } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import classes from './1-ImportSb.module.scss';
 import { buildArgsMatrix } from './detail/buildArgsMatrix';
+import refreshIcon from './detail/refresh-icon.svg';
 import { renderComponent } from './detail/renderComponent';
+import stopIcon from './detail/stop-icon.svg';
 import {
   selectArgTypes,
   selectFigmaId,
@@ -59,7 +61,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
   const runUpdate: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!storyUrl || !storyId || !sbUrl || !argTypes || !initialArgs) return;
+        if (!storyUrl || !storyId || !storyLabel || !sbUrl || !argTypes || !initialArgs) return;
 
         setInterrupted(false);
         interruptedRef.current = false;
@@ -67,6 +69,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
         await renderComponent(
           sbUrl,
           storyId,
+          storyLabel,
           argTypes,
           storyArgFilters,
           initialArgs,
@@ -96,7 +99,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
         setLoadingTxt(undefined);
       }
     })();
-  }, [storyUrl, storyId, sbUrl, argTypes, initialArgs, storyArgFilters, figmaId, pageId]);
+  }, [storyUrl, storyId, storyLabel, sbUrl, argTypes, initialArgs, storyArgFilters, figmaId, pageId]);
 
   if (!storyUrl) {
     return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;
@@ -104,38 +107,33 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
 
   return (
     <>
-      <div>
-        Selected: {storyLabel} (
-        <a href={storyUrl} target='_blank' rel='noreferrer'>
-          preview
-        </a>
-        )
+      <div className={classes.selectTitleBar}>
+        <div>
+          Selected: {storyLabel} (
+          <a href={storyUrl} target='_blank' rel='noreferrer' title='Open the storybook preview in a browser tab'>
+            preview
+          </a>
+          )
+        </div>
+        {/* Update button */}
+        {loadingTxt ? (
+          <button onClick={interrupt} disabled={interruptedRef.current} title='Interrupt' className={classes.iconBtn}>
+            <img src={stopIcon} alt='Interrupt' />
+          </button>
+        ) : (
+          <button onClick={runUpdate} title='Reload component from Storybook' className={classes.iconBtn}>
+            <img src={refreshIcon} alt='Reload component from Storybook' />
+          </button>
+        )}
       </div>
-      <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
+      <iframe title='Preview' src={storyUrl} className={classes.previewIframe}></iframe>
+
+      {loadingTxt && <p>{loadingTxt}</p>}
+
+      {!!error && <p>{error}</p>}
 
       {/* Variants props */}
       <VariantsProps />
-
-      {/* Update button */}
-      {loadingTxt ? (
-        <>
-          <div>
-            <button onClick={interrupt} disabled={interruptedRef.current}>
-              Interrupt
-            </button>
-          </div>
-          <p>{loadingTxt}</p>
-        </>
-      ) : (
-        <button onClick={runUpdate}>Update component</button>
-      )}
-      {/* !!loadingTxt && env.isDev ? (
-        <>
-          <p>Figma ID: {figmaId}</p>
-          <p>Storybook ID: {storyId}</p>
-        </>
-      ) : */}
-      {!!error && <p>{error}</p>}
     </>
   );
 });
@@ -252,7 +250,11 @@ const VariantsPropsInner: FC<{ propsObj: ArgTypeObj }> = memo(function VariantsP
             <a onClick={selectAll}>Select all</a> / <a onClick={unselectAll}>unselect all</a>
           </p>
         </div>
-        {hasUpdates && <button onClick={applyUpdates}>Update</button>}
+        {hasUpdates && (
+          <button onClick={applyUpdates} title='Update the variants matrix using the selected properties'>
+            Apply
+          </button>
+        )}
       </div>
       {entries.map(([argName, used], i) => (
         <label key={storyId + argName}>

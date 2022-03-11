@@ -10,6 +10,7 @@ import { buildArgsMatrix } from './buildArgsMatrix';
 export async function renderComponent(
   sbUrl: string,
   storyId: string,
+  storyLabel: string,
   argTypes: ArgTypes,
   storyArgFilters: ArgTypeObj | undefined,
   initialArgs: Args,
@@ -20,7 +21,7 @@ export async function renderComponent(
   interruptedRef: MutableRefObject<boolean>,
 ) {
   if (!env.isDev) {
-    setLoadingTxt(`Render story ${storyId}...`);
+    setLoadingTxt(`Render story ${storyLabel}...`);
   }
 
   // storyArgFilters is undefined when the selection is not a componentSet, i.e. no variant to render.
@@ -40,11 +41,11 @@ export async function renderComponent(
           .join(';');
         const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
         if (env.isDev) {
-          setLoadingTxt(`Render story ${storyId} variant (web)...`);
+          setLoadingTxt(`Render story ${storyLabel} variant (web)...`);
         }
         const nodes = await fetchCNodes(url);
         if (env.isDev) {
-          setLoadingTxt(`Render story ${storyId} variant (figma)...`);
+          setLoadingTxt(`Render story ${storyLabel} variant (figma)...`);
         }
         const newFigmaId = await fetchPlugin(
           'updateCanvasVariant',
@@ -66,14 +67,14 @@ export async function renderComponent(
     }
   } else {
     if (env.isDev) {
-      setLoadingTxt(`Render story ${storyId} (web)...`);
+      setLoadingTxt(`Render story ${storyLabel} (web)...`);
     }
 
     // Render the story in the API in web format via puppeteer and get HTML/CSS
     const nodes = await fetchCNodes(storyUrl);
 
     if (env.isDev) {
-      setLoadingTxt(`Render story ${storyId} (figma)...`);
+      setLoadingTxt(`Render story ${storyLabel} (figma)...`);
     }
 
     // Render in Figma, translating HTML/CSS to Figma nodes

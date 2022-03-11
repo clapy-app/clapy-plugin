@@ -118,7 +118,16 @@ export const ImportSb: FC = memo(function ImportSb() {
 
         let consecutiveErrors = 0;
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, storyUrl, storyId, pageId, argTypes, initialArgs, props } of insertedComponents) {
+        for (const {
+          figmaId,
+          storyUrl,
+          storyId,
+          storyLabel,
+          pageId,
+          argTypes,
+          initialArgs,
+          props,
+        } of insertedComponents) {
           try {
             if (interruptedRef.current) {
               setError('Interrupted');
@@ -129,6 +138,7 @@ export const ImportSb: FC = memo(function ImportSb() {
             await renderComponent(
               sbUrlToImport,
               storyId,
+              storyLabel,
               argTypes,
               storyArgFilters,
               initialArgs,
@@ -196,9 +206,15 @@ export const ImportSb: FC = memo(function ImportSb() {
                   {options}
                 </select>
               )}
-              <input type='text' placeholder='Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
+              <input
+                type='text'
+                placeholder='Storybook URL'
+                onChange={setSbUrlHandler}
+                disabled={!!loadingTxt}
+                title='If this URL shows storybook in your browser, it should work.'
+              />
             </div>
-            <button onClick={runImport} disabled={!!loadingTxt}>
+            <button onClick={runImport} disabled={!!loadingTxt} title='Import all components from storybook'>
               Import
             </button>
             {/* <button onClick={runGrid} disabled={!!loadingTxt}>
@@ -210,7 +226,7 @@ export const ImportSb: FC = memo(function ImportSb() {
       {!!loadingTxt && (
         <>
           <div>
-            <button onClick={interrupt} disabled={interruptedRef.current}>
+            <button onClick={interrupt} disabled={interruptedRef.current} title='Interrupt the components import'>
               Interrupt
             </button>
           </div>
