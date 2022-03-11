@@ -36,32 +36,23 @@ export async function renderComponent(
         }
 
         const args = row[j];
-        const query = Object.entries(args)
-          .map(([key, value]) => `${key}:${value}`)
-          .join(';');
-        const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
-        if (env.isDev) {
-          setLoadingTxt(`Render story ${storyLabel} variant (web)...`);
-        }
-        const nodes = await fetchCNodes(url);
-        if (env.isDev) {
-          setLoadingTxt(`Render story ${storyLabel} variant (figma)...`);
-        }
-        const newFigmaId = await fetchPlugin(
-          'updateCanvasVariant',
-          nodes,
-          figmaId,
+
+        const newFigmaId = await renderVariant(
           sbUrl,
-          storyId,
           pageId,
+          figmaId,
+          storyId,
+          storyLabel,
           argTypes,
           initialArgs,
           args,
           i,
           j,
+          setLoadingTxt,
         );
+
         if (newFigmaId) {
-          figmaId = newFigmaId; // TODO tester
+          figmaId = newFigmaId;
         }
       }
     }
@@ -80,6 +71,46 @@ export async function renderComponent(
     // Render in Figma, translating HTML/CSS to Figma nodes
     await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
   }
+}
+
+export async function renderVariant(
+  sbUrl: string,
+  pageId: string,
+  figmaId: string,
+  storyId: string,
+  storyLabel: string,
+  argTypes: ArgTypes,
+  initialArgs: Args,
+  args: Args,
+  i: number,
+  j: number,
+  setLoadingTxt: (label: string) => void,
+) {
+  const query = Object.entries(args)
+    .map(([key, value]) => `${key}:${value}`)
+    .join(';');
+  const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
+  if (env.isDev) {
+    setLoadingTxt(`Render story ${storyLabel} variant (web)...`);
+  }
+  const nodes = await fetchCNodes(url);
+  if (env.isDev) {
+    setLoadingTxt(`Render story ${storyLabel} variant (figma)...`);
+  }
+  const newFigmaId = await fetchPlugin(
+    'updateCanvasVariant',
+    nodes,
+    figmaId,
+    sbUrl,
+    storyId,
+    pageId,
+    argTypes,
+    initialArgs,
+    args,
+    i,
+    j,
+  );
+  return newFigmaId;
 }
 
 async function fetchCNodes(url: string) {

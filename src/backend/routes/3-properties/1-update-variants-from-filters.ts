@@ -1,5 +1,5 @@
 import { appConfig } from '../../../common/app-config';
-import { ArgTypeObj } from '../../../common/app-models';
+import { ArgTypeObj, NewVariant } from '../../../common/app-models';
 import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
 import { isComponentSet } from '../../common/canvas-utils';
@@ -24,7 +24,7 @@ export async function updateVariantsFromFilters(
   argsMatrix: Args[][],
 ) {
   try {
-    const { page, node: componentSet } = getPageAndNode(pageId, storyFigmaId, storyId);
+    const { node: componentSet } = getPageAndNode(pageId, storyFigmaId, storyId);
     if (!componentSet) {
       console.warn('No node found for this storyFigmaId.');
       return;
@@ -33,9 +33,6 @@ export async function updateVariantsFromFilters(
       console.warn('Not a ComponentSetNode.');
       return;
     }
-
-    // TODO required? Or derived from the component set children when selected?
-    // storyNode.setPluginData('storyArgFilters', JSON.stringify(storyArgFilters));
 
     // Render each variant
     const variantNameToCoordMap = new Map<string, Coord>();
@@ -71,9 +68,17 @@ export async function updateVariantsFromFilters(
       }
     }
 
+    // Remaining entries in variantNameToCoordMap are the new variants we need to add and render later.
+    const newVariants: NewVariant[] = [];
     for (const [, { i, j, args }] of variantNameToCoordMap.entries()) {
       const child = figma.createComponent();
       componentSet.appendChild(child);
+      newVariants.push({
+        i,
+        j,
+        args,
+      });
+
       moveAndRenameVariant(child, i, j, width, height, gap, args, storyArgFilters);
       resizeNode(child, width, height);
 
@@ -113,6 +118,8 @@ export async function updateVariantsFromFilters(
 
     // Re-emit a refreshed selection to the front. Useful to update the `props` in the selection
     getSbCompSelection();
+
+    return newVariants;
   } finally {
     figma.commitUndo();
   }

@@ -38,6 +38,8 @@ export const selectStoryArgFilters = createSelector(selectSelectionGuaranteed, s
   propArrayToMap(selection.props),
 );
 
+export const selectSelectionSbUrl = createSelector(selectSelectionGuaranteed, sel => sel.sbUrl!);
+export const selectSelectionStoryLabel = createSelector(selectSelectionGuaranteed, sel => sel.storyLabel!);
 export const selectStoryId = createSelector(selectSelectionGuaranteed, sel => sel.storyId);
 export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => sel.figmaId);
 export const selectPageId = createSelector(selectSelectionGuaranteed, sel => sel.pageId);

@@ -60,3 +60,9 @@ export interface ArgTypeUsed {
 export interface ArgTypeObj {
   [argName: string]: boolean;
 }
+
+export interface NewVariant {
+  i: number;
+  j: number;
+  args: Args;
+}
