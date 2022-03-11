@@ -1,12 +1,12 @@
 import { appConfig } from '../../../common/app-config';
 import { ArgTypeObj } from '../../../common/app-models';
-import { Args, ArgTypes, Dict } from '../../../common/sb-serialize.model';
+import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
 import { isComponentSet } from '../../common/canvas-utils';
 import { getSbCompSelection } from '../1-import-stories/1-select-node';
 import { getPageAndNode } from '../2-update-canvas/get-page-and-node';
 import { adjustGridToChildren, argsToVariantName, getWidthHeight, indexToCoord } from '../2-update-canvas/grid-utils';
-import { removeNode } from '../2-update-canvas/update-canvas-utils';
+import { removeNode, resizeNode } from '../2-update-canvas/update-canvas-utils';
 
 export async function updateVariantsFromFilters(
   storyFigmaId: string,
@@ -18,12 +18,12 @@ export async function updateVariantsFromFilters(
   argsMatrix: Args[][],
 ) {
   try {
-    const { page, node: storyNode } = getPageAndNode(pageId, storyFigmaId, storyId);
-    if (!storyNode) {
+    const { page, node: componentSet } = getPageAndNode(pageId, storyFigmaId, storyId);
+    if (!componentSet) {
       console.warn('No node found for this storyFigmaId.');
       return;
     }
-    if (!isComponentSet(storyNode)) {
+    if (!isComponentSet(componentSet)) {
       console.warn('Not a ComponentSetNode.');
       return;
     }
@@ -32,67 +32,83 @@ export async function updateVariantsFromFilters(
     // storyNode.setPluginData('storyArgFilters', JSON.stringify(storyArgFilters));
 
     // Render each variant
-    const variantNameToCoordMap: Dict<Coord> = {};
+    const variantNameToCoordMap = new Map<string, Coord>();
     for (let i = 0; i < argsMatrix.length; i++) {
       const row = argsMatrix[i];
       for (let j = 0; j < row.length; j++) {
         const args = row[j];
-        const name = argsToVariantName(args);
-        variantNameToCoordMap[name] = { i, j };
+        const variantName = argsToVariantName(args);
+        variantNameToCoordMap.set(variantName, { i, j, args });
       }
     }
 
     const gap = appConfig.variantsGridGap;
-    let { width, height } = getWidthHeight(storyNode);
+    let { width, height } = getWidthHeight(componentSet);
 
-    let maxI: number = -1,
-      maxJ: number = -1;
-    for (const child of storyNode.children) {
-      const args = variantNameToArgs(child.name);
-      addDefaultsToArgs(args, argTypes, initialArgs);
-      const childName = argsToVariantName(args);
+    const variantsToRemove: SceneNode[] = [];
 
-      const coord = variantNameToCoordMap[childName];
+    for (const child of componentSet.children) {
+      const previousArgs = variantNameToArgs(child.name);
+      addDefaultsToArgs(previousArgs, argTypes, initialArgs);
+      const childName = argsToVariantName(previousArgs);
+
+      const coord = variantNameToCoordMap.get(childName);
       if (!coord) {
-        removeNode(child);
+        // Existing variant to remove
+        variantsToRemove.push(child);
       } else {
-        const { i, j } = coord;
-        const x = indexToCoord(i, width, gap);
-        const y = indexToCoord(j, height, gap);
-        child.x = x;
-        child.y = y;
-        child.name = argsToVariantName(filterArgs(args, storyArgFilters));
+        // Existing variant to keep and move
+        const { i, j, args } = coord;
+        moveAndRenameVariant(child, i, j, width, height, gap, args, storyArgFilters);
 
-        if (i > maxI) maxI = i;
-        if (j > maxJ) maxJ = j;
+        variantNameToCoordMap.delete(childName);
       }
     }
 
-    if (maxI === -1 || maxJ === -1) {
-      if (!storyNode.removed) {
-        console.warn(
-          'No child left in the variants componentSet, but the component set is not marked as removed. Bug?',
-        );
+    for (const [, { i, j, args }] of variantNameToCoordMap.entries()) {
+      const child = figma.createComponent();
+      componentSet.appendChild(child);
+      moveAndRenameVariant(child, i, j, width, height, gap, args, storyArgFilters);
+      resizeNode(child, width, height);
+
+      child.fills = [
+        {
+          blendMode: 'NORMAL',
+          type: 'GRADIENT_RADIAL',
+          visible: true,
+          opacity: 1,
+          gradientStops: [
+            { color: { r: 0.7568627595901489, g: 0.8470588326454163, b: 0.9882352948188782, a: 1 }, position: 0 },
+            { color: { r: 0.34117648005485535, g: 0.6078431606292725, b: 0.9882352948188782, a: 1 }, position: 1 },
+          ],
+          gradientTransform: [
+            [6.123234262925839e-17, 1, 0],
+            [-1, 6.123234262925839e-17, 1],
+          ],
+        },
+      ];
+    }
+
+    for (const variant of variantsToRemove) {
+      removeNode(variant);
+    }
+
+    const maxI = argsMatrix.length - 1;
+    const maxJ = argsMatrix[0]?.length - 1;
+
+    if (!(maxI >= 0 && maxJ >= 0)) {
+      if (!componentSet.removed) {
+        console.warn('All variants should have been removed, but the componentSet is not marked as removed. Bug?');
       }
       return;
     }
-    adjustGridToChildren(storyNode, maxI, maxJ, width, height, gap);
+
+    adjustGridToChildren(componentSet, maxI, maxJ, width, height, gap);
 
     // Re-emit a refreshed selection to the front. Useful to update the `props` in the selection
     getSbCompSelection();
 
-    // TODO re-add missing variants
-
-    // TODO From the argsMatrix, I know the expected locations of variants.
-    // Now I should loop over existing variants.
-    // - (optional: align children in the matrix?)
-    // - calculate the mapping coordinate => i,j. The utility should already exist somewhere.
-    // - Prepare the map name => i,j ?
-    // - Or make the map from the matrix instead. Then:
-    // For each variant, I check if it is in the matrix (indexed by name?) and move it to the new location.
-    // - If an existing variant is not in the matrix, delete it.
-    // => I can test here
-    // - Find a way to identifiy missing variants. If useful, add placeholders and return them to the front.
+    // TODO
     // - From the front, loop over the placeholders, render variants and replace them.
     //  => I may want to change the update to auto-detect missing variants without placeholders and still render them.
   } finally {
@@ -103,6 +119,7 @@ export async function updateVariantsFromFilters(
 interface Coord {
   i: number;
   j: number;
+  args: Args;
 }
 
 function variantNameToArgs(name: string) {
@@ -134,4 +151,19 @@ function filterArgs(args: Args, storyArgFilters: ArgTypeObj) {
     }
   }
   return argsFiltered;
+}
+
+function moveAndRenameVariant(
+  child: SceneNode,
+  i: number,
+  j: number,
+  width: number,
+  height: number,
+  gap: number,
+  args: Args,
+  storyArgFilters: ArgTypeObj,
+) {
+  child.x = indexToCoord(i, width, gap);
+  child.y = indexToCoord(j, height, gap);
+  child.name = argsToVariantName(filterArgs(args, storyArgFilters));
 }

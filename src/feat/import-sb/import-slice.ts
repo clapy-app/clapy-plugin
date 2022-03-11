@@ -32,7 +32,10 @@ export const selectSelectionGuaranteed = createSelector(selectSelections, select
   return selections[0]!;
 });
 
-export const selectPropsObj = createSelector(selectSelectionGuaranteed, selection => propArrayToMap(selection.props));
+// Undefined when the selection is not a componentSet (no variants).
+export const selectStoryArgFilters = createSelector(selectSelectionGuaranteed, selection =>
+  propArrayToMap(selection.props),
+);
 
 export const selectStoryId = createSelector(selectSelectionGuaranteed, sel => sel.storyId);
 export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => sel.figmaId);

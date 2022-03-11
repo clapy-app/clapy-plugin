@@ -25,9 +25,9 @@ import {
   selectFigmaId,
   selectInitialArgs,
   selectPageId,
-  selectPropsObj,
   selectSelectionGuaranteed,
   selectSelections,
+  selectStoryArgFilters,
   selectStoryId,
 } from './import-slice';
 
@@ -44,6 +44,7 @@ export const PreviewArea: FC = memo(function PreviewArea() {
 
 const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
   const selection = useSelector(selectSelectionGuaranteed);
+  const storyArgFilters = useSelector(selectStoryArgFilters);
   const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes, initialArgs } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
   const [error, setError] = useState<string | undefined>();
@@ -67,6 +68,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
           sbUrl,
           storyId,
           argTypes,
+          storyArgFilters,
           initialArgs,
           storyUrl,
           figmaId,
@@ -94,7 +96,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
         setLoadingTxt(undefined);
       }
     })();
-  }, [storyUrl, storyId, sbUrl, argTypes, initialArgs, figmaId, pageId]);
+  }, [storyUrl, storyId, sbUrl, argTypes, initialArgs, storyArgFilters, figmaId, pageId]);
 
   if (!storyUrl) {
     return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;
@@ -138,12 +140,12 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
   );
 });
 
-const selectPropsEntries = createSelector(selectPropsObj, propsObj =>
+const selectPropsEntries = createSelector(selectStoryArgFilters, propsObj =>
   propsObj ? Object.entries(propsObj) : undefined,
 );
 
 const VariantsProps: FC = memo(function VariantsProps() {
-  const propsObj = useSelector(selectPropsObj);
+  const propsObj = useSelector(selectStoryArgFilters);
   if (!propsObj) {
     return null;
   }

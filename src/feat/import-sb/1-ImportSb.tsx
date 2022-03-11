@@ -15,7 +15,7 @@ import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { renderComponent } from './detail/renderComponent';
-import { setSelection } from './import-slice';
+import { propArrayToMap, setSelection } from './import-slice';
 
 export const ImportSb: FC = memo(function ImportSb() {
   const dispatch = useAppDispatch();
@@ -118,17 +118,19 @@ export const ImportSb: FC = memo(function ImportSb() {
 
         let consecutiveErrors = 0;
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, storyUrl, storyId, pageId, argTypes, initialArgs } of insertedComponents) {
+        for (const { figmaId, storyUrl, storyId, pageId, argTypes, initialArgs, props } of insertedComponents) {
           try {
             if (interruptedRef.current) {
               setError('Interrupted');
               return;
             }
+            const storyArgFilters = propArrayToMap(props);
 
             await renderComponent(
               sbUrlToImport,
               storyId,
               argTypes,
+              storyArgFilters,
               initialArgs,
               storyUrl,
               figmaId,

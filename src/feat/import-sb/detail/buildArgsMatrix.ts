@@ -14,7 +14,7 @@ interface ArgType2 {
  * @param initialArgs optional initial args for properties not kept by storyArgFilters. If storyArgFilters is provided, you must also provide initialArgs.
  * @returns `undefined` if there are no argTypes available (empty object), a matrix of Args otherwise, each cell representing a variant to render with the values to use for each arg on that variant.
  */
-export function buildArgsMatrix(argTypes: ArgTypes, storyArgFilters?: ArgTypeObj, initialArgs?: Args) {
+export function buildArgsMatrix(argTypes: ArgTypes, storyArgFilters: ArgTypeObj, initialArgs: Args) {
   if (storyArgFilters && !initialArgs)
     throw new Error(
       'You must provide initialArgs because storyArgFilters was provided. Or remove storyArgFilters if filtering is not expected.',

@@ -1,5 +1,6 @@
 import { MutableRefObject } from 'react';
 
+import { ArgTypeObj } from '../../../common/app-models';
 import { apiGet } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
@@ -10,6 +11,7 @@ export async function renderComponent(
   sbUrl: string,
   storyId: string,
   argTypes: ArgTypes,
+  storyArgFilters: ArgTypeObj | undefined,
   initialArgs: Args,
   storyUrl: string,
   figmaId: string,
@@ -21,7 +23,8 @@ export async function renderComponent(
     setLoadingTxt(`Render story ${storyId}...`);
   }
 
-  const argsMatrix = buildArgsMatrix(argTypes);
+  // storyArgFilters is undefined when the selection is not a componentSet, i.e. no variant to render.
+  const argsMatrix = storyArgFilters ? buildArgsMatrix(argTypes, storyArgFilters, initialArgs) : undefined;
   if (argsMatrix) {
     // Render each variant
     for (let i = 0; i < argsMatrix.length; i++) {

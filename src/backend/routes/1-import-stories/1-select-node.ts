@@ -66,5 +66,6 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
 }
 
 function show(node: FrameNode) {
-  console.log(node.name, '=>', node);
+  const date = new Date().toISOString().substring(0, 19).replace('T', ' ');
+  console.log(date, node.name, '=>', node);
 }
