@@ -1,4 +1,4 @@
-import { ArgTypeObj } from './app-models';
+import { ArgTypeObj, ArgTypeUsed } from './app-models';
 import { Args, ArgType } from './sb-serialize.model';
 
 export function sanitizeSbUrl(storybookBaseUrl: string) {
@@ -53,4 +53,17 @@ function getSelectArgTypeOptions(argType: ArgType) {
 
 export function getArgDefaultValue(argName: string, initialArgs: Args, values: any[]) {
   return initialArgs[argName] || values[0];
+}
+
+// Undefined when the selection is not a componentSet (no variants).
+export function propArrayToMap<T extends ArgTypeUsed[] | undefined>(
+  array: T,
+): T extends undefined ? undefined : ArgTypeObj;
+export function propArrayToMap(array: ArgTypeUsed[] | undefined) {
+  if (!array) return undefined;
+  const indexed: ArgTypeObj = {};
+  for (const argType of array) {
+    indexed[argType.argName] = argType.used;
+  }
+  return indexed;
 }

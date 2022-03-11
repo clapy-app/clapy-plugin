@@ -5,7 +5,13 @@ import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../.
 import { isComponentSet } from '../../common/canvas-utils';
 import { getSbCompSelection } from '../1-import-stories/1-select-node';
 import { getPageAndNode } from '../2-update-canvas/get-page-and-node';
-import { adjustGridToChildren, argsToVariantName, getWidthHeight, indexToCoord } from '../2-update-canvas/grid-utils';
+import {
+  adjustGridToChildren,
+  argsToVariantName,
+  filterArgs,
+  getWidthHeight,
+  indexToCoord,
+} from '../2-update-canvas/grid-utils';
 import { removeNode, resizeNode } from '../2-update-canvas/update-canvas-utils';
 
 export async function updateVariantsFromFilters(
@@ -107,10 +113,6 @@ export async function updateVariantsFromFilters(
 
     // Re-emit a refreshed selection to the front. Useful to update the `props` in the selection
     getSbCompSelection();
-
-    // TODO
-    // - From the front, loop over the placeholders, render variants and replace them.
-    //  => I may want to change the update to auto-detect missing variants without placeholders and still render them.
   } finally {
     figma.commitUndo();
   }
@@ -141,16 +143,6 @@ function addDefaultsToArgs(args: Args, argTypes: ArgTypes, initialArgs: Args) {
       args[argName] = defaultValue;
     }
   }
-}
-
-function filterArgs(args: Args, storyArgFilters: ArgTypeObj) {
-  const argsFiltered: Args = {};
-  for (const [argName, arg] of Object.entries(args)) {
-    if (storyArgFilters[argName]) {
-      argsFiltered[argName] = arg;
-    }
-  }
-  return argsFiltered;
 }
 
 function moveAndRenameVariant(

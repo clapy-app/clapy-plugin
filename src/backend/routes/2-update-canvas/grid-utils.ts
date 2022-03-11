@@ -1,3 +1,4 @@
+import { ArgTypeObj } from '../../../common/app-models';
 import { Args } from '../../../common/sb-serialize.model';
 import { isComponentSet, WithChildrenNode } from '../../common/canvas-utils';
 import { resizeNode } from './update-canvas-utils';
@@ -196,4 +197,14 @@ export function argsToVariantName(args: Args) {
     .sort()
     .map(([argName, value]) => `${argName}=${value}`)
     .join(', ');
+}
+
+export function filterArgs(args: Args, storyArgFilters: ArgTypeObj) {
+  const argsFiltered: Args = {};
+  for (const [argName, arg] of Object.entries(args)) {
+    if (storyArgFilters[argName]) {
+      argsFiltered[argName] = arg;
+    }
+  }
+  return argsFiltered;
 }

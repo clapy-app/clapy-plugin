@@ -1,7 +1,8 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { ArgTypeUsed, SbAnySelection } from '../../common/app-models';
+import { SbAnySelection } from '../../common/app-models';
 import { Args } from '../../common/sb-serialize.model';
+import { propArrayToMap } from '../../common/storybook-utils';
 import { RootState } from '../../core/redux/store';
 
 export interface ImportState {
@@ -42,16 +43,3 @@ export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => se
 export const selectPageId = createSelector(selectSelectionGuaranteed, sel => sel.pageId);
 export const selectArgTypes = createSelector(selectSelectionGuaranteed, sel => sel.argTypes);
 export const selectInitialArgs = createSelector(selectSelectionGuaranteed, sel => sel.initialArgs as Args);
-
-interface ArgTypeObj {
-  [key: string]: boolean;
-}
-
-export function propArrayToMap(array: ArgTypeUsed[] | undefined) {
-  if (!array) return undefined;
-  const indexed: ArgTypeObj = {};
-  for (const argType of array) {
-    indexed[argType.argName] = argType.used;
-  }
-  return indexed;
-}

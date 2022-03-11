@@ -1,13 +1,15 @@
 import { appConfig } from '../../../common/app-config';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
+import { propArrayToMap } from '../../../common/storybook-utils';
 import { isComponent, isComponentSet } from '../../common/canvas-utils';
-import { setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
+import { listVariantProps, setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
 import {
   adjustGridToChildren,
   alignItemsInGrid,
   argsToVariantName,
+  filterArgs,
   getMaxIJ,
   getWidthHeight,
   indexToCoord,
@@ -42,8 +44,9 @@ export async function updateCanvasVariant(
       : // Check previous child, if it is a frame
         siblings[childPosition - 1];
 
+    let name: string | undefined = undefined;
+
     let comp: ComponentNode | undefined = undefined;
-    const name = argsToVariantName(args);
     let width = 0,
       height = 0,
       x = gap,
@@ -51,11 +54,16 @@ export async function updateCanvasVariant(
     if (!isComponentSet(componentSet)) {
       // TODO or if it's not the variants container for this component
       //
+      name = argsToVariantName(args);
       comp = withDefaultProps(figma.createComponent());
       componentSet = figma.combineAsVariants([comp], parent, childPosition);
     } else {
       componentSet.layoutMode = 'NONE';
       alignItemsInGrid(componentSet, gap);
+      // props / storyArgFilters would be undefined if componentSet is not a ComponentSetNode (impossible here). So we cast with `!`.
+      const props = listVariantProps(componentSet, argTypes)!;
+      const storyArgFilters = propArrayToMap(props);
+      name = argsToVariantName(filterArgs(args, storyArgFilters));
       // Check if the component set already contains the same combination
       const foundByName = componentSet.children.find(c => c.name === name);
 
