@@ -1,10 +1,21 @@
+import { appConfig } from '../../../common/app-config';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
+import { propArrayToMap } from '../../../common/storybook-utils';
 import { isComponent, isComponentSet } from '../../common/canvas-utils';
-import { setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
+import { listVariantProps, setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
-import { alignItemsInGrid, getMaxIJ, getWidthHeight, indexToCoord, resizeGrid } from './grid-utils';
-import { removeNode, resizeNode, withDefaultProps } from './update-canvas-utils';
+import {
+  adjustGridToChildren,
+  alignItemsInGrid,
+  argsToVariantName,
+  filterArgs,
+  getMaxIJ,
+  getWidthHeight,
+  indexToCoord,
+  resizeGrid,
+} from './grid-utils';
+import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export async function updateCanvasVariant(
   sbNodes: CNode[],
@@ -13,12 +24,13 @@ export async function updateCanvasVariant(
   storyId: string,
   pageId: string,
   argTypes: ArgTypes,
+  initialArgs: Args,
   args: Args,
   i: number,
   j: number,
 ) {
   try {
-    const gap = 20;
+    const gap = appConfig.variantsGridGap;
     const { page, node: storyNode } = getPageAndNode(pageId, storyFigmaId, storyId);
     if (!page || !storyNode || !storyNode.parent) {
       return;
@@ -32,23 +44,26 @@ export async function updateCanvasVariant(
       : // Check previous child, if it is a frame
         siblings[childPosition - 1];
 
+    let name: string | undefined = undefined;
+
     let comp: ComponentNode | undefined = undefined;
-    const name = Object.entries(args)
-      .sort()
-      .map(([argName, value]) => `${argName}=${value}`)
-      .join(', ');
     let width = 0,
       height = 0,
       x = gap,
       y = gap;
-    if (!componentSet || !isComponentSet(componentSet)) {
+    if (!isComponentSet(componentSet)) {
       // TODO or if it's not the variants container for this component
       //
+      name = argsToVariantName(args);
       comp = withDefaultProps(figma.createComponent());
       componentSet = figma.combineAsVariants([comp], parent, childPosition);
     } else {
       componentSet.layoutMode = 'NONE';
       alignItemsInGrid(componentSet, gap);
+      // props / storyArgFilters would be undefined if componentSet is not a ComponentSetNode (impossible here). So we cast with `!`.
+      const props = listVariantProps(componentSet, argTypes)!;
+      const storyArgFilters = propArrayToMap(props);
+      name = argsToVariantName(filterArgs(args, storyArgFilters));
       // Check if the component set already contains the same combination
       const foundByName = componentSet.children.find(c => c.name === name);
 
@@ -83,6 +98,7 @@ export async function updateCanvasVariant(
       storyId,
       storyNode.getPluginData('storyTitle'),
       argTypes,
+      initialArgs,
     );
 
     // Variant node properties
@@ -107,9 +123,7 @@ export async function updateCanvasVariant(
     }
 
     // resize component set after resizing (or not) the grid
-    const gridWidth = indexToCoord(maxI, width, gap) + width + gap;
-    const gridHeight = indexToCoord(maxJ, height, gap) + height + gap;
-    resizeNode(componentSet, gridWidth, gridHeight);
+    adjustGridToChildren(componentSet, maxI, maxJ, width, height, gap);
 
     // TODO once ready
     if (storyNode !== componentSet) {

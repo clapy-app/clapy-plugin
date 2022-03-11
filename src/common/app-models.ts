@@ -1,5 +1,5 @@
 import { _Routes, _Subscriptions } from '../backend/routes';
-import { ArgTypes } from './sb-serialize.model';
+import { Args, ArgTypes } from './sb-serialize.model';
 
 export type ObjKey = string | number | symbol;
 
@@ -29,6 +29,7 @@ export interface SbOtherSelection {
   sbUrl?: undefined;
   storyUrl?: undefined;
   argTypes?: undefined;
+  initialArgs?: undefined;
   tagFigmaId?: undefined;
   props?: undefined;
 }
@@ -42,6 +43,7 @@ export interface SbCompSelection {
   sbUrl: string;
   storyUrl: string;
   argTypes: ArgTypes;
+  initialArgs: Args;
   tagFigmaId: string;
   props: ArgTypeUsed[] | undefined;
   // sbUrl - base URL, if required?
@@ -53,4 +55,14 @@ export interface ArgTypeUsed {
   argName: string;
   // argType: ArgType;
   used: boolean;
+}
+
+export interface ArgTypeObj {
+  [argName: string]: boolean;
+}
+
+export interface NewVariant {
+  i: number;
+  j: number;
+  args: Args;
 }

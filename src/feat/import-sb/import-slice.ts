@@ -1,6 +1,8 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { ArgTypeUsed, SbAnySelection } from '../../common/app-models';
+import { SbAnySelection } from '../../common/app-models';
+import { Args } from '../../common/sb-serialize.model';
+import { propArrayToMap } from '../../common/storybook-utils';
 import { RootState } from '../../core/redux/store';
 
 export interface ImportState {
@@ -31,19 +33,15 @@ export const selectSelectionGuaranteed = createSelector(selectSelections, select
   return selections[0]!;
 });
 
-export const selectPropsObj = createSelector(selectSelectionGuaranteed, selection => propArrayToMap(selection.props));
+// Undefined when the selection is not a componentSet (no variants).
+export const selectStoryArgFilters = createSelector(selectSelectionGuaranteed, selection =>
+  propArrayToMap(selection.props),
+);
 
+export const selectSelectionSbUrl = createSelector(selectSelectionGuaranteed, sel => sel.sbUrl!);
+export const selectSelectionStoryLabel = createSelector(selectSelectionGuaranteed, sel => sel.storyLabel!);
 export const selectStoryId = createSelector(selectSelectionGuaranteed, sel => sel.storyId);
-
-interface ArgTypeObj {
-  [key: string]: boolean;
-}
-
-export function propArrayToMap(array: ArgTypeUsed[] | undefined) {
-  if (!array) return undefined;
-  const indexed: ArgTypeObj = {};
-  for (const argType of array) {
-    indexed[argType.argName] = argType.used;
-  }
-  return indexed;
-}
+export const selectFigmaId = createSelector(selectSelectionGuaranteed, sel => sel.figmaId);
+export const selectPageId = createSelector(selectSelectionGuaranteed, sel => sel.pageId);
+export const selectArgTypes = createSelector(selectSelectionGuaranteed, sel => sel.argTypes);
+export const selectInitialArgs = createSelector(selectSelectionGuaranteed, sel => sel.initialArgs as Args);

@@ -6,7 +6,7 @@ import { handleError } from '../../common/error-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
-import { sanitizeSbUrl } from '../../common/storybook-utils';
+import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
@@ -118,17 +118,30 @@ export const ImportSb: FC = memo(function ImportSb() {
 
         let consecutiveErrors = 0;
         // Could be done in parallel, with a pool to not overload the API.
-        for (const { figmaId, storyUrl, storyId, pageId, argTypes } of insertedComponents) {
+        for (const {
+          figmaId,
+          storyUrl,
+          storyId,
+          storyLabel,
+          pageId,
+          argTypes,
+          initialArgs,
+          props,
+        } of insertedComponents) {
           try {
             if (interruptedRef.current) {
               setError('Interrupted');
               return;
             }
+            const storyArgFilters = propArrayToMap(props);
 
             await renderComponent(
               sbUrlToImport,
               storyId,
+              storyLabel,
               argTypes,
+              storyArgFilters,
+              initialArgs,
               storyUrl,
               figmaId,
               pageId,
@@ -193,9 +206,15 @@ export const ImportSb: FC = memo(function ImportSb() {
                   {options}
                 </select>
               )}
-              <input type='text' placeholder='Storybook URL' onChange={setSbUrlHandler} disabled={!!loadingTxt} />
+              <input
+                type='text'
+                placeholder='Storybook URL'
+                onChange={setSbUrlHandler}
+                disabled={!!loadingTxt}
+                title='If this URL shows storybook in your browser, it should work.'
+              />
             </div>
-            <button onClick={runImport} disabled={!!loadingTxt}>
+            <button onClick={runImport} disabled={!!loadingTxt} title='Import all components from storybook'>
               Import
             </button>
             {/* <button onClick={runGrid} disabled={!!loadingTxt}>
@@ -207,7 +226,7 @@ export const ImportSb: FC = memo(function ImportSb() {
       {!!loadingTxt && (
         <>
           <div>
-            <button onClick={interrupt} disabled={interruptedRef.current}>
+            <button onClick={interrupt} disabled={interruptedRef.current} title='Interrupt the components import'>
               Interrupt
             </button>
           </div>

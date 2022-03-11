@@ -1,4 +1,4 @@
-import { ObjKey } from './app-models';
+import { Nil, ObjKey } from './app-models';
 
 export function wait(milliseconds?: number) {
   return new Promise<void>(resolve => setTimeout(resolve, milliseconds));
@@ -13,8 +13,20 @@ export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
   return str ? (str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T) : str;
 }
 
-export function objectIsNotEmpty(obj: any) {
-  return !!obj && typeof obj === 'object' && Object.getOwnPropertyNames(obj).length > 0;
+/**
+ * @returns true if the argument is an object with at least one key, false otherwise.
+ */
+export function isNonEmptyObject<T>(obj: T | Nil): obj is T {
+  return !!obj && typeof obj === 'object' && !isEmptyObject(obj);
+}
+
+function isEmptyObject(obj: any) {
+  for (var prop in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function keyBy<T>(array: T[], field: keyof T) {

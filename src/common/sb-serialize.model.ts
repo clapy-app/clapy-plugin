@@ -15,6 +15,8 @@ export interface Dict<T = any> {
 
 export type Intersect<T, U> = Extract<T, U>;
 
+type EmptyObj = Record<string, never>;
+
 const black = 'rgb(0, 0, 0)';
 const backWithOp = 'rgba(0, 0, 0, 0)';
 const zeroPx = '0px';
@@ -171,31 +173,26 @@ export function isCTextNode(node: CNode): node is CTextNode {
   return node.type === TEXT_NODE;
 }
 
-export type BooleanArgType = {
-  control: { type: 'boolean' /* 'boolean' */ };
+export interface ArgType {
+  control?: { type: 'boolean' | 'select' };
+  options?: string[];
+  table?: { defaultValue: { summary: any /* JSON-stringified value */ } };
   // name: string /* "active" */;
-  // type: { name: string /* 'boolean' */ };
-};
-export type SelectArgType = {
-  control: { type: 'select' };
-  options: string[];
-};
-export type ArgType = BooleanArgType | SelectArgType;
+  type: {
+    name: string /* 'boolean' */;
+    required: boolean;
+    value?: any[] | EmptyObj;
+  };
+}
+
 export type ArgTypes = Dict<ArgType>;
 export type Args = Dict<any>; // key: arg name, value: arg value
-
-export function isBooleanArgType(argType: ArgType): argType is BooleanArgType {
-  return argType.control.type === 'boolean';
-}
-
-export function isSelectArgType(argType: ArgType): argType is SelectArgType {
-  return argType.control.type === 'select';
-}
 
 export interface SbStory {
   // argTypes,
   // args,
   componentId: string;
+  initialArgs: Args;
   // id: string;
   kind: string;
   name: string;

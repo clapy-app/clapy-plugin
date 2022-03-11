@@ -60,7 +60,8 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
     const frame = getOrCreateCompFrame(folder, page, storyId, i);
 
     const argTypes = story.parameters.argTypes || {};
-    setStoryFrameProperties(frame, story.name || story.story, sbUrl, storyId, storyTitle, argTypes);
+    const initialArgs = story.initialArgs || {};
+    setStoryFrameProperties(frame, story.name || story.story, sbUrl, storyId, storyTitle, argTypes, initialArgs);
 
     nodes.push(frame);
     // &args=kind:secondary;size:xxs
@@ -74,6 +75,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
       sbUrl,
       storyUrl: url,
       argTypes,
+      initialArgs,
       props: listVariantProps(frame, argTypes),
     });
   }

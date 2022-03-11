@@ -13,11 +13,27 @@ import {
 } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ArgTypeUsed } from '../../common/app-models';
+import { ArgTypeObj, ArgTypeUsed } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
+import { isNonEmptyObject } from '../../common/general-utils';
+import { fetchPlugin } from '../../common/plugin-utils';
 import classes from './1-ImportSb.module.scss';
-import { renderComponent } from './detail/renderComponent';
-import { selectPropsObj, selectSelectionGuaranteed, selectSelections, selectStoryId } from './import-slice';
+import { buildArgsMatrix } from './detail/buildArgsMatrix';
+import refreshIcon from './detail/refresh-icon.svg';
+import { renderComponent, renderVariant } from './detail/renderComponent';
+import stopIcon from './detail/stop-icon.svg';
+import {
+  selectArgTypes,
+  selectFigmaId,
+  selectInitialArgs,
+  selectPageId,
+  selectSelectionGuaranteed,
+  selectSelections,
+  selectSelectionSbUrl,
+  selectSelectionStoryLabel,
+  selectStoryArgFilters,
+  selectStoryId,
+} from './import-slice';
 
 export const PreviewArea: FC = memo(function PreviewArea() {
   const selections = useSelector(selectSelections);
@@ -32,7 +48,8 @@ export const PreviewArea: FC = memo(function PreviewArea() {
 
 const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
   const selection = useSelector(selectSelectionGuaranteed);
-  const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes } = selection;
+  const storyArgFilters = useSelector(selectStoryArgFilters);
+  const { storyLabel, sbUrl, storyUrl, figmaId, storyId, pageId, argTypes, initialArgs } = selection;
   const [loadingTxt, setLoadingTxt] = useState<string>();
   const [error, setError] = useState<string | undefined>();
 
@@ -43,15 +60,27 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
     interruptedRef.current = true;
   }, []);
 
-  const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
+  const runUpdate: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     (async () => {
       try {
-        if (!storyUrl || !storyId || !sbUrl || !argTypes) return;
+        if (!storyUrl || !storyId || !storyLabel || !sbUrl || !argTypes || !initialArgs) return;
 
         setInterrupted(false);
         interruptedRef.current = false;
 
-        await renderComponent(sbUrl, storyId, argTypes, storyUrl, figmaId, pageId, setLoadingTxt, interruptedRef);
+        await renderComponent(
+          sbUrl,
+          storyId,
+          storyLabel,
+          argTypes,
+          storyArgFilters,
+          initialArgs,
+          storyUrl,
+          figmaId,
+          pageId,
+          setLoadingTxt,
+          interruptedRef,
+        );
         if (interruptedRef.current) {
           setError('Interrupted');
           return;
@@ -63,16 +92,14 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
         // await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
 
         setError(undefined);
-      } catch (err) {
-        handleError((err: any) => {
-          handleError(err);
-          setError(err?.message || 'Unknown error');
-        });
+      } catch (err: any) {
+        handleError(err);
+        setError(err?.message || 'Unknown error');
       } finally {
         setLoadingTxt(undefined);
       }
     })();
-  }, [storyUrl, storyId, sbUrl, argTypes, figmaId, pageId]);
+  }, [storyUrl, storyId, storyLabel, sbUrl, argTypes, initialArgs, storyArgFilters, figmaId, pageId]);
 
   if (!storyUrl) {
     return /* env.isDev ? <p>Figma ID: {figmaId}</p> : */ null;
@@ -80,141 +107,197 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
 
   return (
     <>
-      <div>
-        Selected: {storyLabel} (
-        <a href={storyUrl} target='_blank' rel='noreferrer'>
-          preview
-        </a>
-        )
+      <div className={classes.selectTitleBar}>
+        <div>
+          Selected: {storyLabel} (
+          <a href={storyUrl} target='_blank' rel='noreferrer' title='Open the storybook preview in a browser tab'>
+            preview
+          </a>
+          )
+        </div>
+        {/* Update button */}
+        {loadingTxt ? (
+          <button onClick={interrupt} disabled={interruptedRef.current} title='Interrupt' className={classes.iconBtn}>
+            <img src={stopIcon} alt='Interrupt' />
+          </button>
+        ) : (
+          <button onClick={runUpdate} title='Reload component from Storybook' className={classes.iconBtn}>
+            <img src={refreshIcon} alt='Reload component from Storybook' />
+          </button>
+        )}
       </div>
-      <iframe title='Preview' src={storyUrl} width='300' height='200'></iframe>
+      <iframe title='Preview' src={storyUrl} className={classes.previewIframe}></iframe>
+
+      {loadingTxt && <p>{loadingTxt}</p>}
+
+      {!!error && <p>{error}</p>}
 
       {/* Variants props */}
-      {/* <VariantsProps /> */}
-
-      {/* Update button */}
-      {loadingTxt ? (
-        <>
-          <div>
-            <button onClick={interrupt} disabled={interruptedRef.current}>
-              Interrupt
-            </button>
-          </div>
-          <p>{loadingTxt}</p>
-        </>
-      ) : (
-        <button onClick={runImport}>Update component</button>
-      )}
-      {/* !!loadingTxt && env.isDev ? (
-        <>
-          <p>Figma ID: {figmaId}</p>
-          <p>Storybook ID: {storyId}</p>
-        </>
-      ) : */}
-      {!!error && <p>{error}</p>}
+      <VariantsProps setLoadingTxt={setLoadingTxt} />
     </>
   );
 });
 
-const selectPropsEntries = createSelector(selectPropsObj, propsObj =>
+const selectPropsEntries = createSelector(selectStoryArgFilters, propsObj =>
   propsObj ? Object.entries(propsObj) : undefined,
 );
 
-const VariantsProps: FC = memo(function VariantsProps() {
-  const propsObj = useSelector(selectPropsObj);
+const VariantsProps: FC<{ setLoadingTxt: SetLoadingTxt }> = memo(function VariantsProps({ setLoadingTxt }) {
+  const propsObj = useSelector(selectStoryArgFilters);
   if (!propsObj) {
     return null;
   }
-  return <VariantsPropsInner propsObj={propsObj} />;
+  return <VariantsPropsInner propsObj={propsObj} setLoadingTxt={setLoadingTxt} />;
 });
 
-const VariantsPropsInner: FC<{ propsObj: ArgTypeObj }> = memo(function VariantsPropsInner({ propsObj }) {
-  const elRefs = useRef<RefObject<HTMLInputElement>[]>([]);
+const VariantsPropsInner: FC<{ propsObj: ArgTypeObj; setLoadingTxt: SetLoadingTxt }> = memo(
+  function VariantsPropsInner({ propsObj, setLoadingTxt }) {
+    const elRefs = useRef<RefObject<HTMLInputElement>[]>([]);
 
-  const entries = useSelector(selectPropsEntries)!;
-  const storyId = useSelector(selectStoryId);
+    const entries = useSelector(selectPropsEntries)!;
+    const sbUrl = useSelector(selectSelectionSbUrl);
+    const storyLabel = useSelector(selectSelectionStoryLabel);
+    const storyId = useSelector(selectStoryId);
+    const figmaId = useSelector(selectFigmaId);
+    const pageId = useSelector(selectPageId);
+    const argTypes = useSelector(selectArgTypes);
+    const initialArgs = useSelector(selectInitialArgs);
+    const [loading, setLoading] = useState(false);
 
-  if (elRefs.current.length !== entries.length) {
-    // add or remove refs
-    elRefs.current = Array(entries.length)
-      .fill(undefined)
-      .map((_, i) => elRefs.current[i] || createRef<HTMLInputElement>());
-  }
+    if (elRefs.current.length !== entries.length) {
+      // add or remove refs
+      elRefs.current = Array(entries.length)
+        .fill(undefined)
+        .map((_, i) => elRefs.current[i] || createRef<HTMLInputElement>());
+    }
 
-  const [hasUpdates, setHasUpdates] = useState(false);
+    const [hasUpdates, setHasUpdates] = useState(false);
 
-  const applyUpdates = useCallback(() => {
-    // Update node plugin data 'storyArgTypes' (node.getPluginData('storyArgTypes'))
-    // Check if the selection is updated, if not emit again the selection?
-    // Or update directly in the front, on the slice (not the best option).
+    const applyUpdates = useCallback(() => {
+      (async () => {
+        try {
+          if (!storyId || !argTypes) return;
+          setLoading(true);
 
-    setHasUpdates(false);
-  }, []);
+          // Update node plugin data 'storyArgFilters' (node.getPluginData('storyArgFilters'))
+          // Build the new matrix with the filters
+          // Check if the selection is updated, if not emit again the selection?
+          // Or update directly in the front, on the slice (not the best option).
+          const storyArgFilters = getFormArgTypes(elRefs);
 
-  const checkChanges = useCallback(
-    (hasUpdates: boolean) => {
-      // TODO called multiple times with select all/none?
+          // TODO storyArgFilters may not be desired. We want all props to be in the matrix keys. But it should use default values for props not selected, instead of adding all values.
+          const argsMatrix = buildArgsMatrix(argTypes, storyArgFilters, initialArgs);
+          if (!isNonEmptyObject(argsMatrix?.[0]?.[0])) {
+            return;
+          }
+          const newVariants = await fetchPlugin(
+            'updateVariantsFromFilters',
+            figmaId,
+            storyId,
+            pageId,
+            argTypes,
+            storyArgFilters,
+            initialArgs,
+            argsMatrix!,
+          );
 
-      const currentFormProps = getFormArgTypes(elRefs);
-      const keysSelection = Object.keys(currentFormProps);
-      const atLeastOnePropEnabled = !!keysSelection.find(k => currentFormProps[k]);
+          for (const { i, j, args } of newVariants || []) {
+            await renderVariant(
+              sbUrl,
+              pageId,
+              figmaId,
+              storyId,
+              storyLabel,
+              argTypes,
+              initialArgs,
+              args,
+              i,
+              j,
+              setLoadingTxt,
+            );
+          }
 
-      const newHasUpdates = atLeastOnePropEnabled && !areSameVariantsProps(currentFormProps, propsObj);
-      if (hasUpdates !== newHasUpdates) {
-        setHasUpdates(newHasUpdates);
-      }
-    },
-    [propsObj],
-  );
-  const changeVariant = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      checkChanges(hasUpdates);
-    },
-    [checkChanges, hasUpdates],
-  );
-
-  const changeAll = useCallback(
-    (newValue: boolean) => {
-      for (const propCheckRef of elRefs.current) {
-        if (propCheckRef.current) {
-          propCheckRef.current.checked = newValue;
+          setHasUpdates(false);
+        } catch (err) {
+          handleError(err);
+        } finally {
+          setLoadingTxt(undefined);
+          setLoading(false);
         }
-      }
-      checkChanges(hasUpdates);
-    },
-    [checkChanges, hasUpdates],
-  );
-  const selectAll = useCallback(() => changeAll(true), [changeAll]);
-  const unselectAll = useCallback(() => changeAll(false), [changeAll]);
+      })();
+    }, [argTypes, figmaId, initialArgs, pageId, sbUrl, setLoadingTxt, storyId, storyLabel]);
 
-  if (!entries?.length) return null;
+    const checkChanges = useCallback(
+      (hasUpdates: boolean) => {
+        const currentFormProps = getFormArgTypes(elRefs);
+        const keysSelection = Object.keys(currentFormProps);
+        const atLeastOnePropEnabled = !!keysSelection.find(k => currentFormProps[k]);
 
-  return (
-    <div className={classes.properties}>
-      <div className={classes.titleWrapper}>
-        <div>
-          <h4>Properties</h4>
-          <p>
-            <a onClick={selectAll}>Select all</a> / <a onClick={unselectAll}>unselect all</a>
-          </p>
+        const newHasUpdates = atLeastOnePropEnabled && !areSameVariantsProps(currentFormProps, propsObj);
+        if (hasUpdates !== newHasUpdates) {
+          setHasUpdates(newHasUpdates);
+        }
+      },
+      [propsObj],
+    );
+    const changeVariant = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        checkChanges(hasUpdates);
+      },
+      [checkChanges, hasUpdates],
+    );
+
+    const changeAll = useCallback(
+      (newValue: boolean) => {
+        for (const propCheckRef of elRefs.current) {
+          if (propCheckRef.current) {
+            propCheckRef.current.checked = newValue;
+          }
+        }
+        checkChanges(hasUpdates);
+      },
+      [checkChanges, hasUpdates],
+    );
+    const selectAll = useCallback(() => changeAll(true), [changeAll]);
+    const unselectAll = useCallback(() => changeAll(false), [changeAll]);
+
+    if (!entries?.length) return null;
+
+    return (
+      <div className={classes.properties}>
+        <div className={classes.titleWrapper}>
+          <div>
+            <h4>Properties</h4>
+            <p>
+              <a onClick={selectAll}>Select all</a> / <a onClick={unselectAll}>unselect all</a>
+            </p>
+          </div>
+          {hasUpdates && (
+            <button
+              onClick={applyUpdates}
+              disabled={loading}
+              title='Update the variants matrix using the selected properties'
+            >
+              Apply
+            </button>
+          )}
         </div>
-        {hasUpdates && <button onClick={applyUpdates}>Update</button>}
+        {entries.map(([argName, used], i) => (
+          <label key={storyId + argName} title={`Choose the properties to use to list the variants`}>
+            <input
+              type={'checkbox'}
+              name={argName}
+              defaultChecked={used}
+              onChange={changeVariant}
+              ref={elRefs.current[i]}
+            />{' '}
+            {argName}
+          </label>
+        ))}
       </div>
-      {entries.map(([argName, used], i) => (
-        <label key={storyId + argName}>
-          <input
-            type={'checkbox'}
-            name={argName}
-            defaultChecked={used}
-            onChange={changeVariant}
-            ref={elRefs.current[i]}
-          />{' '}
-          {argName}
-        </label>
-      ))}
-    </div>
-  );
-});
+    );
+  },
+);
 
 function getFormArgTypes(elRefs: MutableRefObject<RefObject<HTMLInputElement>[]>) {
   const formSelection: ArgTypeObj = {};
@@ -261,10 +344,6 @@ function areSameVariantsProps(
 // console.log(areSameVariantsProps(propArrayToMap(arr1), propArrayToMap(arr2)));
 // console.log(propArrayToMap(arr1));
 
-interface ArgTypeObj {
-  [key: string]: boolean;
-}
-
 function propArrayToMap<T>(array: ArgTypeUsed[] | undefined) {
   if (!array) return undefined;
   const indexed: ArgTypeObj = {};
@@ -273,3 +352,5 @@ function propArrayToMap<T>(array: ArgTypeUsed[] | undefined) {
   }
   return indexed;
 }
+
+type SetLoadingTxt = (loadingText: string | undefined) => void;
