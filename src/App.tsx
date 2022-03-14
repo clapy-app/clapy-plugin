@@ -19,7 +19,9 @@ export const App: FC = memo(function App() {
         >
           clapy.co
         </a>
-        <LogoutBtn />
+        <a href='https://bit.ly/clapy-discord-footer' target='_blank' rel='noreferrer'>
+          Discord
+        </a>
         {/* Mail link generated with https://mailtolink.me/ */}
         <a
           href='mailto:support@clapy.co?subject=Contact%20via%20the%20plugin%20link&body=Hey%20Clapy%20team%2C%0D%0A%0D%0AI%20am%20trying%20your%20plugin%20and%20wanted%20to%20contact%20you.%0D%0A%0D%0Axxx'
@@ -28,6 +30,7 @@ export const App: FC = memo(function App() {
         >
           Contact us
         </a>
+        <LogoutBtn />
       </div>
     </div>
   );

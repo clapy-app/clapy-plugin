@@ -2,7 +2,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  row-gap: 1rem;
+  row-gap: 32px;
+
+  p:first-child {
+    margin-top: 0;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.bannerLink {
+  display: flex;
+  position: relative;
+}
+
+.discordBanner {
+  max-width: 100%;
+}
+
+.discordBannerText {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .center {
