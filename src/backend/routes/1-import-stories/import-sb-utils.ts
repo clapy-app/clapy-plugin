@@ -28,30 +28,30 @@ export function setStoryFrameProperties(
 // The front will merge and render the list.
 
 export function listVariantProps(node: SceneNode, argTypes: ArgTypes) {
-  if (!isComponentSet(node)) {
-    return undefined;
-  }
-  if (!node.children?.length) {
-    console.warn('Component set with no child? I thought it was impossible.');
-    return [];
-  }
-  const firstChild = node.children[0];
+  let argTypesUsedSet: Set<string> | undefined = undefined;
+  if (isComponentSet(node)) {
+    if (!node.children?.length) {
+      console.warn('Component set with no child? I thought it was impossible.');
+      return [];
+    }
+    const firstChild = node.children[0];
 
-  // Reading the first variant only should be enough if no bug.
-  // If we need to be safe, we could also read all variants to have the complete list of props.
-  const argTypesUsedSet = new Set(
-    firstChild.name
-      .split(',')
-      .map(keyVal => keyVal.split('=')[0].trim())
-      .filter(prop => prop),
-  );
+    // Reading the first variant only should be enough if no bug.
+    // If we need to be safe, we could also read all variants to have the complete list of props.
+    argTypesUsedSet = new Set(
+      firstChild.name
+        .split(',')
+        .map(keyVal => keyVal.split('=')[0].trim())
+        .filter(prop => prop),
+    );
+  }
 
   const argTypes2: ArgTypeUsed[] = Object.entries(argTypes)
     .filter(([_, argType]) => argTypesToValues(argType))
     .map(([argName, _]) => ({
       argName,
       // argType,
-      used: argTypesUsedSet.has(argName),
+      used: argTypesUsedSet ? argTypesUsedSet.has(argName) : true,
     }));
   return argTypes2;
 
