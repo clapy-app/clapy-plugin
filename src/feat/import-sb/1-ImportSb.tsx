@@ -244,7 +244,27 @@ export const ImportSb: FC = memo(function ImportSb() {
           <p>{loadingTxt}</p>
         </>
       )}
-      {!!error && <p>{error}</p>}
+      {!!error && (
+        <p>
+          {error !== 'Interrupted' && (
+            <>
+              Oops, something went wrong! Please retry later or contact us if the problem persists. The error message
+              {/* Mail link generated with https://mailtolink.me/ */}{' '}
+              <a
+                href={`mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy%3A%0D%0A%0D%0A${JSON.stringify(
+                  error,
+                )}%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX`}
+                target='_blank'
+                rel='noreferrer'
+              >
+                you can send us
+              </a>
+              :{' '}
+            </>
+          )}
+          <em>{error}</em>
+        </p>
+      )}
       <hr />
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
