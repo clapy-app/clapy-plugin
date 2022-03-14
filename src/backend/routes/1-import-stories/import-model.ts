@@ -40,6 +40,13 @@ export interface RenderContext {
   absoluteAncestor: MyCompNode;
   absoluteAncestorBorders: BorderWidths;
   appendInline?: boolean;
+  parentIsEmptyWrapper: boolean;
+  /**
+   * fillContainer = found a non-empty child that fills container
+   * hugContents = found at least one non-empty child, all of them hug contents
+   * undefined = no non-empty child found (= all children are empty wrappers)
+   */
+  parentNonEmptyChildMode: 'fillContainer' | 'hugContents' | undefined;
 }
 
 export interface SbStoryWithFolder extends SbStory {

@@ -11,6 +11,7 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
     // If the construction of the currentNode is delegated to appendNodes(), we could add CSS defaults within appendNodes() and avoid this extra recursion.
     addCssDefaults(sbNodes, null);
 
+    // const padding = 0;
     const padding = 32;
 
     let maxWidth = -1;
@@ -79,6 +80,8 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
         borderTopWidth: 0,
         borderRightWidth: 0,
       },
+      parentIsEmptyWrapper: true,
+      parentNonEmptyChildMode: undefined,
     };
     await appendChildNodes(sbNodes, context);
 

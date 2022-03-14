@@ -449,3 +449,21 @@ function isInline(display: Property.Display | undefined) {
 function isInlineNode(node: CNode) {
   return !!(node && (isCTextNode(node) || isInline(node.styles.display)));
 }
+
+// TODO if the parent is empty wrapper, evaluate current node
+// Sur un noeud, si le parent n'est pas un empty wrapper, je passe pareil à l'enfant et je saute. Sinon, je vérifie ce noeud et :
+// - D'une part, si le contexte n'a pas encore trouvé de non-empty child et que ce noeud est non-empty, je le marque sur le contexte.
+// - D'autre part, je passe à l'enfant parent empty ou pas selon ce noeud.
+
+// TODO Il faut d'abord écrire dans le parent parentNonEmptyChildMode plus haut pour propager ?
+
+// En remontant aux parents après la boucle, vérifier le résultat dans le contexte modifié
+// Après la boucle des enfants, je vérifie le contexte qui leur a été envoyé. Selon parentNonEmptyChildMode, on propage au contexte parent.
+// parent undefined enfant !undefined => copier l'enfant
+// parent 'hugContents' enfant 'fillContainer' => copier l'enfant
+
+// TODO... détailler ce qu'il se passe
+// À la fin de la boucle des enfants,
+// parentNonEmptyChildMode === 'fillContainer'
+// parentNonEmptyChildMode === 'hugContents'
+// parentNonEmptyChildMode === undefined
