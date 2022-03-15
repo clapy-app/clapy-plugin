@@ -1,0 +1,2595 @@
+{
+  "v": 2,
+  "stories": {
+    "home-installation--page": {
+      "initialArgs": {},
+      "kind": "Home/Installation",
+      "name": "Page",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Page"
+    },
+    "home-upgrading--page": {
+      "initialArgs": {},
+      "kind": "Home/Upgrading",
+      "name": "Page",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Page"
+    },
+    "home-themes--page": {
+      "initialArgs": {},
+      "kind": "Home/Themes",
+      "name": "Page",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Page"
+    },
+    "components-accordion--accordion": {
+      "initialArgs": {},
+      "kind": "Components/Accordion",
+      "name": "Accordion",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Accordion"
+    },
+    "components-accordion--flush": {
+      "initialArgs": {},
+      "kind": "Components/Accordion",
+      "name": "Flush",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Flush"
+    },
+    "components-accordion--uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Accordion",
+      "name": "Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Uncontrolled"
+    },
+    "components-accordion--stay-open": {
+      "initialArgs": {},
+      "kind": "Components/Accordion",
+      "name": "Stay Open",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Stay Open"
+    },
+    "components-accordion--props": {
+      "initialArgs": {},
+      "kind": "Components/Accordion",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-alert--alert": {
+      "initialArgs": {
+        "children": "Hey! Pay attention.",
+        "color": "primary",
+        "dismissible": false
+      },
+      "kind": "Components/Alert",
+      "name": "Alert",
+      "parameters": {
+        "argTypes": {
+          "children": {
+            "control": {
+              "type": "text"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "children"
+          },
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "dismissible": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "dismissible"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Alert"
+    },
+    "components-alert--alert-content": {
+      "initialArgs": {},
+      "kind": "Components/Alert",
+      "name": "Alert Content",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Alert Content"
+    },
+    "components-alert--dismiss": {
+      "initialArgs": {},
+      "kind": "Components/Alert",
+      "name": "Dismiss",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Dismiss"
+    },
+    "components-alert--alert-link": {
+      "initialArgs": {},
+      "kind": "Components/Alert",
+      "name": "Alert Link",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Alert Link"
+    },
+    "components-alert--uncontrolled-dismiss": {
+      "initialArgs": {},
+      "kind": "Components/Alert",
+      "name": "Uncontrolled Dismiss",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Uncontrolled Dismiss"
+    },
+    "components-alert--props": {
+      "initialArgs": {},
+      "kind": "Components/Alert",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-badge--badge": {
+      "initialArgs": {
+        "children": "New",
+        "color": "primary",
+        "pill": false
+      },
+      "kind": "Components/Badge",
+      "name": "Badge",
+      "parameters": {
+        "argTypes": {
+          "children": {
+            "control": {
+              "type": "text"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "children"
+          },
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "pill": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "pill"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Badge"
+    },
+    "components-badge--links": {
+      "initialArgs": {},
+      "kind": "Components/Badge",
+      "name": "Links",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Links"
+    },
+    "components-badge--pills": {
+      "initialArgs": {},
+      "kind": "Components/Badge",
+      "name": "Pills",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Pills"
+    },
+    "components-badge--sizing": {
+      "initialArgs": {
+        "children": "New",
+        "color": "primary",
+        "pill": false
+      },
+      "kind": "Components/Badge",
+      "name": "Sizing",
+      "parameters": {
+        "argTypes": {
+          "children": {
+            "control": {
+              "type": "text"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "children"
+          },
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "pill": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "pill"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Sizing"
+    },
+    "components-badge--variations": {
+      "initialArgs": {},
+      "kind": "Components/Badge",
+      "name": "Variations",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Variations"
+    },
+    "components-badge--props": {
+      "initialArgs": {},
+      "kind": "Components/Badge",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-breadcrumb--breadcrumb": {
+      "initialArgs": {},
+      "kind": "Components/Breadcrumb",
+      "name": "Breadcrumb",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Breadcrumb"
+    },
+    "components-breadcrumb--no-list": {
+      "initialArgs": {},
+      "kind": "Components/Breadcrumb",
+      "name": "No List",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "No List"
+    },
+    "components-breadcrumb--props": {
+      "initialArgs": {},
+      "kind": "Components/Breadcrumb",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-button--button": {
+      "initialArgs": {
+        "children": "Click Me",
+        "color": "primary",
+        "outline": false,
+        "block": false,
+        "active": false,
+        "close": false
+      },
+      "kind": "Components/Button",
+      "name": "Button",
+      "parameters": {
+        "argTypes": {
+          "children": {
+            "control": {
+              "type": "text"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "children"
+          },
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "outline": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "outline"
+          },
+          "size": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "object",
+              "value": {}
+            },
+            "name": "size",
+            "options": [
+              "",
+              "sm",
+              "lg"
+            ]
+          },
+          "block": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "block"
+          },
+          "active": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "active"
+          },
+          "close": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "close"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Button"
+    },
+    "components-button--outline": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Outline",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Outline"
+    },
+    "components-button--checkbox-and-radio": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Checkbox And Radio",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Checkbox And Radio"
+    },
+    "components-button--close": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Close",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Close"
+    },
+    "components-button--button-group": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Group",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Group"
+    },
+    "components-button--button-dropdown": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Dropdown",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Dropdown"
+    },
+    "components-button--button-dropdown-multi": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Dropdown Multi",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Dropdown Multi"
+    },
+    "components-button--button-dropdown-multi-split": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Dropdown Multi Split",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Dropdown Multi Split"
+    },
+    "components-button--button-dropdown-uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Dropdown Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Dropdown Uncontrolled"
+    },
+    "components-button--button-toolbar": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Button Toolbar",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Button Toolbar"
+    },
+    "components-button--props": {
+      "initialArgs": {},
+      "kind": "Components/Button",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-card--card": {
+      "initialArgs": {
+        "outline": false,
+        "inverse": false,
+        "body": false
+      },
+      "kind": "Components/Card",
+      "name": "Card",
+      "parameters": {
+        "argTypes": {
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "object",
+              "value": {}
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "outline": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "outline"
+          },
+          "inverse": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "inverse"
+          },
+          "body": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "body"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Card"
+    },
+    "components-card--alignment": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Alignment",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Alignment"
+    },
+    "components-card--backgrounds": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Backgrounds",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Backgrounds"
+    },
+    "components-card--card-columns": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Card Columns",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Card Columns"
+    },
+    "components-card--content-types": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Content Types",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Content Types"
+    },
+    "components-card--card-groups": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Card Groups",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Card Groups"
+    },
+    "components-card--headers-and-footers": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Headers And Footers",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Headers And Footers"
+    },
+    "components-card--image-caps": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Image Caps",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Image Caps"
+    },
+    "components-card--image-overlay": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Image Overlay",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Image Overlay"
+    },
+    "components-card--outline": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Outline",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Outline"
+    },
+    "components-card--sizing": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Sizing"
+    },
+    "components-card--props": {
+      "initialArgs": {},
+      "kind": "Components/Card",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-carousel--carousel": {
+      "initialArgs": {
+        "dark": false,
+        "slide": true
+      },
+      "kind": "Components/Carousel",
+      "name": "Carousel",
+      "parameters": {
+        "argTypes": {
+          "dark": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "dark"
+          },
+          "slide": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "slide"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Carousel"
+    },
+    "components-carousel--custom-tag": {
+      "initialArgs": {},
+      "kind": "Components/Carousel",
+      "name": "Custom Tag",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Tag"
+    },
+    "components-carousel--uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Carousel",
+      "name": "Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Uncontrolled"
+    },
+    "components-carousel--props": {
+      "initialArgs": {},
+      "kind": "Components/Carousel",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-collapse--collapse": {
+      "initialArgs": {
+        "horizontal": false
+      },
+      "kind": "Components/Collapse",
+      "name": "Collapse",
+      "parameters": {
+        "argTypes": {
+          "horizontal": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "horizontal"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Collapse"
+    },
+    "components-collapse--collapse-events": {
+      "initialArgs": {},
+      "kind": "Components/Collapse",
+      "name": "Collapse Events",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Collapse Events"
+    },
+    "components-collapse--collapse-horizontal": {
+      "initialArgs": {},
+      "kind": "Components/Collapse",
+      "name": "Collapse Horizontal",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Collapse Horizontal"
+    },
+    "components-collapse--collapse-uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Collapse",
+      "name": "Collapse Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Collapse Uncontrolled"
+    },
+    "components-collapse--props": {
+      "initialArgs": {},
+      "kind": "Components/Collapse",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-dropdown--dropdown": {
+      "initialArgs": {
+        "dark": false,
+        "end": false,
+        "flip": true
+      },
+      "kind": "Components/Dropdown",
+      "name": "Dropdown",
+      "parameters": {
+        "argTypes": {
+          "dark": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "dark"
+          },
+          "end": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "end"
+          },
+          "flip": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "flip"
+          },
+          "direction": {
+            "name": "direction",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "up",
+              "down",
+              "start",
+              "end"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Dropdown"
+    },
+    "components-dropdown--container": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Container",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Container"
+    },
+    "components-dropdown--set-active-from-child": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Set Active From Child",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Set Active From Child"
+    },
+    "components-dropdown--sizing": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Sizing"
+    },
+    "components-dropdown--uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Uncontrolled"
+    },
+    "components-dropdown--custom-dropdown": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Custom Dropdown",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Dropdown"
+    },
+    "components-dropdown--props": {
+      "initialArgs": {},
+      "kind": "Components/Dropdown",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-fade--fade": {
+      "initialArgs": {},
+      "kind": "Components/Fade",
+      "name": "Fade",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Fade"
+    },
+    "components-fade--props": {
+      "initialArgs": {},
+      "kind": "Components/Fade",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-forms--input": {
+      "initialArgs": {
+        "type": "text",
+        "valid": false,
+        "invalid": false
+      },
+      "kind": "Components/Forms",
+      "name": "Input",
+      "parameters": {
+        "argTypes": {
+          "type": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "type",
+            "options": [
+              "button",
+              "checkbox",
+              "color",
+              "date",
+              "datetime-local",
+              "email",
+              "file",
+              "month",
+              "number",
+              "password",
+              "radio",
+              "range",
+              "reset",
+              "search",
+              "select",
+              "submit",
+              "switch",
+              "tel",
+              "text",
+              "textarea",
+              "time",
+              "url",
+              "week"
+            ]
+          },
+          "valid": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "valid"
+          },
+          "invalid": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "invalid"
+          },
+          "bsSize": {
+            "name": "bsSize",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "",
+              "sm",
+              "lg"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Input"
+    },
+    "components-forms--form": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Form",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Form"
+    },
+    "components-forms--form-feedback": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Form Feedback",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Form Feedback"
+    },
+    "components-forms--form-grid": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Form Grid",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Form Grid"
+    },
+    "components-forms--form-grid-form-row": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Form Grid Form Row",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Form Grid Form Row"
+    },
+    "components-forms--form-inline": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Form Inline",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Form Inline"
+    },
+    "components-forms--floating-labels": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Floating Labels",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Floating Labels"
+    },
+    "components-forms--hidden-labels": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Hidden Labels",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Hidden Labels"
+    },
+    "components-forms--inline-checkboxes": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Inline Checkboxes",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Inline Checkboxes"
+    },
+    "components-forms--input-grid-sizing": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Input Grid Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Grid Sizing"
+    },
+    "components-forms--input-sizing": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Input Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Sizing"
+    },
+    "components-forms--input-type": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Input Type",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Type"
+    },
+    "components-forms--props": {
+      "initialArgs": {},
+      "kind": "Components/Forms",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-inputgroup--input-group": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Input Group",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Group"
+    },
+    "components-inputgroup--input-group-addon": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Input Group Addon",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Group Addon"
+    },
+    "components-inputgroup--input-group-button": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Input Group Button",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Group Button"
+    },
+    "components-inputgroup--input-group-button-shorthand": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Input Group Button Shorthand",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Input Group Button Shorthand"
+    },
+    "components-inputgroup--sizing": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Sizing"
+    },
+    "components-inputgroup--props": {
+      "initialArgs": {},
+      "kind": "Components/InputGroup",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-layout--layout": {
+      "initialArgs": {},
+      "kind": "Components/Layout",
+      "name": "Layout",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Layout"
+    },
+    "components-layout--layout-row-cols": {
+      "initialArgs": {},
+      "kind": "Components/Layout",
+      "name": "Layout Row Cols",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Layout Row Cols"
+    },
+    "components-layout--container-responsive": {
+      "initialArgs": {},
+      "kind": "Components/Layout",
+      "name": "Container Responsive",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Container Responsive"
+    },
+    "components-layout--props": {
+      "initialArgs": {},
+      "kind": "Components/Layout",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-list--list": {
+      "initialArgs": {},
+      "kind": "Components/List",
+      "name": "List",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "List"
+    },
+    "components-list--unstyled": {
+      "initialArgs": {},
+      "kind": "Components/List",
+      "name": "Unstyled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Unstyled"
+    },
+    "components-list--props": {
+      "initialArgs": {},
+      "kind": "Components/List",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-listgroup--list-group": {
+      "initialArgs": {
+        "flush": false,
+        "horizontal": false,
+        "numbered": false
+      },
+      "kind": "Components/ListGroup",
+      "name": "List Group",
+      "parameters": {
+        "argTypes": {
+          "flush": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "flush"
+          },
+          "horizontal": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "horizontal"
+          },
+          "numbered": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "numbered"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "List Group"
+    },
+    "components-listgroup--anchors-and-buttons": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Anchors And Buttons",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Anchors And Buttons"
+    },
+    "components-listgroup--badge": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Badge",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Badge"
+    },
+    "components-listgroup--contextual-classes": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Contextual Classes",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Contextual Classes"
+    },
+    "components-listgroup--custom-content": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Custom Content",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Content"
+    },
+    "components-listgroup--disabled-items": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Disabled Items",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Disabled Items"
+    },
+    "components-listgroup--flush": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Flush",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Flush"
+    },
+    "components-listgroup--horizontal": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Horizontal",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Horizontal"
+    },
+    "components-listgroup--numbered": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Numbered",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Numbered"
+    },
+    "components-listgroup--props": {
+      "initialArgs": {},
+      "kind": "Components/ListGroup",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-modal--modal": {
+      "initialArgs": {
+        "fullscreen": false,
+        "backdrop": true,
+        "fade": true,
+        "centered": false,
+        "scrollable": false
+      },
+      "kind": "Components/Modal",
+      "name": "Modal",
+      "parameters": {
+        "argTypes": {
+          "fullscreen": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "fullscreen",
+            "options": [
+              "",
+              true,
+              "sm",
+              "md",
+              "lg",
+              "xl"
+            ]
+          },
+          "size": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "object",
+              "value": {}
+            },
+            "name": "size",
+            "options": [
+              "",
+              "sm",
+              "lg",
+              "xl"
+            ]
+          },
+          "backdrop": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "backdrop"
+          },
+          "fade": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "fade"
+          },
+          "centered": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "centered"
+          },
+          "scrollable": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "scrollable"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Modal"
+    },
+    "components-modal--backdrop": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Backdrop",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Backdrop"
+    },
+    "components-modal--custom-close-button": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Custom Close Button",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Close Button"
+    },
+    "components-modal--custom-close-icon": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Custom Close Icon",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Close Icon"
+    },
+    "components-modal--custom-timeout": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Custom Timeout",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Custom Timeout"
+    },
+    "components-modal--destructuring": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Destructuring",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Destructuring"
+    },
+    "components-modal--external": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "External",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "External"
+    },
+    "components-modal--fadeless": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Fadeless",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Fadeless"
+    },
+    "components-modal--focus-after-close": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Focus After Close",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Focus After Close"
+    },
+    "components-modal--fullscreen": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Fullscreen",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Fullscreen"
+    },
+    "components-modal--nested": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Nested",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Nested"
+    },
+    "components-modal--props": {
+      "initialArgs": {},
+      "kind": "Components/Modal",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-nav--navs": {
+      "initialArgs": {
+        "tabs": false,
+        "pills": false,
+        "vertical": false,
+        "justified": false,
+        "fill": false
+      },
+      "kind": "Components/Nav",
+      "name": "Navs",
+      "parameters": {
+        "argTypes": {
+          "tabs": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "tabs"
+          },
+          "pills": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "pills"
+          },
+          "vertical": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "vertical"
+          },
+          "justified": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "justified"
+          },
+          "fill": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "fill"
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Navs"
+    },
+    "components-nav--pills": {
+      "initialArgs": {},
+      "kind": "Components/Nav",
+      "name": "Pills",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Pills"
+    },
+    "components-nav--tabs": {
+      "initialArgs": {},
+      "kind": "Components/Nav",
+      "name": "Tabs",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Tabs"
+    },
+    "components-nav--tab-pane": {
+      "initialArgs": {},
+      "kind": "Components/Nav",
+      "name": "Tab Pane",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Tab Pane"
+    },
+    "components-nav--vertical": {
+      "initialArgs": {},
+      "kind": "Components/Nav",
+      "name": "Vertical",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Vertical"
+    },
+    "components-nav--props": {
+      "initialArgs": {},
+      "kind": "Components/Nav",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-navbar--navbar": {
+      "initialArgs": {
+        "color": "light",
+        "light": true,
+        "dark": false,
+        "full": false,
+        "expand": "md",
+        "container": "fluid"
+      },
+      "kind": "Components/Navbar",
+      "name": "Navbar",
+      "parameters": {
+        "argTypes": {
+          "color": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "color",
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "light": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "light"
+          },
+          "dark": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "dark"
+          },
+          "full": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "full"
+          },
+          "expand": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "expand",
+            "options": [
+              false,
+              true,
+              "sm",
+              "md",
+              "lg",
+              "xl"
+            ]
+          },
+          "container": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "container",
+            "options": [
+              false,
+              true,
+              "sm",
+              "md",
+              "lg",
+              "xl",
+              "fluid"
+            ]
+          },
+          "fixed": {
+            "name": "fixed",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "",
+              "top",
+              "bottom"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Navbar"
+    },
+    "components-navbar--navbar-toggler": {
+      "initialArgs": {},
+      "kind": "Components/Navbar",
+      "name": "Navbar Toggler",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Navbar Toggler"
+    },
+    "components-navbar--props": {
+      "initialArgs": {},
+      "kind": "Components/Navbar",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-offcanvas--offcanvas": {
+      "initialArgs": {
+        "backdrop": true,
+        "fade": true,
+        "scrollable": false
+      },
+      "kind": "Components/Offcanvas",
+      "name": "Offcanvas",
+      "parameters": {
+        "argTypes": {
+          "backdrop": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "backdrop"
+          },
+          "fade": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "fade"
+          },
+          "scrollable": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "scrollable"
+          },
+          "direction": {
+            "name": "direction",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "top",
+              "start",
+              "end",
+              "bottom"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Offcanvas"
+    },
+    "components-offcanvas--props": {
+      "initialArgs": {},
+      "kind": "Components/Offcanvas",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-pagination--pagination": {
+      "initialArgs": {},
+      "kind": "Components/Pagination",
+      "name": "Pagination",
+      "parameters": {
+        "argTypes": {
+          "size": {
+            "name": "size",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "",
+              "sm",
+              "lg"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Pagination"
+    },
+    "components-pagination--large": {
+      "initialArgs": {},
+      "kind": "Components/Pagination",
+      "name": "Large",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Large"
+    },
+    "components-pagination--small": {
+      "initialArgs": {},
+      "kind": "Components/Pagination",
+      "name": "Small",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Small"
+    },
+    "components-pagination--state": {
+      "initialArgs": {},
+      "kind": "Components/Pagination",
+      "name": "State",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "State"
+    },
+    "components-pagination--props": {
+      "initialArgs": {},
+      "kind": "Components/Pagination",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-popover--popover": {
+      "initialArgs": {
+        "flip": true
+      },
+      "kind": "Components/Popover",
+      "name": "Popover",
+      "parameters": {
+        "argTypes": {
+          "flip": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "flip"
+          },
+          "placement": {
+            "name": "placement",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "top",
+              "left",
+              "right",
+              "bottom"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Popover"
+    },
+    "components-popover--focus": {
+      "initialArgs": {},
+      "kind": "Components/Popover",
+      "name": "Focus",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Focus"
+    },
+    "components-popover--multi": {
+      "initialArgs": {},
+      "kind": "Components/Popover",
+      "name": "Multi",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Multi"
+    },
+    "components-popover--uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Popover",
+      "name": "Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Uncontrolled"
+    },
+    "components-popover--update": {
+      "initialArgs": {},
+      "kind": "Components/Popover",
+      "name": "Update",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Update"
+    },
+    "components-popover--props": {
+      "initialArgs": {},
+      "kind": "Components/Popover",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-progress--progress": {
+      "initialArgs": {
+        "value": 50,
+        "animated": false,
+        "striped": false
+      },
+      "kind": "Components/Progress",
+      "name": "Progress",
+      "parameters": {
+        "argTypes": {
+          "value": {
+            "control": {
+              "type": "range",
+              "min": 0,
+              "max": 100
+            },
+            "type": {
+              "name": "number"
+            },
+            "name": "value"
+          },
+          "animated": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "animated"
+          },
+          "striped": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "striped"
+          },
+          "color": {
+            "name": "color",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Progress"
+    },
+    "components-progress--animated": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Animated",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Animated"
+    },
+    "components-progress--color": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Color",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Color"
+    },
+    "components-progress--labels": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Labels",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Labels"
+    },
+    "components-progress--max": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Max",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Max"
+    },
+    "components-progress--multi": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Multi",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Multi"
+    },
+    "components-progress--striped": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Striped",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Striped"
+    },
+    "components-progress--props": {
+      "initialArgs": {},
+      "kind": "Components/Progress",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-spinner--spinner": {
+      "initialArgs": {
+        "type": "border"
+      },
+      "kind": "Components/Spinner",
+      "name": "Spinner",
+      "parameters": {
+        "argTypes": {
+          "type": {
+            "control": {
+              "type": "select"
+            },
+            "type": {
+              "name": "string"
+            },
+            "name": "type",
+            "options": [
+              "border",
+              "grow"
+            ]
+          },
+          "color": {
+            "name": "color",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "primary",
+              "secondary",
+              "success",
+              "danger",
+              "warning",
+              "info",
+              "light",
+              "dark"
+            ]
+          },
+          "size": {
+            "name": "size",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "",
+              "sm"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Spinner"
+    },
+    "components-spinner--spinner-grower": {
+      "initialArgs": {},
+      "kind": "Components/Spinner",
+      "name": "Spinner Grower",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Spinner Grower"
+    },
+    "components-spinner--props": {
+      "initialArgs": {},
+      "kind": "Components/Spinner",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-table--table": {
+      "initialArgs": {
+        "bordered": false,
+        "borderless": false,
+        "dark": false,
+        "hover": false,
+        "responsive": false,
+        "striped": false
+      },
+      "kind": "Components/Table",
+      "name": "Table",
+      "parameters": {
+        "argTypes": {
+          "bordered": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "bordered"
+          },
+          "borderless": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "borderless"
+          },
+          "dark": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "dark"
+          },
+          "hover": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "hover"
+          },
+          "responsive": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "responsive"
+          },
+          "striped": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "striped"
+          },
+          "size": {
+            "name": "size",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "",
+              "sm"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Table"
+    },
+    "components-table--bordered": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Bordered",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Bordered"
+    },
+    "components-table--borderless": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Borderless",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Borderless"
+    },
+    "components-table--dark": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Dark",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Dark"
+    },
+    "components-table--hover": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Hover",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Hover"
+    },
+    "components-table--responsive": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Responsive",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Responsive"
+    },
+    "components-table--sizing": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Sizing",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Sizing"
+    },
+    "components-table--striped": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Striped",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Striped"
+    },
+    "components-table--props": {
+      "initialArgs": {},
+      "kind": "Components/Table",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-toast--toast": {
+      "initialArgs": {},
+      "kind": "Components/Toast",
+      "name": "Toast",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Toast"
+    },
+    "components-toast--toast-dismiss": {
+      "initialArgs": {},
+      "kind": "Components/Toast",
+      "name": "Toast Dismiss",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Toast Dismiss"
+    },
+    "components-toast--toast-header-icon": {
+      "initialArgs": {},
+      "kind": "Components/Toast",
+      "name": "Toast Header Icon",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Toast Header Icon"
+    },
+    "components-toast--props": {
+      "initialArgs": {},
+      "kind": "Components/Toast",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    },
+    "components-tooltip--tooltip": {
+      "initialArgs": {
+        "autohide": true,
+        "flip": true
+      },
+      "kind": "Components/Tooltip",
+      "name": "Tooltip",
+      "parameters": {
+        "argTypes": {
+          "autohide": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "autohide"
+          },
+          "flip": {
+            "control": {
+              "type": "boolean"
+            },
+            "type": {
+              "name": "boolean"
+            },
+            "name": "flip"
+          },
+          "placement": {
+            "name": "placement",
+            "control": {
+              "type": "select"
+            },
+            "options": [
+              "top",
+              "left",
+              "right",
+              "bottom"
+            ]
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Tooltip"
+    },
+    "components-tooltip--auto-hide": {
+      "initialArgs": {},
+      "kind": "Components/Tooltip",
+      "name": "Auto Hide",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Auto Hide"
+    },
+    "components-tooltip--multi": {
+      "initialArgs": {},
+      "kind": "Components/Tooltip",
+      "name": "Multi",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Multi"
+    },
+    "components-tooltip--uncontrolled": {
+      "initialArgs": {},
+      "kind": "Components/Tooltip",
+      "name": "Uncontrolled",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Uncontrolled"
+    },
+    "components-tooltip--update": {
+      "initialArgs": {},
+      "kind": "Components/Tooltip",
+      "name": "Update",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": true
+      },
+      "story": "Update"
+    },
+    "components-tooltip--props": {
+      "initialArgs": {},
+      "kind": "Components/Tooltip",
+      "name": "Props",
+      "parameters": {
+        "argTypes": {},
+        "__isArgsStory": false
+      },
+      "story": "Props"
+    }
+  },
+  "title": "Reactstrap"
+}

@@ -1,9 +1,16 @@
 # .github/workflows/main.yml
-name: Main
+name: Master
 on:
   push:
     branches:
       - main
+    paths: 
+      - "figma-plugin-clapy/**"
+      - ".github/**"
+
+defaults:
+  run:
+    working-directory: figma-plugin-clapy
 
 jobs:
   my_job:

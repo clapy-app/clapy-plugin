@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Clapy</title>
+</head>
+
+<body>
+  <h1>Login page - todo: redirect to Auth0 or add a button doing so.</h1>
+</body>
+
+<script src="https://cdn.auth0.com/js/auth0-spa-js/1.13/auth0-spa-js.production.js"></script>
+<script>const authEnv = {{{ authEnv }}};</script>
+<script type="text/javascript">
+  (async function () {
+    //window.onload = async () => {
+
+    const { auth0Domain, auth0ClientId, baseUrl } = authEnv;
+    let auth0 = await createAuth0Client({
+      domain: auth0Domain,
+      client_id: auth0ClientId
+    });
+    await auth0.loginWithRedirect({
+      redirect_uri: `${baseUrl}/login/callback`
+    });
+
+    //}
+  })().catch(err => console.error(err));
+</script>
+
+</html>
