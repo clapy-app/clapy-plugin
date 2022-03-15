@@ -4,5 +4,3 @@
 
 PR: https://github.com/opentypejs/opentype.js/pull/503
 Fork: https://github.com/antoineol/opentype.js
-
-==> tmp comment trigger a deployment.

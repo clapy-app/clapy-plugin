@@ -8,6 +8,7 @@ steps:
     entrypoint: bash
     id: Pull cache
   - name: gcr.io/cloud-builders/docker
+    dir: backend-clapy
     args:
       - build
       - '--cache-from'
