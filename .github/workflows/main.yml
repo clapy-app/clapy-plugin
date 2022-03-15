@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: '14'
           cache: 'yarn'
+          cache-dependency-path: figma-plugin-clapy/yarn.lock
 
       # - name: Get yarn cache directory path
       #   id: yarn-cache-dir-path
@@ -59,7 +60,7 @@ jobs:
         uses: adityak74/google-drive-upload-git-action@v0.1
         with:
           credentials: ${{ secrets.credentials }}
-          filename: "dist/plugin.zip"
+          filename: "figma-plugin-clapy/dist/plugin.zip"
           folderId: ${{ secrets.folderId }}
           name: "Clapy plugin ${{ steps.date.outputs.date }}.zip"
           overwrite: "false" # optional boolean
