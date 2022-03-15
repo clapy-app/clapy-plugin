@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Clapy</title>
+<script type="text/javascript">
+  if (window.opener) {
+    window.opener.focus();
+    window.close();
+  }
+</script>
+</head>
+
+<body>
+  <h1>You are now authenticated. You can close this window and go back to Figma.</h1>
+</body>
+
+{{!--
+<script src="https://cdn.auth0.com/js/auth0-spa-js/1.13/auth0-spa-js.production.js"></script> --}}
+<script>const authEnv = {{{ authEnv }}};</script>
+<script type="text/javascript">
+  (async function () {
+    //window.onload = async () => {
+
+    // const { auth0Domain, auth0ClientId, baseUrl } = authEnv;
+    // let auth0 = await createAuth0Client({
+    //   domain: auth0Domain,
+    //   client_id: auth0ClientId
+    // });
+
+    // const isAuthenticated = await auth0.isAuthenticated();
+    // if (!isAuthenticated) {
+    //   // NEW - check for the code and state parameters
+    //   const query = window.location.search;
+    //   if (!query.includes("code=") || !query.includes("state=")) {
+    //     // TODO redirect to login page
+    //     window.location.replace(`${baseUrl}/login`);
+    //     return;
+    //   }
+
+    //   // Process the login state
+    //   await auth0.handleRedirectCallback();
+    // }
+
+    // // TODO redirect to Figma plugin, next step, set focus and auto-close this window? Or show message.
+    // window.location.replace(`${baseUrl}`);
+
+    //}
+  })().catch(err => console.error(err));
+</script>
+
+</html>

@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  backend:
+    build:
+      dockerfile: ./Dockerfile.dev
+      context: .
+    volumes:
+      - node_modules:/app/node_modules
+      - .:/app
+    env_file: .env
+    environment:
+      - ISDOCKER=true
+    ports:
+      - '4141:4141'
+      - '9229:9229'
+    # cap_add:
+    #   - SYS_ADMIN
+    command: yarn start:docker:debug
+    # command: ls -l
+    deploy:
+      resources:
+        limits:
+          # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
+          memory: 700M
+
+volumes:
+  node_modules:

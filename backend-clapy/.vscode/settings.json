@@ -1,0 +1,6 @@
+{
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "git.allowForcePush": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}

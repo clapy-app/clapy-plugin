@@ -3,7 +3,14 @@ name: Master
 on:
   push:
     branches:
-      - master
+      - main
+    paths: 
+      - "figma-plugin-clapy/**"
+      - ".github/**"
+
+defaults:
+  run:
+    working-directory: figma-plugin-clapy
 
 jobs:
   my_job:
