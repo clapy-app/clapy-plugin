@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Body, Controller, Get, Headers, Post, Query, Render } from '@nestjs/common';
 import { map } from 'rxjs';
+
 import { env } from '../environment/env';
 import { Dict } from '../features/sb-serialize-preview/sb-serialize.model';
 import { generateToken } from '../utils';
@@ -22,7 +23,6 @@ const authEnv = JSON.stringify({ auth0Domain, auth0ClientId, baseUrl });
 @Controller()
 @PublicRoute()
 export class LoginController {
-
   constructor(private httpService: HttpService) {}
 
   // Debug
@@ -30,7 +30,10 @@ export class LoginController {
   @Render('debug')
   @IsBrowserGet()
   debug() {
-    return { inMemoryReadTokenCache: JSON.stringify(inMemoryReadTokenCache), inMemoryWriteTokenCache: JSON.stringify(inMemoryWriteTokenCache) };
+    return {
+      inMemoryReadTokenCache: JSON.stringify(inMemoryReadTokenCache),
+      inMemoryWriteTokenCache: JSON.stringify(inMemoryWriteTokenCache),
+    };
   }
 
   @Get('generate-tokens')
@@ -102,16 +105,12 @@ export class LoginController {
     if (!inMemoryReadTokenCache[readToken]) throw new Error(`Invalid read_token in query parameters.`);
 
     const url = `https://${auth0Domain}/oauth/token`;
-    return this.httpService.post(url, body).pipe(
-      map(response => response.data),
-    );
+    return this.httpService.post(url, body).pipe(map(response => response.data));
   }
 
   @Post('proxy-refresh-token')
   proxyRefreshToken(@Body() body: any) {
     const url = `https://${auth0Domain}/oauth/token`;
-    return this.httpService.post(url, body).pipe(
-      map(response => response.data),
-    );
+    return this.httpService.post(url, body).pipe(map(response => response.data));
   }
 }

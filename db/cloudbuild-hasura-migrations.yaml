@@ -1,0 +1,18 @@
+steps:
+  - id: Install
+    name: 'gcr.io/cloud-builders/yarn'
+    timeout: 40s
+  - id: Migrate
+    name: 'gcr.io/cloud-builders/yarn'
+    timeout: 40s
+    args:
+      - '${_MIGRATE_SCRIPT}'
+    env:
+      - 'HASURA_GRAPHQL_ADMIN_SECRET=$_HASURA_GRAPHQL_ADMIN_SECRET'
+options:
+  substitutionOption: MUST_MATCH
+substitutions:
+  _MIGRATE_SCRIPT: 'migrate:prod'
+  _HASURA_GRAPHQL_ADMIN_SECRET: 'secret'
+tags:
+  - 'db-${_DEPLOYMENT_TYPE}'

@@ -1,4 +1,5 @@
 import { Controller, Get, Render } from '@nestjs/common';
+
 import { AppService } from './app.service';
 import { IsBrowserGet } from './auth/IsBrowserGet.decorator';
 import { PublicRoute } from './auth/public-route-annotation';
@@ -14,5 +15,4 @@ export class AppController {
   root() {
     return { message: 'Hello world!' };
   }
-
 }

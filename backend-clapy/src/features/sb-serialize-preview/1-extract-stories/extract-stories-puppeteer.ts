@@ -1,13 +1,12 @@
 import { SbStories, SbStoriesWrapper, SbStoriesWrapperInput } from '../sb-serialize.model';
 
 export async function extractStoriesPuppeteer(sbUrl: string) {
-
   try {
     let setStories: [SbStoriesWrapperInput];
     // For some storybooks, the variable is not immediately ready. Let's wait at most one second.
     // (yes, it's ugly, but I don't have better ideas for the MVP.)
     let i = 0;
-    const w = (window as any);
+    const w = window as any;
     while (!(setStories = w.__STORYBOOK_ADDONS.channel.data.setStories) && i < 20) {
       ++i;
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -17,10 +16,13 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
       return { hasError: true, message: 'setStories still not defined in puppeteer after 20 tries.' } as ErrorResp;
     }
     if (!setStories[0]) {
-      return { hasError: true, message: 'setStories is defined, but is an empty array. Cannot read the list of stories.' } as ErrorResp;
+      return {
+        hasError: true,
+        message: 'setStories is defined, but is an empty array. Cannot read the list of stories.',
+      } as ErrorResp;
     }
 
-    const { v, stories: storiesRaw } = setStories[0] /* as SbStoriesWrapper */;
+    const { v, stories: storiesRaw } = setStories[0]; /* as SbStoriesWrapper */
     const stories: SbStories = {};
     for (const {
       // argTypes,

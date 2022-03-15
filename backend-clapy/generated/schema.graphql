@@ -1,0 +1,568 @@
+schema {
+  query: query_root
+  mutation: mutation_root
+  subscription: subscription_root
+}
+
+"""whether this query should be cached (Hasura Cloud only)"""
+directive @cached(
+  """measured in seconds"""
+  ttl: Int! = 60
+
+  """refresh the cache entry"""
+  refresh: Boolean! = false
+) on QUERY
+
+"""
+columns and relationships of "clapy.analytics"
+"""
+type clapy_analytics {
+  action: String!
+  auth0_id: String
+  created_at: timestamptz!
+  details(
+    """JSON select path"""
+    path: String
+  ): jsonb
+  figma_id: String!
+  id: uuid!
+  result: String
+}
+
+"""
+aggregated selection of "clapy.analytics"
+"""
+type clapy_analytics_aggregate {
+  aggregate: clapy_analytics_aggregate_fields
+  nodes: [clapy_analytics!]!
+}
+
+"""
+aggregate fields of "clapy.analytics"
+"""
+type clapy_analytics_aggregate_fields {
+  count(columns: [clapy_analytics_select_column!], distinct: Boolean): Int!
+  max: clapy_analytics_max_fields
+  min: clapy_analytics_min_fields
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input clapy_analytics_append_input {
+  details: jsonb
+}
+
+"""
+Boolean expression to filter rows from the table "clapy.analytics". All fields are combined with a logical 'AND'.
+"""
+input clapy_analytics_bool_exp {
+  _and: [clapy_analytics_bool_exp!]
+  _not: clapy_analytics_bool_exp
+  _or: [clapy_analytics_bool_exp!]
+  action: String_comparison_exp
+  auth0_id: String_comparison_exp
+  created_at: timestamptz_comparison_exp
+  details: jsonb_comparison_exp
+  figma_id: String_comparison_exp
+  id: uuid_comparison_exp
+  result: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "clapy.analytics"
+"""
+enum clapy_analytics_constraint {
+  """unique or primary key constraint"""
+  analytics_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input clapy_analytics_delete_at_path_input {
+  details: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the
+end). throws an error if top level container is not an array
+"""
+input clapy_analytics_delete_elem_input {
+  details: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input clapy_analytics_delete_key_input {
+  details: String
+}
+
+"""
+input type for inserting data into table "clapy.analytics"
+"""
+input clapy_analytics_insert_input {
+  action: String
+  auth0_id: String
+  created_at: timestamptz
+  details: jsonb
+  figma_id: String
+  id: uuid
+  result: String
+}
+
+"""aggregate max on columns"""
+type clapy_analytics_max_fields {
+  action: String
+  auth0_id: String
+  created_at: timestamptz
+  figma_id: String
+  id: uuid
+  result: String
+}
+
+"""aggregate min on columns"""
+type clapy_analytics_min_fields {
+  action: String
+  auth0_id: String
+  created_at: timestamptz
+  figma_id: String
+  id: uuid
+  result: String
+}
+
+"""
+response of any mutation on the table "clapy.analytics"
+"""
+type clapy_analytics_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [clapy_analytics!]!
+}
+
+"""
+on_conflict condition type for table "clapy.analytics"
+"""
+input clapy_analytics_on_conflict {
+  constraint: clapy_analytics_constraint!
+  update_columns: [clapy_analytics_update_column!]! = []
+  where: clapy_analytics_bool_exp
+}
+
+"""Ordering options when selecting data from "clapy.analytics"."""
+input clapy_analytics_order_by {
+  action: order_by
+  auth0_id: order_by
+  created_at: order_by
+  details: order_by
+  figma_id: order_by
+  id: order_by
+  result: order_by
+}
+
+"""primary key columns input for table: clapy_analytics"""
+input clapy_analytics_pk_columns_input {
+  id: uuid!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input clapy_analytics_prepend_input {
+  details: jsonb
+}
+
+"""
+select columns of table "clapy.analytics"
+"""
+enum clapy_analytics_select_column {
+  """column name"""
+  action
+
+  """column name"""
+  auth0_id
+
+  """column name"""
+  created_at
+
+  """column name"""
+  details
+
+  """column name"""
+  figma_id
+
+  """column name"""
+  id
+
+  """column name"""
+  result
+}
+
+"""
+input type for updating data in table "clapy.analytics"
+"""
+input clapy_analytics_set_input {
+  action: String
+  auth0_id: String
+  created_at: timestamptz
+  details: jsonb
+  figma_id: String
+  id: uuid
+  result: String
+}
+
+"""
+update columns of table "clapy.analytics"
+"""
+enum clapy_analytics_update_column {
+  """column name"""
+  action
+
+  """column name"""
+  auth0_id
+
+  """column name"""
+  created_at
+
+  """column name"""
+  details
+
+  """column name"""
+  figma_id
+
+  """column name"""
+  id
+
+  """column name"""
+  result
+}
+
+scalar jsonb
+
+"""
+Boolean expression to compare columns of type "jsonb". All fields are combined with logical 'AND'.
+"""
+input jsonb_comparison_exp {
+  """is the column contained in the given json value"""
+  _contained_in: jsonb
+
+  """does the column contain the given json value at the top level"""
+  _contains: jsonb
+  _eq: jsonb
+  _gt: jsonb
+  _gte: jsonb
+
+  """does the string exist as a top-level key in the column"""
+  _has_key: String
+
+  """do all of these strings exist as top-level keys in the column"""
+  _has_keys_all: [String!]
+
+  """do any of these strings exist as top-level keys in the column"""
+  _has_keys_any: [String!]
+  _in: [jsonb!]
+  _is_null: Boolean
+  _lt: jsonb
+  _lte: jsonb
+  _neq: jsonb
+  _nin: [jsonb!]
+}
+
+"""mutation root"""
+type mutation_root {
+  """
+  delete data from the table: "clapy.analytics"
+  """
+  delete_clapy_analytics(
+    """filter the rows which have to be deleted"""
+    where: clapy_analytics_bool_exp!
+  ): clapy_analytics_mutation_response
+
+  """
+  delete single row from the table: "clapy.analytics"
+  """
+  delete_clapy_analytics_by_pk(id: uuid!): clapy_analytics
+
+  """
+  insert data into the table: "clapy.analytics"
+  """
+  insert_clapy_analytics(
+    """the rows to be inserted"""
+    objects: [clapy_analytics_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: clapy_analytics_on_conflict
+  ): clapy_analytics_mutation_response
+
+  """
+  insert a single row into the table: "clapy.analytics"
+  """
+  insert_clapy_analytics_one(
+    """the row to be inserted"""
+    object: clapy_analytics_insert_input!
+
+    """upsert condition"""
+    on_conflict: clapy_analytics_on_conflict
+  ): clapy_analytics
+
+  """
+  update data of the table: "clapy.analytics"
+  """
+  update_clapy_analytics(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: clapy_analytics_append_input
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: clapy_analytics_delete_at_path_input
+
+    """
+    delete the array element with specified index (negative integers count from
+    the end). throws an error if top level container is not an array
+    """
+    _delete_elem: clapy_analytics_delete_elem_input
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: clapy_analytics_delete_key_input
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: clapy_analytics_prepend_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_analytics_set_input
+
+    """filter the rows which have to be updated"""
+    where: clapy_analytics_bool_exp!
+  ): clapy_analytics_mutation_response
+
+  """
+  update single row of the table: "clapy.analytics"
+  """
+  update_clapy_analytics_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: clapy_analytics_append_input
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: clapy_analytics_delete_at_path_input
+
+    """
+    delete the array element with specified index (negative integers count from
+    the end). throws an error if top level container is not an array
+    """
+    _delete_elem: clapy_analytics_delete_elem_input
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: clapy_analytics_delete_key_input
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: clapy_analytics_prepend_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_analytics_set_input
+    pk_columns: clapy_analytics_pk_columns_input!
+  ): clapy_analytics
+}
+
+"""column ordering options"""
+enum order_by {
+  """in ascending order, nulls last"""
+  asc
+
+  """in ascending order, nulls first"""
+  asc_nulls_first
+
+  """in ascending order, nulls last"""
+  asc_nulls_last
+
+  """in descending order, nulls first"""
+  desc
+
+  """in descending order, nulls first"""
+  desc_nulls_first
+
+  """in descending order, nulls last"""
+  desc_nulls_last
+}
+
+type query_root {
+  """
+  fetch data from the table: "clapy.analytics"
+  """
+  clapy_analytics(
+    """distinct select on columns"""
+    distinct_on: [clapy_analytics_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_analytics_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_analytics_bool_exp
+  ): [clapy_analytics!]!
+
+  """
+  fetch aggregated fields from the table: "clapy.analytics"
+  """
+  clapy_analytics_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_analytics_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_analytics_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_analytics_bool_exp
+  ): clapy_analytics_aggregate!
+
+  """fetch data from the table: "clapy.analytics" using primary key columns"""
+  clapy_analytics_by_pk(id: uuid!): clapy_analytics
+}
+
+"""
+Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
+"""
+input String_comparison_exp {
+  _eq: String
+  _gt: String
+  _gte: String
+
+  """does the column match the given case-insensitive pattern"""
+  _ilike: String
+  _in: [String!]
+
+  """
+  does the column match the given POSIX regular expression, case insensitive
+  """
+  _iregex: String
+  _is_null: Boolean
+
+  """does the column match the given pattern"""
+  _like: String
+  _lt: String
+  _lte: String
+  _neq: String
+
+  """does the column NOT match the given case-insensitive pattern"""
+  _nilike: String
+  _nin: [String!]
+
+  """
+  does the column NOT match the given POSIX regular expression, case insensitive
+  """
+  _niregex: String
+
+  """does the column NOT match the given pattern"""
+  _nlike: String
+
+  """
+  does the column NOT match the given POSIX regular expression, case sensitive
+  """
+  _nregex: String
+
+  """does the column NOT match the given SQL regular expression"""
+  _nsimilar: String
+
+  """
+  does the column match the given POSIX regular expression, case sensitive
+  """
+  _regex: String
+
+  """does the column match the given SQL regular expression"""
+  _similar: String
+}
+
+type subscription_root {
+  """
+  fetch data from the table: "clapy.analytics"
+  """
+  clapy_analytics(
+    """distinct select on columns"""
+    distinct_on: [clapy_analytics_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_analytics_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_analytics_bool_exp
+  ): [clapy_analytics!]!
+
+  """
+  fetch aggregated fields from the table: "clapy.analytics"
+  """
+  clapy_analytics_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_analytics_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_analytics_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_analytics_bool_exp
+  ): clapy_analytics_aggregate!
+
+  """fetch data from the table: "clapy.analytics" using primary key columns"""
+  clapy_analytics_by_pk(id: uuid!): clapy_analytics
+}
+
+scalar timestamptz
+
+"""
+Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'.
+"""
+input timestamptz_comparison_exp {
+  _eq: timestamptz
+  _gt: timestamptz
+  _gte: timestamptz
+  _in: [timestamptz!]
+  _is_null: Boolean
+  _lt: timestamptz
+  _lte: timestamptz
+  _neq: timestamptz
+  _nin: [timestamptz!]
+}
+
+scalar uuid
+
+"""
+Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'.
+"""
+input uuid_comparison_exp {
+  _eq: uuid
+  _gt: uuid
+  _gte: uuid
+  _in: [uuid!]
+  _is_null: Boolean
+  _lt: uuid
+  _lte: uuid
+  _neq: uuid
+  _nin: [uuid!]
+}

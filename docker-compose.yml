@@ -1,0 +1,73 @@
+version: '3.6'
+
+volumes:
+  node_modules:
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: clapy_db
+    env_file: .env
+    ports:
+      - '5439:5432'
+
+  hasura:
+    # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
+    # version) and the package hasura-cli in package.json.
+    image: hasura/graphql-engine:v2.3.0.cli-migrations-v3
+    container_name: clapy_hasura
+    ports:
+      - '${REACT_APP_HASURA_PORT}:${HASURA_DOCKER_PORT}'
+    depends_on:
+      - "db"
+    volumes:
+      - ./db/hasura/metadata:/hasura-metadata
+      - ./db/hasura/migrations:/hasura-migrations
+    env_file: .env
+    environment:
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      # HASURA_GRAPHQL_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      PG_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_NO_OF_RETRIES: 1000
+      HASURA_GRAPHQL_JWT_SECRET: "{\"jwk_url\": \"https://${REACT_APP_AUTH0_DOMAIN}/.well-known/jwks.json\", \"type\": \"RS256\", \"audience\": \"${REACT_APP_AUTH0_AUDIENCE}\", \"issuer\": \"https://${REACT_APP_AUTH0_DOMAIN}/\"}"
+  #    restart: on-failure
+
+  backend:
+    build:
+      dockerfile: ./Dockerfile.dev
+      context: ./backend-clapy
+    container_name: clapy_backend
+    volumes:
+      - node_modules:/app/node_modules
+      - ./backend-clapy:/app
+    env_file: .env
+    environment:
+      ISDOCKER: 'true'
+      REACT_APP_HASURA_HOSTNAME: hasura
+      REACT_APP_HASURA_PORT: ${HASURA_DOCKER_PORT}
+    ports:
+      - '4141:4141'
+      - '9229:9229'
+    # cap_add:
+    #   - SYS_ADMIN
+    command: yarn start:docker:debug
+    # command: ls -l
+    deploy:
+      resources:
+        limits:
+          # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
+          memory: 700M
+
+  # pgadmin:
+  #   image: dpage/pgadmin4:5.1
+  #   container_name: clapy_pgadmin
+  #   env_file: .env
+  #   depends_on:
+  #     - "db"
+  #   ports:
+  #     - "5409:80"

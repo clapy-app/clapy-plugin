@@ -11,7 +11,14 @@ export function processSVG(node: CNode, context: NodeParseContext) {
 
     // Sanity check. Should be already done in Puppeteer, but just in case of bug/regression.
     if (!checkIsFontIcon(content)) {
-      console.error('Cannot process icon font on pseudo element', node.name, '- content is not a unicode char:', content, '- font family:', fontFamily);
+      console.error(
+        'Cannot process icon font on pseudo element',
+        node.name,
+        '- content is not a unicode char:',
+        content,
+        '- font family:',
+        fontFamily,
+      );
       return;
     }
     const font = fontsMap[fontFamily];

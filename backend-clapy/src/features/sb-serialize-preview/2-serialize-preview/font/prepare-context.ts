@@ -1,4 +1,5 @@
 import { Font } from 'opentype.js';
+
 import { unquoteAndTrimString } from '../../../../utils';
 import { NodeParseContext } from '../../2-serialize-preview';
 import { Dict } from '../../sb-serialize.model';
@@ -34,8 +35,7 @@ export async function prepareSVGFontsMap(context: NodeParseContext) {
       }
       continue;
     }
-    const fontSrcRegex =
-      /(format\("([^"]+)"\))?\s*url\("([^"]+)"\)\s*(format\("([^"]+)"\))?/g;
+    const fontSrcRegex = /(format\("([^"]+)"\))?\s*url\("([^"]+)"\)\s*(format\("([^"]+)"\))?/g;
     let fontToLoadUrlPath: string | undefined = undefined;
     let fontToLoadFormat: FontFormat | undefined = undefined;
 
@@ -44,8 +44,7 @@ export async function prepareSVGFontsMap(context: NodeParseContext) {
       const format = (match[2] || match[5]) as FontFormat;
       if (
         supportedFontFormats.has(format) &&
-        (!fontToLoadFormat ||
-          (format === 'woff' && fontToLoadFormat !== 'woff'))
+        (!fontToLoadFormat || (format === 'woff' && fontToLoadFormat !== 'woff'))
       ) {
         // We prioritize the woff format over truetype (ttf).
         fontToLoadFormat = format;
@@ -55,9 +54,7 @@ export async function prepareSVGFontsMap(context: NodeParseContext) {
     }
 
     if (!fontToLoadUrlPath) {
-      console.error(
-        'Unsupported font face, it probably does not have a supported format:',
-      );
+      console.error('Unsupported font face, it probably does not have a supported format:');
       try {
         console.error(JSON.stringify(fontFace));
       } catch (error) {
@@ -67,9 +64,7 @@ export async function prepareSVGFontsMap(context: NodeParseContext) {
       continue;
     }
     const isAbsolute = isAbsoluteRegex.test(fontToLoadUrlPath);
-    let fontUrl = isAbsolute
-      ? fontToLoadUrlPath
-      : `${baseUrl}/${fontToLoadUrlPath}`;
+    let fontUrl = isAbsolute ? fontToLoadUrlPath : `${baseUrl}/${fontToLoadUrlPath}`;
     if (fontUrl.startsWith('//')) {
       fontUrl = `${new URL(baseUrl).protocol}${fontUrl}`;
     }

@@ -10,11 +10,15 @@ import { store } from './core/redux/store';
 
 render(
   <StrictMode>
-    <PreviewMode>
-      <Provider store={store}>
+    <Provider store={store}>
+      {/* Initializes Apollo GraphQL client for child components */}
+      {/* Adding Apollo adds >100ko (before gzip)! It's a lot, so we just use the HTTP endpoint as long as we don't need subscriptions. */}
+      {/* <InitApolloProvider> */}
+      <PreviewMode>
         <App />
-      </Provider>
-    </PreviewMode>
+      </PreviewMode>
+      {/* </InitApolloProvider> */}
+    </Provider>
   </StrictMode>,
   document.getElementById('react-page'),
 );

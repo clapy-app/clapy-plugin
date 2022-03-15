@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { Request, Response } from 'express';
 import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
+
 import { env } from '../environment/env';
 
 const jwtCheck = jwt({
@@ -10,15 +11,15 @@ const jwtCheck = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: `https://${env.auth0Domain}/.well-known/jwks.json`
+    jwksUri: `https://${env.auth0Domain}/.well-known/jwks.json`,
   }),
   audience: env.auth0Audience,
   issuer: `https://${env.auth0Domain}/`,
-  algorithms: ['RS256']
+  algorithms: ['RS256'],
 });
 
 async function hasValidationError(req: Request, res: Response) {
-  return new Promise<any>((resolve/* , reject */) => {
+  return new Promise<any>((resolve /* , reject */) => {
     jwtCheck(req, res, (error: any) => {
       if (error) resolve(error);
       else resolve(undefined);
@@ -28,7 +29,6 @@ async function hasValidationError(req: Request, res: Response) {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext) {
@@ -37,9 +37,9 @@ export class AuthGuard implements CanActivate {
     const res: Response = http.getResponse();
     const allowUnauthorizedRequest: boolean =
       // To read @PublicRoute() on the method
-      this.reflector.get('allowUnauthorizedRequest', context.getHandler())
+      this.reflector.get('allowUnauthorizedRequest', context.getHandler()) ||
       // To read @PublicRoute() on the controller class
-      || this.reflector.get('allowUnauthorizedRequest', context.getClass());
+      this.reflector.get('allowUnauthorizedRequest', context.getClass());
     // If one of them is true, the call is considered public.
 
     if (allowUnauthorizedRequest) return true;
@@ -59,5 +59,4 @@ export class AuthGuard implements CanActivate {
 
     return !validationError;
   }
-
 }

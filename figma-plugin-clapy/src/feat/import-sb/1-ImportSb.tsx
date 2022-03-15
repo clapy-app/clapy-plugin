@@ -14,8 +14,7 @@ import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
-import discordBannerImg from './detail/discordBannerImg.jpg';
-import discordBannerText from './detail/discordBannerText.svg';
+import { Banner } from './Banner';
 import { renderComponent } from './detail/renderComponent';
 import { setSelection } from './import-slice';
 
@@ -191,14 +190,15 @@ export const ImportSb: FC = memo(function ImportSb() {
             (channel #request-early-access).
           </p>
         </div>
-        <a href='https://discord.gg/uNyYjP7U' target='_blank' rel='noreferrer' className={classes.bannerLink}>
+        <Banner />
+        {/* <a href='https://discord.gg/uNyYjP7U' target='_blank' rel='noreferrer' className={classes.bannerLink}>
           <img src={discordBannerImg} className={classes.discordBanner} alt='Join our discord server' />
           <img
             src={discordBannerText}
             className={`${classes.discordBanner} ${classes.discordBannerText}`}
             alt='Join our discord server'
           />
-        </a>
+        </a> */}
         <Button onClick={loginBtn}>Sign in (beta)</Button>
       </div>
     );

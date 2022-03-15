@@ -1,2 +1,4 @@
-export const srcPath = __dirname;
-export const projectPath = `${__dirname}/..`;
+export const srcDir = __dirname;
+export const backendDir = `${__dirname}/..`;
+export const rootDir = `${backendDir}/..`;
+export const pluginDir = `${rootDir}/figma-plugin-clapy`;

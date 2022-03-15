@@ -40,7 +40,7 @@ async function sbSerializePreviewNoCache(url: string): Promise<CNode[]> {
   } as NodeParseContext;
 
   // Hook preparations before parsing
-  await prepareSVGFontsMap(context)
+  await prepareSVGFontsMap(context);
 
   await parseNodes(nodes, context);
   return nodes;
@@ -52,7 +52,6 @@ async function parseNodes(nodes: CNode[] | undefined, context: NodeParseContext)
   // The top would be to have a pool (e.g. of promises).
   // Let's keep it synchronous for now.
   for (const node of nodes) {
-
     // Hook parsings
     processSVG(node, context);
     await processImage(node, context);

@@ -1,15 +1,11 @@
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const puppeteer = require('puppeteer');
+
 async function main() {
   let browser;
   try {
     browser = await puppeteer.launch({
-      args: [
-        '--window-size=500,500',
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-      ],
+      args: ['--window-size=500,500', '--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: null,
       // dumpio: true,
     });
@@ -41,7 +37,7 @@ async function main() {
             // themes,
             // viewMode,
             // __id,
-            __isArgsStory
+            __isArgsStory,
           },
           story,
           title,
@@ -71,10 +67,10 @@ async function main() {
               // themes,
               // viewMode,
               // __id,
-              __isArgsStory
+              __isArgsStory,
             },
             story,
-            title
+            title,
           };
         }
         return { v, stories };
@@ -85,9 +81,8 @@ async function main() {
     console.log('-------------------');
     console.log(JSON.stringify(storiesWrapper));
     console.log('-------------------');
-    // 
+    //
     // await page.screenshot({ path: 'components-button--button.png' });
-
   } catch (err) {
     console.error('###### puppeteer');
     console.error(err);

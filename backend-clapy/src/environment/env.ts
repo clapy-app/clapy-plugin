@@ -1,8 +1,10 @@
+import { rootDir } from '../root';
+
 const nodeEnv = process.env.NODE_ENV;
 const isNodeProduction = nodeEnv === 'production';
 if (!isNodeProduction) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('dotenv').config();
+  require('dotenv').config({ path: `${rootDir}/.env` });
 }
 
 const envLabel = process.env.APP_ENV && process.env.APP_ENV.toLowerCase();
@@ -47,10 +49,40 @@ export const env = {
   auth0Audience: 'clapy',
   securityRequestedByHeader: 'clapy',
   localhostLatency: 400, // ms
+  // Hasura
+  hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET as string,
+  hasuraHttp: `${isTrue(process.env.REACT_APP_HASURA_SSL) ? 'https' : 'http'}://${
+    process.env.REACT_APP_HASURA_HOSTNAME
+  }:${process.env.REACT_APP_HASURA_PORT}/v1`,
 };
 
-if (isDev) {
-  console.log('environment:', JSON.stringify(env));
+// variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.
+const criticalVariables: Array<keyof typeof env> = ['hasuraAdminSecret'];
+// To check process.env.VARNAME when not written in `env` object.
+const criticalRawVariables: Array<any> = ['REACT_APP_HASURA_SSL', 'REACT_APP_HASURA_HOSTNAME', 'REACT_APP_HASURA_PORT'];
+
+const missingVar: Array<keyof typeof env> = [];
+for (const key of criticalVariables) {
+  if (!env[key]) {
+    missingVar.push(key);
+  }
+}
+for (const key of criticalRawVariables) {
+  if (!process.env[key]) {
+    missingVar.push(key);
+  }
+}
+
+if (!isProd) {
+  console.log('Environment:', JSON.stringify(env));
+}
+
+if (missingVar.length) {
+  throw new Error(`Missing environment variables. Keys in env.ts: ${missingVar.join(', ')}`);
+}
+
+function isTrue(value: boolean | string | undefined) {
+  return value === true || value === 'true';
 }
 
 export const rawProcessEnv = process.env;

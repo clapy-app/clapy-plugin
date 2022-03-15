@@ -18,5 +18,8 @@
       "name": "Preview with Clapy",
       "multipleSelection": true
     }
+  ],
+  "permissions": [
+    "currentuser"
   ]
 }

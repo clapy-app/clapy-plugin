@@ -215,6 +215,11 @@ function extendConfig(config: RequestInit | undefined): RequestInit {
 }
 
 function apiFullUrl(path: string) {
+  if (path.startsWith('http')) {
+    throw new Error(
+      `Absolute URL provided instead of a path in the API. Are you trying to call an external service with the full URL? Use httpGet/httpPost instead of apiGet/apiPost.`,
+    );
+  }
   if (!path.startsWith('/')) {
     path = `/${path}`;
   }
