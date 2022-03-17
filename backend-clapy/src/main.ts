@@ -7,6 +7,7 @@ import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { join } from 'path';
+
 import { AppModule } from './app.module';
 import { CsrfGuard } from './auth/csrf.guard';
 import { UnknownExceptionFilter } from './core/unknown-exception.filter';
@@ -17,7 +18,6 @@ const port = env.port;
 const logger = new Logger('main');
 
 async function bootstrap() {
-
   if (env.isDev) {
     try {
       // const sbUrl = 'https://style.monday.com';
@@ -95,18 +95,19 @@ async function bootstrap() {
   // Security: various middleware (https://docs.nestjs.com/techniques/security)
   app.use(helmet());
   // Security: add rate limit
-  app.use(rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 100, // limit each IP to 15 requests per windowMs
-  }));
+  app.use(
+    rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 100, // limit each IP to 15 requests per windowMs
+    }),
+  );
   app.use(morgan('[:date[iso]] :remote-addr :method :status :url - :response-time ms'));
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {
-    app.use((req: Request, res: Response, next: NextFunction) => setTimeout(next,
-      env.localhostLatency));
+    app.use((req: Request, res: Response, next: NextFunction) => setTimeout(next, env.localhostLatency));
   }
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
@@ -121,6 +122,8 @@ async function bootstrap() {
   return app.listen(port);
 }
 
-bootstrap().then(async () => {
-  logger.log(`Serving the app at http://localhost:${port}`);
-}).catch(err => console.error('Unknown error when starting API:', err));
+bootstrap()
+  .then(async () => {
+    logger.log(`Serving the app at http://localhost:${port}`);
+  })
+  .catch(err => console.error('Unknown error when starting API:', err));

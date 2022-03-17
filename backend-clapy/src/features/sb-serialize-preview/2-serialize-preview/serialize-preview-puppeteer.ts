@@ -56,8 +56,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   // Filter to return the list of font faces used for icons only.
   // We will use it to generate SVGs for icons and import them in Figma.
   const filteredFontFaces = fontFaces.filter(
-    ({ fontFamily }) =>
-      fontFamily && iconFontFamilies.has(unquoteAndTrimString(fontFamily)),
+    ({ fontFamily }) => fontFamily && iconFontFamilies.has(unquoteAndTrimString(fontFamily)),
   );
 
   return { nodes, fontFaces: filteredFontFaces };
@@ -76,30 +75,17 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
 
       if (isElement(browserNode)) {
         // Prepare the element computed styles
-        const computedStyles = window.getComputedStyle(
-          browserNode,
-        ) as Properties;
-        const styles: MyStyles = pickExcludeDefaults(
-          computedStyles,
-          cssDefaults,
-        );
+        const computedStyles = window.getComputedStyle(browserNode) as Properties;
+        const styles: MyStyles = pickExcludeDefaults(computedStyles, cssDefaults);
 
         // Then prepare the style rules from CSS.
-        const { matchedRules, matchedBeforeRules, matchedAfterRules } =
-          getMatchedCSSRules(browserNode);
-        const { styleRules, cssVariables } = mergeStyleRules(
-          matchedRules,
-          browserNode,
-        );
+        const { matchedRules, matchedBeforeRules, matchedAfterRules } = getMatchedCSSRules(browserNode);
+        const { styleRules, cssVariables } = mergeStyleRules(matchedRules, browserNode);
         // Use the variables available for the element to have the real value.
         const mergedCSSVariables = { ...parentCSSVariables, ...cssVariables };
         // Replace variable usages with the corresponding values:
-        const matchVarRegex = new RegExp(
-          `var\\((${Object.keys(mergedCSSVariables).join('|')})\\)`,
-          'gi',
-        );
-        const varReplacer = (_: string, group1: string) =>
-          mergedCSSVariables[group1];
+        const matchVarRegex = new RegExp(`var\\((${Object.keys(mergedCSSVariables).join('|')})\\)`, 'gi');
+        const varReplacer = (_: string, group1: string) => mergedCSSVariables[group1];
         replaceCSSVariables(styleRules, matchVarRegex, varReplacer);
 
         const children = toCNodes(
@@ -116,15 +102,10 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
           const { styleRules } = mergeStyleRules(matchedRules);
           replaceCSSVariables(styleRules, matchVarRegex, varReplacer);
 
-          const computedStyle = window.getComputedStyle(
-            browserNode,
-            namePE,
-          ) as Properties;
+          const computedStyle = window.getComputedStyle(browserNode, namePE) as Properties;
           if (computedStyle.content !== 'none') {
             const styles: MyStylesPE = {
-              content: unquoteAndTrimString(
-                computedStyle.content,
-              ) as Property.Content,
+              content: unquoteAndTrimString(computedStyle.content) as Property.Content,
               ...pickExcludeDefaults(computedStyle, cssDefaults),
             };
             let isFontIcon = false;
@@ -152,12 +133,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
         }
 
         if (browserNode.nodeType !== 1) {
-          console.warn(
-            'Element with node type which is not 1:',
-            browserNode.nodeName,
-            '- type:',
-            browserNode.nodeType,
-          );
+          console.warn('Element with node type which is not 1:', browserNode.nodeName, '- type:', browserNode.nodeType);
         }
         const node: CElementNode = {
           name,
@@ -174,10 +150,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
         nodes.push(node);
       } else if (isText(browserNode)) {
         if (name !== '#text') {
-          console.warn(
-            'Text node has a nodeName different from `#text`:',
-            name,
-          );
+          console.warn('Text node has a nodeName different from `#text`:', name);
         }
         if (browserNode.nodeType !== 3) {
           console.warn(
@@ -207,10 +180,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
     return node.nodeType === Node.TEXT_NODE;
   }
 
-  function pickExcludeDefaults(
-    computedStyles: Properties,
-    cssDefaults: CssDefaults,
-  ): MyStyles {
+  function pickExcludeDefaults(computedStyles: Properties, cssDefaults: CssDefaults): MyStyles {
     return entries(cssDefaults).reduce((previous, [cssKey, defaultValue]) => {
       const value: any = computedStyles[cssKey];
       if (value !== defaultValue) {
@@ -233,14 +203,9 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
     const mergedRuleImportant = {} as Dict2<StyleKey, boolean>;
     const rules = node ? [{ style: node.style }, ...styleRules] : styleRules;
     for (const { style } of rules) {
-      for (const {
-        isCSSVariable,
-        ruleNameDashCase,
-        ruleName,
-      } of ruleNamesFromStyle(style)) {
+      for (const { isCSSVariable, ruleNameDashCase, ruleName } of ruleNamesFromStyle(style)) {
         const merged = isCSSVariable ? mergedCSSVariables : mergedStyleRules;
-        const isImportant =
-          style.getPropertyPriority(ruleNameDashCase) === 'important';
+        const isImportant = style.getPropertyPriority(ruleNameDashCase) === 'important';
         if (
           // To override, the previous rule must NOT be !important regardless of the new rule.
           mergedRuleImportant[ruleName] == null &&
@@ -274,10 +239,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
 
   // border-radius => borderRadius
   // -moz-border-radius => MozBorderRadius
-  function ruleNameToCamelCase(
-    ruleNameDashCase: string,
-    isCSSVariable: boolean,
-  ): StyleKey {
+  function ruleNameToCamelCase(ruleNameDashCase: string, isCSSVariable: boolean): StyleKey {
     if (isCSSVariable) {
       // CSS variable name
       return ruleNameDashCase as keyof Properties;
@@ -321,10 +283,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   }
 
   // Step 2: evaluates all variables on a given element to check their values on it.
-  function getElementCSSVariables(
-    allCSSVariableNames: string[],
-    element: Element,
-  ) {
+  function getElementCSSVariables(allCSSVariableNames: string[], element: Element) {
     const elStyles = window.getComputedStyle(element);
     const cssVars: /* Properties */ Dict<string> = {};
     for (let i = 0; i < allCSSVariableNames.length; i++) {
@@ -348,24 +307,23 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
       ATTR_RE = /\[[^\]]+\]/g,
       // :not() pseudo-class does not add to specificity, but its content does as if it was outside it
       PSEUDO_CLASSES_RE = /\:(?!not)[\w-]+(\(.*\))?/g,
-      PSEUDO_ELEMENTS_RE =
-        /\:\:?(after|before|first-letter|first-line|selection)/g,
+      PSEUDO_ELEMENTS_RE = /\:\:?(after|before|first-letter|first-line|selection)/g,
       PSEUDO_ELEMENTS_RE2 = /(.*?)::?(before|after)$/,
       BEFORE_SELECTOR_RE = /(.*?)::?before$/,
       AFTER_SELECTOR_RE = /(.*?)::?after$/;
 
     //TODO: not supporting 2nd argument for selecting pseudo elements
     //TODO: not supporting 3rd argument for checking author style sheets only
-    return function getMatchedCSSRules(
-      element: HTMLElement /*, pseudo, author_only*/,
-    ) {
+    return function getMatchedCSSRules(element: HTMLElement /*, pseudo, author_only*/) {
       const matchedRules: CSSStyleRule[] = [];
       const matchedBeforeRules: CSSStyleRule[] = [];
       const matchedAfterRules: CSSStyleRule[] = [];
       // Keep rules which selector match this element
       for (const rule of cssStyleRules) {
-        const { matchesElement, matchesBefore, matchesAfter } =
-          selectorMatchesElementAndPseudo(element, rule.selectorText);
+        const { matchesElement, matchesBefore, matchesAfter } = selectorMatchesElementAndPseudo(
+          element,
+          rule.selectorText,
+        );
         if (matchesElement) {
           matchedRules.push(rule);
         }
@@ -379,16 +337,8 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
       // Sort according to specificity
       return {
         matchedRules: sortBySpecificity(element, matchedRules),
-        matchedBeforeRules: sortBySpecificity(
-          element,
-          matchedBeforeRules,
-          'before',
-        ),
-        matchedAfterRules: sortBySpecificity(
-          element,
-          matchedAfterRules,
-          'after',
-        ),
+        matchedBeforeRules: sortBySpecificity(element, matchedBeforeRules, 'before'),
+        matchedAfterRules: sortBySpecificity(element, matchedAfterRules, 'after'),
       };
     };
 
@@ -411,9 +361,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
             } else if (pseudoElementName === 'after') {
               matchesAfter = true;
             } else {
-              throw new Error(
-                `Unexpected: matches pseudo element selector, but it's neither before nor after.`,
-              );
+              throw new Error(`Unexpected: matches pseudo element selector, but it's neither before nor after.`);
             }
           }
         }
@@ -421,22 +369,12 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
       return { matchesElement, matchesBefore, matchesAfter };
     }
 
-    function selectorMatchesElementOrPseudo(
-      el: Element,
-      selector: string,
-      pseudoElementName?: string,
-    ): boolean {
+    function selectorMatchesElementOrPseudo(el: Element, selector: string, pseudoElementName?: string): boolean {
       if (!pseudoElementName) {
         return el.matches(selector);
       }
       for (const sel of selector.split(',')) {
-        const matches = sel
-          .trim()
-          .match(
-            pseudoElementName === 'before'
-              ? BEFORE_SELECTOR_RE
-              : AFTER_SELECTOR_RE,
-          );
+        const matches = sel.trim().match(pseudoElementName === 'before' ? BEFORE_SELECTOR_RE : AFTER_SELECTOR_RE);
         if (matches) {
           const elementSelector = matches[1];
           if (!elementSelector || el.matches(elementSelector)) {
@@ -447,11 +385,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
       return false;
     }
 
-    function sortBySpecificity(
-      element: Element,
-      rules: CSSStyleRule[],
-      pseudoElementName?: string,
-    ) {
+    function sortBySpecificity(element: Element, rules: CSSStyleRule[], pseudoElementName?: string) {
       // comparing function that sorts CSSStyleRules according to specificity of their `selectorText`
       function compareSpecificity(a: CSSStyleRule, b: CSSStyleRule) {
         return (
@@ -464,19 +398,13 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
     }
 
     // returns the heights possible specificity score an element can get from a give rule's selectorText
-    function getSpecificityScore(
-      element: Element,
-      selector_text: string,
-      pseudoElementName?: string,
-    ) {
+    function getSpecificityScore(element: Element, selector_text: string, pseudoElementName?: string) {
       const selectors = selector_text.split(',');
       let selector: string | undefined;
       let score: number;
       let result: number | undefined;
       while ((selector = selectors.shift())) {
-        if (
-          selectorMatchesElementOrPseudo(element, selector, pseudoElementName)
-        ) {
+        if (selectorMatchesElementOrPseudo(element, selector, pseudoElementName)) {
           score = calculateScore(selector);
           result = result == null || score > result ? score : result;
         }
@@ -571,12 +499,9 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
         ) {
           if (isCSSFontFaceRule(rule)) {
             const fontFace: CSSStyleDeclarationNoMethod = {};
-            for (const { ruleNameDashCase, ruleName } of ruleNamesFromStyle(
-              rule.style,
-            )) {
+            for (const { ruleNameDashCase, ruleName } of ruleNamesFromStyle(rule.style)) {
               // @ts-ignore
-              fontFace[ruleName] =
-                rule.style.getPropertyValue(ruleNameDashCase);
+              fontFace[ruleName] = rule.style.getPropertyValue(ruleNameDashCase);
             }
             fontFaces.push(fontFace);
           }
@@ -599,24 +524,13 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
     // if this sheet is disabled skip it
     if ((stylesheet as CSSStyleSheet).disabled) return [];
     // if this sheet's media is specified and doesn't match the viewport then skip it
-    if (
-      sheetMedia &&
-      sheetMedia.length &&
-      !window.matchMedia(sheetMedia).matches
-    )
-      return [];
+    if (sheetMedia && sheetMedia.length && !window.matchMedia(sheetMedia).matches) return [];
     // get the style rules of this sheet
     try {
       return Array.from(stylesheet.cssRules);
     } catch (error: any) {
-      if (
-        error?.message ===
-        "Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules"
-      ) {
-        console.warn(
-          'Cannot load CSS rules because of CORS from URL:',
-          (stylesheet as CSSStyleSheet).href,
-        );
+      if (error?.message === "Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules") {
+        console.warn('Cannot load CSS rules because of CORS from URL:', (stylesheet as CSSStyleSheet).href);
         return [];
       }
       throw error;
@@ -624,9 +538,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   }
 
   function isCSSStyleRule(cssRule: CSSRule): cssRule is CSSStyleRule {
-    return (
-      !!(cssRule as CSSStyleRule).selectorText && !isCSSGroupingRule(cssRule)
-    );
+    return !!(cssRule as CSSStyleRule).selectorText && !isCSSGroupingRule(cssRule);
   }
 
   function isCSSImportRule(cssRule: CSSRule): cssRule is CSSImportRule {
@@ -638,23 +550,15 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   }
 
   function isCSSPageRule(cssRule: CSSRule): cssRule is CSSPageRule {
-    return (
-      !!(cssRule as CSSPageRule).selectorText && isCSSGroupingRule(cssRule)
-    );
+    return !!(cssRule as CSSPageRule).selectorText && isCSSGroupingRule(cssRule);
   }
 
   function isCSSGroupingRule(cssRule: CSSRule): cssRule is CSSGroupingRule {
-    return (
-      !!(cssRule as CSSGroupingRule).cssRules &&
-      !(cssRule as CSSKeyframesRule).name
-    );
+    return !!(cssRule as CSSGroupingRule).cssRules && !(cssRule as CSSKeyframesRule).name;
   }
 
   function isCSSKeyframesRule(cssRule: CSSRule): cssRule is CSSKeyframesRule {
-    return (
-      !!(cssRule as CSSKeyframesRule).cssRules &&
-      !!(cssRule as CSSKeyframesRule).name
-    );
+    return !!(cssRule as CSSKeyframesRule).cssRules && !!(cssRule as CSSKeyframesRule).name;
   }
 
   // function isCSSKeyframeRule(cssRule: CSSRule): cssRule is CSSKeyframeRule {
@@ -662,10 +566,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   // }
 
   function isCSSFontFaceRule(cssRule: CSSRule): cssRule is CSSFontFaceRule {
-    return (
-      !!(cssRule as CSSFontFaceRule).style &&
-      !(cssRule as CSSStyleRule).selectorText
-    );
+    return !!(cssRule as CSSFontFaceRule).style && !(cssRule as CSSStyleRule).selectorText;
   }
 
   function isCSSSupportsRule(cssRule: CSSRule): cssRule is CSSSupportsRule {
@@ -696,15 +597,9 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
       return unicode.charCodeAt(0);
     } else if (unicode.length === 2) {
       // src: https://stackoverflow.com/a/37729608/4053349
-      return (
-        (unicode.charCodeAt(0) - 0xd800) * 0x400 +
-        (unicode.charCodeAt(1) - 0xdc00) +
-        0x10000
-      );
+      return (unicode.charCodeAt(0) - 0xd800) * 0x400 + (unicode.charCodeAt(1) - 0xdc00) + 0x10000;
     }
-    throw new Error(
-      `Unsupported unicode character, can't return the hexa code: \`${unicode}\``,
-    );
+    throw new Error(`Unsupported unicode character, can't return the hexa code: \`${unicode}\``);
   }
   function isUnicodeInPrivateUseAreas(charCode: number) {
     // https://en.wikipedia.org/wiki/Private_Use_Areas

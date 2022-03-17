@@ -1,11 +1,4 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-  Logger
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 
 const logger = new Logger('AllExceptionsFilter');
 
@@ -27,8 +20,11 @@ export function handleException(exception: any, response: any = null): any {
   const status =
     exception instanceof HttpException
       ? exception.getStatus()
-      : resp?.status || exception?.code || exception?.statusCode || error.statusCode ||
-      HttpStatus.INTERNAL_SERVER_ERROR;
+      : resp?.status ||
+        exception?.code ||
+        exception?.statusCode ||
+        error.statusCode ||
+        HttpStatus.INTERNAL_SERVER_ERROR;
 
   let errorMessage = cleanErrorMessage(error, response, exception);
   if (error?.key === 'ELEMENT_NOT_FOUND') {

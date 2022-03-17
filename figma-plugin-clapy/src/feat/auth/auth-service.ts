@@ -1,3 +1,5 @@
+import jwtDecode from 'jwt-decode';
+
 import { handleError } from '../../common/error-utils';
 import { wait } from '../../common/general-utils';
 import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
@@ -12,6 +14,7 @@ const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 const redirectUri = `${apiBaseUrl}/login/callback`;
 
 let _accessToken: string | null = null;
+let _accessTokenDecoded: AccessTokenDecoded | null = null;
 let _tokenType: string | null = null;
 
 // Exported methods
@@ -38,7 +41,7 @@ export async function login() {
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
 
-    _accessToken = accessToken;
+    cacheAccessToken(accessToken);
     _tokenType = tokenType;
 
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
@@ -55,18 +58,18 @@ export async function getTokens() {
   try {
     if (!_accessToken) {
       const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
-      _accessToken = accessToken;
+      cacheAccessToken(accessToken);
       _tokenType = tokenType;
     }
     if (!_accessToken) {
       await refreshTokens();
     }
     dispatchOther(setSignedInState(!!_accessToken));
-    return { accessToken: _accessToken, tokenType: _tokenType };
+    return { accessToken: _accessToken, tokenType: _tokenType, accessTokenDecoded: _accessTokenDecoded };
   } catch (error: any) {
     if (error.message === interactiveSignInMsg) {
       dispatchOther(setSignedInState(false));
-      return { accessToken: null, tokenType: null };
+      return { accessToken: null, tokenType: null, accessTokenDecoded: null };
     } else {
       throw error;
     }
@@ -82,7 +85,7 @@ export async function refreshTokens() {
   if (refreshToken) {
     // If a refresh token is available, use it to generate a new access token.
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
-    _accessToken = accessToken;
+    cacheAccessToken(accessToken);
     _tokenType = tokenType;
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
@@ -92,7 +95,7 @@ export async function refreshTokens() {
 }
 
 export function logout() {
-  _accessToken = null;
+  cacheAccessToken(null);
   _tokenType = null;
   const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
     client_id: auth0ClientId,
@@ -103,11 +106,33 @@ export function logout() {
   dispatchOther(setSignedInState(false));
 }
 
+export async function getAuth0Id() {
+  const { accessTokenDecoded } = await getTokens();
+  return accessTokenDecoded ? accessTokenDecoded.sub : null;
+}
+
 // Steps (detail)
+
+interface AccessTokenDecoded {
+  // Audience - if array, second member could be "https://aol-perso.eu.auth0.com/userinfo"
+  aud: 'clapy' | ['clapy', ...string[]];
+  azp: string; // "UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9" - Client ID of the app to which the token was delivered
+  exp: number; // 1647606409 - Expiration time
+  'https://hasura.io/jwt/claims': {
+    'x-hasura-allowed-roles': string[]; // ['team@earlymetrics.com', 'all@foo.com']
+    'x-hasura-default-role': string; //"team@earlymetrics.com"
+    'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
+  };
+  iat: number; // 1647520009 - Issued at
+  iss: string; // "https://aol-perso.eu.auth0.com/" - Issuer
+  scope: string; // "offline_access"
+  sub: string; // "auth0|622f597dc4b56e0071615ebe" - auth0 user ID
+}
 
 interface ExchangeTokenResponse {
   access_token: string; // "eyJhbGciOiJSUzI1N...QbpMeOXvDQ"
   expires_in: number; // 86400
+  id_token?: string; // If the scope openid is provided
   refresh_token: string; // "v1.McBQzYi89tbOf...k7QUPI5aKQ"
   scope: string; // "offline_access"
   token_type: string; // "Bearer"
@@ -116,6 +141,7 @@ interface ExchangeTokenResponse {
 function getAuthenticationURL(state: string, challenge: string) {
   const data = {
     audience: env.auth0Audience,
+    // Add openid to get an ID token along with the access token
     // scope: 'openid profile offline_access',
     scope: 'offline_access',
     response_type: 'code',
@@ -186,4 +212,9 @@ async function deleteReadToken(readToken: string) {
       'After getting the authorization token, did not delete the read token. Something is wrong in the workflow.',
     );
   }
+}
+
+function cacheAccessToken(accessToken: string | null) {
+  _accessToken = accessToken;
+  _accessTokenDecoded = accessToken ? jwtDecode<AccessTokenDecoded>(accessToken) : null;
 }

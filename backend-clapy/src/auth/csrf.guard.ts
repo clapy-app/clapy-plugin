@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+
 import { env } from '../environment/env';
 
 @Injectable()
@@ -10,9 +11,9 @@ export class CsrfGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const isBrowserGet: boolean =
       // To read @PublicRoute() on the method
-      this.reflector.get('isBrowserGet', context.getHandler())
+      this.reflector.get('isBrowserGet', context.getHandler()) ||
       // To read @PublicRoute() on the controller class
-      || this.reflector.get('isBrowserGet', context.getClass());
+      this.reflector.get('isBrowserGet', context.getClass());
     // If one of them is true, the call is considered to be possible from the browser, so the custom header check should be skipped.
 
     if (isBrowserGet) {

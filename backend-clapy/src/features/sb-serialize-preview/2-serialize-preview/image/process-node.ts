@@ -23,7 +23,8 @@ export async function processImage(node: CNode, { baseUrl }: NodeParseContext) {
     if (backgroundImage) {
       const match = backgroundImage.match(urlRegex);
       urlValue = parsedStringOrRaw(match?.[1]);
-    } else { // img src
+    } else {
+      // img src
       urlValue = src;
     }
 
@@ -43,12 +44,11 @@ export async function processImage(node: CNode, { baseUrl }: NodeParseContext) {
 
       // Process the URL, fetch data and MIME type, fill `mime` and `content`.
       const resp = await axios.get(url, {
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
       });
       mime = resp.headers['content-type'];
       buffer = Buffer.from(resp.data, 'binary');
     } else {
-
       // The data and mime are already available in the data url.
       const match3 = urlValue.match(dataUrlRegex);
       if (!match3) {

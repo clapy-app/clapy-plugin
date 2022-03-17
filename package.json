@@ -1,0 +1,34 @@
+{
+  "name": "clapy-root",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "________________ development ________________": "",
+    "install:all": "yarn && yarn install:backend && yarn install:plugin",
+    "console": "yarn hasura console",
+    "upgr": "yarn upgrade-interactive --latest",
+    "up": "docker-compose up -d",
+    "stop": "docker-compose stop",
+    "fixtime": "sudo ntpdate -sb time.nist.gov",
+    "________________ deployment ________________": "",
+    "migrate:dev": "yarn hasura migrate apply --endpoint http://localhost:8089/",
+    "migrate:staging": "yarn migrate:staging1 && yarn migrate:staging2 && yarn migrate:staging3",
+    "________________ implementation details ________________": "",
+    "install:backend": "cd backend-clapy && yarn",
+    "install:plugin": "cd figma-plugin-clapy && yarn",
+    "migrate:staging1": "yarn hasura:server metadata apply --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
+    "migrate:staging2": "yarn hasura:server migrate apply --all-databases --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
+    "migrate:staging3": "yarn hasura:server metadata reload --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
+    "hasura:squash": "yarn hasura migrate squash --database-name \"Clapy DB\"",
+    "hasura": "hasura --project db/hasura --envfile ../../.env --skip-update-check",
+    "hasura:server": "hasura --project db/hasura --skip-update-check",
+    "gentypes": "cd backend-clapy && yarn gentypes",
+    "pinggit": "ssh -T git@github.com"
+  },
+  "devDependencies": {
+    "hasura-cli": "^2.2.0"
+  }
+}

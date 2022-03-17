@@ -1,6 +1,6 @@
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const puppeteer = require('puppeteer');
+
 async function main() {
   let browser;
   try {
@@ -35,7 +35,7 @@ async function main() {
 
     const sbUrl = 'https://style.monday.com';
     const storybookId = 'buttons-button--overview';
-    // 
+    //
     // const sbUrl = 'https://reactstrap.github.io';
     // const storybookId = 'components-button--button';
 
@@ -45,7 +45,7 @@ async function main() {
     const dimensions = await page.evaluate(() => {
       // const btn = document.querySelector('.btn-primary');
       return {
-        // Get the button width 
+        // Get the button width
         // buttonWidth: btn?.clientWidth,
         // Get the "viewport" of the page, as reported by the page.
         width: document.documentElement.clientWidth,
@@ -54,9 +54,8 @@ async function main() {
       };
     });
     console.log('Dimensions:', dimensions);
-    // 
+    //
     // await page.screenshot({ path: 'components-button--button.png' });
-
   } catch (err) {
     console.error('###### puppeteer');
     console.error(err);

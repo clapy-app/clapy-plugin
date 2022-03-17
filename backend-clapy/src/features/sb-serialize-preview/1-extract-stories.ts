@@ -1,7 +1,8 @@
 import { writeFile } from 'fs/promises';
+
 import { CacheAsLRUMap } from '../../common/cache';
 import { env } from '../../environment/env';
-import { projectPath } from '../../root';
+import { backendDir } from '../../root';
 import { handleError } from '../../utils';
 import { ErrorResp, extractStoriesPuppeteer } from './1-extract-stories/extract-stories-puppeteer';
 import { replaceLocalhostWithDockerHost, runInPuppeteerBrowser } from './puppeteers-utils';
@@ -21,7 +22,11 @@ export async function extractStories(sbUrl: string): Promise<SbStoriesWrapper> {
 }
 
 async function extractStoriesNoCache(sbUrl: string) {
-  const storiesWrapperOrError: SbStoriesWrapper | ErrorResp = await runInPuppeteerBrowser(sbUrl, extractStoriesPuppeteer, sbUrl);
+  const storiesWrapperOrError: SbStoriesWrapper | ErrorResp = await runInPuppeteerBrowser(
+    sbUrl,
+    extractStoriesPuppeteer,
+    sbUrl,
+  );
 
   if (isErrorResp(storiesWrapperOrError)) {
     console.log('Error, stack in browser:', storiesWrapperOrError.stack);
@@ -29,10 +34,7 @@ async function extractStoriesNoCache(sbUrl: string) {
   }
   if (env.isDev) {
     writeJsonFile(
-      `${projectPath}/stories/${storiesWrapperOrError.title.replace(
-        /[/\\<>"|?*:]/gi,
-        '',
-      )}.json`,
+      `${backendDir}/stories/${storiesWrapperOrError.title.replace(/[/\\<>"|?*:]/gi, '')}.json`,
       storiesWrapperOrError,
     ).catch(handleError);
   }

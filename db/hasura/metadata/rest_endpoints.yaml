@@ -1,0 +1,9 @@
+- definition:
+    query:
+      collection_name: allowed-queries
+      query_name: insert_clapy_analytics
+  url: insert_clapy_analytics
+  methods:
+  - POST
+  name: insert_clapy_analytics
+  comment: null

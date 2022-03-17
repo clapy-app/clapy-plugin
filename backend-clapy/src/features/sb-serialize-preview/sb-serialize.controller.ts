@@ -1,10 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
+
 import { PublicRoute } from '../../auth/public-route-annotation';
 import { extractStories } from './1-extract-stories';
 import { sbSerializePreview } from './2-serialize-preview';
 
 @Controller('stories')
-  @PublicRoute()
+@PublicRoute()
 export class SbSerializeController {
   // constructor() {}
 
@@ -17,5 +18,4 @@ export class SbSerializeController {
   serialize(@Query('url') url: string) {
     return sbSerializePreview(url);
   }
-
 }

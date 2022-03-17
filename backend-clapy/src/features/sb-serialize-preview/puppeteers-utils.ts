@@ -1,9 +1,20 @@
-import puppeteer, { Browser, EvaluateFn, EvaluateFnReturnType, SerializableOrJSHandle, UnwrapPromiseLike } from 'puppeteer';
+import puppeteer, {
+  Browser,
+  EvaluateFn,
+  EvaluateFnReturnType,
+  SerializableOrJSHandle,
+  UnwrapPromiseLike,
+} from 'puppeteer';
+
 import { env } from '../../environment/env';
 
 // Could improve typing of ...args to match the real arguments of inBrowserFunction.
 // We can get inspiration from the fetchPlugin function in the plugin project (client).
-export async function runInPuppeteerBrowser<T extends EvaluateFn>(url: string, inBrowserFunction: T, ...args: SerializableOrJSHandle[]): Promise<UnwrapPromiseLike<EvaluateFnReturnType<T>>> {
+export async function runInPuppeteerBrowser<T extends EvaluateFn>(
+  url: string,
+  inBrowserFunction: T,
+  ...args: SerializableOrJSHandle[]
+): Promise<UnwrapPromiseLike<EvaluateFnReturnType<T>>> {
   let browser: Browser | undefined = undefined;
   try {
     browser = await puppeteer.launch({
@@ -60,7 +71,5 @@ export async function runInPuppeteerBrowser<T extends EvaluateFn>(url: string, i
 }
 
 export function replaceLocalhostWithDockerHost(url: string) {
-  return env.isDocker
-    ? url.replace('localhost:9009', 'host.docker.internal:9009')
-    : url;
+  return env.isDocker ? url.replace('localhost:9009', 'host.docker.internal:9009') : url;
 }

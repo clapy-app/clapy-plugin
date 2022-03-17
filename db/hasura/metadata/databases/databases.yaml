@@ -1,0 +1,12 @@
+- name: Clapy DB
+  kind: postgres
+  configuration:
+    connection_info:
+      database_url:
+        from_env: PG_DATABASE_URL
+      isolation_level: read-committed
+      pool_settings:
+        connection_lifetime: 600
+        retries: 1000
+      use_prepared_statements: false
+  tables: "!include Clapy DB/tables/tables.yaml"

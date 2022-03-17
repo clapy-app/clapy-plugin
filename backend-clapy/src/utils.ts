@@ -26,7 +26,7 @@ export async function generateToken() {
 }
 
 export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
-  return str ? str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T : str;
+  return str ? (str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T) : str;
 }
 
 // Unicode check functions
@@ -45,13 +45,17 @@ function getCharCodeFromUnicodeChar(unicode: string) {
     return unicode.charCodeAt(0);
   } else if (unicode.length === 2) {
     // src: https://stackoverflow.com/a/37729608/4053349
-    return ((((unicode.charCodeAt(0) - 0xD800) * 0x400) + (unicode.charCodeAt(1) - 0xDC00) + 0x10000));
+    return (unicode.charCodeAt(0) - 0xd800) * 0x400 + (unicode.charCodeAt(1) - 0xdc00) + 0x10000;
   }
   throw new Error(`Unsupported unicode character, can't return the hexa code: \`${unicode}\``);
 }
 function isUnicodeInPrivateUseAreas(charCode: number) {
   // https://en.wikipedia.org/wiki/Private_Use_Areas
-  return (charCode >= 0xE000 && charCode <= 0xF8FF) || (charCode >= 0xF0000 && charCode <= 0xFFFFD) || (charCode >= 0x100000 && charCode <= 0x10FFFD);
+  return (
+    (charCode >= 0xe000 && charCode <= 0xf8ff) ||
+    (charCode >= 0xf0000 && charCode <= 0xffffd) ||
+    (charCode >= 0x100000 && charCode <= 0x10fffd)
+  );
 }
 
 // function pick<T>(o: T, ...props: (keyof T)[]): Partial<T> {

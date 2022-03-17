@@ -6,14 +6,22 @@ const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const webpack = require('webpack');
 const path = require('path');
 const { writeFile } = require('fs/promises');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const rootDir = `${__dirname}/..`;
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
   const isDevelopment = !isProduction;
   const previewEnv = env.PREVIEW_ENV;
-  const appEnv = env.APP_ENV || 'production';
   const isBrowser = previewEnv === 'browser';
+  const appEnv = env.APP_ENV || 'production';
+  const isDevEnv = appEnv === 'dev' || appEnv === 'development';
+  const isStagingEnv = appEnv === 'staging';
+  const isProdEnv = appEnv === 'production' || appEnv === 'prod';
   // If not production and not browser, it's a normal dev env in Figma.
+
+  require('dotenv').config({ path: `${rootDir}/${isDevEnv ? '.env' : isStagingEnv ? '.env.staging' : '.env.prod'}` });
 
   // Update manifest.json with the bundle folder name.
   const distFolder = 'build';
@@ -33,6 +41,14 @@ module.exports = (env, argv) => {
       console.error('Error while building webpack, previewEnv:', previewEnv);
       console.error(e);
     });
+  }
+
+  // Extract environment variables to send to the React app
+  const reactAppVar = {};
+  for (const [varName, value] of Object.entries(process.env)) {
+    if (varName.startsWith('REACT_APP_')) {
+      reactAppVar[varName] = JSON.stringify(value);
+    }
   }
 
   return {
@@ -119,10 +135,12 @@ module.exports = (env, argv) => {
       !isBrowser && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/front/]),
       new webpack.DefinePlugin({
         'process.env': {
+          ...reactAppVar,
           PREVIEW_ENV: JSON.stringify(previewEnv),
           APP_ENV: JSON.stringify(appEnv),
         },
       }),
+      // new BundleAnalyzerPlugin(),
     ].filter(Boolean),
   };
 };
