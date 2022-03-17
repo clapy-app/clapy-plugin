@@ -2,4 +2,9 @@
   definition:
     queries:
     - name: insert_clapy_analytics
-      query: "mutation insert_clapy_analytics($object: clapy_analytics_insert_input!) {\n  insert_clapy_analytics(objects: [$object]) {\n    affected_rows\n  }\n}"
+      query: |-
+        mutation insert_clapy_analytics($object: clapy_analytics_insert_input!) {
+          insert_clapy_analytics(objects: [$object]) {
+            affected_rows
+          }
+        }

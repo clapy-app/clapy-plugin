@@ -20,7 +20,7 @@ fetchPlugin('getCurrentUser').then(user => {
   currentUser = user;
 });
 
-export function pushEvent(action: string, result?: string) {
+export function track(action: string, status?: string, details?: any) {
   try {
     // fetchPlugin('getCurrentUser').then(user => {
     //   console.log('getCurrentUser2:', user);
@@ -31,7 +31,7 @@ export function pushEvent(action: string, result?: string) {
     // The typing also covers the case of other users (not the current user, with multiple users on the doc).
     // Let's play it safe and cover all cases, falling back to currentUser.name that should contain "Anonymous" if no ID.
     const figmaId = currentUser?.id || currentUser?.name || 'undefined';
-    const entry: Partial<Clapy_Analytics> = { figma_id: figmaId, auth0_id: auth0Id, action, result };
+    const entry: Partial<Clapy_Analytics> = { figma_id: figmaId, auth0_id: auth0Id, action, status, details };
 
     const url = `${env.hasuraRest}/insert_clapy_analytics`;
     // await httpPostUnauthenticated(url, { object: entry });
