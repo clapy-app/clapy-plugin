@@ -13,7 +13,7 @@ defaults:
     working-directory: figma-plugin-clapy
 
 jobs:
-  my_job:
+  figma_plugin:
     runs-on: ubuntu-latest
 
     steps:

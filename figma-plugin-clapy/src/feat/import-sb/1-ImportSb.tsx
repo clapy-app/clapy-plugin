@@ -185,20 +185,11 @@ export const ImportSb: FC = memo(function ImportSb() {
         <div>
           <p>Thanks for downloading Clapy!</p>
           <p>
-            This plugin is currently in closed beta. To try it, please{' '}
-            <a href='https://bit.ly/clapy-discord-plugin'>join our Discord server</a> and request an early access
-            (channel #request-early-access).
+            This plugin is currently in closed beta. To try it, please join our Discord or Slack server and request an
+            early access (channel #request-early-access).
           </p>
         </div>
         <Banner />
-        {/* <a href='https://discord.gg/uNyYjP7U' target='_blank' rel='noreferrer' className={classes.bannerLink}>
-          <img src={discordBannerImg} className={classes.discordBanner} alt='Join our discord server' />
-          <img
-            src={discordBannerText}
-            className={`${classes.discordBanner} ${classes.discordBannerText}`}
-            alt='Join our discord server'
-          />
-        </a> */}
         <Button onClick={loginBtn}>Sign in (beta)</Button>
       </div>
     );
