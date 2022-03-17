@@ -3,9 +3,8 @@
 import { Clapy_Analytics } from '../../../../generated/schema';
 import { handleError } from '../../../common/error-utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
-import { httpPostUnauthenticated } from '../../../common/unauthenticated-http.utils';
 import { env } from '../../../environment/env';
-import { getAuth0Id } from '../../auth/auth-service';
+import { _accessTokenDecoded } from '../../auth/auth-service';
 
 // export const PUSH_EVENT = gql`
 //   mutation ($object: clapy_analytics_insert_input!) {
@@ -15,18 +14,28 @@ import { getAuth0Id } from '../../auth/auth-service';
 //   }
 // `;
 
-export async function pushEvent(action: string, result?: string) {
+let currentUser: User | null = null;
+
+fetchPlugin('getCurrentUser').then(user => {
+  currentUser = user;
+});
+
+export function track(action: string, status?: string, details?: any) {
   try {
-    const auth0Id = await getAuth0Id();
-    const currentUser = await fetchPlugin('getCurrentUser');
+    // fetchPlugin('getCurrentUser').then(user => {
+    //   console.log('getCurrentUser2:', user);
+    // });
+    const auth0Id = _accessTokenDecoded ? _accessTokenDecoded.sub : null;
+    // const currentUser = await fetchPlugin('getCurrentUser');
     // In theory, currentUser.id is never empty and should contain an auto-generated ID for the current user.
     // The typing also covers the case of other users (not the current user, with multiple users on the doc).
     // Let's play it safe and cover all cases, falling back to currentUser.name that should contain "Anonymous" if no ID.
-    const figmaId = currentUser?.id || currentUser?.name;
-    const entry: Partial<Clapy_Analytics> = { figma_id: figmaId, auth0_id: auth0Id, action, result };
+    const figmaId = currentUser?.id || currentUser?.name || 'undefined';
+    const entry: Partial<Clapy_Analytics> = { figma_id: figmaId, auth0_id: auth0Id, action, status, details };
 
     const url = `${env.hasuraRest}/insert_clapy_analytics`;
-    await httpPostUnauthenticated(url, { object: entry });
+    // await httpPostUnauthenticated(url, { object: entry });
+    navigator.sendBeacon(url, JSON.stringify({ object: entry }));
     // const apolloClient = _apolloClient;
     // if (!apolloClient) {
     //   console.warn(

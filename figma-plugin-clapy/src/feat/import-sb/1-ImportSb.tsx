@@ -15,6 +15,7 @@ import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
+import { track } from './detail/analytics';
 import { renderComponent } from './detail/renderComponent';
 import { setSelection } from './import-slice';
 
@@ -40,6 +41,7 @@ export const ImportSb: FC = memo(function ImportSb() {
   useEffect(() => {
     getTokens()
       .then(() => {
+        track('open-plugin');
         setError(undefined);
       })
       .catch(err => {
@@ -82,6 +84,7 @@ export const ImportSb: FC = memo(function ImportSb() {
   const interrupt = useCallback(() => {
     setInterrupted(true);
     interruptedRef.current = true;
+    track('run-import', 'interrupt');
   }, []);
 
   // Show selection
@@ -100,6 +103,7 @@ export const ImportSb: FC = memo(function ImportSb() {
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     if (!storiesSamplesRef.current || (!sbSelection && !sbUrl)) {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
+      track('run-import', 'error', 'Stories sample undefined or selection undefined. Cannot run import. Bug?');
       return;
     }
     let sbUrlToImport = sbUrl || storiesSamplesRef.current[sbSelection].sbUrl;
@@ -109,6 +113,7 @@ export const ImportSb: FC = memo(function ImportSb() {
     setInterrupted(false);
     interruptedRef.current = false;
 
+    track('run-import', 'start', { url: sbUrlToImport });
     fetchStories(sbUrlToImport)
       .then(stories => {
         setLoadingTxt('Prepare stories placeholders...');
@@ -164,10 +169,12 @@ export const ImportSb: FC = memo(function ImportSb() {
             }
           }
         }
+        track('run-import', 'completed');
       })
       .catch(err => {
         handleError(err);
         setError(err?.message || 'Unknown error');
+        track('run-import', 'error', err?.message || 'Unknown error');
       })
       .finally(() => setLoadingTxt(undefined));
   }, [sbSelection, sbUrl]);

@@ -10,5 +10,5 @@ insert_permissions:
     - auth0_id
     - details
     - figma_id
-    - result
+    - status
   role: anonymous

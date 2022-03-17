@@ -1,15 +1,16 @@
-import { FC, memo, useEffect } from 'react';
+import { FC, memo } from 'react';
 
 import styles from './App.module.scss';
 import { LogoutBtn } from './feat/auth/LogoutBtn';
 import { ImportSb } from './feat/import-sb/1-ImportSb';
-import { pushEvent } from './feat/import-sb/detail/analytics';
+import { track } from './feat/import-sb/detail/analytics';
+
+// Ideally, we should use document.addEventListener('visibilitychange', ...) but it doesn't work and triggers with alt+tab (undesired).
+window.addEventListener('unload', function () {
+  track('close-plugin');
+});
 
 export const App: FC = memo(function App() {
-  useEffect(() => {
-    pushEvent('openPlugin');
-  }, []);
-
   return (
     <div className={styles.container}>
       <div className={styles.body}>

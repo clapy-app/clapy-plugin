@@ -26,7 +26,7 @@ type clapy_analytics {
   ): jsonb
   figma_id: String!
   id: uuid!
-  result: String
+  status: String
 }
 
 """
@@ -64,7 +64,7 @@ input clapy_analytics_bool_exp {
   details: jsonb_comparison_exp
   figma_id: String_comparison_exp
   id: uuid_comparison_exp
-  result: String_comparison_exp
+  status: String_comparison_exp
 }
 
 """
@@ -107,7 +107,7 @@ input clapy_analytics_insert_input {
   details: jsonb
   figma_id: String
   id: uuid
-  result: String
+  status: String
 }
 
 """aggregate max on columns"""
@@ -117,7 +117,7 @@ type clapy_analytics_max_fields {
   created_at: timestamptz
   figma_id: String
   id: uuid
-  result: String
+  status: String
 }
 
 """aggregate min on columns"""
@@ -127,7 +127,7 @@ type clapy_analytics_min_fields {
   created_at: timestamptz
   figma_id: String
   id: uuid
-  result: String
+  status: String
 }
 
 """
@@ -158,7 +158,7 @@ input clapy_analytics_order_by {
   details: order_by
   figma_id: order_by
   id: order_by
-  result: order_by
+  status: order_by
 }
 
 """primary key columns input for table: clapy_analytics"""
@@ -194,7 +194,7 @@ enum clapy_analytics_select_column {
   id
 
   """column name"""
-  result
+  status
 }
 
 """
@@ -207,7 +207,7 @@ input clapy_analytics_set_input {
   details: jsonb
   figma_id: String
   id: uuid
-  result: String
+  status: String
 }
 
 """
@@ -233,7 +233,7 @@ enum clapy_analytics_update_column {
   id
 
   """column name"""
-  result
+  status
 }
 
 scalar jsonb

@@ -63,7 +63,7 @@ export enum Clapy_Analytics_Select_Column {
   /** column name */
   Id = 'id',
   /** column name */
-  Result = 'result'
+  Status = 'status'
 }
 
 /** Ordering options when selecting data from "clapy.analytics". */
@@ -74,7 +74,7 @@ export type Clapy_Analytics_Order_By = {
   details?: InputMaybe<Order_By>;
   figma_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  result?: InputMaybe<Order_By>;
+  status?: InputMaybe<Order_By>;
 };
 
 /** column ordering options */
@@ -104,7 +104,7 @@ export type Clapy_Analytics_Bool_Exp = {
   details?: InputMaybe<Jsonb_Comparison_Exp>;
   figma_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
-  result?: InputMaybe<String_Comparison_Exp>;
+  status?: InputMaybe<String_Comparison_Exp>;
 };
 
 /** Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'. */
@@ -198,7 +198,7 @@ export type Clapy_Analytics = {
   details?: Maybe<Scalars['jsonb']>;
   figma_id: Scalars['String'];
   id: Scalars['uuid'];
-  result?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
 };
 
 
@@ -237,7 +237,7 @@ export type Clapy_Analytics_Max_Fields = {
   created_at?: Maybe<Scalars['timestamptz']>;
   figma_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['uuid']>;
-  result?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
 };
 
 /** aggregate min on columns */
@@ -248,7 +248,7 @@ export type Clapy_Analytics_Min_Fields = {
   created_at?: Maybe<Scalars['timestamptz']>;
   figma_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['uuid']>;
-  result?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
 };
 
 /** mutation root */
@@ -335,7 +335,7 @@ export type Clapy_Analytics_Insert_Input = {
   details?: InputMaybe<Scalars['jsonb']>;
   figma_id?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['uuid']>;
-  result?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['String']>;
 };
 
 /** on_conflict condition type for table "clapy.analytics" */
@@ -366,7 +366,7 @@ export enum Clapy_Analytics_Update_Column {
   /** column name */
   Id = 'id',
   /** column name */
-  Result = 'result'
+  Status = 'status'
 }
 
 /** append existing jsonb value of filtered columns with new jsonb value */
@@ -405,7 +405,7 @@ export type Clapy_Analytics_Set_Input = {
   details?: InputMaybe<Scalars['jsonb']>;
   figma_id?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['uuid']>;
-  result?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['String']>;
 };
 
 /** primary key columns input for table: clapy_analytics */
