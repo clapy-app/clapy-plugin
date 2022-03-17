@@ -3,7 +3,7 @@ name: Master
 on:
   push:
     branches:
-      - main
+      - master
     paths: 
       - "figma-plugin-clapy/**"
       - ".github/**"
