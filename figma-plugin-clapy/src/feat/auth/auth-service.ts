@@ -14,7 +14,10 @@ const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 const redirectUri = `${apiBaseUrl}/login/callback`;
 
 let _accessToken: string | null = null;
-let _accessTokenDecoded: AccessTokenDecoded | null = null;
+/**
+ * Don't use unless you know what you are doing. Prefer getToken() instead.
+ */
+export let _accessTokenDecoded: AccessTokenDecoded | null = null;
 let _tokenType: string | null = null;
 
 // Exported methods
@@ -41,7 +44,7 @@ export async function login() {
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
 
-    cacheAccessToken(accessToken);
+    setAccessToken(accessToken);
     _tokenType = tokenType;
 
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
@@ -54,11 +57,12 @@ export async function login() {
 
 const interactiveSignInMsg = 'Interactive sign in required';
 
+// TODO if getTokens and refreshTokens have concurrent calls, they should run only once and return the same promise.
 export async function getTokens() {
   try {
     if (!_accessToken) {
       const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
-      cacheAccessToken(accessToken);
+      setAccessToken(accessToken);
       _tokenType = tokenType;
     }
     if (!_accessToken) {
@@ -85,7 +89,7 @@ export async function refreshTokens() {
   if (refreshToken) {
     // If a refresh token is available, use it to generate a new access token.
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
-    cacheAccessToken(accessToken);
+    setAccessToken(accessToken);
     _tokenType = tokenType;
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
@@ -95,7 +99,7 @@ export async function refreshTokens() {
 }
 
 export function logout() {
-  cacheAccessToken(null);
+  setAccessToken(null);
   _tokenType = null;
   const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
     client_id: auth0ClientId,
@@ -214,7 +218,7 @@ async function deleteReadToken(readToken: string) {
   }
 }
 
-function cacheAccessToken(accessToken: string | null) {
+function setAccessToken(accessToken: string | null) {
   _accessToken = accessToken;
   _accessTokenDecoded = accessToken ? jwtDecode<AccessTokenDecoded>(accessToken) : null;
 }

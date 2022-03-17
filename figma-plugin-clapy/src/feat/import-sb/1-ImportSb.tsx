@@ -15,6 +15,7 @@ import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
+import { pushEvent } from './detail/analytics';
 import { renderComponent } from './detail/renderComponent';
 import { setSelection } from './import-slice';
 
@@ -40,6 +41,7 @@ export const ImportSb: FC = memo(function ImportSb() {
   useEffect(() => {
     getTokens()
       .then(() => {
+        pushEvent('open-plugin');
         setError(undefined);
       })
       .catch(err => {
