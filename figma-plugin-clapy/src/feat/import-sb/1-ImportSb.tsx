@@ -1,8 +1,19 @@
-import { ChangeEventHandler, FC, memo, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ChangeEventHandler,
+  FC,
+  memo,
+  MouseEventHandler,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useSelector } from 'react-redux';
 
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { handleError } from '../../common/error-utils';
+import { getDuration } from '../../common/general-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
@@ -84,7 +95,8 @@ export const ImportSb: FC = memo(function ImportSb() {
   const interrupt = useCallback(() => {
     setInterrupted(true);
     interruptedRef.current = true;
-    track('run-import', 'interrupt');
+    const durationInS = endTimer(importTimerRef);
+    track('run-import', 'interrupt', { durationInS });
   }, []);
 
   // Show selection
@@ -100,6 +112,8 @@ export const ImportSb: FC = memo(function ImportSb() {
   //   return fetchPlugin('runGrid');
   // }, []);
 
+  const importTimerRef = useRef<number>();
+
   const runImport: MouseEventHandler<HTMLButtonElement> = useCallback(() => {
     if (!storiesSamplesRef.current || (!sbSelection && !sbUrl)) {
       console.warn('Stories sample undefined or selection undefined. Cannot run import. Bug?');
@@ -114,6 +128,7 @@ export const ImportSb: FC = memo(function ImportSb() {
     interruptedRef.current = false;
 
     track('run-import', 'start', { url: sbUrlToImport });
+    startTimer(importTimerRef);
     fetchStories(sbUrlToImport)
       .then(stories => {
         setLoadingTxt('Prepare stories placeholders...');
@@ -169,12 +184,15 @@ export const ImportSb: FC = memo(function ImportSb() {
             }
           }
         }
-        track('run-import', 'completed');
+
+        const durationInS = endTimer(importTimerRef);
+        track('run-import', 'completed', { durationInS });
       })
       .catch(err => {
         handleError(err);
         setError(err?.message || 'Unknown error');
-        track('run-import', 'error', err?.message || 'Unknown error');
+        const durationInS = endTimer(importTimerRef);
+        track('run-import', 'error', { error: err?.message || 'Unknown error', durationInS });
       })
       .finally(() => setLoadingTxt(undefined));
   }, [sbSelection, sbUrl]);
@@ -272,4 +290,14 @@ export const ImportSb: FC = memo(function ImportSb() {
 
 async function fetchStories(sbUrl: string) {
   return (await apiGet<SbStoriesWrapper>('stories/fetch-list', { query: { sbUrl } })).data;
+}
+
+function startTimer(importTimerRef: MutableRefObject<number | undefined>) {
+  importTimerRef.current = performance.now();
+}
+
+function endTimer(importTimerRef: MutableRefObject<number | undefined>): number | undefined {
+  const durationInS = importTimerRef.current ? getDuration(importTimerRef.current, performance.now()) : undefined;
+  importTimerRef.current = undefined;
+  return durationInS;
 }

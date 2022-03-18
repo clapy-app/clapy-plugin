@@ -37,3 +37,12 @@ export function keyBy<T>(array: T[], field: keyof T) {
   }
   return indexed;
 }
+
+/**
+ * @param start start of measurement. Use performance.now() to get the value when you start measuring.
+ * @param end end of measurement. Use performance.now() to get the value when you stop measuring.
+ * @returns duration in seconds between start and end
+ */
+export function getDuration(start: number, end: number) {
+  return Math.round(end - start) / 1000;
+}
