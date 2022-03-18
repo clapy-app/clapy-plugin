@@ -1,14 +1,17 @@
 {
   "git.allowForcePush": true,
-  "editor.formatOnSave": true,
-  // turns on Auto Fix for all providers including ESLint
+  "editor.formatOnSave": false,
+  // turns on Auto Fix for ESLint provider 
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll.eslint": true
   },
   "eslint.packageManager": "yarn",
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "eslint.format.enable": true,
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "eslint.format.enable": true
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  }
 }
