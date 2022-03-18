@@ -32,11 +32,7 @@ export const App: FC = memo(function App() {
         <a href='https://bit.ly/clapy-discord-footer' target='_blank' rel='noreferrer'>
           Discord
         </a>
-        <a
-          href='https://join.slack.com/t/clapy-co/shared_invite/zt-14uz8kprq-MMtpwU5Wkpt7KuF0p72uiQ'
-          target='_blank'
-          rel='noreferrer'
-        >
+        <a href='https://bit.ly/clapy-slack-footer' target='_blank' rel='noreferrer'>
           Slack
         </a>
         {/* Mail link generated with https://mailtolink.me/ */}

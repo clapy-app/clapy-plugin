@@ -36,12 +36,7 @@ export const Banner: FC = memo(function Banner() {
           <p>or</p>
         </div>
         <div className={classes.joinSocial}>
-          <a
-            className={classes.dorikBtn}
-            href='https://join.slack.com/t/clapy-co/shared_invite/zt-14uz8kprq-MMtpwU5Wkpt7KuF0p72uiQ'
-            target='_blank'
-            rel='noreferrer'
-          >
+          <a className={classes.dorikBtn} href='https://bit.ly/clapy-slack-plugin' target='_blank' rel='noreferrer'>
             <div className={classes.btnSvgWrapper}>
               <svg
                 aria-hidden='true'
