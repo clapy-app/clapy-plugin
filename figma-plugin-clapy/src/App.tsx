@@ -1,13 +1,17 @@
 import { FC, memo } from 'react';
 
 import styles from './App.module.scss';
+import { getDuration } from './common/general-utils';
 import { LogoutBtn } from './feat/auth/LogoutBtn';
 import { ImportSb } from './feat/import-sb/1-ImportSb';
 import { track } from './feat/import-sb/detail/analytics';
 
+const openPluginTime = performance.now();
+
 // Ideally, we should use document.addEventListener('visibilitychange', ...) but it doesn't work and triggers with alt+tab (undesired).
 window.addEventListener('unload', function () {
-  track('close-plugin');
+  const durationInS = getDuration(openPluginTime, performance.now());
+  track('close-plugin', undefined, { durationInS });
 });
 
 export const App: FC = memo(function App() {
