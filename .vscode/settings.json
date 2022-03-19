@@ -1,14 +1,38 @@
 {
   "git.allowForcePush": true,
-  "editor.formatOnSave": true,
-  // turns on Auto Fix for all providers including ESLint
+  "editor.formatOnSave": false,
+  // turns on Auto Fix for ESLint provider 
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll.eslint": true
   },
+  "editor.formatOnSaveMode": "modificationsIfAvailable",
   "eslint.packageManager": "yarn",
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+  "eslint.format.enable": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "eslint.format.enable": true
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  // "[html]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[json]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[jsonc]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
 }

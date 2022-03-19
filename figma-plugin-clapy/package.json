@@ -4,7 +4,16 @@
   "description": "Figma plugin to start building Clapy applications.",
   "private": true,
   "license": "UNLICENSED",
-  "sideEffects": ["*.css", "*.scss", "*.jpg", "*.svg", "*.png", "*.gif", "*.webp", "*.zip"],
+  "sideEffects": [
+    "*.css",
+    "*.scss",
+    "*.jpg",
+    "*.svg",
+    "*.png",
+    "*.gif",
+    "*.webp",
+    "*.zip"
+  ],
   "scripts": {
     "start": "yarn webpackdev",
     "dev": "npm-run-all --parallel dev-with-browser:plugin dev-with-browser:browser dev-with-browser:server",
