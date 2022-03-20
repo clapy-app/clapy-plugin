@@ -50,14 +50,6 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@figma-plugin/helpers@^0.15.2":
-  version "0.15.2"
-  resolved "https://registry.yarnpkg.com/@figma-plugin/helpers/-/helpers-0.15.2.tgz#0941089e7451fd2764843d763042728579dd54bf"
-  integrity sha512-ggFxoefZKc0D/HJXFHqliLWCLQG3QTbByHqgiSpTK0D76qTDv2fpcF9bytjSMVnc4flD7Rq17tLNP/WmaJt3dA==
-  dependencies:
-    lodash "^4.17.15"
-    matrix-inverse "^1.0.1"
-
 "@figma/plugin-typings@^1.41.1":
   version "1.41.1"
   resolved "https://registry.npmjs.org/@figma/plugin-typings/-/plugin-typings-1.41.1.tgz"
@@ -2989,7 +2981,7 @@ lodash.union@^4.6.0:
   resolved "https://registry.npmjs.org/lodash.union/-/lodash.union-4.6.0.tgz"
   integrity sha1-SLtQiECfFvGCFmZkHETdGqrjzYg=
 
-lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.20, lodash@^4.17.21:
+lodash@^4.17.14, lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -3031,11 +3023,6 @@ make-dir@^3.0.0:
   integrity sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==
   dependencies:
     semver "^6.0.0"
-
-matrix-inverse@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/matrix-inverse/-/matrix-inverse-1.0.1.tgz#efb05a29eb913a04fac396731dca683c46eca460"
-  integrity sha512-ubaJ6vEJfpsRpOLYLJN3bCW3VbO2t0OtZIfausKiizsPNCvCXsWsLMR8jm4zmi8bSnodp3ht25iqdpSe0wIbxg==
 
 media-typer@0.3.0:
   version "0.3.0"

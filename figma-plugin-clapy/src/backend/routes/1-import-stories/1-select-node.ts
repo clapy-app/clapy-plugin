@@ -1,7 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
 import { ArgTypes } from '../../../common/sb-serialize.model';
-import { listVariantProps } from './import-sb-utils';
-import { getParentCompNode } from './import-sb-utils-2';
+import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {
   sendSbCompSelection?.();
