@@ -2,14 +2,17 @@
 
 // The currency configured here MUST match the one used in the page.
 const currency = '$';
+
 // Used to replace the label below the price.
-const perMonthLabel = 'Per month';
-const perYearLabel = 'Per year';
+const perMonthLabel = 'Per user per month';
+const perYearLabel = 'Per user per year';
+
 // Regex used to extract the discount from the "yearly" button label (e.g. "Yearly (-15%)").
 const discountRegexInYearlyButton = /-(\d\d?)%/;
+
 // If the discount couldn't be read (nothing that matches the regex), we use a default discount instead.
 // Must be between 0 and 1. 0 means no discount, 1 means 100% discount (free)
-const defaultDiscount = 0;
+const defaultDiscount = 0.15;
 
 // Function that calculates the yearly price from the monthly one and the discount.
 function calculateYearlyPrice(monthlyPrice, discount) {

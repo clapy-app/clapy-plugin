@@ -70,7 +70,6 @@
     "mkdirp": "^1.0.4",
     "ncp": "^2.0.0",
     "nodemon": "^2.0.15",
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.3.1",
     "react-dev-utils": "^12.0.0",
     "react-refresh": "^0.11.0",

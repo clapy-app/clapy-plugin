@@ -8,6 +8,7 @@
   "scripts": {
     "________________ development ________________": "",
     "install:all": "yarn && yarn install:backend && yarn install:plugin",
+    "dev": "npm-run-all --parallel plugin-dev up console",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive --latest",
     "up": "docker-compose up -d",
@@ -19,6 +20,7 @@
     "________________ implementation details ________________": "",
     "install:backend": "cd backend-clapy && yarn",
     "install:plugin": "cd figma-plugin-clapy && yarn",
+    "plugin-dev": "cd figma-plugin-clapy && yarn dev",
     "migrate:staging1": "yarn hasura:server metadata apply --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging2": "yarn hasura:server migrate apply --all-databases --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging3": "yarn hasura:server metadata reload --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
@@ -29,6 +31,7 @@
     "pinggit": "ssh -T git@github.com"
   },
   "devDependencies": {
-    "hasura-cli": "^2.2.0"
+    "hasura-cli": "^2.2.0",
+    "npm-run-all": "^4.1.5"
   }
 }
