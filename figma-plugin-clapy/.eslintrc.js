@@ -27,6 +27,12 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'unused-imports/no-unused-imports': 'error',
+    'react-hooks/exhaustive-deps': [
+      'warn',
+      {
+        additionalHooks: '(useCallbackAsync)', // additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)"
+      },
+    ],
   },
   settings: {
     react: {
