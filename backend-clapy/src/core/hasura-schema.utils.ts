@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
+import axios from 'axios';
 
 import { wait } from '../common/general-utils';
-import { axios } from '../common/http-utils';
 import { env } from '../environment/env';
 import { backendDir, pluginDir } from '../root';
 

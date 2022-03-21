@@ -34,5 +34,9 @@
     // "strictBindCallApply": false,
     "outDir": "./dist",
     // "baseUrl": "./",
-  }
+  },
+  "include": [
+    "src/main.ts",
+    "./src/typings/**/*",
+  ]
 }

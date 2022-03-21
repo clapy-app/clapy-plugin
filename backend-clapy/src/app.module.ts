@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
 import { LoginController } from './auth/login.controller';
 import { LoginPrivateController } from './auth/login-private.controller';
-import { CodeController } from './features/export-cdoe/code-controller';
+import { CodeController } from './features/export-code/code-controller';
 import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller';
 
 @Module({

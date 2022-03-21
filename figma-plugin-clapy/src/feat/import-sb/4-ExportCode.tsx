@@ -13,5 +13,5 @@ export const ExportCode: FC = memo(function ExportCode() {
     const { data } = await apiPost<void>('code/export', nodes);
     console.log('res data:', data);
   }, []);
-  return <Button onClick={exportCode}>Export code (alpha)</Button>;
+  return <Button onClick={exportCode}>Preview selection (alpha)</Button>;
 });
