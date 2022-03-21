@@ -22,6 +22,7 @@
     "install:backend": "cd backend-clapy && yarn",
     "install:plugin": "cd figma-plugin-clapy && yarn",
     "plugin-dev": "cd figma-plugin-clapy && yarn dev",
+    "plugin-test": "cd figma-plugin-clapy && yarn start",
     "migrate:staging1": "yarn hasura:server metadata apply --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging2": "yarn hasura:server migrate apply --all-databases --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging3": "yarn hasura:server metadata reload --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",

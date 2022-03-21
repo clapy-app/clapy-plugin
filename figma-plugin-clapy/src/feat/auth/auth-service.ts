@@ -1,8 +1,9 @@
 import jwtDecode from 'jwt-decode';
 
 import { handleError } from '../../common/error-utils';
+import { openWindowStep1, openWindowStep2 } from '../../common/front-utils';
 import { wait } from '../../common/general-utils';
-import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
+import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { dispatchOther } from '../../core/redux/redux.utils';
 import { env } from '../../environment/env';
@@ -24,8 +25,7 @@ let _tokenType: string | null = null;
 
 export async function login() {
   try {
-    const authWindow = isFigmaPlugin ? null : window.open(undefined, '_blank');
-    if (!isFigmaPlugin && !authWindow) throw new Error('Cannot open a window to authenticate. Something is wrong.');
+    const authWindow = openWindowStep1();
 
     dispatchOther(startLoadingAuth());
 
@@ -34,11 +34,7 @@ export async function login() {
 
     const { readToken, writeToken } = await fetchReadWriteKeys();
     const authUrl = getAuthenticationURL(writeToken, challenge);
-    if (isFigmaPlugin) {
-      window.open(authUrl, '_blank');
-    } else {
-      authWindow!.location.href = authUrl;
-    }
+    openWindowStep2(authWindow, authUrl);
     const authoCode = await waitForAuthorizationCode(readToken);
     const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
     deleteReadToken(readToken);
