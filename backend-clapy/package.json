@@ -47,6 +47,7 @@
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
+    "@figma/plugin-typings": "^1.43.0",
     "@graphql-codegen/cli": "^2.6.2",
     "@graphql-codegen/typescript": "^2.4.7",
     "@nestjs/cli": "^8.0.0",

@@ -20,7 +20,7 @@ export function useCallbackAsync2<T extends (...args: any[]) => any>(callback: T
     // @ts-ignore
     async (...args: any[]) => {
       try {
-        return callback(...args);
+        return await callback(...args);
       } catch (error) {
         handleError(error);
       }

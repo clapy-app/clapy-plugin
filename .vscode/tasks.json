@@ -4,14 +4,14 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Start in browser",
+			"label": "Start dev env",
 			"detail": "Start all scripts to run the Figma plugin with a separate browser preview",
 			"dependsOn": [
 				"Figma plugin",
 				"Browser app (plugin dev)",
 				"Websocket app",
-				"Hasura console",
-				"Docker containers"
+				"Hasura console", // Already depends on Docker containers
+				// "Docker containers"
 			],
 			"presentation": {
 				"reveal": "never"
@@ -104,6 +104,9 @@
 			"detail": "`npm run console` as VSCode task",
 			"type": "npm",
 			"script": "console",
+			"dependsOn": [
+				"Docker containers"
+			],
 			// "problemMatcher": [
 			// 	"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
 			// ],
@@ -155,7 +158,7 @@
 			"label": "Docker containers",
 			"detail": "`npm run up` as VSCode task",
 			"type": "npm",
-			"script": "up",
+			"script": "upwait",
 			// "problemMatcher": [
 			// 	"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
 			// ],

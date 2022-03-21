@@ -179,7 +179,7 @@ async function httpReqUnauthenticated<T>(
 
 async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiResponse<T>> {
   const respRaw = await respPromise;
-  const data: T = await respRaw.json();
+  const data: T = respRaw.headers.has('content-type') ? await respRaw.json() : undefined;
   const { bodyUsed, headers, ok, redirected, status, statusText, type, url } = respRaw;
   return {
     bodyUsed,

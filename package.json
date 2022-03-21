@@ -18,6 +18,7 @@
     "migrate:dev": "yarn hasura migrate apply --endpoint http://localhost:8089/",
     "migrate:staging": "yarn migrate:staging1 && yarn migrate:staging2 && yarn migrate:staging3",
     "________________ implementation details ________________": "",
+    "upwait": "yarn up && sleep 5",
     "install:backend": "cd backend-clapy && yarn",
     "install:plugin": "cd figma-plugin-clapy && yarn",
     "plugin-dev": "cd figma-plugin-clapy && yarn dev",

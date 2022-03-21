@@ -114,7 +114,7 @@ export function isComponent(node: LayoutNodeExtended | Nil): node is ComponentNo
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: LayoutNodeExtended | Nil): node is InstanceNode {
+export function isInstance(node: LayoutNodeExtended | BaseNode | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
 

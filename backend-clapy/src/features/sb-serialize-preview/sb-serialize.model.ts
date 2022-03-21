@@ -233,3 +233,9 @@ export interface SbStoriesWrapperInput {
   stories: SbStoriesInput;
   v: number;
 }
+
+type OmitMethods<T> = {
+  [P in keyof T as T[P] extends Function ? never : P]: T[P];
+};
+
+export type SceneNodeNoMethod = OmitMethods<SceneNode>;
