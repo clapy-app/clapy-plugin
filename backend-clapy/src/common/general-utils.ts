@@ -43,3 +43,7 @@ export function keyBy<T>(array: T[], field: keyof T) {
   }
   return indexed;
 }
+
+export async function waitInfinite() {
+  return wait(2147483647);
+}
