@@ -30,7 +30,8 @@
     "hasura": "hasura --project db/hasura --envfile ../../.env --skip-update-check",
     "hasura:server": "hasura --project db/hasura --skip-update-check",
     "gentypes": "cd backend-clapy && yarn gentypes",
-    "pinggit": "ssh -T git@github.com"
+    "pinggit": "ssh -T git@github.com",
+    "kill": "sudo kill -9 `sudo lsof -t -i:9001`; sudo kill -9 `sudo lsof -t -i:9000`; echo Done"
   },
   "devDependencies": {
     "hasura-cli": "^2.2.0",

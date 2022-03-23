@@ -15,3 +15,15 @@ Discussion: https://github.com/yarnpkg/yarn/issues/609
 ## Notes for later
 
 codesandbox uses parcel to bundle in the browser.
+https://astexplorer.net/ to list AST tools
+https://ts-ast-viewer.com/ for typescript AST playground
+
+## CSS AST tools
+
+https://github.com/csstree/csstree  20M downloads, 1.4k likes -- good, targetting my use case
+https://github.com/postcss/postcss  66M downlaods, 26k likes -- has a parser, but too general purpose, probably too big and harder to use.
+https://github.com/reworkcss/css  12M downloads, 1.4k likes -- seems to focus on read, not write
+
+downloads are weekly figures on npmjs.com.
+
+Inspiration to convert figma config to CSS: https://github.com/figma-plugin-helper-functions/figma-plugin-helpers/blob/master/src/helpers/getCSSStyles.ts

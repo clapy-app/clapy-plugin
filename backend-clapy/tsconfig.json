@@ -38,5 +38,6 @@
   "include": [
     "src/**/*.ts",
     "src/typings/**/*",
+    "node_modules/@types/**/*",
   ]
 }

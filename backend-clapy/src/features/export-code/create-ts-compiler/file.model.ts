@@ -1,4 +1,4 @@
-import { Expression, JsxChild, Node, Project, SourceFile, SourceFileStructure } from 'ts-morph';
+import { Expression, FunctionDeclaration, JsxChild, Node, Project, SourceFile, SourceFileStructure } from 'ts-morph';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 
@@ -37,6 +37,7 @@ export interface ProjectComponent {
   path: string;
   jsx: JsxNode;
   returnedExpression: Expression;
+  compDeclaration: FunctionDeclaration;
 }
 
 export interface ProjectExt extends Project {

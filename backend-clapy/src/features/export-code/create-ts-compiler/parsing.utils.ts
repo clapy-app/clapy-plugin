@@ -1,4 +1,4 @@
-import { ExportedDeclarations, Expression, Node, SourceFile, Symbol } from 'ts-morph';
+import { ExportedDeclarations, Expression, Node, ScriptTarget, SourceFile, Symbol, ts } from 'ts-morph';
 
 import { JsxNode, ProjectComponent } from './file.model';
 
@@ -78,6 +78,7 @@ function getExportedComponent(compDeclaration: ExportedDeclarations, file: Sourc
     path: getComponentPath(file.getFilePath(), lastName),
     jsx: lastJsxFound,
     returnedExpression,
+    compDeclaration,
   };
 }
 
@@ -115,6 +116,14 @@ export function printNode(node: Node | undefined) {
     return `Node ${node}`;
   }
   return `${node.getKindName()} (${node.getKind()}): ${node.print() || node.getText()}`;
+}
+
+export function printStandalone(node: ts.Node | undefined) {
+  if (!node) {
+    return `Node ${node}`;
+  }
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  return printer.printNode(ts.EmitHint.Unspecified, node, ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true));
 }
 
 export function getSymbolDeclarationOrThrow(symbol: Symbol): Node {
