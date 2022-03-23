@@ -19,7 +19,7 @@ export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMet
   console.log(cssAstToString(css));
 }
 
-export async function tryIt_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
+export async function exportCode(figmaConfig: SceneNodeNoMethod) {
   try {
     // Initialize the project template with base files
     const filesCsb = await readReactTemplateFiles();
@@ -40,7 +40,7 @@ export async function tryIt_createTsProjectCompiler(figmaConfig: SceneNodeNoMeth
     // console.log(csbFiles[`src/components/${compName}/${compName}.module.css'`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
-    const data = await uploadToCSB(csbFiles);
+    return await uploadToCSB(csbFiles);
   } catch (error) {
     console.error(error);
   }

@@ -61,7 +61,8 @@ function mkClassAttr(classVarName: string) {
 }
 
 function guessTagName(node: SceneNodeNoMethod) {
-  if (node.name.toLowerCase() === 'button') {
+  const name = node.name.toLowerCase();
+  if (name === 'button' || (name.includes('button') && !name.includes('wrapper'))) {
     return 'button';
   }
   return 'div';

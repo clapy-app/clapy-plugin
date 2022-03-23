@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { exportCode } from './3-create-ts-compiler';
 
 @Controller('code')
 export class CodeController {
@@ -8,7 +9,8 @@ export class CodeController {
 
   @Post('export')
   async exportCode(@Body() figmaNode: SceneNodeNoMethod) {
-    console.log('figmaNode:', JSON.stringify(figmaNode));
+    return exportCode(figmaNode);
+    // console.log('figmaNode:', JSON.stringify(figmaNode));
     // TODO prepare the code I'm supposed to generate.
     //
     // const files = await readCSBReactTemplateFiles();
