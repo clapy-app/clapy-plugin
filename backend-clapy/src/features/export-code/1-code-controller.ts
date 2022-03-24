@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
-import { exportCode } from './3-create-ts-compiler';
+import { exportCode } from './2-create-ts-compiler';
 
 @Controller('code')
 export class CodeController {

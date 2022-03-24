@@ -6,18 +6,18 @@ export function getLastReturnedExpression() {}
 
 // This code can be merged with query-ast.ts utils if it needs to be re-used.
 
-export function listExportedComponentsInFile(file: SourceFile): ProjectComponent[] {
-  const components: ProjectComponent[] = [];
-  for (const exp of file.getExportedDeclarations().values()) {
-    for (const decl of exp) {
-      const component = getExportedComponent(decl, file);
-      if (component) {
-        components.push(component);
-      }
-    }
-  }
-  return components;
-}
+// export function listExportedComponentsInFile(file: SourceFile): ProjectComponent[] {
+//   const components: ProjectComponent[] = [];
+//   for (const exp of file.getExportedDeclarations().values()) {
+//     for (const decl of exp) {
+//       const component = getExportedComponent(decl, file);
+//       if (component) {
+//         components.push(component);
+//       }
+//     }
+//   }
+//   return components;
+// }
 
 export function getFirstExportedComponentsInFileOrThrow(file: SourceFile): ProjectComponent {
   const res = getFirstExportedComponentsInFile(file);
@@ -26,9 +26,9 @@ export function getFirstExportedComponentsInFileOrThrow(file: SourceFile): Proje
 }
 
 export function getFirstExportedComponentsInFile(file: SourceFile): ProjectComponent | undefined {
-  for (const exp of file.getExportedDeclarations().values()) {
-    for (const decl of exp) {
-      const component = getExportedComponent(decl, file);
+  for (const child of file.forEachChildAsArray()) {
+    if (Node.isFunctionDeclaration(child)) {
+      const component = getExportedComponent(child, file);
       if (component) {
         return component;
       }

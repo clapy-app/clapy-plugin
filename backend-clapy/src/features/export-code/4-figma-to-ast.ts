@@ -38,6 +38,7 @@ export function figmaToAst(node: SceneNodeNoMethod) {
 
   const cssAst = mkStylesheetCss(context.cssRules);
 
+  // TODO 1) check if quick win to better format typescript code with eslint?
   // TODO 2) convert attributes to CSS
 
   return [tsx, cssAst] as const;

@@ -9,26 +9,13 @@ import {
   QuoteKind,
 } from 'ts-morph';
 
+import { flags } from '../../../env-and-config/app-config';
 import { env } from '../../../env-and-config/env';
 import { exportTemplatesDir } from '../../../root';
 import { CodeDict } from '../code.model';
-import { reactRootInMemory, reactTemplateDir } from './load-file.utils';
+import { reactRootInMemory } from './load-file.utils';
 
-const tsConfigTemplatePath = `${reactTemplateDir}/tsconfig.json`;
 const nodeModulesTemplatePath = `${exportTemplatesDir}/node_modules`;
-
-export function createProject2() {
-  const project = new Project({
-    tsConfigFilePath: tsConfigTemplatePath,
-    // skipAddingFilesFromTsConfig: true,
-    // compilerOptions: {
-    //   noEmit: true,
-    //   skipLibCheck: true,
-    // },
-  });
-  // project.addSourceFileAtPath(tsConfigFilePath);
-  return project;
-}
 
 export const tsConfigFilePath = `${reactRootInMemory}/tsconfig.json`;
 
@@ -59,7 +46,7 @@ export async function createProjectFromTsConfig(tsConfig: string) {
       insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
     },
   });
-  if (env.isDev) {
+  if (env.isDev && flags.loadLibsTypings) {
     try {
       for (const path of [
         '@types/react/index.d.ts',
