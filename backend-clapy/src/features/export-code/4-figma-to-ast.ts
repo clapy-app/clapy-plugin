@@ -38,8 +38,6 @@ export function figmaToAst(node: SceneNodeNoMethod) {
 
   const cssAst = mkStylesheetCss(context.cssRules);
 
-  // TODO 1) text node styles should go to the parent element class. First list child node styles, and at the end, append.
-  // TODO 1b) there should be a place to add the code that will handle conflicts between parent node and child text nodes => add an intermediate DOM node.
   // TODO 2) convert attributes to CSS
 
   return [tsx, cssAst] as const;
@@ -65,6 +63,8 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     } else {
       stylesMap['flex-direction'] = mkDeclarationCss('flex-direction', mkValueCss([mkIdentifierCss('row')]));
       Object.assign(context.parentStylesMap, stylesMap);
+      // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
+      // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
       return txt;
     }
   } else {

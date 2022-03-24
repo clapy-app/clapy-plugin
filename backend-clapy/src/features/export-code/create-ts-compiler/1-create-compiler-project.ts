@@ -1,4 +1,5 @@
 import {
+  CompilerOptions,
   getCompilerOptionsFromTsConfig,
   IndentationText,
   InMemoryFileSystemHost,
@@ -7,7 +8,6 @@ import {
   QuoteKind,
 } from 'ts-morph';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { CodeDict } from '../code.model';
 import { reactRoot } from './load-file.utils';
 
@@ -23,11 +23,12 @@ export function createProjectFromTsConfig(tsConfig: string) {
   if (Array.isArray(err) && err.length) {
     console.warn('Errors while reading tsconfig:', err);
   }
-  const compilerOptions = {
+  const compilerOptions: CompilerOptions = {
     ...options,
-    noEmit: false,
+    noEmit: true,
+    skipLibCheck: true,
   };
-  return new Project({
+  const project = new Project({
     compilerOptions,
     fileSystem,
     manipulationSettings: {
@@ -39,12 +40,21 @@ export function createProjectFromTsConfig(tsConfig: string) {
       insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
     },
   });
+  // project.addSourceFileAtPath(tsConfigFilePath);
+  return project;
 }
 
-export function mapCsbFilesToCompilerFormat(files: CodeDict) {
-  const filesForCompiler: Dict<string> = {};
+export function separateTsAndResources(files: CodeDict) {
+  const filesForCompiler: CodeDict = {};
+  const resources: CodeDict = {};
   for (const [path, content] of Object.entries(files)) {
-    filesForCompiler[path] = content;
+    // All supported extensions:
+    // '.ts', '.tsx', '.d.ts', '.js', '.jsx', '.cts', '.d.cts', '.cjs', '.mts', '.d.mts', '.mjs'
+    if (path.endsWith('.tsx') || path.endsWith('.ts') || path.endsWith('.jsx') || path.endsWith('.js')) {
+      filesForCompiler[path] = content;
+    } else {
+      resources[path] = content;
+    }
   }
-  return filesForCompiler;
+  return [filesForCompiler, resources];
 }

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import jwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 
-import { env } from '../environment/env';
+import { env } from '../env-and-config/env';
 
 const jwtCheck = jwt({
   secret: jwks.expressJwtSecret({

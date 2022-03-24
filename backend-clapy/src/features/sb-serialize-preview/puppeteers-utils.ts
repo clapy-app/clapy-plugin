@@ -6,7 +6,7 @@ import puppeteer, {
   UnwrapPromiseLike,
 } from 'puppeteer';
 
-import { env } from '../../environment/env';
+import { env } from '../../env-and-config/env';
 
 // Could improve typing of ...args to match the real arguments of inBrowserFunction.
 // We can get inspiration from the fetchPlugin function in the plugin project (client).

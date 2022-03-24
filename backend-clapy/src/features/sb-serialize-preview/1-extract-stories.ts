@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises';
 
 import { CacheAsLRUMap } from '../../common/cache';
-import { env } from '../../environment/env';
+import { env } from '../../env-and-config/env';
 import { backendDir } from '../../root';
 import { handleError } from '../../utils';
 import { ErrorResp, extractStoriesPuppeteer } from './1-extract-stories/extract-stories-puppeteer';

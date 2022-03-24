@@ -1,10 +1,13 @@
 import { Project, ts } from 'ts-morph';
 
+import { env } from '../../env-and-config/env';
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { readReactTemplateFiles } from './2-read-template-files';
 import { figmaToAst } from './4-figma-to-ast';
+import { diagnoseFormatTsFiles } from './8-diagnose-format-ts-files';
+import { writeToDisk } from './9-upload-to-csb';
 import { CodeDict } from './code.model';
-import { createProjectFromTsConfig, mapCsbFilesToCompilerFormat } from './create-ts-compiler/1-create-compiler-project';
+import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
 import { createComponent } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
@@ -26,7 +29,8 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
     const project = createProjectFromTsConfig(tsConfig);
     const cssFiles: CodeDict = {};
-    const files = mapCsbFilesToCompilerFormat(rest);
+    const [files, resources] = separateTsAndResources(rest);
+    resources['tsconfig.json'] = tsConfig;
     addFilesToProject(project, files);
 
     const compName = figmaConfig.name; // 'Button' - need to dedupe and find smarter names later
@@ -35,12 +39,19 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
 
     addCompToAppRoot(project, compName);
 
-    const csbFiles = toCSBFiles(project, cssFiles);
+    const tsFiles = diagnoseFormatTsFiles(project);
+    // prepareCssFiles(cssFiles);
+    // prepareResources(resources);
+
+    const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
     console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
     console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     // return await uploadToCSB(csbFiles);
+    if (env.isDev) {
+      await writeToDisk(csbFiles);
+    }
   } catch (error) {
     console.error(error);
   }

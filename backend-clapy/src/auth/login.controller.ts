@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Body, Controller, Get, Headers, Post, Query, Render } from '@nestjs/common';
 import { map } from 'rxjs';
 
-import { env } from '../environment/env';
+import { env } from '../env-and-config/env';
 import { Dict } from '../features/sb-serialize-preview/sb-serialize.model';
 import { generateToken } from '../utils';
 import { IsBrowserGet } from './IsBrowserGet.decorator';
