@@ -234,7 +234,7 @@ export interface SbStoriesWrapperInput {
   v: number;
 }
 
-type OmitMethods<T> = {
+export type OmitMethods<T> = {
   [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 

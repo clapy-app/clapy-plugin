@@ -2,18 +2,18 @@ import { Project, ts } from 'ts-morph';
 
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { readReactTemplateFiles } from './2-read-template-files';
-import { uploadToCSB } from './9-upload-to-csb';
+import { figmaToAst } from './4-figma-to-ast';
 import { CodeDict } from './code.model';
 import { createProjectFromTsConfig, mapCsbFilesToCompilerFormat } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
 import { createComponent } from './create-ts-compiler/3-create-component';
-import { figmaToAst } from './create-ts-compiler/4-figma-to-ast';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow, printStandalone } from './create-ts-compiler/parsing.utils';
 import { cssAstToString } from './css-gen/css-factories';
 
 export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
-  const [tsx, css] = await figmaToAst(figmaConfig);
+  // await wait(2000);
+  const [tsx, css] = figmaToAst(figmaConfig);
 
   console.log(printStandalone(tsx));
   console.log(cssAstToString(css));
@@ -36,11 +36,11 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     addCompToAppRoot(project, compName);
 
     const csbFiles = toCSBFiles(project, cssFiles);
+    console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
     console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
-    // console.log(csbFiles[`src/components/${compName}/${compName}.module.css'`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
-    return await uploadToCSB(csbFiles);
+    // return await uploadToCSB(csbFiles);
   } catch (error) {
     console.error(error);
   }
@@ -59,7 +59,7 @@ async function addComponentToProject(
   const { returnedExpression, compDeclaration } = getFirstExportedComponentsInFileOrThrow(buttonFile);
   compDeclaration.rename(compName);
 
-  const [tsx, css] = await figmaToAst(figmaConfig);
+  const [tsx, css] = figmaToAst(figmaConfig);
 
   // Replace the returned expression with the newly generated code
   returnedExpression.transform((/* traversal */) => {
@@ -81,7 +81,6 @@ function addCompToAppRoot(project: Project, compName: string) {
 
   const { jsx } = getFirstExportedComponentsInFileOrThrow(appFile);
   jsx.transform(traversal => {
-    console.log(traversal.currentNode);
     const node = traversal.currentNode;
     if (!isJsxElement(node)) {
       throw new Error(`jsx first tag is not a JsxElement in App.tsx, bug.`);
@@ -100,7 +99,6 @@ function addCompToAppRoot(project: Project, compName: string) {
       closingElement,
     );
   });
-  console.log(jsx.getFullText());
 }
 
 function isJsxElement(node: ts.Node): node is ts.JsxElement {

@@ -21,7 +21,7 @@ export function cssAstToString(css: StyleSheetPlain) {
   return csstree.generate(csstree.fromPlainObject(css));
 }
 
-type CssRootNode = AtrulePlain | RulePlain;
+export type CssRootNode = AtrulePlain | RulePlain;
 
 export function mkStylesheetCss(children: CssRootNode[]) {
   const stylesheet: StyleSheetPlain = {
