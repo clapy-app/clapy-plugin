@@ -3,32 +3,23 @@ import { ts } from 'ts-morph';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { CodeContext } from './code.model';
 import { isText } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import {
-  CssRootNode,
   mkBlockCss,
   mkClassSelectorCss,
-  mkDeclarationCss,
-  mkIdentifierCss,
   mkRuleCss,
   mkSelectorCss,
   mkSelectorListCss,
   mkStylesheetCss,
-  mkValueCss,
-} from './css-gen/css-factories';
+} from './css-gen/css-factories-low';
+import { mapCommonStyles, mapTagStyles, mapTextStyles } from './figma-to-ast/figma-to-ast-map';
 
 const { factory } = ts;
 const classImport = 'classes';
 
-interface CodeContext {
-  cssRules: CssRootNode[];
-  classNamesAlreadyUsed: Set<string>;
-  inButton?: boolean;
-  parentStylesMap?: Dict<DeclarationPlain>;
-}
-
-export function figmaToAst(node: SceneNodeNoMethod) {
+export function figmaToAstRootNode(node: SceneNodeNoMethod) {
   const context: CodeContext = {
     cssRules: [],
     classNamesAlreadyUsed: new Set(),
@@ -38,37 +29,41 @@ export function figmaToAst(node: SceneNodeNoMethod) {
 
   const cssAst = mkStylesheetCss(context.cssRules);
 
-  // TODO 1) check if quick win to better format typescript code with eslint?
   // TODO 2) convert attributes to CSS
 
   return [tsx, cssAst] as const;
 }
+
 export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
-  const { cssRules } = context;
   const tagName = guessTagName(context, node);
   if (tagName === 'button') {
     context = { ...context, inButton: true };
   }
 
-  const stylesMap: Dict<DeclarationPlain> = {
-    display: mkDeclarationCss('display', mkValueCss([mkIdentifierCss('flex')])),
-  };
+  const stylesMap: Dict<DeclarationPlain> = {};
+
+  // Add common styles (text and tags)
+  mapCommonStyles(context, node, stylesMap);
 
   if (isText(node)) {
-    // TODO push styles to parent cssRule
+    // Add text styles
+    mapTextStyles(context, node, stylesMap);
+
     const txt = factory.createJsxText(node.characters, false);
     if (!context.parentStylesMap) {
       const className = genClassName(context, node, isRoot);
       addCssRule(context, className, Object.values(stylesMap));
       return mkTag('div', [], [txt]);
     } else {
-      stylesMap['flex-direction'] = mkDeclarationCss('flex-direction', mkValueCss([mkIdentifierCss('row')]));
       Object.assign(context.parentStylesMap, stylesMap);
       // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
       // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
       return txt;
     }
   } else {
+    // Add tag styles
+    mapTagStyles(context, node, stylesMap);
+
     const className = genClassName(context, node, isRoot);
 
     const cssRule = addCssRule(context, className);
@@ -82,7 +77,6 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
         children.push(childTsx);
       }
     }
-    // children.push(factory.createJsxText('Sign up', false));
 
     cssRule.block.children.push(...Object.values(stylesMap));
 

@@ -3,7 +3,7 @@ import { Project, ts } from 'ts-morph';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
-import { figmaToAst } from './4-figma-to-ast';
+import { figmaToAstRootNode } from './4-figma-to-ast-root';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { writeToDisk } from './9-upload-to-csb';
 import { CodeDict } from './code.model';
@@ -13,11 +13,11 @@ import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
 import { createComponent } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow, printStandalone } from './create-ts-compiler/parsing.utils';
-import { cssAstToString } from './css-gen/css-factories';
+import { cssAstToString } from './css-gen/css-factories-low';
 
 export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
   // await wait(2000);
-  const [tsx, css] = figmaToAst(figmaConfig);
+  const [tsx, css] = figmaToAstRootNode(figmaConfig);
 
   console.log(printStandalone(tsx));
   console.log(cssAstToString(css));
@@ -85,7 +85,7 @@ async function addComponentToProject(
   compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
   perfMeasure('g3');
 
-  const [tsx, css] = figmaToAst(figmaConfig);
+  const [tsx, css] = figmaToAstRootNode(figmaConfig);
   perfMeasure('g4');
 
   // Replace the returned expression with the newly generated code
