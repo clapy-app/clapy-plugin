@@ -3,10 +3,7 @@
 import { readFile } from 'fs/promises';
 import { Project, SourceFile } from 'ts-morph';
 
-import { exportTemplatesDir } from '../../../root';
-
-export const componentTemplatePathTsx = `${exportTemplatesDir}/react-comp/CompTemplate.tsx`;
-export const componentTemplatePathCss = `${exportTemplatesDir}/react-comp/CompTemplate.module.css`;
+import { componentTemplatePathTsx } from './load-file.utils';
 
 export async function createComponent(project: Project, name: string) {
   // TypeScript

@@ -1,10 +1,8 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 
-import { exportTemplatesDir } from '../../root';
 import { CodeDict, CsbDict } from './code.model';
-
-export const reactTemplateDir = `${exportTemplatesDir}/react-project`;
+import { reactTemplateDir } from './create-ts-compiler/load-file.utils';
 
 const ignoredFilesAndDir = new Set(['node_modules', 'yarn.lock', 'favicon.ico']);
 

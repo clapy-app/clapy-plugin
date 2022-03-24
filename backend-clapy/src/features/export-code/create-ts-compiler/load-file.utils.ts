@@ -1,7 +1,13 @@
+import { exportTemplatesDir } from '../../../root';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import type { ProjectComponent, ProjectFile, ProjectFilesWithComp } from './file.model';
 
-export const reactRoot = '';
+export const reactTemplateDir = `${exportTemplatesDir}/react-project`;
+
+export const componentTemplatePathTsx = `${exportTemplatesDir}/react-comp/CompTemplate.tsx`;
+export const componentTemplatePathCss = `${exportTemplatesDir}/react-comp/CompTemplate.module.css`;
+
+export const reactRootInMemory = '';
 
 export enum TreeNodeKind {
   Dir,

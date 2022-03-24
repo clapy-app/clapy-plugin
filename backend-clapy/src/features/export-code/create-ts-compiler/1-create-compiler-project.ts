@@ -9,9 +9,24 @@ import {
 } from 'ts-morph';
 
 import { CodeDict } from '../code.model';
-import { reactRoot } from './load-file.utils';
+import { reactRootInMemory, reactTemplateDir } from './load-file.utils';
 
-export const tsConfigFilePath = `${reactRoot}/tsconfig.json`;
+const tsConfigTemplatePath = `${reactTemplateDir}/tsconfig.json`;
+
+export function createProject2(tsConfig: string) {
+  const project = new Project({
+    tsConfigFilePath: tsConfigTemplatePath,
+    // skipAddingFilesFromTsConfig: true,
+    // compilerOptions: {
+    //   noEmit: true,
+    //   skipLibCheck: true,
+    // },
+  });
+  // project.addSourceFileAtPath(tsConfigFilePath);
+  return project;
+}
+
+export const tsConfigFilePath = `${reactRootInMemory}/tsconfig.json`;
 
 const NO_INPUT_FILE_ERROR = 18003;
 
