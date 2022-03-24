@@ -23,13 +23,13 @@ export function diagnoseFormatTsFiles(project: Project) {
     }
     let content = file.getFullText();
 
-    // File diagnostic
-    if (env.isDev) {
-      const diagnostics = project.getLanguageService().getSuggestionDiagnostics(file);
-      if (diagnostics.length) {
-        console.log(project.formatDiagnosticsWithColorAndContext(diagnostics));
-      }
-    }
+    // File diagnostic - useful?
+    // if (env.isDev) {
+    //   const diagnostics = project.getLanguageService().getSuggestionDiagnostics(file);
+    //   if (diagnostics.length) {
+    //     console.log(project.formatDiagnosticsWithColorAndContext(diagnostics));
+    //   }
+    // }
 
     // Formatting
     if (formatWithNativeTypescript) {

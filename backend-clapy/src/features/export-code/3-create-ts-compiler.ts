@@ -7,7 +7,7 @@ import { figmaToAst } from './4-figma-to-ast';
 import { diagnoseFormatTsFiles } from './8-diagnose-format-ts-files';
 import { writeToDisk } from './9-upload-to-csb';
 import { CodeDict } from './code.model';
-import { createProject2, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
+import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
 import { createComponent } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
@@ -27,8 +27,7 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     // Initialize the project template with base files
     const filesCsb = await readReactTemplateFiles();
     const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
-    // const project = createProjectFromTsConfig(tsConfig);
-    const project = createProject2(tsConfig);
+    const project = await createProjectFromTsConfig(tsConfig);
     const cssFiles: CodeDict = {};
     const [files, resources] = separateTsAndResources(rest);
     resources['tsconfig.json'] = tsConfig;
@@ -45,8 +44,8 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     // prepareResources(resources);
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
-    console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-    console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+    // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
+    // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     // return await uploadToCSB(csbFiles);

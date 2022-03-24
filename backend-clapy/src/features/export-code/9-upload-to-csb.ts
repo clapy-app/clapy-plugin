@@ -23,7 +23,7 @@ export async function writeToDisk(files: CsbDict) {
     Object.entries(files).map(async ([path, { content }]) => {
       const dir = resolve(`${backendDir}/atest-gen/${dirname(path)}`);
       const file = resolve(`${backendDir}/atest-gen/${path}`);
-      console.log('Create:', file);
+      // console.log('Create:', file);
       await mkdir(dir, { recursive: true });
       return writeFile(file, content);
     }),
