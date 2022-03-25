@@ -92,7 +92,7 @@ async function addComponentToProject(
   returnedExpression.transform((/* traversal */) => {
     // traversal.currentNode
     // traversal.visitChildren()
-    return tsx;
+    return tsx || ts.factory.createNull();
   });
   perfMeasure('g5');
 

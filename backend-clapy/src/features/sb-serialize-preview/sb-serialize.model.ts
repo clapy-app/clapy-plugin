@@ -239,6 +239,7 @@ export type OmitMethods<T> = {
 };
 
 export type SceneNodeNoMethod = OmitMethods<SceneNode>;
+export type TextNodeNoMethod = OmitMethods<TextNode>;
 
 export interface CSBResponse {
   sandbox_id: string;

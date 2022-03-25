@@ -4,7 +4,7 @@ import { ts } from 'ts-morph';
 import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { CodeContext } from './code.model';
-import { isText } from './create-ts-compiler/canvas-utils';
+import { isComponent, isFrame, isGroup, isInstance, isText } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import {
   mkBlockCss,
@@ -28,8 +28,6 @@ export function figmaToAstRootNode(node: SceneNodeNoMethod) {
   const tsx = figmaToAstRec(context, node, true); //
 
   const cssAst = mkStylesheetCss(context.cssRules);
-
-  // TODO 2) convert attributes to CSS
 
   return [tsx, cssAst] as const;
 }
@@ -60,7 +58,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
       // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
       return txt;
     }
-  } else {
+  } else if (isFrame(node) || isComponent(node) || isInstance(node) || isGroup(node)) {
     // Add tag styles
     mapTagStyles(context, node, stylesMap);
 
@@ -71,10 +69,12 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     const contextForChildren: CodeContext = { ...context, parentStylesMap: stylesMap };
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
-      for (const child of node.children) {
+      for (const child of node.children as SceneNode[]) {
         const childTsx = figmaToAstRec(contextForChildren, child);
-        printStandalone(childTsx);
-        children.push(childTsx);
+        if (childTsx) {
+          printStandalone(childTsx);
+          children.push(childTsx);
+        }
       }
     }
 
@@ -83,6 +83,8 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     const classAttr = mkClassAttr(className);
     const tsx = mkTag(tagName, [classAttr], children);
     return tsx;
+  } else {
+    console.warn('Unsupported node', node.name, node.type);
   }
 }
 
