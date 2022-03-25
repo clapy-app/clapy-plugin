@@ -3,8 +3,9 @@ import { ts } from 'ts-morph';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-ast-map';
 import { CodeContext } from './code.model';
-import { isComponent, isFrame, isGroup, isInstance, isText } from './create-ts-compiler/canvas-utils';
+import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import {
   mkBlockCss,
@@ -14,7 +15,7 @@ import {
   mkSelectorListCss,
   mkStylesheetCss,
 } from './css-gen/css-factories-low';
-import { mapCommonStyles, mapTagStyles, mapTextStyles } from './figma-to-ast/figma-to-ast-map';
+import { warnNode } from './figma-code-map/_utils-and-reset';
 
 const { factory } = ts;
 const classImport = 'classes';
@@ -22,6 +23,7 @@ const classImport = 'classes';
 export function figmaToAstRootNode(node: SceneNodeNoMethod) {
   const context: CodeContext = {
     cssRules: [],
+    tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
     classNamesAlreadyUsed: new Set(),
   };
 
@@ -35,7 +37,9 @@ export function figmaToAstRootNode(node: SceneNodeNoMethod) {
 export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   const tagName = guessTagName(context, node);
   if (tagName === 'button') {
-    context = { ...context, inButton: true };
+    context = { ...context, tagName, inButton: true };
+  } else {
+    context = { ...context, tagName };
   }
 
   const stylesMap: Dict<DeclarationPlain> = {};
@@ -58,7 +62,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
       // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
       return txt;
     }
-  } else if (isFrame(node) || isComponent(node) || isInstance(node) || isGroup(node)) {
+  } else if (isFlexNode(node)) {
     // Add tag styles
     mapTagStyles(context, node, stylesMap);
 
@@ -84,7 +88,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     const tsx = mkTag(tagName, [classAttr], children);
     return tsx;
   } else {
-    console.warn('Unsupported node', node.name, node.type);
+    warnNode(node, 'Unsupported node (TODO)');
   }
 }
 

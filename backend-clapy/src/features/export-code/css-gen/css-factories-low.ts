@@ -7,6 +7,8 @@ import {
   Dimension,
   Identifier,
   IdSelector,
+  NumberNode,
+  Operator,
   RulePlain,
   SelectorListPlain,
   SelectorPlain,
@@ -89,7 +91,7 @@ export function mkDeclarationCss(property: string, value: ValuePlain, important 
   return declaration;
 }
 
-type ValueFragment = Dimension | Identifier;
+type ValueFragment = Dimension | Identifier | NumberNode | Operator;
 
 export function mkValueCss(children: ValueFragment[]) {
   const value: ValuePlain = {
@@ -99,10 +101,10 @@ export function mkValueCss(children: ValueFragment[]) {
   return value;
 }
 
-export function mkDimensionCss(value: string, unit: string) {
+export function mkDimensionCss(value: number, unit: string) {
   const dimension: Dimension = {
     type: 'Dimension',
-    value,
+    value: value.toString(),
     unit,
   };
   return dimension;
@@ -114,4 +116,23 @@ export function mkIdentifierCss(name: string) {
     name,
   };
   return identifier;
+}
+
+export function mkNumberCss(value: number) {
+  const dimension: NumberNode = {
+    type: 'Number',
+    value: value.toString(),
+  };
+  return dimension;
+}
+
+export const cssOperators = [','] as const;
+export type CssOperators = typeof cssOperators[number];
+
+export function mkOperatorCss(value: CssOperators) {
+  const dimension: Operator = {
+    type: 'Operator',
+    value,
+  };
+  return dimension;
 }

@@ -1,9 +1,5 @@
 import { randomBytes } from 'crypto';
 
-export type Dict2<Key extends string | number | symbol, Value> = {
-  [key in Key]: Value;
-};
-
 type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
 export function entries<T>(o: T): Entry<T>[] {
   return Object.entries(o) as unknown as Entry<T>[];

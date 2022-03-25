@@ -6,9 +6,23 @@ import { CssRootNode } from './css-gen/css-factories-low';
 export type CsbDict = Dict<{ content: string }>;
 export type CodeDict = Dict<string>;
 
+export type TagName = keyof JSX.IntrinsicElements;
+
 export interface CodeContext {
   cssRules: CssRootNode[];
   classNamesAlreadyUsed: Set<string>;
+  tagName: TagName;
   inButton?: boolean;
   parentStylesMap?: Dict<DeclarationPlain>;
+}
+
+export interface BorderWidths {
+  borderBottomWidth: number;
+  borderLeftWidth: number;
+  borderTopWidth: number;
+  borderRightWidth: number;
+}
+
+export interface CodeContextWithBorders extends CodeContext {
+  borderWidths: BorderWidths;
 }

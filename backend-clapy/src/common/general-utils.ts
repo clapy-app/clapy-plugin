@@ -1,8 +1,8 @@
 export type ObjKey = string | number | symbol;
 
-export type Dict2<Key extends ObjKey, Value> = {
+export type Dict2<Key extends ObjKey, Value> = Partial<{
   [key in Key]: Value;
-};
+}>;
 
 export type Nil = null | undefined;
 

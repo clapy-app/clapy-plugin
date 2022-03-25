@@ -133,3 +133,10 @@ export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
 export function isMyComp(node: SceneNodeNoMethod | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
+
+// GroupNode doesn't have auto-layout
+export type FlexNode = FrameNode | ComponentNode | InstanceNode /* | GroupNode */;
+
+export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {
+  return isFrame(node) || isComponent(node) || isInstance(node) /* || isGroup(node) */;
+}
