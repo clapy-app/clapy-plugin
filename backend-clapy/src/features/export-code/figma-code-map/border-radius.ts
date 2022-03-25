@@ -5,18 +5,18 @@ import { CodeContext } from '../code.model';
 import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
-export function borderRadiusFigmaToCode(context: CodeContext, node: FlexNode, stylesMap: Dict<DeclarationPlain>) {
+export function borderRadiusFigmaToCode(context: CodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
   const { topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius } = node;
   if (topLeftRadius || topRightRadius || bottomRightRadius || bottomLeftRadius) {
     if (topLeftRadius === topRightRadius && topLeftRadius === bottomRightRadius && topLeftRadius === bottomLeftRadius) {
-      addStyle(stylesMap, 'border-radius', [topLeftRadius, 'px']);
+      addStyle(styles, 'border-radius', [topLeftRadius, 'px']);
     } else if (topLeftRadius === bottomRightRadius && topRightRadius === bottomLeftRadius) {
-      addStyle(stylesMap, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px']);
+      addStyle(styles, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px']);
     } else if (topRightRadius === bottomLeftRadius) {
-      addStyle(stylesMap, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px'], [bottomRightRadius, 'px']);
+      addStyle(styles, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px'], [bottomRightRadius, 'px']);
     } else {
       addStyle(
-        stylesMap,
+        styles,
         'border-radius',
         [topLeftRadius, 'px'],
         [topRightRadius, 'px'],

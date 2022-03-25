@@ -3,7 +3,7 @@ import { ts } from 'ts-morph';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
-import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-ast-map';
+import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { CodeContext } from './code.model';
 import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
@@ -35,6 +35,10 @@ export function figmaToAstRootNode(node: SceneNodeNoMethod) {
 }
 
 export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
+  if (!node.visible) {
+    return;
+  }
+
   const tagName = guessTagName(context, node);
   if (tagName === 'button') {
     context = { ...context, tagName, inButton: true };
@@ -43,6 +47,11 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
   }
 
   const stylesMap: Dict<DeclarationPlain> = {};
+
+  if (!isText(node) && !isFlexNode(node)) {
+    warnNode(node, 'Unsupported node (TODO)');
+    return;
+  }
 
   // Add common styles (text and tags)
   mapCommonStyles(context, node, stylesMap);
@@ -87,8 +96,6 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     const classAttr = mkClassAttr(className);
     const tsx = mkTag(tagName, [classAttr], children);
     return tsx;
-  } else {
-    warnNode(node, 'Unsupported node (TODO)');
   }
 }
 

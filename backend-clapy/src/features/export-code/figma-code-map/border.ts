@@ -9,7 +9,7 @@ import { figmaColorToCssRGBA, tagResets, warnNode } from './_utils-and-reset';
 export function borderFigmaToCode(
   context: CodeContext,
   node: FlexNode,
-  stylesMap: Dict<DeclarationPlain>,
+  styles: Dict<DeclarationPlain>,
 ): CodeContextWithBorders {
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
   if (visibleStrokes.length) {
@@ -24,7 +24,7 @@ export function borderFigmaToCode(
       const { strokeAlign, strokeWeight } = node;
       const borderWidth = strokeWeight;
       const hex = figmaColorToCssRGBA(color, opacity);
-      addStyle(stylesMap, 'border', 'solid', [borderWidth, 'px'], hex);
+      addStyle(styles, 'border', 'solid', [borderWidth, 'px'], hex);
       return {
         ...context,
         borderWidths: {
@@ -41,7 +41,7 @@ export function borderFigmaToCode(
 
   // If no border applied, check if a reset is required
   if (tagResets[context.tagName]?.border) {
-    addStyle(stylesMap, 'border', 'none');
+    addStyle(styles, 'border', 'none');
   }
   return {
     ...context,

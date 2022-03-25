@@ -6,7 +6,7 @@ import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssRGBA, warnNode } from './_utils-and-reset';
 
-export function backgroundFigmaToCode(context: CodeContext, node: FlexNode, stylesMap: Dict<DeclarationPlain>) {
+export function backgroundFigmaToCode(context: CodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
   const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
   if (visibleFills.length) {
     const bgProps = [];
@@ -26,7 +26,7 @@ export function backgroundFigmaToCode(context: CodeContext, node: FlexNode, styl
         warnNode(node, 'Unsupported non solid background (TODO)');
       }
     }
-    addStyle(stylesMap, 'background', ...bgProps);
+    addStyle(styles, 'background', ...bgProps);
   }
 
   // If no fill, any reset required? TBC

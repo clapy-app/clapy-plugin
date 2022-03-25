@@ -18,6 +18,10 @@ export const tagResets: Dict2<TagName, Dict2<ResetProps, boolean>> = {
   },
 };
 
+export function isMixed(value: any): value is typeof figma.mixed {
+  return typeof value === 'symbol';
+}
+
 export function figmaColorToCssRGBA({ r, g, b }: RGB, opacity: number | undefined): string {
   return opacity === undefined || opacity === 1
     ? shortenHex(`#${zeroOneToHex(r)}${zeroOneToHex(g)}${zeroOneToHex(b)}`)

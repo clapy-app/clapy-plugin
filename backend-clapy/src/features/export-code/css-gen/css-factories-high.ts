@@ -16,11 +16,11 @@ import {
 type CssUnit = 'px' | 'em' | 'rem' | 'vh' | 'vw';
 
 export function addStyle<T extends keyof PropertiesHyphen>(
-  stylesMap: Dict<DeclarationPlain>,
+  styles: Dict<DeclarationPlain>,
   name: T,
   ...value: (NonNullable<PropertiesHyphen[T]> | [number, CssUnit] | 0)[]
 ) {
-  stylesMap[name] = mkDeclarationCss(
+  styles[name] = mkDeclarationCss(
     name,
     mkValueCss(
       value.map(val =>
@@ -29,6 +29,8 @@ export function addStyle<T extends keyof PropertiesHyphen>(
           : !Array.isArray(val)
           ? cssOperators.includes(val as CssOperators)
             ? mkOperatorCss(val as CssOperators)
+            : typeof val === 'number'
+            ? mkNumberCss(val)
             : mkIdentifierCss(val.toString())
           : val[0] === 0
           ? mkNumberCss(0)

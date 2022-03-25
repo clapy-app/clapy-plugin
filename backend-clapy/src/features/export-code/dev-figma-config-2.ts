@@ -1,0 +1,125 @@
+import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+
+export const devFigmaConfig = {
+  blendMode: 'PASS_THROUGH',
+  isMask: false,
+  effects: [],
+  effectStyleId: '',
+  relativeTransform: [
+    [1, 0, 155],
+    [0, 1, 0],
+  ],
+  absoluteTransform: [
+    [1, 0, -255.5],
+    [0, 1, -4018],
+  ],
+  x: 155,
+  y: 0,
+  width: 121,
+  height: 60,
+  absoluteRenderBounds: {
+    x: -257.5,
+    y: -4019,
+    width: 125,
+    height: 64,
+  },
+  rotation: 0,
+  layoutAlign: 'INHERIT',
+  constrainProportions: false,
+  layoutGrow: 0,
+  exportSettings: [],
+  fills: [
+    {
+      type: 'SOLID',
+      visible: false,
+      opacity: 1,
+      blendMode: 'NORMAL',
+      color: {
+        r: 1,
+        g: 1,
+        b: 1,
+      },
+    },
+  ],
+  fillStyleId: '',
+  strokes: [],
+  strokeStyleId: '',
+  strokeWeight: 1,
+  strokeAlign: 'INSIDE',
+  strokeJoin: 'MITER',
+  dashPattern: [],
+  strokeCap: 'NONE',
+  strokeMiterLimit: 4,
+  fillGeometry: [
+    {
+      windingRule: 'NONZERO',
+      data: 'M0 8C0 3.58172 3.58172 0 8 0L113 0C117.418 0 121 3.58172 121 8L121 52C121 56.4183 117.418 60 113 60L8 60C3.58172 60 0 56.4183 0 52L0 8Z',
+    },
+  ],
+  strokeGeometry: [],
+  cornerRadius: 8,
+  cornerSmoothing: 0,
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  primaryAxisSizingMode: 'AUTO',
+  layoutGrids: [],
+  gridStyleId: '',
+  backgrounds: [
+    {
+      type: 'SOLID',
+      visible: false,
+      opacity: 1,
+      blendMode: 'NORMAL',
+      color: {
+        r: 1,
+        g: 1,
+        b: 1,
+      },
+    },
+  ],
+  backgroundStyleId: '',
+  guides: [],
+  expanded: true,
+  constraints: {
+    horizontal: 'MIN',
+    vertical: 'MIN',
+  },
+  layoutMode: 'HORIZONTAL',
+  counterAxisSizingMode: 'AUTO',
+  itemSpacing: 0,
+  overflowDirection: 'NONE',
+  numberOfFixedChildren: 0,
+  overlayPositionType: 'CENTER',
+  overlayBackground: {
+    type: 'NONE',
+  },
+  overlayBackgroundInteraction: 'NONE',
+  scaleFactor: 1,
+  reactions: [
+    {
+      action: {
+        type: 'NODE',
+        destinationId: '1292:158901',
+        navigation: 'CHANGE_TO',
+        transition: {
+          type: 'DISSOLVE',
+          easing: {
+            type: 'LINEAR',
+          },
+          duration: 0.20000000298023224,
+        },
+        preserveScrollPosition: false,
+      },
+      trigger: {
+        type: 'ON_HOVER',
+      },
+    },
+  ],
+  variantProperties: {
+    Size: '2xl',
+    Hierarchy: 'Primary',
+    Icon: 'False',
+    Destructive: 'False',
+    State: 'Default',
+  },
+} as unknown as SceneNodeNoMethod;

@@ -5,8 +5,9 @@ import { CodeContext } from '../code.model';
 import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
-export function cursorFigmaToCode(context: CodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
-  if (context.tagName === 'button') {
-    addStyle(styles, 'cursor', 'pointer');
+export function overflowFigmaToCode(context: CodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
+  if (node.clipsContent) {
+    addStyle(styles, 'overflow', 'hidden');
+    // overflowDirection
   }
 }
