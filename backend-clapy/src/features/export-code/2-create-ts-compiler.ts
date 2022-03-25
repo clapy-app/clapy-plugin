@@ -14,6 +14,7 @@ import { createComponent } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow, printStandalone } from './create-ts-compiler/parsing.utils';
 import { cssAstToString } from './css-gen/css-factories-low';
+import { mkFragment } from './figma-code-map/details/ts-ast-utils';
 
 export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
   // await wait(2000);
@@ -92,7 +93,7 @@ async function addComponentToProject(
   returnedExpression.transform((/* traversal */) => {
     // traversal.currentNode
     // traversal.visitChildren()
-    return tsx || ts.factory.createNull();
+    return (Array.isArray(tsx) ? mkFragment(tsx) : tsx) || ts.factory.createNull();
   });
   perfMeasure('g5');
 

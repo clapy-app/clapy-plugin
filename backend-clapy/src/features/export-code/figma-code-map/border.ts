@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { CodeContext, CodeContextWithBorders } from '../code.model';
 import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssRGBA, tagResets, warnNode } from './_utils-and-reset';
+import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: CodeContext,

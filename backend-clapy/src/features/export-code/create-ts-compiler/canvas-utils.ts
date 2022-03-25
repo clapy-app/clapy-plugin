@@ -141,3 +141,8 @@ export type AllNode = FlexNode | TextNode;
 export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {
   return isFrame(node) || isComponent(node) || isInstance(node) /* || isGroup(node) */;
 }
+
+export function isStyledTextSegment(node: SceneNodeNoMethod | StyledTextSegment | Nil): node is StyledTextSegment {
+  const sts = node as StyledTextSegment;
+  return sts.characters != null && sts.start != null && sts.end != null;
+}

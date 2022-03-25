@@ -1,9 +1,14 @@
-import { Dict2 } from '../../../common/general-utils';
-import { SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
-import { TagName } from '../code.model';
+import { Dict2 } from '../../../../common/general-utils';
+import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
+import { TagName } from '../../code.model';
+import { isStyledTextSegment } from '../../create-ts-compiler/canvas-utils';
 
-export function warnNode(node: SceneNodeNoMethod, ...msg: any[]) {
-  console.warn(...msg, node.name, node.type, node.id);
+export function warnNode(node: SceneNodeNoMethod | StyledTextSegment, ...msg: any[]) {
+  if (isStyledTextSegment(node)) {
+    console.warn(...msg, node.characters);
+  } else {
+    console.warn(...msg, node.name, node.type, node.id);
+  }
 }
 
 type ResetProps = 'border' | 'padding';
@@ -19,7 +24,7 @@ export const tagResets: Dict2<TagName, Dict2<ResetProps, boolean>> = {
 };
 
 export function isMixed(value: any): value is typeof figma.mixed {
-  return typeof value === 'symbol';
+  return typeof value === 'symbol' || value === 'Mixed';
 }
 
 export function figmaColorToCssRGBA({ r, g, b }: RGB, opacity: number | undefined): string {

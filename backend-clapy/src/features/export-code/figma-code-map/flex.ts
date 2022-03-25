@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { CodeContextWithBorders } from '../code.model';
 import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { tagResets, warnNode } from './_utils-and-reset';
+import { tagResets, warnNode } from './details/utils-and-reset';
 
 export function flexFigmaToCode(context: CodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   if (node.layoutMode === 'NONE') {

@@ -1,3 +1,23 @@
+// Extracted from Figma typings
+type RangeProp = keyof Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
+// type TextSegment = Pick<StyledTextSegment, RangeProp[number] | 'characters' | 'start' | 'end'>
+// => StyledTextSegment
+
+export const rangeProps: RangeProp[] = [
+  'fillStyleId',
+  'fills',
+  'fontName',
+  'fontSize',
+  'hyperlink',
+  'indentation',
+  'letterSpacing',
+  'lineHeight',
+  'listOptions',
+  'textCase',
+  'textDecoration',
+  'textStyleId',
+];
+
 const fontWeights = [
   'Regular',
   'Thin',

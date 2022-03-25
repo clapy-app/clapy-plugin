@@ -52,7 +52,8 @@ type LayoutNodeExtended =
   | CodeBlockNode
   | WidgetNode
   | EmbedNode
-  | LinkUnfurlNode;
+  | LinkUnfurlNode
+  | MediaNode;
 
 export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
   return !!node && layoutTypes.has(node.type);

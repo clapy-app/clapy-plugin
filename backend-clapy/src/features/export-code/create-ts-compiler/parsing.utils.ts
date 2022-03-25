@@ -118,12 +118,22 @@ export function printNode(node: Node | undefined) {
   return `${node.getKindName()} (${node.getKind()}): ${node.print() || node.getText()}`;
 }
 
-export function printStandalone(node: ts.Node | undefined) {
+export function printStandalone(node: ts.Node | ts.Node[] | undefined) {
   if (!node) {
     return `Node ${node}`;
   }
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  return printer.printNode(ts.EmitHint.Unspecified, node, ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true));
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      printer.printNode(ts.EmitHint.Unspecified, child, ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true));
+    }
+  } else {
+    return printer.printNode(
+      ts.EmitHint.Unspecified,
+      node,
+      ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true),
+    );
+  }
 }
 
 export function getSymbolDeclarationOrThrow(symbol: Symbol): Node {

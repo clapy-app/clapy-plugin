@@ -13,7 +13,7 @@ import {
   mkValueCss,
 } from './css-factories-low';
 
-type CssUnit = 'px' | 'em' | 'rem' | 'vh' | 'vw';
+type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
 
 export function addStyle<T extends keyof PropertiesHyphen>(
   styles: Dict<DeclarationPlain>,

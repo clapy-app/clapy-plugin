@@ -7,18 +7,9 @@ import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-
 import { CodeContext } from './code.model';
 import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
-import {
-  mkBlockCss,
-  mkClassSelectorCss,
-  mkRuleCss,
-  mkSelectorCss,
-  mkSelectorListCss,
-  mkStylesheetCss,
-} from './css-gen/css-factories-low';
-import { warnNode } from './figma-code-map/_utils-and-reset';
-
-const { factory } = ts;
-const classImport = 'classes';
+import { mkStylesheetCss } from './css-gen/css-factories-low';
+import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
+import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 export function figmaToAstRootNode(node: SceneNodeNoMethod) {
   const context: CodeContext = {
@@ -39,6 +30,8 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     return;
   }
 
+  mockUsefulMethods(node);
+
   const tagName = guessTagName(context, node);
   if (tagName === 'button') {
     context = { ...context, tagName, inButton: true };
@@ -46,7 +39,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
     context = { ...context, tagName };
   }
 
-  const stylesMap: Dict<DeclarationPlain> = {};
+  const styles: Dict<DeclarationPlain> = {};
 
   if (!isText(node) && !isFlexNode(node)) {
     warnNode(node, 'Unsupported node (TODO)');
@@ -54,44 +47,50 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
   }
 
   // Add common styles (text and tags)
-  mapCommonStyles(context, node, stylesMap);
+  mapCommonStyles(context, node, styles);
 
   if (isText(node)) {
     // Add text styles
-    mapTextStyles(context, node, stylesMap);
+    let ast = mapTextStyles(context, node, styles);
 
-    const txt = factory.createJsxText(node.characters, false);
+    // const txt = factory.createJsxText(node.characters, false);
     if (!context.parentStylesMap) {
       const className = genClassName(context, node, isRoot);
-      addCssRule(context, className, Object.values(stylesMap));
-      return mkTag('div', [], [txt]);
+      addCssRule(context, className, Object.values(styles));
+      ast = mkTag('div', [], Array.isArray(ast) ? ast : [ast]);
     } else {
-      Object.assign(context.parentStylesMap, stylesMap);
+      Object.assign(context.parentStylesMap, styles);
       // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
       // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
-      return txt;
+
+      // return txt;
     }
+    return ast;
   } else if (isFlexNode(node)) {
     // Add tag styles
-    mapTagStyles(context, node, stylesMap);
+    mapTagStyles(context, node, styles);
 
     const className = genClassName(context, node, isRoot);
 
     const cssRule = addCssRule(context, className);
 
-    const contextForChildren: CodeContext = { ...context, parentStylesMap: stylesMap };
+    const contextForChildren: CodeContext = { ...context, parentStylesMap: styles };
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
       for (const child of node.children as SceneNode[]) {
         const childTsx = figmaToAstRec(contextForChildren, child);
         if (childTsx) {
           printStandalone(childTsx);
-          children.push(childTsx);
+          if (Array.isArray(childTsx)) {
+            children.push(...childTsx);
+          } else {
+            children.push(childTsx);
+          }
         }
       }
     }
 
-    cssRule.block.children.push(...Object.values(stylesMap));
+    cssRule.block.children.push(...Object.values(styles));
 
     const classAttr = mkClassAttr(className);
     const tsx = mkTag(tagName, [classAttr], children);
@@ -99,57 +98,14 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
   }
 }
 
-function addCssRule(context: CodeContext, className: string, styles: DeclarationPlain[] = []) {
-  const { cssRules } = context;
-  const cssRule = mkRuleCss(mkSelectorListCss([mkSelectorCss([mkClassSelectorCss(className)])]), mkBlockCss(styles));
-  cssRules.push(cssRule);
-  return cssRule;
-}
-
-function genClassName(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
-  const baseName = isRoot ? 'root' : node.name;
-  let name = sanitizeClassName(baseName);
-  let i = 0;
-  while (context.classNamesAlreadyUsed.has(name)) {
-    ++i;
-    name = `${sanitizeClassName(baseName)}_${i}`;
-  }
-  context.classNamesAlreadyUsed.add(name);
-  return name;
-}
-
-function sanitizeClassName(name: string) {
-  // Inspiration: https://stackoverflow.com/a/7627603/4053349
-  return name.replace(/[^a-z0-9]/gi, '_');
-}
-
 export function isChildrenMixin(node: SceneNodeNoMethod | ChildrenMixin | Nil): node is ChildrenMixin {
   return !!(node as ChildrenMixin)?.children;
 }
 
-function mkTag(tagName: string, classAttr: ts.JsxAttribute[], children: ts.JsxChild[]) {
-  return factory.createJsxElement(
-    factory.createJsxOpeningElement(
-      factory.createIdentifier(tagName),
-      undefined,
-      factory.createJsxAttributes(classAttr),
-    ),
-    children,
-    factory.createJsxClosingElement(factory.createIdentifier(tagName)),
-  );
-}
-
-function mkClassAttr(classVarName: string) {
-  return factory.createJsxAttribute(
-    factory.createIdentifier('className'),
-    factory.createJsxExpression(
-      undefined,
-      factory.createPropertyAccessExpression(
-        factory.createIdentifier(classImport),
-        factory.createIdentifier(classVarName),
-      ),
-    ),
-  );
+function mockUsefulMethods(node: SceneNodeNoMethod) {
+  if (isText(node)) {
+    node.getStyledTextSegments = () => (node as any)._textSegments;
+  }
 }
 
 function guessTagName(context: CodeContext, node: SceneNodeNoMethod) {

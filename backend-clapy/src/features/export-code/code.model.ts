@@ -1,4 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
+import { ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { CssRootNode } from './css-gen/css-factories-low';
@@ -7,6 +8,8 @@ export type CsbDict = Dict<{ content: string }>;
 export type CodeDict = Dict<string>;
 
 export type TagName = keyof JSX.IntrinsicElements;
+
+export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
 
 export interface CodeContext {
   cssRules: CssRootNode[];

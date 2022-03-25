@@ -42,7 +42,7 @@
     "sha.js": "^2.4.11"
   },
   "devDependencies": {
-    "@figma/plugin-typings": "^1.41.1",
+    "@figma/plugin-typings": "^1.43.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.4",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
