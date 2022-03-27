@@ -73,9 +73,10 @@ for (const key of criticalRawVariables) {
   }
 }
 
-if (!isProd) {
-  console.log('Environment:', JSON.stringify(env));
-}
+// if (!isProd) {
+//   console.log('Environment:', JSON.stringify(env));
+// }
+console.log('Loaded environment variables.');
 
 if (missingVar.length) {
   throw new Error(`Missing environment variables. Keys in env.ts: ${missingVar.join(', ')}`);

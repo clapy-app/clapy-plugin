@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { env } from '../environment/env';
-import { mkUrl } from '../feat/auth/auth-service.utils';
+import { mkUrl } from '../features/auth/auth-service.utils';
 import { wait } from './general-utils';
 import { Dict } from './sb-serialize.model';
 

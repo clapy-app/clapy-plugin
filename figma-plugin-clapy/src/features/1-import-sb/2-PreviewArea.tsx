@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 
 import { flags } from '../../common/app-config';
 import { handleError } from '../../common/error-utils';
+import { ExportCode } from '../2-export-code/4-ExportCode';
 import classes from './1-ImportSb.module.scss';
 import { VariantsProps } from './3-VariantsProps';
-import { ExportCode } from './4-ExportCode';
 import refreshIcon from './detail/refresh-icon.svg';
 import { renderComponent } from './detail/renderComponent';
 import stopIcon from './detail/stop-icon.svg';

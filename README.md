@@ -6,6 +6,22 @@
   - Alternatively, you can build everything (but skip the debugger) by running the default build task, "Run Build Task" command (Ctrl+Shift+B on my side) (based on the tasks config).
   - Alternatively, `yarn dev` to start everything through command-line.
 
+## Troubleshooting
+
+### `Error: Cannot find module '/app/dist/main2'`
+
+Open a docker container terminal and remove /app/node_modules/.cache/tsconfig.tsbuildinfo
+
+`rm /app/node_modules/.cache/tsconfig.tsbuildinfo`
+
+This must be done inside Docker, because node_modules is in a separate volume.
+
+## Switch backend to script outside webservice
+
+To use main2.ts instead of main.ts, open docker-compose.yml and change the backend command to command: yarn start:docker:debug:main2.
+
+WARN: don't commit this change. It's a convenience to make development easier on features testable outside the webservice.
+
 ## Yarn auto-completion
 
 Suggested package: https://github.com/dsifford/yarn-completion
