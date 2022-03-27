@@ -12,6 +12,7 @@ const baseBlacklist = [
   'mainComponent',
   'horizontalPadding',
   'verticalPadding',
+  'cornerRadius',
 ] as const;
 const rangeProps: RangeProp[] = [
   'fillStyleId',
@@ -83,3 +84,58 @@ export function nodeToObject<T extends SceneNode>(node: T, withoutRelations?: bo
 type OmitMethods<T> = {
   [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
+
+//
+// Below code is a WIP to handle hover (and variants?)
+//
+
+// TODO whitelist the fields I want to use for the diff
+const diffFields = [
+  'fills',
+  'strokes',
+  'strokeWeight',
+  'strokeAlign',
+  'strokeJoin',
+  'dashPattern',
+  'strokeCap',
+  'strokeMiterLimit',
+  'topLeftRadius',
+  'topRightRadius',
+  'bottomRightRadius',
+  'bottomLeftRadius',
+  'paddingLeft',
+  'paddingRight',
+  'paddingTop',
+  'paddingBottom',
+  'opacity',
+  'effects',
+  'width',
+  'height',
+  'layoutMode',
+  'layoutGrow',
+  'layoutAlign',
+  'primaryAxisAlignItems',
+  'counterAxisAlignItems',
+  'primaryAxisSizingMode',
+  'counterAxisSizingMode',
+  'clipsContent',
+];
+// relativeTransform
+// rotation
+// cornerSmoothing
+// backgrounds
+// itemSpacing
+// overflowDirection
+
+// diff: https://stackoverflow.com/questions/8572826/generic-deep-diff-between-two-objects
+function addReactionDestination(obj: any) {
+  for (const reaction of (obj.reactions || []) as Reaction[]) {
+    if (reaction.trigger?.type === 'ON_HOVER' && reaction.action && reaction.action.type === 'NODE') {
+      // TODO
+      // Supposons qu'on a déjà le diff. Je peux écrire :
+      // - Le résultat idéal attendu
+      // - Ce qu'on en fait ensuite
+      // Commencer éventuellement par une prop à la fois, pour faciliter la réflexion et l'implémentation.
+    }
+  }
+}
