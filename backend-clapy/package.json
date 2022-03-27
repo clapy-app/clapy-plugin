@@ -8,9 +8,10 @@
   "scripts": {
     "start": "yarn up",
     "dev": "nest start --watch",
-    "dev:debug": "nest start --watch --debug 0.0.0.0:9229",
+    "dev:debug": "yarn dev --debug 0.0.0.0:9229",
     "start:docker": "yarn && yarn dev",
     "start:docker:debug": "yarn && yarn dev:debug",
+    "start:docker:debug:main2": "yarn && yarn dev --config nest-cli-main2.json",
     "start:prod": "node dist/main",
     "up": "cd .. && yarn start",
     "stop": "cd .. && yarn stop",

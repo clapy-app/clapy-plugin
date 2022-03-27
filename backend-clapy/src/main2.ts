@@ -3,6 +3,8 @@ import { perfReset, perfTotal } from './common/perf-utils';
 import { exportCode } from './features/export-code/2-create-ts-compiler';
 import { devFigmaConfig } from './features/export-code/dev-figma-config';
 
+// To work on features outside the webservice, and keep live reload.
+
 async function main() {
   console.log('Starting...');
   perfReset();
