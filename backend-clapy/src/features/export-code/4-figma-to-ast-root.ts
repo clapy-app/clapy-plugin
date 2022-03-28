@@ -11,21 +11,15 @@ import { mkStylesheetCss } from './css-gen/css-factories-low';
 import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 
-export function figmaToAstRootNode(node: SceneNodeNoMethod) {
-  const context: CodeContext = {
-    cssRules: [],
-    tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
-    classNamesAlreadyUsed: new Set(),
-  };
-
-  const tsx = figmaToAstRec(context, node, true); //
+export function figmaToAstRootNode(context: CodeContext, node: SceneNodeNoMethod) {
+  const tsx = figmaToAstRec(context, node, true);
 
   const cssAst = mkStylesheetCss(context.cssRules);
 
   return [tsx, cssAst] as const;
 }
 
-export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
+function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   if (!node.visible) {
     return;
   }
@@ -74,7 +68,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
 
     const cssRule = addCssRule(context, className);
 
-    const contextForChildren: CodeContext = { ...context, parentStylesMap: styles };
+    const contextForChildren: CodeContext = { ...context, parentStylesMap: styles, parentNode: node };
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
       for (const child of node.children as SceneNode[]) {
@@ -98,7 +92,7 @@ export function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isR
   }
 }
 
-export function isChildrenMixin(node: SceneNodeNoMethod | ChildrenMixin | Nil): node is ChildrenMixin {
+function isChildrenMixin(node: SceneNodeNoMethod | ChildrenMixin | Nil): node is ChildrenMixin {
   return !!(node as ChildrenMixin)?.children;
 }
 

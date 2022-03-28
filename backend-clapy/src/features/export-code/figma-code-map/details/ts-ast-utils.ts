@@ -23,19 +23,41 @@ export function addCssRule(context: CodeContext, className: string, styles: Decl
 
 export function genClassName(context: CodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
   const baseName = isRoot ? 'root' : node ? node.name : 'label';
-  let name = sanitizeClassName(baseName);
+  return genUniqueName(context.classNamesAlreadyUsed, baseName);
+}
+
+export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
+  const sanitize = pascalCase ? pascalize : camelize;
+  let name = sanitize(baseName);
   let i = 0;
-  while (context.classNamesAlreadyUsed.has(name)) {
+  while (usageCache.has(name)) {
     ++i;
-    name = `${sanitizeClassName(baseName)}_${i}`;
+    name = `${sanitize(baseName)}_${i}`;
   }
-  context.classNamesAlreadyUsed.add(name);
+  usageCache.add(name);
   return name;
 }
 
+// TODO delete? Unused?
 function sanitizeClassName(name: string) {
+  return camelize(name);
   // Inspiration: https://stackoverflow.com/a/7627603/4053349
-  return name.replace(/[^a-z0-9]/gi, '_');
+  // return name.replace(/[^a-z0-9]/gi, '_');
+}
+
+// https://stackoverflow.com/a/2970667/4053349
+function pascalize(str: string) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
+    if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+    return match.toUpperCase();
+  });
+}
+
+function camelize(str: string) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
+    if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+    return index === 0 ? match.toLowerCase() : match.toUpperCase();
+  });
 }
 
 export function mkFragment(children: ts.JsxChild[]) {

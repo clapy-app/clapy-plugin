@@ -34,6 +34,7 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "axios": "^0.26.0",
+    "body-parser": "^1.19.2",
     "css-tree": "^2.1.0",
     "express-jwt": "^6.1.0",
     "express-rate-limit": "^6.1.0",

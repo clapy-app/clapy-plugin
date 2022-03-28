@@ -14,6 +14,7 @@
     "up": "docker-compose up -d",
     "stop": "docker-compose stop",
     "fixtime": "sudo ntpdate -sb time.nist.gov",
+    "start:atest-gen": "cd backend-clapy/atest-gen && yarn start",
     "________________ deployment ________________": "",
     "migrate:dev": "yarn hasura migrate apply --endpoint http://localhost:8089/",
     "migrate:staging": "yarn migrate:staging1 && yarn migrate:staging2 && yarn migrate:staging3",

@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { json } from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
@@ -104,6 +105,8 @@ async function bootstrap() {
   app.use(morgan('[:date[iso]] :remote-addr :method :status :url - :response-time ms'));
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
+
+  app.use(json({ limit: '50mb' }));
 
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {

@@ -18,7 +18,7 @@ type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
 export function addStyle<T extends keyof PropertiesHyphen>(
   styles: Dict<DeclarationPlain>,
   name: T,
-  ...value: (NonNullable<PropertiesHyphen[T]> | [number, CssUnit] | 0)[]
+  ...value: (NonNullable<PropertiesHyphen[T]> | [number, CssUnit] | number)[]
 ) {
   styles[name] = mkDeclarationCss(
     name,

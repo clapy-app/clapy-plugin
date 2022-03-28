@@ -5,8 +5,8 @@ import { env } from '../../env-and-config/env';
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { figmaToAstRootNode } from './4-figma-to-ast-root';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
-import { writeToDisk } from './9-upload-to-csb';
-import { CodeDict } from './code.model';
+import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
+import { CodeContext, CodeDict } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
@@ -14,11 +14,17 @@ import { createComponent } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow, printStandalone } from './create-ts-compiler/parsing.utils';
 import { cssAstToString } from './css-gen/css-factories-low';
-import { mkFragment } from './figma-code-map/details/ts-ast-utils';
+import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
 
 export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
   // await wait(2000);
-  const [tsx, css] = figmaToAstRootNode(figmaConfig);
+  const context: CodeContext = {
+    cssRules: [],
+    tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
+    classNamesAlreadyUsed: new Set(),
+    compNamesAlreadyUsed: new Set(),
+  };
+  const [tsx, css] = figmaToAstRootNode(context, figmaConfig);
 
   console.log(printStandalone(tsx));
   console.log(cssAstToString(css));
@@ -26,6 +32,14 @@ export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMet
 
 export async function exportCode(figmaConfig: SceneNodeNoMethod) {
   try {
+    // Most context elements here should be per component (but not compNamesAlreadyUsed).
+    // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
+    const context: CodeContext = {
+      cssRules: [],
+      tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
+      classNamesAlreadyUsed: new Set(),
+      compNamesAlreadyUsed: new Set(),
+    };
     // Initialize the project template with base files
     perfMeasure('a');
     const filesCsb = await readReactTemplateFiles();
@@ -41,9 +55,9 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     addFilesToProject(project, files);
     perfMeasure('f');
 
-    const compName = figmaConfig.name; // 'Button' - need to dedupe and find smarter names later
+    const compName = genUniqueName(context.classNamesAlreadyUsed, figmaConfig.name, true); // 'Button' - need to dedupe and find smarter names later
 
-    await addComponentToProject(figmaConfig, project, cssFiles, compName);
+    await addComponentToProject(context, figmaConfig, project, cssFiles, compName);
     perfMeasure('g');
 
     addCompToAppRoot(project, compName);
@@ -60,17 +74,20 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
     console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
-    // return await uploadToCSB(csbFiles);
     if (env.isDev) {
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
+    const csbResponse = await uploadToCSB(csbFiles);
+    perfMeasure('l');
+    return csbResponse;
   } catch (error) {
     console.error(error);
   }
 }
 
 async function addComponentToProject(
+  context: CodeContext,
   figmaConfig: SceneNodeNoMethod,
   project: Project,
   cssFiles: CodeDict,
@@ -86,7 +103,7 @@ async function addComponentToProject(
   compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
   perfMeasure('g3');
 
-  const [tsx, css] = figmaToAstRootNode(figmaConfig);
+  const [tsx, css] = figmaToAstRootNode(context, figmaConfig);
   perfMeasure('g4');
 
   // Replace the returned expression with the newly generated code
@@ -106,7 +123,7 @@ function addCompToAppRoot(project: Project, compName: string) {
   const appFile = project.getSourceFileOrThrow('src/App.tsx');
   appFile.addImportDeclaration({
     moduleSpecifier: `./components/${compName}/${compName}`,
-    namedImports: ['Button'],
+    namedImports: [compName],
   });
 
   const { jsx } = getFirstExportedComponentsInFileOrThrow(appFile);
@@ -121,7 +138,7 @@ function addCompToAppRoot(project: Project, compName: string) {
       openingElement,
       [
         factory.createJsxSelfClosingElement(
-          factory.createIdentifier('Button'),
+          factory.createIdentifier(compName),
           undefined,
           factory.createJsxAttributes([]),
         ),
