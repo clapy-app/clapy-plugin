@@ -6,7 +6,7 @@ import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { figmaToAstRootNode } from './4-figma-to-ast-root';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { CodeContext, CodeDict } from './code.model';
+import { CodeDict, ComponentContext, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
@@ -18,13 +18,16 @@ import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils
 
 export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
   // await wait(2000);
-  const context: CodeContext = {
-    cssRules: [],
-    tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
-    classNamesAlreadyUsed: new Set(),
+  const projectContext: ProjectContext = {
     compNamesAlreadyUsed: new Set(),
   };
-  const [tsx, css] = figmaToAstRootNode(context, figmaConfig);
+  const componentContext: ComponentContext = {
+    projectContext,
+    classNamesAlreadyUsed: new Set(),
+    cssRules: [],
+    inInteractiveElement: false,
+  };
+  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
 
   console.log(printStandalone(tsx));
   console.log(cssAstToString(css));
@@ -34,11 +37,14 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
   try {
     // Most context elements here should be per component (but not compNamesAlreadyUsed).
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
-    const context: CodeContext = {
-      cssRules: [],
-      tagName: 'div', // fake, will be immediately overridden. It allows to keep a strong typing on the context.
-      classNamesAlreadyUsed: new Set(),
+    const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
+    };
+    const componentContext: ComponentContext = {
+      projectContext,
+      classNamesAlreadyUsed: new Set(),
+      cssRules: [],
+      inInteractiveElement: false,
     };
     // Initialize the project template with base files
     perfMeasure('a');
@@ -55,9 +61,9 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
     addFilesToProject(project, files);
     perfMeasure('f');
 
-    const compName = genUniqueName(context.classNamesAlreadyUsed, figmaConfig.name, true); // 'Button' - need to dedupe and find smarter names later
+    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.name, true); // 'Button' - need to dedupe and find smarter names later
 
-    await addComponentToProject(context, figmaConfig, project, cssFiles, compName);
+    await addComponentToProject(componentContext, figmaConfig, project, cssFiles, compName);
     perfMeasure('g');
 
     addCompToAppRoot(project, compName);
@@ -89,7 +95,7 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
 }
 
 async function addComponentToProject(
-  context: CodeContext,
+  componentContext: ComponentContext,
   figmaConfig: SceneNodeNoMethod,
   project: Project,
   cssFiles: CodeDict,
@@ -105,7 +111,7 @@ async function addComponentToProject(
   compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
   perfMeasure('g3');
 
-  const [tsx, css] = figmaToAstRootNode(context, figmaConfig);
+  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
   perfMeasure('g4');
 
   // Replace the returned expression with the newly generated code

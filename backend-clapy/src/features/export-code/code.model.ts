@@ -12,14 +12,26 @@ export type TagName = keyof JSX.IntrinsicElements;
 
 export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
 
-export interface CodeContext {
-  cssRules: CssRootNode[];
-  classNamesAlreadyUsed: Set<string>;
-  compNamesAlreadyUsed: Set<string>;
+export interface ProjectContext {
+  readonly compNamesAlreadyUsed: Set<string>;
+}
+
+export interface ComponentContext {
+  readonly projectContext: ProjectContext;
+  readonly classNamesAlreadyUsed: Set<string>;
+  readonly cssRules: CssRootNode[];
+  // E.g. button, a... https://stackoverflow.com/a/39386695/4053349
+  // Cannot really guess at project level, because components can have multiple usages.
+  // Let's follow it up at component level, and review with future use cases.
+  readonly inInteractiveElement?: boolean;
+}
+
+// Mutable
+export interface NodeContext {
+  componentContext: ComponentContext;
   tagName: TagName;
-  inButton?: boolean;
-  parentStylesMap?: Dict<DeclarationPlain>;
-  parentNode?: FlexNode;
+  parentStyles: Dict<DeclarationPlain> | null;
+  parentNode: FlexNode | null;
 }
 
 export interface BorderWidths {
@@ -29,6 +41,6 @@ export interface BorderWidths {
   borderRightWidth: number;
 }
 
-export interface CodeContextWithBorders extends CodeContext {
+export interface NodeContextWithBorders extends NodeContext {
   borderWidths: BorderWidths;
 }

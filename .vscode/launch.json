@@ -11,7 +11,7 @@
       "restart": true,
       "remoteRoot": "/app",
       "localRoot": "${workspaceFolder}/backend-clapy",
-      "preLaunchTask": "${defaultBuildTask}",
+      // "preLaunchTask": "${defaultBuildTask}",
     }
   ]
 }

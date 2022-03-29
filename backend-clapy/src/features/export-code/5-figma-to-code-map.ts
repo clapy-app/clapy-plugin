@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { CodeContext, JsxOneOrMore } from './code.model';
+import { JsxOneOrMore, NodeContext } from './code.model';
 import { AllNode, FlexNode } from './create-ts-compiler/canvas-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
@@ -26,13 +26,13 @@ import { overflowFigmaToCode } from './figma-code-map/overflow';
 
 const { factory } = ts;
 
-export function mapCommonStyles(context: CodeContext, node: AllNode, styles: Dict<DeclarationPlain>) {
+export function mapCommonStyles(context: NodeContext, node: AllNode, styles: Dict<DeclarationPlain>) {
   opacityFigmaToCode(context, node, styles);
   // blendMode
   // effects
 }
 
-export function mapTagStyles(context: CodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
+export function mapTagStyles(context: NodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
   const context2 = borderFigmaToCode(context, node, styles);
   flexFigmaToCode(context2, node, styles);
   borderRadiusFigmaToCode(context2, node, styles);
@@ -43,7 +43,7 @@ export function mapTagStyles(context: CodeContext, node: FlexNode, styles: Dict<
   // reactions => hover, must make the diff with target node (check the type?)
 }
 
-function mapTextFragmentStyles(context: CodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+function mapTextFragmentStyles(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   colorFigmaToCode(context, textSegment, styles);
   fontFigmaToCode(context, textSegment, styles);
 
@@ -71,7 +71,7 @@ function mapTextFragmentStyles(context: CodeContext, textSegment: StyledTextSegm
 // Details for text - it is split into fragments, each applying its styles
 
 function textNodeToAst(
-  context: CodeContext,
+  context: NodeContext,
   textSegment: StyledTextSegment,
   singleChild: boolean,
   parentStyles: Dict<DeclarationPlain>,
@@ -103,7 +103,7 @@ function textNodeToAst(
   return ast;
 }
 
-export function mapTextStyles(context: CodeContext, node: TextNode, styles: Dict<DeclarationPlain>): JsxOneOrMore {
+export function mapTextStyles(context: NodeContext, node: TextNode, styles: Dict<DeclarationPlain>): JsxOneOrMore {
   const textSegments: StyledTextSegment[] = node.getStyledTextSegments(rangeProps);
   return textSegments.map(segment => textNodeToAst(context, segment, textSegments.length === 1, styles));
 }

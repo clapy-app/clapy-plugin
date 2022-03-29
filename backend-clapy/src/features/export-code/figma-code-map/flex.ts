@@ -3,7 +3,7 @@ import { PropertiesHyphen } from 'csstype';
 
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { CodeContextWithBorders } from '../code.model';
+import { NodeContextWithBorders } from '../code.model';
 import { FlexNode, isLayout } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { tagResets, warnNode } from './details/utils-and-reset';
@@ -39,7 +39,7 @@ const alignItemsToCounterAlign: {
   MAX: 'flex-end',
 };
 
-export function flexFigmaToCode(context: CodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
+export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   if (node.layoutMode === 'NONE') {
     warnNode(node, 'TODO Unsupported absolute positioning');
     return;
@@ -107,7 +107,7 @@ function checkChildrenLayout(node: FlexNode) {
 // export function flexCodeToFigma() {
 // }
 
-function applyPadding(context: CodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
+function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   let { paddingTop, paddingRight, paddingBottom, paddingLeft } = node;
 
   // Withdraw borders from padding because, on Figma, borders are on top of the padding (overlap).
@@ -140,7 +140,7 @@ function applyPadding(context: CodeContextWithBorders, node: FlexNode, styles: D
   }
 }
 
-function applyWidth(context: CodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
+function applyWidth(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   // const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
   // const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
 

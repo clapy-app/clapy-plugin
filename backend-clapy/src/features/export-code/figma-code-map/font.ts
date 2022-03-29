@@ -1,12 +1,12 @@
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { CodeContext } from '../code.model';
+import { NodeContext } from '../code.model';
 import { addStyle } from '../css-gen/css-factories-high';
 import { parseFontStyle } from './details/fonts-utils';
 import { warnNode } from './details/utils-and-reset';
 
-export function fontFigmaToCode(context: CodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   const { fontSize, fontName, letterSpacing, lineHeight, textCase, textDecoration } = textSegment;
 
   addStyle(styles, 'font-size', [fontSize, 'px']);

@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
 import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { CodeContext } from '../../code.model';
+import { NodeContext } from '../../code.model';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -14,16 +14,16 @@ import {
 const { factory } = ts;
 const classImport = 'classes';
 
-export function addCssRule(context: CodeContext, className: string, styles: DeclarationPlain[] = []) {
-  const { cssRules } = context;
+export function addCssRule(context: NodeContext, className: string, styles: DeclarationPlain[] = []) {
+  const { cssRules } = context.componentContext;
   const cssRule = mkRuleCss(mkSelectorListCss([mkSelectorCss([mkClassSelectorCss(className)])]), mkBlockCss(styles));
   cssRules.push(cssRule);
   return cssRule;
 }
 
-export function genClassName(context: CodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
+export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
   const baseName = isRoot ? 'root' : node ? node.name : 'label';
-  return genUniqueName(context.classNamesAlreadyUsed, baseName);
+  return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {

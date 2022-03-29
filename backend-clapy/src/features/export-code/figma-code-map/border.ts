@@ -1,16 +1,16 @@
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { CodeContext, CodeContextWithBorders } from '../code.model';
+import { NodeContext, NodeContextWithBorders } from '../code.model';
 import { FlexNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
-  context: CodeContext,
+  context: NodeContext,
   node: FlexNode,
   styles: Dict<DeclarationPlain>,
-): CodeContextWithBorders {
+): NodeContextWithBorders {
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
   if (visibleStrokes.length) {
     if (visibleStrokes.length > 1) {

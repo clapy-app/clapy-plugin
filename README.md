@@ -2,9 +2,13 @@
 
 - `yarn install:all` to install dependencies in root and subprojects
 - To develop:
-  - In VS Code, use "Start Debugging" command (Ctrl+F11 with my keyboard shortcuts) to start everything (docker, plugin...) + start the debugger (based on the launch config).
-  - Alternatively, you can build everything (but skip the debugger) by running the default build task, "Run Build Task" command (Ctrl+Shift+B on my side) (based on the tasks config).
-  - Alternatively, `yarn dev` to start everything through command-line.
+  - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
+  - "Start Debugging" command (Ctrl+F11 with my keyboard shortcuts) to start the debugger for the webservice
+- Alternatively, to develop on the webservice only:
+  - `yarn up` through command-line to start all docker containers
+  - "Start Debugging" command (Ctrl+F11 with my keyboard shortcuts) to start the debugger for the webservice
+
+(1) Alternative: `yarn dev` through command-line to start everything
 
 ## Troubleshooting
 

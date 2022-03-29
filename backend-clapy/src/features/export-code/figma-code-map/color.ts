@@ -1,11 +1,11 @@
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { CodeContext } from '../code.model';
+import { NodeContext } from '../code.model';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssRGBA, warnNode } from './details/utils-and-reset';
 
-export function colorFigmaToCode(context: CodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+export function colorFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   const visibleFills = (Array.isArray(textSegment.fills) ? (textSegment.fills as Paint[]) : []).filter(
     ({ visible }) => visible,
   );
