@@ -18,9 +18,9 @@ async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Pro
   let resp: ApiResponse<T> | undefined;
   try {
     resp = await sendRequest();
-  } catch (e) {
-    const err: any = e;
-    if (err?.status !== 401) {
+  } catch (err: any) {
+    const status = err?.status || err?.statusCode;
+    if (status !== 401) {
       throw err;
     }
     await refreshTokens();
