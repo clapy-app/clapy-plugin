@@ -36,7 +36,7 @@ function figmaToAstRec(context: CodeContext, node: SceneNodeNoMethod, isRoot?: b
   const styles: Dict<DeclarationPlain> = {};
 
   if (!isText(node) && !isFlexNode(node)) {
-    warnNode(node, 'Unsupported node (TODO)');
+    warnNode(node, 'TODO Unsupported node');
     return;
   }
 

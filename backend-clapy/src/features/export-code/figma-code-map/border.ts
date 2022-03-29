@@ -14,7 +14,7 @@ export function borderFigmaToCode(
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
   if (visibleStrokes.length) {
     if (visibleStrokes.length > 1) {
-      warnNode(node, 'Unsupported multiple borders, will only apply the first (TODO)');
+      warnNode(node, 'TODO Unsupported multiple borders, will only apply the first');
     }
     const stroke = visibleStrokes[0];
     if (stroke.type === 'SOLID') {
@@ -22,6 +22,12 @@ export function borderFigmaToCode(
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
       const { color, opacity } = stroke;
       const { strokeAlign, strokeWeight } = node;
+      if (strokeAlign !== 'INSIDE') {
+        warnNode(
+          node,
+          `TODO unsupported strokeAlign ${strokeAlign}, it is treated as INSIDE. Do we want to support it? Should we outline instead?`,
+        );
+      }
       const borderWidth = strokeWeight;
       const hex = figmaColorToCssRGBA(color, opacity);
       addStyle(styles, 'border', 'solid', [borderWidth, 'px'], hex);
@@ -35,7 +41,7 @@ export function borderFigmaToCode(
         },
       };
     } else {
-      warnNode(node, 'Unsupported non solid border (TODO)');
+      warnNode(node, 'TODO Unsupported non solid border');
     }
   }
 

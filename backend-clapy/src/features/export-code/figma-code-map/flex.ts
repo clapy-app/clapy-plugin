@@ -1,6 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
 
+import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { CodeContextWithBorders } from '../code.model';
 import { FlexNode, isLayout } from '../create-ts-compiler/canvas-utils';
@@ -40,7 +41,7 @@ const alignItemsToCounterAlign: {
 
 export function flexFigmaToCode(context: CodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   if (node.layoutMode === 'NONE') {
-    warnNode(node, 'Unsupported absolute positioning (TODO)');
+    warnNode(node, 'TODO Unsupported absolute positioning');
     return;
   }
   addStyle(styles, 'display', 'flex');
@@ -64,14 +65,16 @@ export function flexFigmaToCode(context: CodeContextWithBorders, node: FlexNode,
 
   if (node.primaryAxisAlignItems !== 'MIN' && !atLeastOneChildHasLayoutGrow1) {
     // use place-content instead of justify-content (+ align-content)
+    // TODO fails to skip on Button
     addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
   }
 
   if (atLeastOneChildHasLayoutAlignNotStretch) {
+    // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
     addStyle(styles, 'align-items', alignItemsToCounterAlign[node.counterAxisAlignItems]);
   }
 
-  if (node.itemSpacing) {
+  if (node.itemSpacing && node.children.length >= 2) {
     addStyle(styles, 'gap', [node.itemSpacing, 'px']);
   }
 
@@ -79,15 +82,6 @@ export function flexFigmaToCode(context: CodeContextWithBorders, node: FlexNode,
   applyPadding(context, node, styles);
 
   applyWidth(context, node, styles);
-
-  // width, height
-  // node.layoutGrow
-  // node.layoutAlign
-  // node.primaryAxisSizingMode
-  // node.counterAxisSizingMode
-  // node.primaryAxisAlignItems
-  // node.counterAxisAlignItems
-  // itemSpacing
 }
 
 function checkChildrenLayout(node: FlexNode) {
@@ -99,6 +93,7 @@ function checkChildrenLayout(node: FlexNode) {
         atLeastOneChildHasLayoutGrow1 = true;
       }
       if (child.layoutAlign !== 'STRETCH') {
+        // TODO a child text node, full-width by default, should be treated as stretch
         atLeastOneChildHasLayoutAlignNotStretch = true;
       }
       if (atLeastOneChildHasLayoutGrow1 && atLeastOneChildHasLayoutAlignNotStretch) {
@@ -152,8 +147,8 @@ function applyWidth(context: CodeContextWithBorders, node: FlexNode, styles: Dic
   const parent = context.parentNode;
 
   const isParentVertical = parent?.layoutMode === 'VERTICAL';
-  const parentPrimaryAxisFillContainer = parent?.layoutGrow === 1;
-  const parentCounterAxisFillContainer = parent?.layoutAlign === 'STRETCH';
+  const parentPrimaryAxisFillContainer = node?.layoutGrow === 1;
+  const parentCounterAxisFillContainer = node?.layoutAlign === 'STRETCH';
   const parentWidthFillContainer = isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer;
   const parentHeightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
 
@@ -165,14 +160,15 @@ function applyWidth(context: CodeContextWithBorders, node: FlexNode, styles: Dic
 
   const fixedWidth = !parentWidthFillContainer && !nodeWidthHugContents;
   const fixedHeight = !parentHeightFillContainer && !nodeHeightHugContents;
-  console.log(node.name, 'fixedWidth:', fixedWidth, 'fixedHeight:', fixedHeight);
+  const width = flags.useCssBorderBox ? node.width : node.width - node.paddingRight - node.paddingLeft;
+  const height = flags.useCssBorderBox ? node.height : node.height - node.paddingTop - node.paddingBottom;
 
-  // if (fixedWidth) {
-  //   // TODO recalculate width with padding / border
-  //   addStyle(styles, 'width', [node.width, 'px']);
-  // }
-  // if (fixedHeight) {
-  //   // TODO recalculate height with padding / border
-  //   addStyle(styles, 'height', [node.height, 'px']);
-  // }
+  if (fixedWidth) {
+    addStyle(styles, 'width', [width, 'px']);
+    addStyle(styles, 'max-width', [100, '%']);
+  }
+  if (fixedHeight) {
+    addStyle(styles, 'height', [height, 'px']);
+    addStyle(styles, 'max-height', [100, '%']);
+  }
 }

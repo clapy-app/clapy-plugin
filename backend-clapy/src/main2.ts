@@ -11,7 +11,7 @@ async function main() {
 
   // Send to codesandbox
   // await new CodeController().exportCode(null as any);
-  await exportCode(devFigmaConfig);
+  await exportCode(devFigmaConfig, true);
   // await tryIt2_createTsProjectCompiler(devFigmaConfig);
 
   perfTotal();

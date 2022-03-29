@@ -30,7 +30,7 @@ export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMet
   console.log(cssAstToString(css));
 }
 
-export async function exportCode(figmaConfig: SceneNodeNoMethod) {
+export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload = false) {
   try {
     // Most context elements here should be per component (but not compNamesAlreadyUsed).
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -78,9 +78,11 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod) {
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
-    const csbResponse = await uploadToCSB(csbFiles);
-    perfMeasure('l');
-    return csbResponse;
+    if (!skipCsbUpload) {
+      const csbResponse = await uploadToCSB(csbFiles);
+      perfMeasure('l');
+      return csbResponse;
+    }
   } catch (error) {
     console.error(error);
   }

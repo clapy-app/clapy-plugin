@@ -54,7 +54,7 @@ export function fontFigmaToCode(context: CodeContext, textSegment: StyledTextSeg
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {
-      warnNode(textSegment, 'Unsupported letter spacing using percent');
+      warnNode(textSegment, 'TODO Unsupported letter spacing using percent');
     } else {
       addStyle(styles, 'letter-spacing', [letterSpacing.value, 'px']);
     }
