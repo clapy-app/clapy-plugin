@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { env } from '../environment/env';
+import { logout } from '../features/auth/auth-service';
 import { mkUrl } from '../features/auth/auth-service.utils';
 import { wait } from './general-utils';
 import { Dict } from './sb-serialize.model';
@@ -173,10 +174,14 @@ async function httpReqUnauthenticated<T>(
   }
   if (!resp.ok) {
     const { data, headers, status, statusText, type, url } = resp || {};
+    const data2: any = data;
+    if (status === 403 || data2?.error?.error === 'invalid_grant') {
+      logout();
+    }
     throw Object.assign(
-      new Error((resp.data as any)?.message || '[http utils] Failed request'),
+      new Error(data2?.message || (typeof data2?.error === 'string' && data2.error) || '[http utils] Failed request'),
       { data, headers, status, statusText, type, url },
-      resp.data,
+      data,
     );
   }
   return resp;
