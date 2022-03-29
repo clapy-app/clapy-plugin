@@ -57,9 +57,15 @@ export const env = {
 };
 
 // variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.
-const criticalVariables: Array<keyof typeof env> = ['hasuraAdminSecret'];
+const criticalVariables: Array<keyof typeof env> = [];
+if (isDev) {
+  criticalVariables.push('hasuraAdminSecret');
+}
 // To check process.env.VARNAME when not written in `env` object.
-const criticalRawVariables: Array<any> = ['REACT_APP_HASURA_SSL', 'REACT_APP_HASURA_HOSTNAME', 'REACT_APP_HASURA_PORT'];
+const criticalRawVariables: Array<any> = [];
+if (isDev) {
+  criticalRawVariables.push('REACT_APP_HASURA_SSL', 'REACT_APP_HASURA_HOSTNAME', 'REACT_APP_HASURA_PORT');
+}
 
 const missingVar: Array<keyof typeof env> = [];
 for (const key of criticalVariables) {
