@@ -50,7 +50,7 @@ export async function fetchPlugin<T extends keyof Routes>(
         if (env.isDev && flags.logWebsocketRequests) {
           const sourceIsFigma = event.data.__source === 'figma';
           if (!isFigmaPlugin && sourceIsFigma) {
-            console.info('[backend resp]', event.data.pluginMessage);
+            console.info('[plugin resp]', event.data.pluginMessage);
           }
         }
         const { type, payload, error } = event.data.pluginMessage;
