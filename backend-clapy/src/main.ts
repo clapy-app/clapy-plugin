@@ -24,6 +24,7 @@ async function bootstrap() {
       // const sbUrl = 'https://style.monday.com';
       // const storybookId = 'buttons-button--overview';
 
+      // const sbUrl = 'http://nonexistingdomaiiine.com/';
       const sbUrl = 'https://reactstrap.github.io';
       // const storybookId = 'components-accordion--accordion';
       // const storybookId = 'components-badge--links';

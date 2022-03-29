@@ -2,15 +2,29 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { FlexNode } from '../create-ts-compiler/canvas-utils';
+import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
-  node: FlexNode,
+  node: FlexOrTextNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
+  if (isText(node)) {
+    // stroke has a different meaning on text. We will handle it later.
+    warnNode(node, 'TODO Unsupported stroke on text');
+    return {
+      ...context,
+      borderWidths: {
+        borderTopWidth: 0,
+        borderRightWidth: 0,
+        borderBottomWidth: 0,
+        borderLeftWidth: 0,
+      },
+    };
+  }
+
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
   if (visibleStrokes.length) {
     if (visibleStrokes.length > 1) {

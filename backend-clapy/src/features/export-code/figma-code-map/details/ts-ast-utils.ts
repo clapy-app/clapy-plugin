@@ -64,14 +64,14 @@ export function mkFragment(children: ts.JsxChild[]) {
   return factory.createJsxFragment(factory.createJsxOpeningFragment(), children, factory.createJsxJsxClosingFragment());
 }
 
-export function mkTag(tagName: string, classAttr: ts.JsxAttribute[], children: ts.JsxChild[]) {
+export function mkTag(tagName: string, classAttr: ts.JsxAttribute[] | null, children: ts.JsxChild[] | null) {
   return factory.createJsxElement(
     factory.createJsxOpeningElement(
       factory.createIdentifier(tagName),
       undefined,
-      factory.createJsxAttributes(classAttr),
+      factory.createJsxAttributes(classAttr ?? []),
     ),
-    children,
+    children ?? [],
     factory.createJsxClosingElement(factory.createIdentifier(tagName)),
   );
 }

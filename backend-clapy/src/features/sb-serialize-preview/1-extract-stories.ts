@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { writeFile } from 'fs/promises';
 
 import { CacheAsLRUMap } from '../../common/cache';
@@ -30,6 +31,9 @@ async function extractStoriesNoCache(sbUrl: string) {
 
   if (isErrorResp(storiesWrapperOrError)) {
     console.log('Error, stack in browser:', storiesWrapperOrError.stack);
+    if (storiesWrapperOrError.status) {
+      throw new HttpException(storiesWrapperOrError.message, storiesWrapperOrError.status);
+    }
     throw new Error(storiesWrapperOrError.message);
   }
   if (env.isDev) {

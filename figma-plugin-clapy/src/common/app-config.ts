@@ -6,4 +6,5 @@ export const appConfig = {
 
 export const flags = {
   alphaFeature: env.isDev,
+  logWebsocketRequests: true,
 };

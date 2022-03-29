@@ -4,7 +4,7 @@ import { PropertiesHyphen } from 'csstype';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, isLayout } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { tagResets, warnNode } from './details/utils-and-reset';
 
@@ -39,15 +39,12 @@ const alignItemsToCounterAlign: {
   MAX: 'flex-end',
 };
 
-export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
-  if (node.layoutMode === 'NONE') {
+export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+  const isFlex = isFlexNode(node);
+
+  if (isFlex && node.layoutMode === 'NONE') {
     warnNode(node, 'TODO Unsupported absolute positioning');
     return;
-  }
-  addStyle(styles, 'display', 'flex');
-  if (node.layoutMode === 'VERTICAL') {
-    // row direction is the default. We can omit it.
-    addStyle(styles, 'flex-direction', 'column');
   }
 
   if (node.layoutGrow === 1) {
@@ -56,32 +53,68 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexNode,
 
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  if (node.layoutAlign === 'STRETCH') {
+  const parent = context.parentNode;
+  const omitStretch = parent?.layoutMode === 'VERTICAL' && isText(node);
+  if (node.layoutAlign === 'STRETCH' /* && !omitStretch */) {
     addStyle(styles, 'align-self', 'stretch');
-    // Stretch is the default
+    // Stretch is the default //
+    // TODO?
   }
 
-  const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
+  const { fixedWidth, widthFillContainer, widthHugContents, fixedHeight, heightFillContainer, heightHugContents } =
+    applyWidth(context, node, styles);
 
-  if (node.primaryAxisAlignItems !== 'MIN' && !atLeastOneChildHasLayoutGrow1) {
-    // use place-content instead of justify-content (+ align-content)
-    // TODO fails to skip on Button
-    addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
+  if (isText(node)) {
+    if (fixedWidth || widthFillContainer) {
+      const textAlignHorizontalToCssTextAlign: {
+        [K in TextNode['textAlignHorizontal']]: NonNullable<PropertiesHyphen['text-align']>;
+      } = {
+        LEFT: 'start',
+        CENTER: 'center',
+        RIGHT: 'end',
+        JUSTIFIED: 'justify',
+      };
+      // node.textAlignHorizontal === ''
+      // TODO
+    }
   }
 
-  if (atLeastOneChildHasLayoutAlignNotStretch) {
-    // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
-    addStyle(styles, 'align-items', alignItemsToCounterAlign[node.counterAxisAlignItems]);
+  // textAlignHorizontal n'est utile que si fill container (x) ou fixed width
+  // textAlignVertical n'est utile que si fill container (y) ou fixed height
+
+  if (isFlex) {
+    // display: flex is applied globally
+    // addStyle(styles, 'display', 'flex');
+
+    // if (node.layoutMode === 'VERTICAL') {
+    //   // row direction is the default. We can omit it.
+    //   addStyle(styles, 'flex-direction', 'column');
+    // }//
+    if (node.layoutMode === 'HORIZONTAL') {
+      // We have set column as the default. We can omit it.
+      addStyle(styles, 'flex-direction', 'row');
+    }
+
+    const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
+
+    if (node.primaryAxisAlignItems !== 'MIN' && !atLeastOneChildHasLayoutGrow1) {
+      // use place-content instead of justify-content (+ align-content)
+      // TODO fails to skip on Button
+      addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
+    }
+
+    if (atLeastOneChildHasLayoutAlignNotStretch) {
+      // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
+      addStyle(styles, 'align-items', alignItemsToCounterAlign[node.counterAxisAlignItems]);
+    }
+
+    if (node.itemSpacing && node.children.length >= 2) {
+      addStyle(styles, 'gap', [node.itemSpacing, 'px']);
+    }
+
+    // Padding is embedded here because, on Figma, it only applies to auto-layout elements.
+    applyPadding(context, node, styles);
   }
-
-  if (node.itemSpacing && node.children.length >= 2) {
-    addStyle(styles, 'gap', [node.itemSpacing, 'px']);
-  }
-
-  // Padding is embedded here because, on Figma, it only applies to auto-layout elements.
-  applyPadding(context, node, styles);
-
-  applyWidth(context, node, styles);
 }
 
 function checkChildrenLayout(node: FlexNode) {
@@ -140,28 +173,37 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
   }
 }
 
-function applyWidth(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
-  // const parentHorizontal = figmaParentNode.layoutMode === 'HORIZONTAL';
-  // const parentAndNodeHaveSameDirection = parentHorizontal === nodeHorizontal;
+function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+  const isFlex = isFlexNode(node);
 
   const parent = context.parentNode;
 
   const isParentVertical = parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = node?.layoutAlign === 'STRETCH';
-  const parentWidthFillContainer = isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer;
-  const parentHeightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
+  const widthFillContainer = isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer;
+  const heightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
 
-  const isNodeVertical = node.layoutMode === 'VERTICAL';
-  const nodePrimaryAxisHugContents = node.primaryAxisSizingMode === 'AUTO';
-  const nodeCounterAxisHugContents = node.counterAxisSizingMode === 'AUTO';
-  const nodeWidthHugContents = isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents;
-  const nodeHeightHugContents = isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents;
+  const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
+  const nodePrimaryAxisHugContents = isFlex && node.primaryAxisSizingMode === 'AUTO';
+  const nodeCounterAxisHugContents = isFlex && node.counterAxisSizingMode === 'AUTO';
+  const widthHugContents = isFlex
+    ? isNodeVertical
+      ? nodeCounterAxisHugContents
+      : nodePrimaryAxisHugContents
+    : node.textAutoResize === 'WIDTH_AND_HEIGHT';
+  const heightHugContents = isFlex
+    ? isNodeVertical
+      ? nodePrimaryAxisHugContents
+      : nodeCounterAxisHugContents
+    : node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT';
 
-  const fixedWidth = !parentWidthFillContainer && !nodeWidthHugContents;
-  const fixedHeight = !parentHeightFillContainer && !nodeHeightHugContents;
-  const width = flags.useCssBorderBox ? node.width : node.width - node.paddingRight - node.paddingLeft;
-  const height = flags.useCssBorderBox ? node.height : node.height - node.paddingTop - node.paddingBottom;
+  const fixedWidth = !widthFillContainer && !widthHugContents;
+  const fixedHeight = !heightFillContainer && !heightHugContents;
+  const width = flags.useCssBorderBox ? node.width : node.width - (isFlex ? node.paddingRight - node.paddingLeft : 0);
+  const height = flags.useCssBorderBox
+    ? node.height
+    : node.height - (isFlex ? node.paddingTop - node.paddingBottom : 0);
 
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);
@@ -171,4 +213,12 @@ function applyWidth(context: NodeContextWithBorders, node: FlexNode, styles: Dic
     addStyle(styles, 'height', [height, 'px']);
     addStyle(styles, 'max-height', [100, '%']);
   }
+  return {
+    fixedWidth,
+    widthFillContainer,
+    widthHugContents,
+    fixedHeight,
+    heightFillContainer,
+    heightHugContents,
+  };
 }

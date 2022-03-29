@@ -190,9 +190,10 @@ export const ImportSb: FC = memo(function ImportSb() {
       })
       .catch(err => {
         handleError(err);
-        setError(err?.message || 'Unknown error');
+        const msg = (typeof err?.error === 'string' && err.error) || err?.message || 'Unknown error';
+        setError(msg);
         const durationInS = endTimer(importTimerRef);
-        track('run-import', 'error', { error: err?.message || 'Unknown error', durationInS });
+        track('run-import', 'error', { error: msg, durationInS });
       })
       .finally(() => setLoadingTxt(undefined));
   }, [sbSelection, sbUrl]);

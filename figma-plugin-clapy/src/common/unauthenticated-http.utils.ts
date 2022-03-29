@@ -172,7 +172,7 @@ async function httpReqUnauthenticated<T>(
     }
   }
   if (!resp.ok) {
-    throw Object.assign(new Error('[http utils] Failed request'), resp);
+    throw Object.assign(new Error((resp?.data as any)?.message || '[http utils] Failed request'), resp?.data);
   }
   return resp;
 }

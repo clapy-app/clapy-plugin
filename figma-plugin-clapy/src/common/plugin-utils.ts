@@ -1,8 +1,11 @@
+import { flags } from './app-config';
 import type { Routes, Subscriptions } from './app-models';
 
 export const isFigmaPlugin = window.location.origin === 'null';
 
 type UnPromise<T> = T extends Promise<infer U> ? U : T;
+
+// TODO improve by associating an ID with each request, so if 2 concurrent requests of the same type are sent, each response is sent to the right requester.
 
 // Usage: `fetchPlugin('createRectangles', count)`
 // We could have set an alternative syntax (not implemented): `fetchPlugin('createRectangles')(count)`.
@@ -18,6 +21,12 @@ export async function fetchPlugin<T extends keyof Routes>(
     window.addEventListener(
       'message',
       event => {
+        if (flags.logWebsocketRequests) {
+          const sourceIsFigma = event.data.__source === 'figma';
+          if (!isFigmaPlugin && sourceIsFigma) {
+            console.info('[backend resp]', event.data.pluginMessage);
+          }
+        }
         if (!event.data.pluginMessage || event.data.__source === 'browser') return;
         const { type, payload, error } = event.data.pluginMessage;
         if (type === routeName) {

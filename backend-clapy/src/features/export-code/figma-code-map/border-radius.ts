@@ -2,10 +2,11 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { FlexNode } from '../create-ts-compiler/canvas-utils';
+import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
-export function borderRadiusFigmaToCode(context: NodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
+export function borderRadiusFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+  if (isText(node)) return;
   const { topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius } = node;
   if (topLeftRadius || topRightRadius || bottomRightRadius || bottomLeftRadius) {
     if (topLeftRadius === topRightRadius && topLeftRadius === bottomRightRadius && topLeftRadius === bottomLeftRadius) {

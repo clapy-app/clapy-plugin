@@ -136,7 +136,7 @@ export function isMyComp(node: SceneNodeNoMethod | Nil): node is MyCompNode {
 
 // GroupNode doesn't have auto-layout
 export type FlexNode = FrameNode | ComponentNode | InstanceNode /* | GroupNode */;
-export type AllNode = FlexNode | TextNode;
+export type FlexOrTextNode = FlexNode | TextNode;
 
 export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {
   return isFrame(node) || isComponent(node) || isInstance(node) /* || isGroup(node) */;

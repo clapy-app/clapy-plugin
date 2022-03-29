@@ -55,18 +55,25 @@ export const PreviewMode: FC = memo(function PreviewMode({ children }) {
   );
 });
 
-function onWindowMsg(ws: WSRef, msg: MessageEvent) {
+// Call this method only once, when the component is mounted.
+function listenToPluginBackMessage(ws: WSRef) {
+  const aborter = new AbortController();
+  window.addEventListener('message', msg => onMsgReceivedInFigma(ws, msg), { signal: aborter.signal });
+  return () => aborter.abort();
+}
+
+function onMsgReceivedInFigma(ws: WSRef, msg: MessageEvent) {
   if (!msg.data.pluginMessage) return;
   if (isPreviewInBrowser && msg.data.__source === 'figma') return;
 
-  const message = JSON.stringify({
-    ...msg.data.pluginMessage,
-    __source: previewEnv,
-  });
   if (ws.current?.readyState === 1) {
+    const message = JSON.stringify({
+      ...msg.data.pluginMessage,
+      __source: previewEnv,
+    });
     ws.current.send(message);
   } else {
-    setTimeout(() => onWindowMsg(ws, msg), 1000);
+    setTimeout(() => onMsgReceivedInFigma(ws, msg), 1000);
   }
 }
 
@@ -115,11 +122,4 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
     isComponentMounted = false;
     ws.current?.close();
   };
-}
-
-// Call this method only once, when the component is mounted.
-function listenToPluginBackMessage(ws: WSRef) {
-  const aborter = new AbortController();
-  window.addEventListener('message', msg => onWindowMsg(ws, msg), { signal: aborter.signal });
-  return () => aborter.abort();
 }

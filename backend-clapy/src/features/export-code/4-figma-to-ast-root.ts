@@ -25,7 +25,7 @@ export function figmaToAstRootNode(componentContext: ComponentContext, node: Sce
   return [tsx, cssAst] as const;
 }
 
-// TODO separate ComponentContext and NodeContext. The latter has a ref to the former
+// ok TODO separate ComponentContext and NodeContext. The latter has a ref to the former
 // -- TODO refactor styles to store in simple object instead of CSS AST obj? Is it that different? Maybe not.
 // TODO I should reuse FlexNode functions, see if any CSS rule was applied, if yes create the intermediate node
 
@@ -57,13 +57,15 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
     // Add text styles
     let ast = mapTextStyles(context, node, styles);
 
-    // const txt = factory.createJsxText(node.characters, false);
-    if (!context.parentStyles /* Or the text has layout rules AND siblings */) {
+    const flexStyles: Dict<DeclarationPlain> = {};
+    mapTagStyles(context, node, flexStyles);
+
+    if (!context.parentStyles || Object.keys(flexStyles).length) {
       const className = genClassName(context, node, isRoot);
-      addCssRule(context, className, Object.values(styles));
-      ast = mkTag('div', [], Array.isArray(ast) ? ast : [ast]);
+      addCssRule(context, className, [...Object.values(styles), ...Object.values(flexStyles)]);
+      const classAttr = mkClassAttr(className);
+      ast = mkTag('div', [classAttr], Array.isArray(ast) ? ast : [ast]);
     } else {
-      // TODO also apply layout rules
       Object.assign(context.parentStyles, styles);
       // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
       // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.

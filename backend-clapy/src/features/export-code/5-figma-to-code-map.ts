@@ -3,7 +3,7 @@ import { ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
-import { AllNode, FlexNode } from './create-ts-compiler/canvas-utils';
+import { FlexOrTextNode } from './create-ts-compiler/canvas-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
@@ -26,13 +26,13 @@ import { overflowFigmaToCode } from './figma-code-map/overflow';
 
 const { factory } = ts;
 
-export function mapCommonStyles(context: NodeContext, node: AllNode, styles: Dict<DeclarationPlain>) {
+export function mapCommonStyles(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   opacityFigmaToCode(context, node, styles);
   // blendMode
   // effects
 }
 
-export function mapTagStyles(context: NodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
+export function mapTagStyles(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   const context2 = borderFigmaToCode(context, node, styles);
   flexFigmaToCode(context2, node, styles);
   borderRadiusFigmaToCode(context2, node, styles);

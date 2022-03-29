@@ -19,6 +19,7 @@ export function initRoutes(routes: Routes) {
           type,
           payload: response,
         };
+        // console.log('[backend resp]', type, responseMessage);
         figma.ui.postMessage(responseMessage);
       }
     } catch (error: any) {
