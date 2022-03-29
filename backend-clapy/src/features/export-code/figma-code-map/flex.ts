@@ -31,12 +31,31 @@ const primaryAlignToJustifyContent: {
   SPACE_BETWEEN: 'space-between',
 };
 // counter axis
-const alignItemsToCounterAlign: {
+const counterAlignToAlignItems: {
   [K in BaseFrameMixin['counterAxisAlignItems']]: NonNullable<PropertiesHyphen['align-items']>;
 } = {
   MIN: 'flex-start', // stretch?
   CENTER: 'center',
   MAX: 'flex-end',
+};
+const textAlignHorizontalToCssTextAlign: {
+  [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT'>]: NonNullable<PropertiesHyphen['text-align']>;
+} = {
+  CENTER: 'center',
+  RIGHT: 'end',
+  JUSTIFIED: 'justify',
+};
+// const textAlignHorizontalToAlignItems: {
+//   [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT' | 'JUSTIFIED'>]: NonNullable<PropertiesHyphen['align-items']>;
+// } = {
+//   CENTER: 'center',
+//   RIGHT: 'end',
+// };
+const textAlignVerticalToJustifyContent: {
+  [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['justify-content']>;
+} = {
+  CENTER: 'center',
+  BOTTOM: 'end',
 };
 
 export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
@@ -54,28 +73,24 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
   const parent = context.parentNode;
-  const omitStretch = parent?.layoutMode === 'VERTICAL' && isText(node);
+  // const omitStretch = parent?.layoutMode === 'VERTICAL' && isText(node);
   if (node.layoutAlign === 'STRETCH' /* && !omitStretch */) {
     addStyle(styles, 'align-self', 'stretch');
-    // Stretch is the default //
-    // TODO?
+    // Stretch is the default
   }
 
-  const { fixedWidth, widthFillContainer, widthHugContents, fixedHeight, heightFillContainer, heightHugContents } =
-    applyWidth(context, node, styles);
+  const { fixedWidth, widthFillContainer, fixedHeight, heightFillContainer } = applyWidth(context, node, styles);
 
   if (isText(node)) {
-    if (fixedWidth || widthFillContainer) {
-      const textAlignHorizontalToCssTextAlign: {
-        [K in TextNode['textAlignHorizontal']]: NonNullable<PropertiesHyphen['text-align']>;
-      } = {
-        LEFT: 'start',
-        CENTER: 'center',
-        RIGHT: 'end',
-        JUSTIFIED: 'justify',
-      };
-      // node.textAlignHorizontal === ''
-      // TODO
+    if ((fixedWidth || widthFillContainer) && node.textAlignHorizontal !== 'LEFT') {
+      addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
+      // Seems useless? short (single line) and long (multi-line) texts should be tested.
+      // if (node.textAlignHorizontal !== 'JUSTIFIED') {
+      //   addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
+      // }
+    }
+    if ((fixedHeight || heightFillContainer) && node.textAlignVertical !== 'TOP') {
+      addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
     }
   }
 
@@ -105,7 +120,7 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
 
     if (atLeastOneChildHasLayoutAlignNotStretch) {
       // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
-      addStyle(styles, 'align-items', alignItemsToCounterAlign[node.counterAxisAlignItems]);
+      addStyle(styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
     if (node.itemSpacing && node.children.length >= 2) {
@@ -216,9 +231,9 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
   return {
     fixedWidth,
     widthFillContainer,
-    widthHugContents,
+    // widthHugContents,
     fixedHeight,
     heightFillContainer,
-    heightHugContents,
+    // heightHugContents,
   };
 }

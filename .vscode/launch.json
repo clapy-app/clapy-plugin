@@ -12,6 +12,16 @@
       "remoteRoot": "/app",
       "localRoot": "${workspaceFolder}/backend-clapy",
       // "preLaunchTask": "${defaultBuildTask}",
+    },
+    {
+      "name": "Websocket: Attach to Node",
+      "type": "node",
+      "request": "attach",
+      "restart": true,
+      "port": 9230,
+      // "remoteRoot": "/app",
+      "localRoot": "${workspaceFolder}/figma-plugin-clapy",
+      // "preLaunchTask": "${defaultBuildTask}",
     }
   ]
 }

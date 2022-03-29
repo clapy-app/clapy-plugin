@@ -23,7 +23,7 @@
     "_________________ implementation details _________________": "",
     "dev-with-browser:plugin": "yarn webpackdev --env PREVIEW_ENV=figma",
     "dev-with-browser:browser": "webpack-dev-server --mode=development --env PREVIEW_ENV=browser --env APP_ENV=dev",
-    "dev-with-browser:server": "nodemon --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js",
+    "dev-with-browser:server": "nodemon --inspect=0.0.0.0:9230 --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js",
     "clean": "sudo kill -9 `sudo lsof -t -i:9001` && sudo kill -9 `sudo lsof -t -i:9000`",
     "lint": "eslint src --ext .js,.jsx,ts,tsx --fix",
     "gentypes": "cd .. && yarn gentypes",

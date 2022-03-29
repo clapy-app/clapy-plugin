@@ -8,7 +8,7 @@ import {
 } from '../../common/app-models';
 
 export function initRoutes(routes: Routes) {
-  figma.ui.onmessage = async ({ type, payload, noResponse }: RequestMessage, props) => {
+  figma.ui.onmessage = async ({ __id, type, payload, noResponse }: RequestMessage, props) => {
     const handler = routes[type] as (...args: any) => any;
     if (!handler) throw new Error(`Unknown message type for message: ${JSON.stringify({ type, payload })}`);
 
@@ -16,6 +16,7 @@ export function initRoutes(routes: Routes) {
       const response = await handler(...payload, props);
       if (!noResponse) {
         const responseMessage: ResponseMessage = {
+          __id,
           type,
           payload: response,
         };
@@ -25,6 +26,7 @@ export function initRoutes(routes: Routes) {
     } catch (error: any) {
       if (!noResponse) {
         const responseError: ResponseMessageError = {
+          __id,
           type,
           error: error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`),
         };

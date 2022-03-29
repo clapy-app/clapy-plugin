@@ -8,6 +8,8 @@ const previewEnv = process.env.PREVIEW_ENV;
 const isPreviewInBrowser = previewEnv === 'browser';
 const isPreviewInFigma = previewEnv === 'figma';
 
+export let wsReady = false;
+
 /**
  * Allow to render the figma plugin in the browser and maintain the communiation with the plugin back-end through a websocket dev server.
  * Ensure:
@@ -63,8 +65,9 @@ function listenToPluginBackMessage(ws: WSRef) {
 }
 
 function onMsgReceivedInFigma(ws: WSRef, msg: MessageEvent) {
-  if (!msg.data.pluginMessage) return;
-  if (isPreviewInBrowser && msg.data.__source === 'figma') return;
+  const { pluginMessage, __source } = msg.data;
+  if (!pluginMessage) return;
+  if (isPreviewInBrowser && __source === 'figma') return;
 
   if (ws.current?.readyState === 1) {
     const message = JSON.stringify({
@@ -83,9 +86,11 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
   ws.current = new WebSocket('ws://localhost:9001/ws');
   ws.current.onopen = () => {
     setIsConnected(true);
+    wsReady = true;
   };
   ws.current.onclose = () => {
     setIsConnected(false);
+    wsReady = false;
 
     setTimeout(() => {
       if (isComponentMounted) {
@@ -109,8 +114,10 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
       }
 
       if (isPreviewInBrowser) {
+        // console.log('PreviewMode transfers Figma response to front');
         window.postMessage({ pluginMessage: msg, __source }, '*');
       } else if (isPreviewInFigma) {
+        // console.log('PreviewMode transfers front request to Figma');
         window.parent.postMessage({ pluginMessage: msg }, '*');
       }
     } catch (err) {
