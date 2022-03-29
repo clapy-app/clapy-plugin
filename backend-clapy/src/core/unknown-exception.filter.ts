@@ -34,7 +34,12 @@ export function handleException(exception: any, response: any = null): any {
   const parentStack = error?.parentStack || response?.parentStack || exception?.parentStack;
 
   const errors = resp?.errors;
-  if (status !== 404 && status !== 401 && (status !== 400 || !Array.isArray(errors))) {
+  if (
+    status !== 404 &&
+    status !== 401 &&
+    error?.error !== 'invalid_grant' /* status !== 403 */ &&
+    (status !== 400 || !Array.isArray(errors))
+  ) {
     logger.error('Global filter error:');
     if (exception.isAirtable) {
       logger.error('Airtable error');
