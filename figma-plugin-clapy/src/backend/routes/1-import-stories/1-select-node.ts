@@ -1,8 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
 import { ArgTypes } from '../../../common/sb-serialize.model';
-import { isPage } from '../../common/canvas-utils';
-import { getLayoutStoryId } from './3-import-sb-detail';
-import { listVariantProps } from './import-sb-utils';
+import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {
   sendSbCompSelection?.();
@@ -20,17 +18,8 @@ export function selectedSbComp(next: NextFn<SbAnySelection[]>) {
 }
 
 function prepareSbCompSelection() /* : SbCompSelection[] */ {
-  const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
-
-  const selectedSbComp = figma.currentPage.selection.reduce((selections, node0) => {
-    let storyId: string | undefined = undefined;
-    const sbUrl = node0.getPluginData('sbUrl') || pageSbUrl;
-    let node: SceneNode | null = node0;
-    if (sbUrl) {
-      while (node && !isPage(node) && !(storyId = getLayoutStoryId(node))) {
-        node = node.parent as SceneNode;
-      }
-    }
+  const selectedSbComp = figma.currentPage.selection.reduce((selections, selectedNode) => {
+    const { node, sbUrl, storyId } = getParentCompNode(selectedNode);
     if (storyId && sbUrl && node) {
       // &args=kind:secondary;size:xxs
       const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
@@ -44,14 +33,14 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
         argTypes,
         initialArgs,
         figmaId: node.id,
-        tagFigmaId: node0.id,
+        tagFigmaId: selectedNode.id,
         pageId: figma.currentPage.id,
         props: listVariantProps(node, argTypes),
       };
       selections.push(selection);
     } else {
       const selection: SbOtherSelection = {
-        figmaId: node0.id,
+        figmaId: selectedNode.id,
         pageId: figma.currentPage.id,
       };
       selections.push(selection);

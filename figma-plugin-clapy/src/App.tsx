@@ -2,9 +2,9 @@ import { FC, memo } from 'react';
 
 import styles from './App.module.scss';
 import { getDuration } from './common/general-utils';
-import { LogoutBtn } from './feat/auth/LogoutBtn';
-import { ImportSb } from './feat/import-sb/1-ImportSb';
-import { track } from './feat/import-sb/detail/analytics';
+import { ImportSb } from './features/1-import-sb/1-ImportSb';
+import { track } from './features/1-import-sb/detail/analytics';
+import { LogoutBtn } from './features/auth/LogoutBtn';
 
 const openPluginTime = performance.now();
 

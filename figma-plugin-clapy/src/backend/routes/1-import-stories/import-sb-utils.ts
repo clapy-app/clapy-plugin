@@ -1,7 +1,8 @@
 import { ArgTypeUsed } from '../../../common/app-models';
 import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues } from '../../../common/storybook-utils';
-import { isComponentSet, MyCompNode } from '../../common/canvas-utils';
+import { isComponentSet, isPage, MyCompNode } from '../../common/canvas-utils';
+import { getLayoutStoryId } from './3-import-sb-detail';
 
 export function setStoryFrameProperties(
   frame: MyCompNode,
@@ -60,4 +61,17 @@ export function listVariantProps(node: SceneNode, argTypes: ArgTypes) {
   // Then it will remove the nodes unchecked and add squares on nodes added. Nodes moved should be reused, just changed of location if applicable.
 
   // TODO uncheck-recheck should hide the "update" button.
+}
+
+export function getParentCompNode(selectedNode: SceneNode) {
+  let storyId: string | undefined = undefined;
+  const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
+  const sbUrl = selectedNode.getPluginData('sbUrl') || pageSbUrl;
+  let node: SceneNode | null = selectedNode;
+  if (sbUrl) {
+    while (node && !isPage(node) && !(storyId = getLayoutStoryId(node))) {
+      node = node.parent as SceneNode | null;
+    }
+  }
+  return { node, sbUrl, storyId };
 }

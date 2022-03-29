@@ -4,7 +4,16 @@
   "description": "Figma plugin to start building Clapy applications.",
   "private": true,
   "license": "UNLICENSED",
-  "sideEffects": ["*.css", "*.scss", "*.jpg", "*.svg", "*.png", "*.gif", "*.webp", "*.zip"],
+  "sideEffects": [
+    "*.css",
+    "*.scss",
+    "*.jpg",
+    "*.svg",
+    "*.png",
+    "*.gif",
+    "*.webp",
+    "*.zip"
+  ],
   "scripts": {
     "start": "yarn webpackdev",
     "dev": "npm-run-all --parallel dev-with-browser:plugin dev-with-browser:browser dev-with-browser:server",
@@ -14,7 +23,7 @@
     "_________________ implementation details _________________": "",
     "dev-with-browser:plugin": "yarn webpackdev --env PREVIEW_ENV=figma",
     "dev-with-browser:browser": "webpack-dev-server --mode=development --env PREVIEW_ENV=browser --env APP_ENV=dev",
-    "dev-with-browser:server": "nodemon --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js",
+    "dev-with-browser:server": "nodemon --inspect=0.0.0.0:9230 --watch src/core/dev-preview-mode/preview-server.js src/core/dev-preview-mode/preview-server.js",
     "clean": "sudo kill -9 `sudo lsof -t -i:9001` && sudo kill -9 `sudo lsof -t -i:9000`",
     "lint": "eslint src --ext .js,.jsx,ts,tsx --fix",
     "gentypes": "cd .. && yarn gentypes",
@@ -24,20 +33,16 @@
     "killbyport": "sudo kill -9 `sudo lsof -t -i:9001`"
   },
   "dependencies": {
-    "@apollo/client": "^3.5.10",
-    "@apollo/react-common": "^3.1.4",
     "@reduxjs/toolkit": "^1.7.1",
     "buffer": "^6.0.3",
-    "graphql": "^16.3.0",
     "jwt-decode": "^3.1.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
-    "sha.js": "^2.4.11",
-    "subscriptions-transport-ws": "^0.11.0"
+    "sha.js": "^2.4.11"
   },
   "devDependencies": {
-    "@figma/plugin-typings": "^1.41.1",
+    "@figma/plugin-typings": "^1.43.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.4",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
@@ -61,7 +66,6 @@
     "mkdirp": "^1.0.4",
     "ncp": "^2.0.0",
     "nodemon": "^2.0.15",
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.3.1",
     "react-dev-utils": "^12.0.0",
     "react-refresh": "^0.11.0",

@@ -233,3 +233,13 @@ export interface SbStoriesWrapperInput {
   stories: SbStoriesInput;
   v: number;
 }
+
+export type OmitMethods<T> = {
+  [P in keyof T as T[P] extends Function ? never : P]: T[P];
+};
+
+export type SceneNodeNoMethod = OmitMethods<SceneNode>;
+
+export interface CSBResponse {
+  sandbox_id: string;
+}

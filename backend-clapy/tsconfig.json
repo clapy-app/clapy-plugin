@@ -20,7 +20,7 @@
     "sourceMap": true,
     "typeRoots": [
       "./node_modules/@types",
-      // "./node_modules/@figma",
+      "./node_modules/@figma",
       "./src/typings"
     ],
     "strict": true,
@@ -34,5 +34,10 @@
     // "strictBindCallApply": false,
     "outDir": "./dist",
     // "baseUrl": "./",
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/typings/**/*",
+    "node_modules/@types/**/*",
+  ]
 }

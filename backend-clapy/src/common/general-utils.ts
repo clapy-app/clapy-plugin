@@ -1,13 +1,16 @@
 export type ObjKey = string | number | symbol;
 
-export type Dict2<Key extends ObjKey, Value> = {
+export type Dict2<Key extends ObjKey, Value> = Partial<{
   [key in Key]: Value;
-};
+}>;
 
 export type Nil = null | undefined;
 
-export function wait(milliseconds?: number) {
-  return new Promise<void>(resolve => setTimeout(resolve, milliseconds));
+export function wait(milliseconds?: number, setClearer?: (clearer: () => void) => void) {
+  return new Promise<void>(resolve => {
+    const id = setTimeout(resolve, milliseconds);
+    setClearer?.(() => clearTimeout(id));
+  });
 }
 
 type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
@@ -42,4 +45,8 @@ export function keyBy<T>(array: T[], field: keyof T) {
     indexed[key] = obj;
   }
   return indexed;
+}
+
+export async function waitInfinite(setClearer?: (clearer: () => void) => void) {
+  return wait(2147483647, setClearer);
 }

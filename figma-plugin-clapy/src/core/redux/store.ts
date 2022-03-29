@@ -3,9 +3,9 @@ import { enableMapSet, setAutoFreeze } from 'immer';
 import { AnyAction } from 'redux';
 
 import { env } from '../../environment/env';
-import { sampleApi } from '../../feat/api-sample';
-import { authSlice } from '../../feat/auth/auth-slice';
-import { importSlice } from '../../feat/import-sb/import-slice';
+import { importSlice } from '../../features/1-import-sb/import-slice';
+import { sampleApi } from '../../features/api-sample';
+import { authSlice } from '../../features/auth/auth-slice';
 import { setStore } from './storeIsolated';
 
 const reducer = {

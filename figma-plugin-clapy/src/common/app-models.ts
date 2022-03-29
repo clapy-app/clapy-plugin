@@ -12,9 +12,9 @@ export type Nil = null | undefined;
 // Can be read from both client and server. It shares the controller model to help typing the client code.
 export type Routes = _Routes;
 
-export type RequestMessage<T = any> = { type: keyof Routes; payload: T[]; noResponse?: boolean };
-export type ResponseMessage<T = any> = { type: keyof Routes; payload: T };
-export type ResponseMessageError = { type: keyof Routes; error: any };
+export type RequestMessage<T = any> = { __id: string; type: keyof Routes; payload: T[]; noResponse?: boolean };
+export type ResponseMessage<T = any> = { __id: string; type: keyof Routes; payload: T };
+export type ResponseMessageError = { __id: string; type: keyof Routes; error: any };
 
 export type Subscriptions = _Subscriptions;
 export type NextFn<T> = (value: T) => void;

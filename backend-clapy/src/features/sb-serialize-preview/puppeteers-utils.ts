@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import puppeteer, {
   Browser,
   EvaluateFn,
@@ -6,7 +7,7 @@ import puppeteer, {
   UnwrapPromiseLike,
 } from 'puppeteer';
 
-import { env } from '../../environment/env';
+import { env } from '../../env-and-config/env';
 
 // Could improve typing of ...args to match the real arguments of inBrowserFunction.
 // We can get inspiration from the fetchPlugin function in the plugin project (client).
@@ -49,8 +50,22 @@ export async function runInPuppeteerBrowser<T extends EvaluateFn>(
     //   height: document.documentElement.clientHeight,
     //   deviceScaleFactor: window.devicePixelRatio,
     // })));
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0')) {
+      throw new HttpException(
+        'Storybook hosted on localhost is not supported. Please let us know if this is a requirement for you.',
+        400,
+      );
+    }
 
-    await page.goto(url);
+    try {
+      await page.goto(url);
+    } catch (error: any) {
+      if (error?.message?.includes?.('net::ERR_NAME_NOT_RESOLVED')) {
+        throw new HttpException('Bad storybook URL, likely a broken link.', 400);
+      } else {
+        throw error;
+      }
+    }
 
     // Wait 0.5 second to load and run animations like fading
     // (e.g. Reactstrap Alert which opacity fades from 0 to 1, impacting getComputedStyles).

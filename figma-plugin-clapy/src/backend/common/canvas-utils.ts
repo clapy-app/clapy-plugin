@@ -52,7 +52,8 @@ type LayoutNodeExtended =
   | CodeBlockNode
   | WidgetNode
   | EmbedNode
-  | LinkUnfurlNode;
+  | LinkUnfurlNode
+  | MediaNode;
 
 export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
   return !!node && layoutTypes.has(node.type);
@@ -114,7 +115,7 @@ export function isComponent(node: LayoutNodeExtended | Nil): node is ComponentNo
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: LayoutNodeExtended | Nil): node is InstanceNode {
+export function isInstance(node: LayoutNodeExtended | BaseNode | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
 

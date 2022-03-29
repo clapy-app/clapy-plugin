@@ -8,17 +8,22 @@
   "scripts": {
     "________________ development ________________": "",
     "install:all": "yarn && yarn install:backend && yarn install:plugin",
+    "dev": "npm-run-all --parallel plugin-dev up console",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive --latest",
     "up": "docker-compose up -d",
     "stop": "docker-compose stop",
     "fixtime": "sudo ntpdate -sb time.nist.gov",
+    "start:atest-gen": "cd backend-clapy/atest-gen && yarn start",
     "________________ deployment ________________": "",
     "migrate:dev": "yarn hasura migrate apply --endpoint http://localhost:8089/",
     "migrate:staging": "yarn migrate:staging1 && yarn migrate:staging2 && yarn migrate:staging3",
     "________________ implementation details ________________": "",
+    "upwait": "yarn up && sleep 5",
     "install:backend": "cd backend-clapy && yarn",
     "install:plugin": "cd figma-plugin-clapy && yarn",
+    "plugin-dev": "cd figma-plugin-clapy && yarn dev",
+    "plugin-test": "cd figma-plugin-clapy && yarn start",
     "migrate:staging1": "yarn hasura:server metadata apply --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging2": "yarn hasura:server migrate apply --all-databases --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
     "migrate:staging3": "yarn hasura:server metadata reload --endpoint https://staging-hasura-tuty7lwcwq-ew.a.run.app",
@@ -26,9 +31,11 @@
     "hasura": "hasura --project db/hasura --envfile ../../.env --skip-update-check",
     "hasura:server": "hasura --project db/hasura --skip-update-check",
     "gentypes": "cd backend-clapy && yarn gentypes",
-    "pinggit": "ssh -T git@github.com"
+    "pinggit": "ssh -T git@github.com",
+    "kill": "sudo kill -9 `sudo lsof -t -i:9001`; sudo kill -9 `sudo lsof -t -i:9000`; echo Done"
   },
   "devDependencies": {
-    "hasura-cli": "^2.2.0"
+    "hasura-cli": "^2.2.0",
+    "npm-run-all": "^4.1.5"
   }
 }

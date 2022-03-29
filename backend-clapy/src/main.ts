@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { json } from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
@@ -11,7 +12,7 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { CsrfGuard } from './auth/csrf.guard';
 import { UnknownExceptionFilter } from './core/unknown-exception.filter';
-import { env } from './environment/env';
+import { env } from './env-and-config/env';
 import { sbSerializePreview } from './features/sb-serialize-preview/2-serialize-preview';
 
 const port = env.port;
@@ -23,6 +24,7 @@ async function bootstrap() {
       // const sbUrl = 'https://style.monday.com';
       // const storybookId = 'buttons-button--overview';
 
+      // const sbUrl = 'http://nonexistingdomaiiine.com/';
       const sbUrl = 'https://reactstrap.github.io';
       // const storybookId = 'components-accordion--accordion';
       // const storybookId = 'components-badge--links';
@@ -105,6 +107,8 @@ async function bootstrap() {
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 
+  app.use(json({ limit: '50mb' }));
+
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {
     app.use((req: Request, res: Response, next: NextFunction) => setTimeout(next, env.localhostLatency));
@@ -119,7 +123,7 @@ async function bootstrap() {
   app.useGlobalGuards(new CsrfGuard());
   app.useGlobalFilters(new UnknownExceptionFilter());
 
-  return app.listen(port);
+  await app.listen(port);
 }
 
 bootstrap()

@@ -11,3 +11,5 @@ Faster bundling with vitejs:
 - https://github.com/vitejs/vite/issues/3314
 
 Another template for figma plugin using iframe for live reload: https://github.com/PluginFinchy/Figma-Vue3-Template/blob/main/livepreview.html
+
+Repo figma-plugin-helpers by a community member in slack: https://github.com/figma-plugin-helper-functions/figma-plugin-helpers

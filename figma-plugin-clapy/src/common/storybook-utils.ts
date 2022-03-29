@@ -40,14 +40,14 @@ export function argTypesToValues(argType: ArgType) {
 }
 
 function isBooleanArgType(argType: ArgType) {
-  return argType.control ? argType.control.type === 'boolean' : argType.type.name === 'boolean';
+  return argType.control ? argType.control?.type === 'boolean' : argType.type?.name === 'boolean';
 }
 
 function getSelectArgTypeOptions(argType: ArgType) {
   if (argType.control) {
     return Array.isArray(argType.options) ? argType.options : undefined;
   } else {
-    return Array.isArray(argType.type.value) ? argType.type.value : undefined;
+    return Array.isArray(argType.type?.value) ? argType.type.value : undefined;
   }
 }
 

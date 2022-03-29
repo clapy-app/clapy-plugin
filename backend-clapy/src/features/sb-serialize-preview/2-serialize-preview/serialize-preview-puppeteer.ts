@@ -1,4 +1,4 @@
-import { Dict2 } from '../../../utils';
+import { Dict2 } from '../../../common/general-utils';
 import {
   CElementNode,
   CNode,

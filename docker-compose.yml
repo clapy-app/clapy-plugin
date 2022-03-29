@@ -55,7 +55,9 @@ services:
       - '9229:9229'
     # cap_add:
     #   - SYS_ADMIN
+    # Change command to run either the webservice or a separate script
     command: yarn start:docker:debug
+    # command: yarn start:docker:debug:main2
     # command: ls -l
     deploy:
       resources:

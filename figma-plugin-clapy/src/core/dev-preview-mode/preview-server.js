@@ -1,7 +1,8 @@
 const { WebSocketServer } = require('ws');
 
-const port = 9001;
+const showDebugLogs = true;
 
+const port = 9001;
 //initialize the WebSocket server instance
 const wss = new WebSocketServer({ port });
 wss.on('connection', ws => {
@@ -15,6 +16,21 @@ wss.on('connection', ws => {
     //send back the message to the other clients
     wss.clients.forEach(client => {
       if (client != ws) {
+        if (showDebugLogs) {
+          const obj = JSON.parse(message.toString());
+          if (obj.error) {
+            console.log(
+              obj.__source === 'browser' ? 'Request' : 'Response',
+              obj.type,
+              '- error:',
+              obj.error,
+              '- has payload:',
+              !!obj.payload,
+            );
+          } else {
+            console.log(obj.__source === 'browser' ? 'Request' : 'Response', obj.type, '- has payload:', !!obj.payload);
+          }
+        }
         client.send(message);
       }
     });
@@ -29,7 +45,10 @@ const interval = setInterval(() => {
   });
 }, 30000);
 
-wss.on('close', () => clearInterval(interval));
+wss.on('close', () => {
+  console.log('Closing websocket server.');
+  clearInterval(interval);
+});
 
 ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGQUIT', 'uncaughtException'].forEach(signal =>
   process.on(signal, () => {

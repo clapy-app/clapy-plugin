@@ -1,5 +1,5 @@
 import { CacheAsLRUMap } from '../../common/cache';
-import { env } from '../../environment/env';
+import { env } from '../../env-and-config/env';
 import { FontFamilyToFontMap, prepareSVGFontsMap } from './2-serialize-preview/font/prepare-context';
 import { processSVG } from './2-serialize-preview/font/process-node';
 import { processImage } from './2-serialize-preview/image/process-node';

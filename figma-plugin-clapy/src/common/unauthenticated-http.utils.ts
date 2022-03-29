@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { env } from '../environment/env';
-import { mkUrl } from '../feat/auth/auth-service.utils';
+import { mkUrl } from '../features/auth/auth-service.utils';
 import { wait } from './general-utils';
 import { Dict } from './sb-serialize.model';
 
@@ -172,14 +172,14 @@ async function httpReqUnauthenticated<T>(
     }
   }
   if (!resp.ok) {
-    throw Object.assign(new Error('[http utils] Failed request'), resp);
+    throw Object.assign(new Error((resp?.data as any)?.message || '[http utils] Failed request'), resp?.data);
   }
   return resp;
 }
 
 async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiResponse<T>> {
   const respRaw = await respPromise;
-  const data: T = await respRaw.json();
+  const data: T = respRaw.headers.has('content-type') ? await respRaw.json() : undefined;
   const { bodyUsed, headers, ok, redirected, status, statusText, type, url } = respRaw;
   return {
     bodyUsed,

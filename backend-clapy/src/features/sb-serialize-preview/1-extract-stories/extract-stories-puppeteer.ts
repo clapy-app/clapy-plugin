@@ -7,6 +7,13 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
     // (yes, it's ugly, but I don't have better ideas for the MVP.)
     let i = 0;
     const w = window as any;
+    if (!w.__STORYBOOK_ADDONS) {
+      throw {
+        message:
+          'This URL is either not a storybook or a version not supported. Please let us know if this is supposed to work.',
+        status: 400,
+      };
+    }
     while (!(setStories = w.__STORYBOOK_ADDONS.channel.data.setStories) && i < 20) {
       ++i;
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -83,12 +90,13 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
     }
     return { v, stories, title: brandTitle } as SbStoriesWrapper;
   } catch (error: any) {
-    return { hasError: true, message: error.message, stack: error.stack } as ErrorResp;
+    return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
   }
 }
 
 export interface ErrorResp {
   hasError: true;
   message: string;
-  stack: string;
+  stack?: string;
+  status?: number;
 }
