@@ -73,8 +73,7 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
   const parent = context.parentNode;
-  // const omitStretch = parent?.layoutMode === 'VERTICAL' && isText(node);
-  if (node.layoutAlign === 'STRETCH' /* && !omitStretch */) {
+  if (node.layoutAlign === 'STRETCH') {
     addStyle(styles, 'align-self', 'stretch');
     // Stretch is the default
   }
@@ -94,17 +93,10 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
     }
   }
 
-  // textAlignHorizontal n'est utile que si fill container (x) ou fixed width
-  // textAlignVertical n'est utile que si fill container (y) ou fixed height
-
   if (isFlex) {
     // display: flex is applied globally
     // addStyle(styles, 'display', 'flex');
 
-    // if (node.layoutMode === 'VERTICAL') {
-    //   // row direction is the default. We can omit it.
-    //   addStyle(styles, 'flex-direction', 'column');
-    // }//
     if (node.layoutMode === 'HORIZONTAL') {
       // We have set column as the default. We can omit it.
       addStyle(styles, 'flex-direction', 'row');
@@ -151,9 +143,6 @@ function checkChildrenLayout(node: FlexNode) {
   }
   return [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch];
 }
-
-// export function flexCodeToFigma() {
-// }
 
 function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
   let { paddingTop, paddingRight, paddingBottom, paddingLeft } = node;
@@ -231,9 +220,7 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
   return {
     fixedWidth,
     widthFillContainer,
-    // widthHugContents,
     fixedHeight,
     heightFillContainer,
-    // heightHugContents,
   };
 }
