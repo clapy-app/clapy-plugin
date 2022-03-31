@@ -1,4 +1,4 @@
-import { CElementNode, SbStory } from '../../../common/sb-serialize.model';
+import { CElementNode, CPseudoElementNode, SbStory } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import { MyCompNode } from '../../common/canvas-utils';
 
@@ -36,6 +36,14 @@ export interface BorderWidths {
   borderRightWidth: number;
 }
 
+export interface AbsoluteElementToAdd {
+  node: FrameNode | GroupNode;
+  sbNode: CElementNode | CPseudoElementNode;
+  figmaParentNode: MyCompNode;
+  absoluteAncestor: MyCompNode;
+  absoluteAncestorBorders: BorderWidths;
+}
+
 export interface RenderContext {
   storyId: string;
   figmaParentNode: MyCompNode;
@@ -51,6 +59,7 @@ export interface RenderContext {
    * undefined = no non-empty child found (= all children are empty wrappers)
    */
   parentNonEmptyChildMode: 'fillContainer' | 'hugContents' | undefined;
+  absoluteElementsToAdd: AbsoluteElementToAdd[];
 }
 
 export interface SbStoryWithFolder extends SbStory {

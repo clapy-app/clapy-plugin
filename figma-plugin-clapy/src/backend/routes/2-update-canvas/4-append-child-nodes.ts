@@ -16,7 +16,6 @@ import { isGroup, isText } from '../../common/canvas-utils';
 import { RenderContext } from '../1-import-stories/import-model';
 import { cssToFontStyle } from './fonts';
 import {
-  appendAbsolutelyPositionedNode,
   appendBackgroundColor,
   appendBackgroundImage,
   applyAutoLayout,
@@ -44,11 +43,14 @@ import {
 type MyNode = TextNode | FrameNode | GroupNode;
 
 export async function appendChildNodes(sbNodes: CNode[], context: RenderContext) {
-  const { figmaParentNode, sbParentNode, appendInline } = context;
-  let absoluteElementsToAdd: {
-    node: FrameNode | GroupNode;
-    sbNode: CElementNode | CPseudoElementNode;
-  }[] = [];
+  const {
+    figmaParentNode,
+    sbParentNode,
+    appendInline,
+    absoluteElementsToAdd,
+    absoluteAncestor,
+    absoluteAncestorBorders,
+  } = context;
 
   const consecutiveInlineNodes: MyNode[] = [];
 
@@ -338,7 +340,13 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
         // Don't use `node` below, use `wrapperNode` or `innerNode` instead.
 
         if (position === 'absolute') {
-          absoluteElementsToAdd.push({ node: wrapperNode, sbNode });
+          absoluteElementsToAdd.push({
+            node: wrapperNode,
+            sbNode,
+            figmaParentNode,
+            absoluteAncestor,
+            absoluteAncestorBorders,
+          });
         } else {
           queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
 
@@ -390,15 +398,6 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
   if (!appendInline) {
     queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
     appendInlineNodes(context, consecutiveInlineNodes);
-  }
-
-  for (const { node, sbNode } of absoluteElementsToAdd) {
-    const { position } = sbNode.styles;
-    // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
-    // We append here so that it's the last thing appended, including the text nodes appended just above. It's required to calculate well the parent node height for absolute positioning with a bottom constraint.
-    if (position === 'absolute') {
-      appendAbsolutelyPositionedNode(node, sbNode, context);
-    }
   }
 }
 
@@ -480,7 +479,9 @@ function isInlineNode(node: CNode) {
 }
 
 function allChildrenAreTextNodes(node: CElementNode) {
-  for (const child of node.children || []) {
+  const children = node.children || [];
+  if (!children.length) return false;
+  for (const child of children) {
     if (!isCTextNode(child)) {
       return false;
     }

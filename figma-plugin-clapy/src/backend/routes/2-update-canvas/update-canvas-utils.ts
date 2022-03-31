@@ -13,7 +13,7 @@ import {
   Property,
 } from '../../../common/sb-serialize.model';
 import { isFrame, isGroup, isLayout, isText, LayoutNode } from '../../common/canvas-utils';
-import { BorderWidths, RenderContext } from '../1-import-stories/import-model';
+import { AbsoluteElementToAdd, BorderWidths, RenderContext } from '../1-import-stories/import-model';
 
 const loadedFonts = new Map<string, Promise<void>>();
 
@@ -853,12 +853,13 @@ function setTo0px(frame: FrameNode) {
   // frame.counterAxisSizingMode = "FIXED"
 }
 
-export function appendAbsolutelyPositionedNode(
-  node: FrameNode | GroupNode,
-  sbNode: CElementNode | CPseudoElementNode,
-  context: RenderContext,
-) {
-  const { figmaParentNode, absoluteAncestor, absoluteAncestorBorders } = context;
+export function appendAbsolutelyPositionedNode({
+  node,
+  sbNode,
+  figmaParentNode,
+  absoluteAncestor,
+  absoluteAncestorBorders,
+}: AbsoluteElementToAdd) {
   let wrapper: FrameNode | GroupNode | undefined;
   if (figmaParentNode.layoutMode === 'NONE') {
     // No need to wrap if the parent is not auto-layout (e.g. an absolute position right within an absolutely positioned node)
@@ -866,7 +867,7 @@ export function appendAbsolutelyPositionedNode(
   } else {
     wrapper = withDefaultProps(figma.createFrame());
     wrapper.name = 'Absolute position wrapper';
-    wrapper.layoutAlign = 'STRETCH';
+    // wrapper.layoutAlign = 'STRETCH'; // Optional, but may harm more than help.
     // So we set to transparent. The tradeoff is that there is 1px shift for the rest.
     // We could work around it by reducing paddings, margins... (if any) by 1px (not implemented)
     setTo0px(wrapper);
