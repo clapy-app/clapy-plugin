@@ -216,9 +216,17 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
       } else {
         // sbNode is element or pseudo-element
 
+        // Bug: className is an object for SVG?
+        // Reactstrap, component components-toast--toast-header-icon
+        const className = isCElementNode(sbNode) ? sbNode.className?.trim?.() : undefined;
+        const nodeName =
+          className && typeof className === 'string' ? `${sbNode.name}.${className.split(' ').join('.')}` : sbNode.name;
+
         if (appendInline) {
           console.warn(
-            'Block elements inside inline detected. It is not supported well and will cause unexpected results.',
+            'Block elements',
+            nodeName,
+            'inside inline detected. It is not supported well and will cause unexpected results.',
           );
         }
 
@@ -231,12 +239,7 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         const svgNode = getSvgNode(borders, paddings, sbNode);
         node = svgNode || withDefaultProps(figma.createFrame());
-
-        // Bug: className is an object for SVG?
-        // Reactstrap, component components-toast--toast-header-icon
-        const className = isCElementNode(sbNode) ? sbNode.className?.trim?.() : undefined;
-        node.name =
-          className && typeof className === 'string' ? `${sbNode.name}.${className.split(' ').join('.')}` : sbNode.name;
+        node.name = nodeName;
 
         // if (display === 'none') {
         //   node.visible = false;
@@ -261,7 +264,7 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         applyBordersToEffects(node, sbNode.styles, borders, effects);
 
-        applyShadowToEffects(boxShadow as string, effects);
+        applyShadowToEffects(boxShadow as string, effects, fills);
 
         node.effects = effects;
 
@@ -383,8 +386,7 @@ function newTextNode() {
 
 function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
   const { previousInlineNode, sbParentNode, figmaParentNode } = context;
-  const characters = previousInlineNode?.characters;
-  if (characters) {
+  if (previousInlineNode && !previousInlineNode.removed && previousInlineNode.characters) {
     context.previousInlineNode = undefined;
 
     if (hasBlockParent(sbParentNode)) {
@@ -392,6 +394,9 @@ function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[
     } else {
       figmaParentNode.appendChild(previousInlineNode);
     }
+  } else {
+    removeNode(previousInlineNode);
+    context.previousInlineNode = undefined;
   }
 }
 

@@ -345,7 +345,7 @@ export function applyBordersToEffects(
 const shadowRegexStr = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
 const shadowRegex = new RegExp(shadowRegexStr, 'g');
 
-export function applyShadowToEffects(boxShadow: string, effects: Effect[]) {
+export function applyShadowToEffects(boxShadow: string, effects: Effect[], fills: Paint[]) {
   if (boxShadow === 'none') {
     return;
   }
@@ -359,7 +359,7 @@ export function applyShadowToEffects(boxShadow: string, effects: Effect[]) {
     const x = sizeWithUnitToPx(match[6]);
     const y = sizeWithUnitToPx(match[8]);
     const blur = sizeWithUnitToPx(match[10]);
-    const spread = sizeWithUnitToPx(match[12]);
+    const spread = fills.length ? sizeWithUnitToPx(match[12]) : 0;
     const hasInner = match[15] === 'inset';
     effects.push({
       type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
