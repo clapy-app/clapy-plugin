@@ -32,11 +32,34 @@ Suggested package: https://github.com/dsifford/yarn-completion
 Alternative: https://github.com/mklabs/yarn-completions
 Discussion: https://github.com/yarnpkg/yarn/issues/609
 
+## Open PR from me:
+
+PR: https://github.com/opentypejs/opentype.js/pull/503
+Fork: https://github.com/antoineol/opentype.js
+
 ## Notes for later
 
-codesandbox uses parcel to bundle in the browser.
-https://astexplorer.net/ to list AST tools
-https://ts-ast-viewer.com/ for typescript AST playground
+- codesandbox uses parcel to bundle in the browser.
+- AST tools:
+    https://astexplorer.net/ to list AST tools
+    https://ts-ast-viewer.com/ for typescript AST playground
+- Puppeteer optimised for concurrent requests: https://stackoverflow.com/questions/57898974/calling-puppeteer-from-rest-api
+
+## Figma plugin tips
+
+Notes to help making a Figma plugin:
+
+- React components using Figma design system (with demo): https://github.com/alexandrtovmach/react-figma-plugin-ds
+- List of projects useful for Figma plugin development: https://github.com/thomas-lowry/figma-plugins-on-github
+
+Faster bundling with vitejs:
+
+- https://stackoverflow.com/questions/69585063/vue-js-package-app-as-figma-plugin-using-vite
+- https://github.com/vitejs/vite/issues/3314
+
+Another template for figma plugin using iframe for live reload: https://github.com/PluginFinchy/Figma-Vue3-Template/blob/main/livepreview.html
+
+Repo figma-plugin-helpers by a community member in slack: https://github.com/figma-plugin-helper-functions/figma-plugin-helpers
 
 ## CSS AST tools
 
