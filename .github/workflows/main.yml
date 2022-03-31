@@ -46,8 +46,8 @@ jobs:
         # with:
         #   cmd: install
 
-      - name: yarn build:staging
-        run: yarn build:staging
+      - name: yarn build:prod
+        run: yarn build:prod
         # uses: borales/actions-yarn@v2.3.0
         # with:
         #   cmd: build

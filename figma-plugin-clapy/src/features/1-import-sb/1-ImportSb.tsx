@@ -240,6 +240,7 @@ export const ImportSb: FC = memo(function ImportSb() {
                 onChange={setSbUrlHandler}
                 disabled={!!loadingTxt}
                 title='If this URL shows storybook in your browser, it should work.'
+                autoFocus
               />
             </div>
             <button onClick={runImport} disabled={!!loadingTxt} title='Import all components from storybook'>

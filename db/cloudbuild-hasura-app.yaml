@@ -44,11 +44,11 @@ options:
 substitutions:
   _LABELS: gcb-trigger-id=267a7d02-7391-4d2a-bd42-c8289b0dfc64
   _TRIGGER_ID: 267a7d02-7391-4d2a-bd42-c8289b0dfc64
-  _SERVICE_NAME: staging-hasura
+  _SERVICE_NAME: hasura
   _DEPLOY_REGION: europe-west1
   _GCR_HOSTNAME: eu.gcr.io
   _PLATFORM: managed
 tags:
   - gcp-cloud-build-deploy-cloud-run
   - gcp-cloud-build-deploy-cloud-run-managed
-  - clapy-staging-hasura
+  - clapy-hasura

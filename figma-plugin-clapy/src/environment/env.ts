@@ -16,11 +16,11 @@ const dev = {
 };
 
 const staging = {
-  apiBaseUrl: 'https://applab-backend-tuty7lwcwq-ew.a.run.app',
+  apiBaseUrl: 'todo',
 };
 
 const prod = {
-  apiBaseUrl: 'https://applab-backend-tuty7lwcwq-ew.a.run.app',
+  apiBaseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
