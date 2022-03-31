@@ -21,7 +21,9 @@ module.exports = (env, argv) => {
   const isProdEnv = appEnv === 'production' || appEnv === 'prod';
   // If not production and not browser, it's a normal dev env in Figma.
 
-  require('dotenv').config({ path: `${rootDir}/${isDevEnv ? '.env' : isStagingEnv ? '.env.staging' : '.env.prod'}` });
+  require('dotenv').config({
+    path: `${rootDir}/${isDevEnv ? '.env' : isStagingEnv ? '.env.staging' : '.env.production'}`,
+  });
 
   // Update manifest.json with the bundle folder name.
   const distFolder = 'build';

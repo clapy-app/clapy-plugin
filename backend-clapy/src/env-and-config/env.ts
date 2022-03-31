@@ -25,13 +25,13 @@ const dev = {
 const staging = {
   auth0Domain: 'aol-perso.eu.auth0.com',
   auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
-  baseUrl: 'http://localhost:4141',
+  baseUrl: 'todo',
 };
 
 const prod = {
   auth0Domain: 'aol-perso.eu.auth0.com',
   auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
-  baseUrl: 'http://localhost:4141',
+  baseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
