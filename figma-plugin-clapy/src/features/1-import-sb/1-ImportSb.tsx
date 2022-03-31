@@ -45,7 +45,7 @@ export const ImportSb: FC = memo(function ImportSb() {
   const authLoading = useSelector(selectAuthLoading);
   const isSignedIn = useSelector(selectSignedIn);
   const [sbSelection, setSbSelection] = useState<SbSampleSelection>(
-    env.isDev ? 'reactstrap' /* 'equisafe' */ : 'reactstrap',
+    env.isDev ? 'rupali' /* 'equisafe' */ : 'reactstrap',
   );
   const [sbUrl, setSbUrl] = useState<string>();
   const [options, setOptions] = useState<JSX.Element[]>();

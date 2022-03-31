@@ -16,6 +16,10 @@ export const storiesSamples = {
       label: 'Equisafe',
       sbUrl: 'http://localhost:9009',
     },
+    rupali: {
+      label: 'Rupali',
+      sbUrl: 'https://6240065dafe4da003aaa33c2-foshjfdhfb.chromatic.com/',
+    },
   }),
 } as const;
 

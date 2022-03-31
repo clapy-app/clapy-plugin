@@ -2,6 +2,7 @@ import { appConfig } from '../../../common/app-config';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
 import { propArrayToMap } from '../../../common/storybook-utils';
 import { isComponent, isComponentSet } from '../../common/canvas-utils';
+import { getLayoutStoryId } from '../1-import-stories/3-import-sb-detail';
 import { listVariantProps, setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
@@ -39,10 +40,16 @@ export async function updateCanvasVariant(
     const siblings = parent.children;
     const childPosition = siblings.indexOf(storyNode);
 
-    let componentSet = isComponentSet(storyNode)
-      ? storyNode
-      : // Check previous child, if it is a frame
-        siblings[childPosition - 1];
+    let componentSet: ComponentSetNode | undefined = undefined;
+    if (isComponentSet(storyNode)) {
+      componentSet = storyNode;
+    }
+    if (!componentSet) {
+      const prevSibling = siblings[childPosition - 1];
+      if (isComponentSet(prevSibling) && getLayoutStoryId(prevSibling) === storyId) {
+        componentSet = prevSibling;
+      }
+    }
 
     let name: string | undefined = undefined;
 

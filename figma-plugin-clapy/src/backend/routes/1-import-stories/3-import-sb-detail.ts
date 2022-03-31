@@ -28,6 +28,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
 
   let hasSingleTopFolder = true;
   let previousTopFolder: string | undefined = undefined;
+  let hasAtLeastOneSingleFolder = false;
   for (let i = 0; i < storyEntries.length; i++) {
     const [storyId, story] = storyEntries[i];
     const storyTitle = story.title || story.kind;
@@ -38,8 +39,14 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
     } else if (hasSingleTopFolder && previousTopFolder !== fragments[0]) {
       hasSingleTopFolder = false;
     }
+    if (!(fragments.length > 1)) {
+      hasAtLeastOneSingleFolder = true;
+    }
+    if (!hasSingleTopFolder && hasAtLeastOneSingleFolder) {
+      break;
+    }
   }
-  const indexShift = hasSingleTopFolder ? 1 : 0;
+  const indexShift = hasSingleTopFolder && !hasAtLeastOneSingleFolder ? 1 : 0;
 
   for (let i = 0; i < storyEntries.length; i++) {
     const [storyId, story] = storyEntries[i];

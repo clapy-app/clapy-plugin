@@ -14,13 +14,17 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
         status: 400,
       };
     }
-    while (!(setStories = w.__STORYBOOK_ADDONS.channel.data.setStories) && i < 20) {
+    const waitStorybookNumberOfRetries = 60;
+    while (!(setStories = w.__STORYBOOK_ADDONS.channel.data.setStories) && i < waitStorybookNumberOfRetries) {
       ++i;
       await new Promise(resolve => setTimeout(resolve, 50));
     }
     const brandTitle = w.__STORYBOOK_ADDONS.config?.theme?.brandTitle || sbUrl;
     if (!setStories) {
-      return { hasError: true, message: 'setStories still not defined in puppeteer after 20 tries.' } as ErrorResp;
+      return {
+        hasError: true,
+        message: `setStories still not defined in puppeteer after ${waitStorybookNumberOfRetries} tries.`,
+      } as ErrorResp;
     }
     if (!setStories[0]) {
       return {
