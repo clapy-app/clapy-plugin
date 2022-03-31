@@ -1,7 +1,35 @@
-version: '3.6'
+version: '3.7'
 
 volumes:
   node_modules:
+
+x-backend:
+  &backend
+  build:
+    dockerfile: ./Dockerfile.dev
+    context: ./backend-clapy
+  volumes:
+    - node_modules:/app/node_modules
+    - ./backend-clapy:/app
+  env_file: .env
+  environment:
+    ISDOCKER: 'true'
+    REACT_APP_HASURA_HOSTNAME: hasura
+    REACT_APP_HASURA_PORT: ${HASURA_DOCKER_PORT}
+  ports:
+    - '4141:4141'
+    - '9229:9229'
+  # cap_add:
+  #   - SYS_ADMIN
+  # Change command to run either the webservice or a separate script
+  command: yarn start:docker:debug
+  # command: yarn start:docker:debug:main2
+  # command: ls -l
+  deploy:
+    resources:
+      limits:
+        # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
+        memory: 700M
 
 services:
   db:
@@ -14,7 +42,7 @@ services:
   hasura:
     # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
     # version) and the package hasura-cli in package.json.
-    image: hasura/graphql-engine:v2.3.0.cli-migrations-v3
+    image: hasura/graphql-engine:v2.4.0.cli-migrations-v3
     container_name: clapy_hasura
     ports:
       - '${REACT_APP_HASURA_PORT}:${HASURA_DOCKER_PORT}'
@@ -38,33 +66,13 @@ services:
   #    restart: on-failure
 
   backend:
-    build:
-      dockerfile: ./Dockerfile.dev
-      context: ./backend-clapy
+    <<: *backend
     container_name: clapy_backend
-    volumes:
-      - node_modules:/app/node_modules
-      - ./backend-clapy:/app
-    env_file: .env
-    environment:
-      ISDOCKER: 'true'
-      REACT_APP_HASURA_HOSTNAME: hasura
-      REACT_APP_HASURA_PORT: ${HASURA_DOCKER_PORT}
-    ports:
-      - '4141:4141'
-      - '9229:9229'
-    # cap_add:
-    #   - SYS_ADMIN
-    # Change command to run either the webservice or a separate script
-    command: yarn start:docker:debug
-    # command: yarn start:docker:debug:main2
-    # command: ls -l
-    deploy:
-      resources:
-        limits:
-          # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
-          memory: 700M
 
+  dev:
+    <<: *backend
+    container_name: dev
+    command: yarn start:docker:debug:main2
   # pgadmin:
   #   image: dpage/pgadmin4:5.1
   #   container_name: clapy_pgadmin

@@ -4,7 +4,13 @@ import { isFrame, MyCompNode } from '../../common/canvas-utils';
 import { RenderContext } from '../1-import-stories/import-model';
 import { appendChildNodes } from './4-append-child-nodes';
 import { horizontalFixedSize, verticalHugContents } from './autolayout-utils';
-import { nodeStyles, removeNode, resizeNode, sizeWithUnitToPx } from './update-canvas-utils';
+import {
+  appendAbsolutelyPositionedNode,
+  nodeStyles,
+  removeNode,
+  resizeNode,
+  sizeWithUnitToPx,
+} from './update-canvas-utils';
 
 export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], storyId: string, isVariant?: boolean) {
   try {
@@ -82,12 +88,22 @@ export async function renderParentNode(node: MyCompNode, sbNodes: CNode[], story
       },
       parentIsEmptyWrapper: true,
       parentNonEmptyChildMode: undefined,
+      absoluteElementsToAdd: [],
     };
     await appendChildNodes(sbNodes, context);
 
     // If none of the direct children have fill container for height, we could set currentNode to hug contents (primary axis)
     if (!atLeastOneChildFillsContainerVertically(node)) {
       node.primaryAxisSizingMode = 'AUTO';
+    }
+
+    for (const elementToAdd of context.absoluteElementsToAdd) {
+      const { position } = elementToAdd.sbNode.styles;
+      // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
+      // We append here so that it's the last thing appended, including the text nodes appended just above. It's required to calculate well the parent node height for absolute positioning with a bottom constraint.
+      if (position === 'absolute') {
+        appendAbsolutelyPositionedNode(elementToAdd);
+      }
     }
   } catch (err) {
     console.error('Error while rendering story', storyId, 'in the root component.');

@@ -16,7 +16,6 @@ import { isGroup, isText } from '../../common/canvas-utils';
 import { RenderContext } from '../1-import-stories/import-model';
 import { cssToFontStyle } from './fonts';
 import {
-  appendAbsolutelyPositionedNode,
   appendBackgroundColor,
   appendBackgroundImage,
   applyAutoLayout,
@@ -44,11 +43,14 @@ import {
 type MyNode = TextNode | FrameNode | GroupNode;
 
 export async function appendChildNodes(sbNodes: CNode[], context: RenderContext) {
-  const { figmaParentNode, sbParentNode, appendInline } = context;
-  let absoluteElementsToAdd: {
-    node: FrameNode | GroupNode;
-    sbNode: CElementNode | CPseudoElementNode;
-  }[] = [];
+  const {
+    figmaParentNode,
+    sbParentNode,
+    appendInline,
+    absoluteElementsToAdd,
+    absoluteAncestor,
+    absoluteAncestorBorders,
+  } = context;
 
   const consecutiveInlineNodes: MyNode[] = [];
 
@@ -201,7 +203,7 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         // TODO shouldn't we always hug contents? Beware of not breaking components like reactstrap accordion header with icon.
         applyFlexWidthHeight(node, context, sbNode, true, true, false, false);
-      } else if (isCElementNode(sbNode) && display === 'inline') {
+      } else if (isCElementNode(sbNode) && allChildrenAreTextNodes(sbNode) && display === 'inline') {
         // Inline pseudo-elements may be considered as well.
 
         if (sbNode.children) {
@@ -216,9 +218,17 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
       } else {
         // sbNode is element or pseudo-element
 
+        // Bug: className is an object for SVG?
+        // Reactstrap, component components-toast--toast-header-icon
+        const className = isCElementNode(sbNode) ? sbNode.className?.trim?.() : undefined;
+        const nodeName =
+          className && typeof className === 'string' ? `${sbNode.name}.${className.split(' ').join('.')}` : sbNode.name;
+
         if (appendInline) {
           console.warn(
-            'Block elements inside inline detected. It is not supported well and will cause unexpected results.',
+            'Block elements',
+            nodeName,
+            'inside inline detected. It is not supported well and will cause unexpected results.',
           );
         }
 
@@ -231,12 +241,7 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         const svgNode = getSvgNode(borders, paddings, sbNode);
         node = svgNode || withDefaultProps(figma.createFrame());
-
-        // Bug: className is an object for SVG?
-        // Reactstrap, component components-toast--toast-header-icon
-        const className = isCElementNode(sbNode) ? sbNode.className?.trim?.() : undefined;
-        node.name =
-          className && typeof className === 'string' ? `${sbNode.name}.${className.split(' ').join('.')}` : sbNode.name;
+        node.name = nodeName;
 
         // if (display === 'none') {
         //   node.visible = false;
@@ -253,15 +258,16 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
         appendBackgroundColor(backgroundColor, fills);
 
         appendBackgroundImage(sbNode, fills);
-        if (!isGroup(node)) {
-          node.fills = fills;
-        }
 
         const effects: Effect[] = [];
 
         applyBordersToEffects(node, sbNode.styles, borders, effects);
 
-        applyShadowToEffects(boxShadow as string, effects);
+        const forceClipContents = applyShadowToEffects(boxShadow as string, effects, node, fills);
+
+        if (!isGroup(node)) {
+          node.fills = fills;
+        }
 
         node.effects = effects;
 
@@ -273,7 +279,8 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         if (!isGroup(node)) {
           node.clipsContent =
-            (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
+            forceClipContents ||
+            ((overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip'));
         }
 
         // Layout
@@ -294,6 +301,28 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
           borderTopWidth +
           borderBottomWidth +
           (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
+        if (display === 'inline' && noTextChild(sbNode)) {
+          // font size and line height should be interpreted as width/height
+          const lineHeightNum = sizeWithUnitToPx(lineHeight as string);
+          w = sizeWithUnitToPx(fontSize);
+          if (lineHeightNum > w) {
+            if (figmaParentNode.layoutMode === 'HORIZONTAL' && figmaParentNode.counterAxisSizingMode === 'AUTO') {
+              figmaParentNode.counterAxisSizingMode = 'FIXED';
+              figmaParentNode.counterAxisAlignItems = 'CENTER';
+              figmaParentNode.resizeWithoutConstraints(figmaParentNode.width, lineHeightNum);
+            } else if (figmaParentNode.layoutMode === 'VERTICAL' && figmaParentNode.primaryAxisSizingMode === 'AUTO') {
+              figmaParentNode.primaryAxisSizingMode = 'FIXED';
+              figmaParentNode.primaryAxisAlignItems = 'CENTER';
+              figmaParentNode.resizeWithoutConstraints(figmaParentNode.width, lineHeightNum);
+            } else {
+              figmaParentNode.resizeWithoutConstraints(
+                figmaParentNode.width,
+                Math.max(figmaParentNode.height, lineHeightNum),
+              );
+            }
+          }
+          h = Math.min(lineHeightNum, w);
+        }
 
         // `<=` because, with negative margins, negative dimensions can happen.
         if (w < 0.01 && h < 0.01 && !hasChildren) {
@@ -311,7 +340,13 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
         // Don't use `node` below, use `wrapperNode` or `innerNode` instead.
 
         if (position === 'absolute') {
-          absoluteElementsToAdd.push({ node: wrapperNode, sbNode });
+          absoluteElementsToAdd.push({
+            node: wrapperNode,
+            sbNode,
+            figmaParentNode,
+            absoluteAncestor,
+            absoluteAncestorBorders,
+          });
         } else {
           queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
 
@@ -364,15 +399,6 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
     queueTextNodeInInlineNodes(context, consecutiveInlineNodes);
     appendInlineNodes(context, consecutiveInlineNodes);
   }
-
-  for (const { node, sbNode } of absoluteElementsToAdd) {
-    const { position } = sbNode.styles;
-    // If position absolute, let's wrap in an intermediate node which is not autolayout, so that we can set the position of the absolutely-positioned node.
-    // We append here so that it's the last thing appended, including the text nodes appended just above. It's required to calculate well the parent node height for absolute positioning with a bottom constraint.
-    if (position === 'absolute') {
-      appendAbsolutelyPositionedNode(node, sbNode, context);
-    }
-  }
 }
 
 function newTextNode() {
@@ -383,8 +409,7 @@ function newTextNode() {
 
 function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[]) {
   const { previousInlineNode, sbParentNode, figmaParentNode } = context;
-  const characters = previousInlineNode?.characters;
-  if (characters) {
+  if (previousInlineNode && !previousInlineNode.removed && previousInlineNode.characters) {
     context.previousInlineNode = undefined;
 
     if (hasBlockParent(sbParentNode)) {
@@ -392,6 +417,9 @@ function queueTextNodeInInlineNodes(context: RenderContext, inlineNodes: MyNode[
     } else {
       figmaParentNode.appendChild(previousInlineNode);
     }
+  } else {
+    removeNode(previousInlineNode);
+    context.previousInlineNode = undefined;
   }
 }
 
@@ -448,6 +476,29 @@ function isInline(display: Property.Display | undefined) {
 
 function isInlineNode(node: CNode) {
   return !!(node && (isCTextNode(node) || isInline(node.styles.display)));
+}
+
+function allChildrenAreTextNodes(node: CElementNode) {
+  const children = node.children || [];
+  if (!children.length) return false;
+  for (const child of children) {
+    if (!isCTextNode(child)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function noTextChild(node: CElementNode | CPseudoElementNode) {
+  if (isCPseudoElementNode(node)) {
+    return true;
+  }
+  for (const child of node.children || []) {
+    if (isCTextNode(child)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // TODO if the parent is empty wrapper, evaluate current node

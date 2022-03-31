@@ -1,4 +1,4 @@
-import { CElementNode, SbStory } from '../../../common/sb-serialize.model';
+import { CElementNode, CPseudoElementNode, SbStory } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import { MyCompNode } from '../../common/canvas-utils';
 
@@ -16,6 +16,10 @@ export const storiesSamples = {
       label: 'Equisafe',
       sbUrl: 'http://localhost:9009',
     },
+    rupali: {
+      label: 'Rupali',
+      sbUrl: 'https://6240065dafe4da003aaa33c2-foshjfdhfb.chromatic.com/',
+    },
   }),
 } as const;
 
@@ -30,6 +34,14 @@ export interface BorderWidths {
   borderLeftWidth: number;
   borderTopWidth: number;
   borderRightWidth: number;
+}
+
+export interface AbsoluteElementToAdd {
+  node: FrameNode | GroupNode;
+  sbNode: CElementNode | CPseudoElementNode;
+  figmaParentNode: MyCompNode;
+  absoluteAncestor: MyCompNode;
+  absoluteAncestorBorders: BorderWidths;
 }
 
 export interface RenderContext {
@@ -47,6 +59,7 @@ export interface RenderContext {
    * undefined = no non-empty child found (= all children are empty wrappers)
    */
   parentNonEmptyChildMode: 'fillContainer' | 'hugContents' | undefined;
+  absoluteElementsToAdd: AbsoluteElementToAdd[];
 }
 
 export interface SbStoryWithFolder extends SbStory {

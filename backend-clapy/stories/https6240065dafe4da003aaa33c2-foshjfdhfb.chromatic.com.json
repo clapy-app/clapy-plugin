@@ -1,0 +1,252 @@
+{
+  "v": 2,
+  "stories": {
+    "task--default": {
+      "componentId": "task",
+      "initialArgs": {
+        "task": {
+          "id": "1",
+          "title": "Test Task",
+          "state": "TASK_INBOX",
+          "updatedAt": {}
+        },
+        "onArchiveTask": {},
+        "onPinTask": {}
+      },
+      "kind": "Task",
+      "name": "Default",
+      "parameters": {
+        "argTypes": {
+          "task": {
+            "control": {
+              "type": "object"
+            },
+            "name": "task",
+            "type": {
+              "name": "object",
+              "value": {
+                "id": {
+                  "name": "string"
+                },
+                "title": {
+                  "name": "string"
+                },
+                "state": {
+                  "name": "string"
+                },
+                "updatedAt": {
+                  "name": "object",
+                  "value": {}
+                }
+              },
+              "required": false
+            },
+            "description": "Composition of the task",
+            "table": {
+              "type": {
+                "summary": "{    id: string,    title: string,    state: string }"
+              },
+              "defaultValue": null
+            }
+          },
+          "onArchiveTask": {
+            "name": "onArchiveTask",
+            "description": "Event to change the task to archived",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          },
+          "onPinTask": {
+            "name": "onPinTask",
+            "description": "Event to change the task to pinned",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Default",
+      "title": "Task"
+    },
+    "task--pinned": {
+      "componentId": "task",
+      "initialArgs": {
+        "task": {
+          "id": "1",
+          "title": "Test Task",
+          "state": "TASK_PINNED",
+          "updatedAt": {}
+        },
+        "onArchiveTask": {},
+        "onPinTask": {}
+      },
+      "kind": "Task",
+      "name": "Pinned",
+      "parameters": {
+        "argTypes": {
+          "task": {
+            "control": {
+              "type": "object"
+            },
+            "name": "task",
+            "type": {
+              "name": "object",
+              "value": {
+                "id": {
+                  "name": "string"
+                },
+                "title": {
+                  "name": "string"
+                },
+                "state": {
+                  "name": "string"
+                },
+                "updatedAt": {
+                  "name": "object",
+                  "value": {}
+                }
+              },
+              "required": false
+            },
+            "description": "Composition of the task",
+            "table": {
+              "type": {
+                "summary": "{    id: string,    title: string,    state: string }"
+              },
+              "defaultValue": null
+            }
+          },
+          "onArchiveTask": {
+            "name": "onArchiveTask",
+            "description": "Event to change the task to archived",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          },
+          "onPinTask": {
+            "name": "onPinTask",
+            "description": "Event to change the task to pinned",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Pinned",
+      "title": "Task"
+    },
+    "task--archived": {
+      "componentId": "task",
+      "initialArgs": {
+        "task": {
+          "id": "1",
+          "title": "Test Task",
+          "state": "TASK_ARCHIVED",
+          "updatedAt": {}
+        },
+        "onArchiveTask": {},
+        "onPinTask": {}
+      },
+      "kind": "Task",
+      "name": "Archived",
+      "parameters": {
+        "argTypes": {
+          "task": {
+            "control": {
+              "type": "object"
+            },
+            "name": "task",
+            "type": {
+              "name": "object",
+              "value": {
+                "id": {
+                  "name": "string"
+                },
+                "title": {
+                  "name": "string"
+                },
+                "state": {
+                  "name": "string"
+                },
+                "updatedAt": {
+                  "name": "object",
+                  "value": {}
+                }
+              },
+              "required": false
+            },
+            "description": "Composition of the task",
+            "table": {
+              "type": {
+                "summary": "{    id: string,    title: string,    state: string }"
+              },
+              "defaultValue": null
+            }
+          },
+          "onArchiveTask": {
+            "name": "onArchiveTask",
+            "description": "Event to change the task to archived",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          },
+          "onPinTask": {
+            "name": "onPinTask",
+            "description": "Event to change the task to pinned",
+            "type": {
+              "required": false,
+              "name": "function"
+            },
+            "table": {
+              "type": {
+                "summary": "func"
+              },
+              "defaultValue": null
+            }
+          }
+        },
+        "__isArgsStory": true
+      },
+      "story": "Archived",
+      "title": "Task"
+    }
+  },
+  "title": "https://6240065dafe4da003aaa33c2-foshjfdhfb.chromatic.com"
+}

@@ -1,6 +1,6 @@
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 
-export const devFigmaConfig = {
+export const devFigmaConfigBtn = {
   id: '3857:401330',
   type: 'INSTANCE',
   name: 'Button',
