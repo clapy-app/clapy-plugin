@@ -256,15 +256,16 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
         appendBackgroundColor(backgroundColor, fills);
 
         appendBackgroundImage(sbNode, fills);
-        if (!isGroup(node)) {
-          node.fills = fills;
-        }
 
         const effects: Effect[] = [];
 
         applyBordersToEffects(node, sbNode.styles, borders, effects);
 
-        applyShadowToEffects(boxShadow as string, effects, fills);
+        const forceClipContents = applyShadowToEffects(boxShadow as string, effects, node, fills);
+
+        if (!isGroup(node)) {
+          node.fills = fills;
+        }
 
         node.effects = effects;
 
@@ -276,7 +277,8 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         if (!isGroup(node)) {
           node.clipsContent =
-            (overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip');
+            forceClipContents ||
+            ((overflowX === 'hidden' || overflowX === 'clip') && (overflowY === 'hidden' || overflowY === 'clip'));
         }
 
         // Layout
@@ -297,6 +299,28 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
           borderTopWidth +
           borderBottomWidth +
           (boxSizing! === 'content-box' ? paddingTop + paddingBottom : 0);
+        if (display === 'inline' && noTextChild(sbNode)) {
+          // font size and line height should be interpreted as width/height
+          const lineHeightNum = sizeWithUnitToPx(lineHeight as string);
+          w = sizeWithUnitToPx(fontSize);
+          if (lineHeightNum > w) {
+            if (figmaParentNode.layoutMode === 'HORIZONTAL' && figmaParentNode.counterAxisSizingMode === 'AUTO') {
+              figmaParentNode.counterAxisSizingMode = 'FIXED';
+              figmaParentNode.counterAxisAlignItems = 'CENTER';
+              figmaParentNode.resizeWithoutConstraints(figmaParentNode.width, lineHeightNum);
+            } else if (figmaParentNode.layoutMode === 'VERTICAL' && figmaParentNode.primaryAxisSizingMode === 'AUTO') {
+              figmaParentNode.primaryAxisSizingMode = 'FIXED';
+              figmaParentNode.primaryAxisAlignItems = 'CENTER';
+              figmaParentNode.resizeWithoutConstraints(figmaParentNode.width, lineHeightNum);
+            } else {
+              figmaParentNode.resizeWithoutConstraints(
+                figmaParentNode.width,
+                Math.max(figmaParentNode.height, lineHeightNum),
+              );
+            }
+          }
+          h = Math.min(lineHeightNum, w);
+        }
 
         // `<=` because, with negative margins, negative dimensions can happen.
         if (w < 0.01 && h < 0.01 && !hasChildren) {
@@ -458,6 +482,18 @@ function isInlineNode(node: CNode) {
 function allChildrenAreTextNodes(node: CElementNode) {
   for (const child of node.children || []) {
     if (!isCTextNode(child)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function noTextChild(node: CElementNode | CPseudoElementNode) {
+  if (isCPseudoElementNode(node)) {
+    return true;
+  }
+  for (const child of node.children || []) {
+    if (isCTextNode(child)) {
       return false;
     }
   }

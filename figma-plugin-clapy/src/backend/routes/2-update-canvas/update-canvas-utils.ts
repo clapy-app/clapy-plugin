@@ -345,21 +345,48 @@ export function applyBordersToEffects(
 const shadowRegexStr = `${rgbaRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}\\s+${sizeRegex}(\\s+(inset))?`;
 const shadowRegex = new RegExp(shadowRegexStr, 'g');
 
-export function applyShadowToEffects(boxShadow: string, effects: Effect[], fills: Paint[]) {
+export function applyShadowToEffects(
+  boxShadow: string,
+  effects: Effect[],
+  node: FrameNode | GroupNode,
+  fills: Paint[],
+) {
   if (boxShadow === 'none') {
-    return;
+    return false;
   }
 
   let match: RegExpExecArray | null;
   let matchedAtLeastOne = false;
+  let forceClipContents = false;
   while ((match = shadowRegex.exec(boxShadow))) {
+    if (isGroup(node)) {
+      console.warn(
+        'Node is a GroupNode with a box shadow to apply, which is not supposed to happen. Bug? Ignoring the shadow. Node name:',
+        node.name,
+      );
+      return forceClipContents;
+    }
     matchedAtLeastOne = true;
 
     const { r, g, b, a } = rgbaRawMatchToFigma(match[1], match[2], match[3], match[5]);
     const x = sizeWithUnitToPx(match[6]);
     const y = sizeWithUnitToPx(match[8]);
     const blur = sizeWithUnitToPx(match[10]);
-    const spread = fills.length ? sizeWithUnitToPx(match[12]) : 0;
+    const spread = sizeWithUnitToPx(match[12]);
+    if (spread) {
+      // Should add fill if no fill yet + enable clip content
+      if (!fills.length) {
+        fills.push({
+          type: 'SOLID',
+          color: { r: 1, g: 0, b: 1 },
+          opacity: 0.00001,
+        });
+      }
+      forceClipContents = true;
+      if (!node.clipsContent) {
+        node.clipsContent = true;
+      }
+    }
     const hasInner = match[15] === 'inset';
     effects.push({
       type: hasInner ? 'INNER_SHADOW' : 'DROP_SHADOW',
@@ -377,8 +404,8 @@ export function applyShadowToEffects(boxShadow: string, effects: Effect[], fills
 
   if (!matchedAtLeastOne) {
     console.warn('Incorrect box-shadow value from CSS:', boxShadow);
-    return;
   }
+  return forceClipContents;
 }
 
 interface Paddings {
