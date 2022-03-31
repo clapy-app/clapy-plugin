@@ -26,6 +26,9 @@
   "[markdown]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
+  "css.format.spaceAroundSelectorSeparator": true,
+  "less.format.spaceAroundSelectorSeparator": true,
+  "scss.format.spaceAroundSelectorSeparator": true,
   // "[html]": {
   //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   // },
