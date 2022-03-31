@@ -1,18 +1,17 @@
 import { waitInfinite } from './common/general-utils';
 import { perfReset, perfTotal } from './common/perf-utils';
-import { exportCode } from './features/export-code/2-create-ts-compiler';
+import { CodeController } from './features/export-code/1-code-controller';
 import { devFigmaConfig } from './features/export-code/dev-figma-config';
 
 // To work on features outside the webservice, and keep live reload.
 
 async function main() {
-  console.log('Starting...');
-  perfReset();
+  perfReset('Starting...');
 
   // Send to codesandbox
-  // await new CodeController().exportCode(null as any);
-  await exportCode(devFigmaConfig, true);
-  // await tryIt2_createTsProjectCompiler(devFigmaConfig);
+  await new CodeController().exportCode(devFigmaConfig, true);
+
+  // await insertTrackings();
 
   perfTotal();
 }

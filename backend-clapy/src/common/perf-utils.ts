@@ -9,7 +9,10 @@ export interface PerfContext {
 
 let context: PerfContext = makeNewContext();
 
-export function perfReset() {
+export function perfReset(logMessage?: string) {
+  if (logMessage) {
+    console.log(logMessage);
+  }
   context = makeNewContext();
 }
 

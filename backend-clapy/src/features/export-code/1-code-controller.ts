@@ -8,8 +8,8 @@ export class CodeController {
   // constructor() {}
 
   @Post('export')
-  async exportCode(@Body() figmaNode: SceneNodeNoMethod) {
-    return exportCode(figmaNode);
+  async exportCode(@Body() figmaNode: SceneNodeNoMethod, skipCsbUpload = false) {
+    return exportCode(figmaNode, skipCsbUpload);
     // console.log('figmaNode:', JSON.stringify(figmaNode));
     // TODO prepare the code I'm supposed to generate.
     //
