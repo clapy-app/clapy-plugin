@@ -16,6 +16,7 @@
     "up": "cd .. && yarn up",
     "stop": "cd .. && yarn stop",
     "log": "cd .. && docker-compose logs -f --tail 100 backend",
+    "upgr": "yarn upgrade-interactive --latest",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "test": "jest",

@@ -42,7 +42,7 @@ services:
   hasura:
     # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
     # version) and the package hasura-cli in package.json.
-    image: hasura/graphql-engine:v2.3.0.cli-migrations-v3
+    image: hasura/graphql-engine:v2.4.0.cli-migrations-v3
     container_name: clapy_hasura
     ports:
       - '${REACT_APP_HASURA_PORT}:${HASURA_DOCKER_PORT}'
