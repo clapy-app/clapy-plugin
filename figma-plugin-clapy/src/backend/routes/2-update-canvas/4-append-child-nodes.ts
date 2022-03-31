@@ -201,7 +201,7 @@ export async function appendChildNodes(sbNodes: CNode[], context: RenderContext)
 
         // TODO shouldn't we always hug contents? Beware of not breaking components like reactstrap accordion header with icon.
         applyFlexWidthHeight(node, context, sbNode, true, true, false, false);
-      } else if (isCElementNode(sbNode) && display === 'inline') {
+      } else if (isCElementNode(sbNode) && allChildrenAreTextNodes(sbNode) && display === 'inline') {
         // Inline pseudo-elements may be considered as well.
 
         if (sbNode.children) {
@@ -453,6 +453,15 @@ function isInline(display: Property.Display | undefined) {
 
 function isInlineNode(node: CNode) {
   return !!(node && (isCTextNode(node) || isInline(node.styles.display)));
+}
+
+function allChildrenAreTextNodes(node: CElementNode) {
+  for (const child of node.children || []) {
+    if (!isCTextNode(child)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // TODO if the parent is empty wrapper, evaluate current node
