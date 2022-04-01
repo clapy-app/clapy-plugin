@@ -9,6 +9,7 @@ import {
   IdSelector,
   NumberNode,
   Operator,
+  Raw,
   RulePlain,
   SelectorListPlain,
   SelectorPlain,
@@ -91,7 +92,7 @@ export function mkDeclarationCss(property: string, value: ValuePlain, important 
   return declaration;
 }
 
-type ValueFragment = Dimension | Identifier | NumberNode | Operator;
+type ValueFragment = Dimension | Identifier | NumberNode | Operator | Raw;
 
 export function mkValueCss(children: ValueFragment[]) {
   const value: ValuePlain = {
@@ -114,6 +115,13 @@ export function mkIdentifierCss(name: string) {
   const identifier: Identifier = {
     type: 'Identifier',
     name,
+  };
+  return identifier;
+}
+export function mkRawCss(value: string) {
+  const identifier: Raw = {
+    type: 'Raw',
+    value,
   };
   return identifier;
 }

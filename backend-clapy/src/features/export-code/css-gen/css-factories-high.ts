@@ -7,9 +7,9 @@ import {
   cssOperators,
   mkDeclarationCss,
   mkDimensionCss,
-  mkIdentifierCss,
   mkNumberCss,
   mkOperatorCss,
+  mkRawCss,
   mkValueCss,
 } from './css-factories-low';
 
@@ -31,7 +31,7 @@ export function addStyle<T extends keyof PropertiesHyphen>(
             ? mkOperatorCss(val as CssOperators)
             : typeof val === 'number'
             ? mkNumberCss(val)
-            : mkIdentifierCss(val.toString())
+            : mkRawCss(val.toString())
           : val[0] === 0
           ? mkNumberCss(0)
           : mkDimensionCss(val[0], val[1]),
