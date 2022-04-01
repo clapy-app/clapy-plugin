@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, tagResets, warnNode } from './details/utils-and-reset';
 
 export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
@@ -18,7 +18,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode
       if (fill.type === 'SOLID') {
         // fill.blendMode
         const { color, opacity } = fill;
-        const hex = figmaColorToCssRGBA(color, opacity);
+        const hex = figmaColorToCssHex(color, opacity);
         bgProps.push(hex);
         if (first) {
           first = false;

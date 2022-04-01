@@ -89,6 +89,10 @@ export function mkClassAttr(classVarName: string) {
   );
 }
 
+export function mkInputTypeAttr(value = 'checkbox') {
+  return factory.createJsxAttribute(factory.createIdentifier('type'), factory.createStringLiteral(value));
+}
+
 export function mkHrefAttr(url: string) {
   return factory.createJsxAttribute(factory.createIdentifier('href'), factory.createStringLiteral(url));
 }

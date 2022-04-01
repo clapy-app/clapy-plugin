@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
 import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, tagResets, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
@@ -46,7 +46,7 @@ export function borderFigmaToCode(
         );
       }
       const borderWidth = strokeWeight;
-      const hex = figmaColorToCssRGBA(color, opacity);
+      const hex = figmaColorToCssHex(color, opacity);
       addStyle(styles, 'border', 'solid', [borderWidth, 'px'], hex);
       return {
         ...context,

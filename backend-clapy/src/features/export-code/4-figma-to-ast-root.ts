@@ -15,6 +15,7 @@ export function figmaToAstRootNode(componentContext: ComponentContext, node: Sce
   const nodeContext: NodeContext = {
     componentContext,
     tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+    nodeNameLower: node.name.toLowerCase(),
     parentNode: null,
     parentStyles: null,
     parentContext: null,
@@ -42,7 +43,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
 
   mockUsefulMethods(node);
 
-  guessTagName(context, node);
+  const extraAttributes = guessTagName(context, node);
 
   const styles: Dict<DeclarationPlain> = {};
 
@@ -82,16 +83,17 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
 
     const cssRule = addCssRule(context, className);
 
-    const contextForChildren: NodeContext = {
-      componentContext: context.componentContext,
-      tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
-      parentNode: node,
-      parentStyles: styles,
-      parentContext: contextWithBorders,
-    };
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
       for (const child of node.children as SceneNode[]) {
+        const contextForChildren: NodeContext = {
+          componentContext: context.componentContext,
+          tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+          nodeNameLower: child.name.toLowerCase(),
+          parentNode: node,
+          parentStyles: styles,
+          parentContext: contextWithBorders,
+        };
         const childTsx = figmaToAstRec(contextForChildren, child);
         if (childTsx) {
           printStandalone(childTsx);
@@ -107,7 +109,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
     cssRule.block.children.push(...Object.values(styles));
 
     const classAttr = mkClassAttr(className);
-    const tsx = mkTag(context.tagName, [classAttr], children);
+    const tsx = mkTag(context.tagName, [...extraAttributes, classAttr], children);
     return tsx;
   }
 }
@@ -123,14 +125,28 @@ function mockUsefulMethods(node: SceneNodeNoMethod) {
 }
 
 function guessTagName(context: NodeContext, node: SceneNodeNoMethod) {
-  const name = node.name.toLowerCase();
+  const name = context.nodeNameLower;
+  const extraAttributes: ts.JsxAttribute[] = [];
   if (
     !context.componentContext.inInteractiveElement &&
-    (name === 'button' || (name.includes('button') && !name.includes('wrapper')))
+    isFlexNode(node) &&
+    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
+    (name === 'button' || (name.includes('button') && !name.includes('wrapper') && !name.includes('group')))
   ) {
     context.componentContext = { ...context.componentContext, inInteractiveElement: true };
     context.tagName = 'button';
+  } else if (
+    !context.componentContext.inInteractiveElement &&
+    isFlexNode(node) &&
+    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
+    (name === 'checkbox' || (name.includes('checkbox') && !name.includes('wrapper') && !name.includes('group')))
+  ) {
+    // TODO
+    // context.componentContext = { ...context.componentContext, inInteractiveElement: true };
+    // context.tagName = 'input';
+    // extraAttributes.push(mkInputTypeAttr('checkbox'));
   } else {
     // Keep the default tag name
   }
+  return extraAttributes;
 }
