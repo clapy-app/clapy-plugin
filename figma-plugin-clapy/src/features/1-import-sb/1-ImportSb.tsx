@@ -12,6 +12,7 @@ import {
 import { useSelector } from 'react-redux';
 
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
+import { flags } from '../../common/app-config';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiGet } from '../../common/http.utils';
@@ -21,6 +22,7 @@ import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
+import { ExportCode } from '../2-export-code/4-ExportCode';
 import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
@@ -284,6 +286,7 @@ export const ImportSb: FC = memo(function ImportSb() {
         </p>
       )}
       <hr />
+      {flags.alphaFeature && <ExportCode />}
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
     </div>

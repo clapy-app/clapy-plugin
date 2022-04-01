@@ -1,9 +1,7 @@
 import { FC, memo, MouseEventHandler, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { flags } from '../../common/app-config';
 import { handleError } from '../../common/error-utils';
-import { ExportCode } from '../2-export-code/4-ExportCode';
 import classes from './1-ImportSb.module.scss';
 import { VariantsProps } from './3-VariantsProps';
 import refreshIcon from './detail/refresh-icon.svg';
@@ -18,10 +16,7 @@ export const PreviewArea: FC = memo(function PreviewArea() {
   ) : selections.length > 1 ? (
     <p>Select a single node to preview the Storybook version.</p>
   ) : (
-    <>
-      {flags.alphaFeature && <ExportCode />}
-      <PreviewAreaInner />
-    </>
+    <PreviewAreaInner />
   );
 });
 
