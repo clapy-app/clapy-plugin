@@ -8,7 +8,7 @@ import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unau
 import { dispatchOther } from '../../core/redux/redux.utils';
 import { env } from '../../environment/env';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
-import { authSuccess, setAuthError, setSignedInState, startLoadingAuth } from './auth-slice';
+import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
@@ -113,7 +113,9 @@ export async function getAuth0Id() {
 
 // Steps (detail)
 
-interface AccessTokenDecoded {
+export const roleAlphaDTC = 'alpha_design_to_code';
+
+export interface AccessTokenDecoded {
   // Audience - if array, second member could be "https://aol-perso.eu.auth0.com/userinfo"
   aud: 'clapy' | ['clapy', ...string[]];
   azp: string; // "UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9" - Client ID of the app to which the token was delivered
@@ -123,6 +125,7 @@ interface AccessTokenDecoded {
     'x-hasura-default-role': string; //"team@earlymetrics.com"
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
+  'https://clapy.co/roles'?: string[];
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://aol-perso.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
@@ -217,4 +220,5 @@ async function deleteReadToken(readToken: string) {
 function setAccessToken(accessToken: string | null) {
   _accessToken = accessToken;
   _accessTokenDecoded = accessToken ? jwtDecode<AccessTokenDecoded>(accessToken) : null;
+  dispatchOther(setTokenDecoded(_accessTokenDecoded));
 }

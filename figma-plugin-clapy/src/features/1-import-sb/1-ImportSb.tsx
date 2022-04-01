@@ -12,7 +12,6 @@ import {
 import { useSelector } from 'react-redux';
 
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
-import { flags } from '../../common/app-config';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiGet } from '../../common/http.utils';
@@ -286,7 +285,7 @@ export const ImportSb: FC = memo(function ImportSb() {
         </p>
       )}
       <hr />
-      {flags.alphaFeature && <ExportCode />}
+      <ExportCode />
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
     </div>
