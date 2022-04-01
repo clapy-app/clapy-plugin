@@ -91,14 +91,14 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
   if (isText(node)) {
-    if ((fixedWidth || widthFillContainer) && node.textAlignHorizontal !== 'LEFT') {
+    if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
       addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       // if (node.textAlignHorizontal !== 'JUSTIFIED') {
       //   addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
       // }
     }
-    if ((fixedHeight || heightFillContainer) && node.textAlignVertical !== 'TOP') {
+    if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
       addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
     }
   }
