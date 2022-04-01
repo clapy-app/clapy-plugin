@@ -69,11 +69,14 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   }
 
   const { parentStyles } = context;
-  const { fixedWidth, widthFillContainer, fixedHeight, heightFillContainer, nodeCounterAxisHugContents } = applyWidth(
-    context,
-    node,
-    styles,
-  );
+  const {
+    fixedWidth,
+    widthFillContainer,
+    fixedHeight,
+    heightFillContainer,
+    nodePrimaryAxisHugContents,
+    nodeCounterAxisHugContents,
+  } = applyWidth(context, node, styles);
 
   if (node.layoutGrow === 1) {
     addStyle(styles, 'flex', 1);
@@ -116,14 +119,16 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
 
-    if (node.primaryAxisAlignItems !== 'MIN' && !atLeastOneChildHasLayoutGrow1) {
+    if (
+      (!nodePrimaryAxisHugContents || node.children.length > 1) &&
+      node.primaryAxisAlignItems !== 'MIN' &&
+      !atLeastOneChildHasLayoutGrow1
+    ) {
       // use place-content instead of justify-content (+ align-content)
-      // TODO fails to skip on Button
       addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
     }
 
-    if (atLeastOneChildHasLayoutAlignNotStretch) {
-      // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
+    if ((!nodeCounterAxisHugContents || node.children.length > 1) && atLeastOneChildHasLayoutAlignNotStretch) {
       addStyle(styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
@@ -234,6 +239,7 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
     widthFillContainer,
     fixedHeight,
     heightFillContainer,
+    nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
   };
 }
