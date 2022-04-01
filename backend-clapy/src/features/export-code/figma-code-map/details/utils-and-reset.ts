@@ -11,12 +11,14 @@ export function warnNode(node: SceneNodeNoMethod | StyledTextSegment, ...msg: an
   }
 }
 
-type ResetProps = 'border' | 'padding';
+type ResetProps = 'border' | 'padding' | 'background' | 'boxSizingContent';
 
 export const tagResets: Dict2<TagName, Dict2<ResetProps, boolean>> = {
   button: {
     border: true,
     padding: true,
+    background: true,
+    boxSizingContent: true,
   },
   input: {
     border: true,

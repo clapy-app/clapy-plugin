@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssRGBA, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssRGBA, tagResets, warnNode } from './details/utils-and-reset';
 
 export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
@@ -29,8 +29,14 @@ export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode
         warnNode(node, 'TODO Unsupported non solid background');
       }
     }
-    addStyle(styles, 'background', ...bgProps);
+    if (bgProps.length) {
+      addStyle(styles, 'background', ...bgProps);
+      return;
+    }
   }
 
   // If no fill, any reset required? TBC
+  if (tagResets[context.tagName]?.background) {
+    addStyle(styles, 'background', 'none');
+  }
 }

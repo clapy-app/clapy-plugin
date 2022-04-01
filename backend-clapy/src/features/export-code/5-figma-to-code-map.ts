@@ -7,6 +7,7 @@ import { FlexOrTextNode } from './create-ts-compiler/canvas-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
+import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
 import { colorFigmaToCode } from './figma-code-map/color';
 import { cursorFigmaToCode } from './figma-code-map/cursor';
 import { rangeProps } from './figma-code-map/details/fonts-utils';
@@ -23,6 +24,7 @@ import { flexFigmaToCode } from './figma-code-map/flex';
 import { fontFigmaToCode } from './figma-code-map/font';
 import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
+import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
 
 const { factory } = ts;
 
@@ -35,10 +37,13 @@ export function mapCommonStyles(context: NodeContext, node: FlexOrTextNode, styl
 export function mapTagStyles(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   const context2 = borderFigmaToCode(context, node, styles);
   flexFigmaToCode(context2, node, styles);
+  positionAbsoluteFigmaToCode(context2, node, styles);
   borderRadiusFigmaToCode(context2, node, styles);
   backgroundFigmaToCode(context2, node, styles);
   cursorFigmaToCode(context2, node, styles);
   overflowFigmaToCode(context2, node, styles);
+  borderBoxFigmaToCode(context2, node, styles);
+  return context2;
   // scaleFactor
   // reactions => hover, must make the diff with target node (check the type?)
 }

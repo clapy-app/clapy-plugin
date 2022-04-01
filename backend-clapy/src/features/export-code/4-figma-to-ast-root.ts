@@ -17,6 +17,7 @@ export function figmaToAstRootNode(componentContext: ComponentContext, node: Sce
     tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
     parentNode: null,
     parentStyles: null,
+    parentContext: null,
   };
   const tsx = figmaToAstRec(nodeContext, node, true);
 
@@ -75,7 +76,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
     return ast;
   } else if (isFlexNode(node)) {
     // Add tag styles
-    mapTagStyles(context, node, styles);
+    const contextWithBorders = mapTagStyles(context, node, styles);
 
     const className = genClassName(context, node, isRoot);
 
@@ -86,6 +87,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
       tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
       parentNode: node,
       parentStyles: styles,
+      parentContext: contextWithBorders,
     };
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {

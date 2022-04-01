@@ -7,7 +7,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
 import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { tagResets, warnNode } from './details/utils-and-reset';
+import { tagResets } from './details/utils-and-reset';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -62,11 +62,6 @@ const textAlignVerticalToJustifyContent: {
 
 export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
-
-  if (isFlex && node.layoutMode === 'NONE') {
-    warnNode(node, 'TODO Unsupported absolute positioning');
-    return;
-  }
 
   const { parentStyles } = context;
   const {
@@ -167,14 +162,10 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
   // Withdraw borders from padding because, on Figma, borders are on top of the padding (overlap).
   // But in CSS, borders are added to the padding (no overlap).
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
-  paddingTop -= borderTopWidth;
-  if (paddingTop < 0) paddingTop = 0;
-  paddingRight -= borderRightWidth;
-  if (paddingRight < 0) paddingRight = 0;
-  paddingBottom -= borderBottomWidth;
-  if (paddingBottom < 0) paddingBottom = 0;
-  paddingLeft -= borderLeftWidth;
-  if (paddingLeft < 0) paddingLeft = 0;
+  paddingTop = Math.max(paddingTop - borderTopWidth, 0);
+  paddingRight = Math.max(paddingRight - borderRightWidth, 0);
+  paddingBottom = Math.max(paddingBottom - borderBottomWidth, 0);
+  paddingLeft = Math.max(paddingLeft - borderLeftWidth, 0);
 
   if (paddingTop || paddingRight || paddingBottom || paddingLeft) {
     if (paddingBottom === paddingLeft && paddingBottom === paddingTop && paddingBottom === paddingRight) {
@@ -196,35 +187,53 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
 
 function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
+  const nodeIsText = isText(node);
 
+  const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
 
+  const isParentAutoLayout = isFlex && parent?.layoutMode !== 'NONE';
   const isParentVertical = parent?.layoutMode === 'VERTICAL';
-  const parentPrimaryAxisFillContainer = node?.layoutGrow === 1;
-  const parentCounterAxisFillContainer = node?.layoutAlign === 'STRETCH';
+  const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
+  const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
   const widthFillContainer = isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer;
   const heightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
 
+  const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
-  const nodePrimaryAxisHugContents = isFlex && node.primaryAxisSizingMode === 'AUTO';
-  const nodeCounterAxisHugContents = isFlex && node.counterAxisSizingMode === 'AUTO';
+  const nodePrimaryAxisHugContents = isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO';
+  const nodeCounterAxisHugContents = isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO';
   const widthHugContents = isFlex
     ? isNodeVertical
       ? nodeCounterAxisHugContents
       : nodePrimaryAxisHugContents
-    : node.textAutoResize === 'WIDTH_AND_HEIGHT';
+    : nodeIsText
+    ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
+    : false;
   const heightHugContents = isFlex
     ? isNodeVertical
       ? nodePrimaryAxisHugContents
       : nodeCounterAxisHugContents
-    : node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT';
+    : nodeIsText
+    ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
+    : false;
 
-  const fixedWidth = !widthFillContainer && !widthHugContents;
-  const fixedHeight = !heightFillContainer && !heightHugContents;
-  const width = flags.useCssBorderBox ? node.width : node.width - (isFlex ? node.paddingRight - node.paddingLeft : 0);
-  const height = flags.useCssBorderBox
-    ? node.height
-    : node.height - (isFlex ? node.paddingTop - node.paddingBottom : 0);
+  const isWidthPositionAbsoluteAutoSize =
+    parent?.layoutMode === 'NONE' &&
+    (node.constraints.horizontal === 'STRETCH' || node.constraints.horizontal === 'SCALE');
+  const isHeightPositionAbsoluteAutoSize =
+    parent?.layoutMode === 'NONE' && (node.constraints.vertical === 'STRETCH' || node.constraints.vertical === 'SCALE');
+
+  const fixedWidth = !isWidthPositionAbsoluteAutoSize && !widthFillContainer && !widthHugContents;
+  const fixedHeight = !isHeightPositionAbsoluteAutoSize && !heightFillContainer && !heightHugContents;
+
+  const shiftTop = isFlex ? Math.max(node.paddingTop, borderTopWidth) : 0;
+  const shiftRight = isFlex ? Math.max(node.paddingRight, borderRightWidth) : 0;
+  const shiftBottom = isFlex ? Math.max(node.paddingBottom, borderBottomWidth) : 0;
+  const shiftLeft = isFlex ? Math.max(node.paddingLeft, borderLeftWidth) : 0;
+
+  const width = flags.useCssBorderBox ? node.width : node.width - shiftRight - shiftLeft;
+  const height = flags.useCssBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);

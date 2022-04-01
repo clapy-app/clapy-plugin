@@ -19,11 +19,14 @@ export const ExportCode: FC = memo(function ExportCode() {
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);
   const [previewUrl, setPreviewUrl] = useState<string>();
+  const [error, setError] = useState<any>();
   const exportCode = useCallbackAsync2(async () => {
     try {
       setPreviewUrl('loading');
       const nodes = await fetchPlugin('serializeSelectedNode');
+
       // console.log(JSON.stringify(nodes));
+
       const { data } = await apiPost<CSBResponse>('code/export', nodes);
       if (data) {
         const url = `https://${data.sandbox_id}.csb.app/`;
@@ -32,6 +35,7 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
         setPreviewUrl(url);
       }
     } catch (error) {
+      setError(error);
       setPreviewUrl(undefined);
       throw error;
     }
@@ -39,11 +43,17 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
   return (
     <div className={classes.codeExportRow}>
       <Button onClick={exportCode}>Generate selection preview (alpha)</Button>
-      {previewUrl === 'loading' && 'loading...'}
-      {previewUrl && previewUrl !== 'loading' && (
-        <a target={'_blank'} href={previewUrl} rel='noreferrer'>
-          Open
-        </a>
+      {error ? (
+        <>Error! {error.message}</>
+      ) : (
+        <>
+          {previewUrl === 'loading' && 'loading...'}
+          {previewUrl && previewUrl !== 'loading' && (
+            <a target={'_blank'} href={previewUrl} rel='noreferrer'>
+              Open
+            </a>
+          )}
+        </>
       )}
     </div>
   );

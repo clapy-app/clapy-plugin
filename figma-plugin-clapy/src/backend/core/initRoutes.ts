@@ -30,10 +30,9 @@ export function initRoutes(routes: Routes) {
           error: error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`),
         };
         figma.ui.postMessage(responseError);
-        console.error('type:', type);
+        console.error('plugin route:', type);
         const e: Error = error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`);
-        console.error(e.message);
-        console.error(e.stack);
+        console.error(e);
       } else {
         console.error(error || `[Custom] Unknown error when running controller code on route ${type}.`);
       }

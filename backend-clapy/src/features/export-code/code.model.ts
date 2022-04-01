@@ -32,6 +32,7 @@ export interface NodeContext {
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
   parentNode: FlexNode | null;
+  parentContext: NodeContextWithBorders | null;
 }
 
 export interface BorderWidths {
