@@ -7,7 +7,10 @@ import { addStyle } from '../css-gen/css-factories-high';
 
 export function overflowFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   if (isText(node)) return;
-  if (node.clipsContent) {
+  const name = context.nodeNameLower;
+  if (name.includes('scroll')) {
+    addStyle(styles, 'overflow', 'auto');
+  } else if (node.clipsContent) {
     addStyle(styles, 'overflow', 'hidden');
     // overflowDirection
   }

@@ -3,7 +3,7 @@ import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssRGBA, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function colorFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   const visibleFills = (Array.isArray(textSegment.fills) ? (textSegment.fills as Paint[]) : []).filter(
@@ -17,7 +17,7 @@ export function colorFigmaToCode(context: NodeContext, textSegment: StyledTextSe
     if (fill.type === 'SOLID') {
       // fill.blendMode
       const { color, opacity } = fill;
-      const hex = figmaColorToCssRGBA(color, opacity);
+      const hex = figmaColorToCssHex(color, opacity);
       addStyle(styles, 'color', hex);
     } else {
       warnNode(textSegment, 'Unsupported non solid text color (TODO)');

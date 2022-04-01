@@ -29,7 +29,7 @@ export function isMixed(value: any): value is typeof figma.mixed {
   return typeof value === 'symbol' || value === 'Mixed';
 }
 
-export function figmaColorToCssRGBA({ r, g, b }: RGB, opacity: number | undefined): string {
+export function figmaColorToCssHex({ r, g, b }: RGB, opacity: number | undefined): string {
   return opacity === undefined || opacity === 1
     ? shortenHex(`#${zeroOneToHex(r)}${zeroOneToHex(g)}${zeroOneToHex(b)}`)
     : shortenHex(`#${zeroOneToHex(r)}${zeroOneToHex(g)}${zeroOneToHex(b)}${zeroOneToHex(opacity)}`);
@@ -51,5 +51,6 @@ function shortenHex(hex: string) {
 }
 
 function zeroOneToHex(value: number) {
-  return Math.round(value * 255).toString(16);
+  const hex = Math.round(value * 255).toString(16);
+  return hex.length === 1 ? `0${hex}` : hex;
 }

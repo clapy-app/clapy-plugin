@@ -13,6 +13,7 @@ if (!isDev && !isStaging && !isProd) {
 // Add here non-confidential environment-based configurations (e.g. domains, base URLs)
 const dev = {
   apiBaseUrl: 'http://localhost:4141',
+  // apiBaseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
 const staging = {

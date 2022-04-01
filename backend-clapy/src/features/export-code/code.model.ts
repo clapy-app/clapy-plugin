@@ -29,6 +29,7 @@ export interface ComponentContext {
 // Mutable
 export interface NodeContext {
   componentContext: ComponentContext;
+  nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
   parentNode: FlexNode | null;

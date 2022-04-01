@@ -91,25 +91,24 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
   if (isText(node)) {
-    if ((fixedWidth || widthFillContainer) && node.textAlignHorizontal !== 'LEFT') {
+    if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
       addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       // if (node.textAlignHorizontal !== 'JUSTIFIED') {
       //   addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
       // }
     }
-    if ((fixedHeight || heightFillContainer) && node.textAlignVertical !== 'TOP') {
+    if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
       addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
     }
   }
 
   if (isFlex) {
-    // display: flex is applied globally
-    // addStyle(styles, 'display', 'flex');
+    // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === 'HORIZONTAL') {
-      // We have set column as the default. We can omit it.
-      addStyle(styles, 'flex-direction', 'row');
+    if (node.layoutMode === 'VERTICAL') {
+      // row is the default. We can omit it.
+      addStyle(styles, 'flex-direction', 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
