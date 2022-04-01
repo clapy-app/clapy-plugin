@@ -11,9 +11,13 @@ export function borderFigmaToCode(
   node: FlexOrTextNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
+  const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
+
   if (isText(node)) {
     // stroke has a different meaning on text. We will handle it later.
-    warnNode(node, 'TODO Unsupported stroke on text');
+    if (visibleStrokes.length) {
+      warnNode(node, 'TODO Unsupported stroke on text');
+    }
     return {
       ...context,
       borderWidths: {
@@ -25,7 +29,6 @@ export function borderFigmaToCode(
     };
   }
 
-  const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
   if (visibleStrokes.length) {
     if (visibleStrokes.length > 1) {
       warnNode(node, 'TODO Unsupported multiple borders, will only apply the first');

@@ -1,6 +1,7 @@
-import { DeclarationPlain } from 'css-tree';
+import { CssNodePlain, DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
 
+import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
@@ -31,8 +32,9 @@ const primaryAlignToJustifyContent: {
   SPACE_BETWEEN: 'space-between',
 };
 // counter axis
+type AlignItems = NonNullable<PropertiesHyphen['align-items']>;
 const counterAlignToAlignItems: {
-  [K in BaseFrameMixin['counterAxisAlignItems']]: NonNullable<PropertiesHyphen['align-items']>;
+  [K in BaseFrameMixin['counterAxisAlignItems']]: AlignItems;
 } = {
   MIN: 'flex-start', // stretch?
   CENTER: 'center',
@@ -66,19 +68,32 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
     return;
   }
 
+  const { parentStyles } = context;
+  const {
+    fixedWidth,
+    widthFillContainer,
+    fixedHeight,
+    heightFillContainer,
+    nodePrimaryAxisHugContents,
+    nodeCounterAxisHugContents,
+  } = applyWidth(context, node, styles);
+
   if (node.layoutGrow === 1) {
     addStyle(styles, 'flex', 1);
   }
 
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  const parent = context.parentNode;
   if (node.layoutAlign === 'STRETCH') {
     addStyle(styles, 'align-self', 'stretch');
     // Stretch is the default
+  } else if (isFlex && nodeCounterAxisHugContents) {
+    const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
+    if (!parentAlignItems || parentAlignItems === 'stretch') {
+      addStyle(styles, 'align-self', 'flex-start');
+    }
   }
-
-  const { fixedWidth, widthFillContainer, fixedHeight, heightFillContainer } = applyWidth(context, node, styles);
+  // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
   if (isText(node)) {
     if ((fixedWidth || widthFillContainer) && node.textAlignHorizontal !== 'LEFT') {
@@ -104,14 +119,16 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
 
-    if (node.primaryAxisAlignItems !== 'MIN' && !atLeastOneChildHasLayoutGrow1) {
+    if (
+      (!nodePrimaryAxisHugContents || node.children.length > 1) &&
+      node.primaryAxisAlignItems !== 'MIN' &&
+      !atLeastOneChildHasLayoutGrow1
+    ) {
       // use place-content instead of justify-content (+ align-content)
-      // TODO fails to skip on Button
       addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
     }
 
-    if (atLeastOneChildHasLayoutAlignNotStretch) {
-      // TODO fails twice to skip when should be skipped: with child text, on badge group, badge and Button
+    if ((!nodeCounterAxisHugContents || node.children.length > 1) && atLeastOneChildHasLayoutAlignNotStretch) {
       addStyle(styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
@@ -222,5 +239,23 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
     widthFillContainer,
     fixedHeight,
     heightFillContainer,
+    nodePrimaryAxisHugContents,
+    nodeCounterAxisHugContents,
   };
+}
+
+function readCssValueFromAst(node: CssNodePlain | Nil): string | null {
+  if (!node) return null;
+  switch (node.type) {
+    case 'Raw':
+      return node.value;
+    case 'Value':
+      return readCssValueFromAst(node.children[0]);
+    case 'Identifier':
+      return node.name;
+    case 'Declaration':
+      return readCssValueFromAst(node.value);
+    default:
+      throw new Error(`Reading css value from node unsupported: ${JSON.stringify(node)}`);
+  }
 }

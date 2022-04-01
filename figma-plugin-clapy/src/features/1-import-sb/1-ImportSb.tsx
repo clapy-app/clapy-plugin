@@ -21,6 +21,7 @@ import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
+import { ExportCode } from '../2-export-code/4-ExportCode';
 import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
@@ -284,6 +285,7 @@ export const ImportSb: FC = memo(function ImportSb() {
         </p>
       )}
       <hr />
+      <ExportCode />
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
     </div>

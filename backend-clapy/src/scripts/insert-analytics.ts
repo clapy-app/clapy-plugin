@@ -17,7 +17,7 @@ import { backendDir } from '../root';
 const isSsl = true;
 const hasuraHost = 'hasura-loitgf2s5q-ew.a.run.app';
 const hasuraPort = undefined; // e.g. '8080'
-const analyticsExportFilePath = `${backendDir}/src/scripts/export_clapy_analytics_2022_03_31_13_54_01_979.json`;
+const analyticsExportFilePath = `${backendDir}/src/scripts/export_clapy_analytics.json`;
 // Also add HASURA_STAGING_ADMIN_SECRET to .env file.
 
 export async function insertTrackings() {
