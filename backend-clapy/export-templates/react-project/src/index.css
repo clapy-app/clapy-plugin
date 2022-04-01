@@ -6,8 +6,9 @@ body,
   height: 100%;
 }
 
+html,
 body,
-body * {
+#root {
   display: flex;
   flex-direction: column;
 }

@@ -22,6 +22,7 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
   const [error, setError] = useState<any>();
   const exportCode = useCallbackAsync2(async () => {
     try {
+      setError(undefined);
       setPreviewUrl('loading');
       const nodes = await fetchPlugin('serializeSelectedNode');
 

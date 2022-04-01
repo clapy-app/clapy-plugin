@@ -104,12 +104,11 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   }
 
   if (isFlex) {
-    // display: flex is applied globally
-    // addStyle(styles, 'display', 'flex');
+    // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === 'HORIZONTAL') {
-      // We have set column as the default. We can omit it.
-      addStyle(styles, 'flex-direction', 'row');
+    if (node.layoutMode === 'VERTICAL') {
+      // row is the default. We can omit it.
+      addStyle(styles, 'flex-direction', 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
