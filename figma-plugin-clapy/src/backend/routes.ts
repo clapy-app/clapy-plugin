@@ -7,7 +7,6 @@ import { updateVariantsFromFilters } from './routes/3-properties/1-update-varian
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
 import { serializeSelectedNode } from './routes/5-export-code/serialize-node';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
-import { createText, getText, selectedTextNodes, updateText } from './routes/text-node-routes';
 
 export const routes = {
   // Auth routes
@@ -17,10 +16,6 @@ export const routes = {
   clearCachedTokens: clearCachedTokens,
 
   closePlugin: () => figma.closePlugin(),
-
-  createText: createText,
-  updateText: updateText,
-  getText: getText,
 
   // Import storybook
   getSbCompSelection: getSbCompSelection,
@@ -40,7 +35,6 @@ export const routes = {
 };
 
 export const subscriptions = {
-  selectedTextNodes: selectedTextNodes,
   selectedSbComp: selectedSbComp,
 };
 

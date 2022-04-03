@@ -14,6 +14,7 @@ import {
   mkClassAttr,
   mkImg,
   mkTag,
+  removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
@@ -72,9 +73,13 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
 
     if (!context.parentStyles || Object.keys(flexStyles).length) {
       const className = genClassName(context, node, isRoot);
-      addCssRule(context, className, [...Object.values(styles), ...Object.values(flexStyles)]);
-      const classAttr = mkClassAttr(className);
-      ast = mkTag('div', [classAttr], Array.isArray(ast) ? ast : [ast]);
+      const styleDeclarations = [...Object.values(styles), ...Object.values(flexStyles)];
+      let attributes: ts.JsxAttribute[] = [];
+      if (styleDeclarations.length) {
+        addCssRule(context, className, styleDeclarations);
+        attributes.push(mkClassAttr(className));
+      }
+      ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
     } else {
       Object.assign(context.parentStyles, styles);
       // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
@@ -102,10 +107,15 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     // Add styles for this node
     const context2 = mapTagStyles(context, node, styles);
     const className = genClassName(context2, node, isRoot);
-    addCssRule(context, className, Object.values(styles));
+    const styleDeclarations = Object.values(styles);
+    let attributes: ts.JsxAttribute[] = [];
+    if (styleDeclarations.length) {
+      addCssRule(context, className, styleDeclarations);
+      attributes.push(mkClassAttr(className));
+    }
+
     // Generate AST
-    const classAttr = mkClassAttr(className);
-    const ast = mkImg(svgPathVarName, classAttr);
+    const ast = mkImg(svgPathVarName, attributes);
     return ast;
   } else if (isFlexNode(node)) {
     // Add tag styles
@@ -113,6 +123,8 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
 
     const className = genClassName(context2, node, isRoot);
 
+    // the CSS rule is created before checking the children so that it appears first in the CSS file.
+    // After generating the children, we can add the final list of rules or remove it if no rule.
     const cssRule = addCssRule(context2, className);
 
     const children: ts.JsxChild[] = [];
@@ -137,10 +149,16 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
       }
     }
 
-    cssRule.block.children.push(...Object.values(styles));
+    const styleDeclarations = Object.values(styles);
+    let attributes: ts.JsxAttribute[] = [];
+    if (styleDeclarations.length) {
+      cssRule.block.children.push(...Object.values(styles));
+      attributes.push(mkClassAttr(className));
+    } else {
+      removeCssRule(context, cssRule, node);
+    }
 
-    const classAttr = mkClassAttr(className);
-    const tsx = mkTag(context2.tagName, [...extraAttributes, classAttr], children);
+    const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
     return tsx;
   }
 }

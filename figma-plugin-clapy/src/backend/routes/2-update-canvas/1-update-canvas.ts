@@ -1,5 +1,5 @@
 import { CNode } from '../../../common/sb-serialize.model';
-import { isComponentSet } from '../../common/canvas-utils';
+import { isComponentSet } from '../../common/node-type-utils';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
 

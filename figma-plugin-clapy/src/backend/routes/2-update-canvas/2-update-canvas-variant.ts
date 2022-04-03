@@ -1,7 +1,7 @@
 import { appConfig } from '../../../common/app-config';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
 import { propArrayToMap } from '../../../common/storybook-utils';
-import { isComponent, isComponentSet } from '../../common/canvas-utils';
+import { isComponent, isComponentSet } from '../../common/node-type-utils';
 import { getLayoutStoryId } from '../1-import-stories/3-import-sb-detail';
 import { listVariantProps, setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
 import { renderParentNode } from './3-render-parent-node';

@@ -1,5 +1,5 @@
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
-import { isChildrenMixin, isInstance, isText, isVector } from '../canvas-utils';
+import { isChildrenMixin, isInstance, isText, isVector } from '../node-type-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
