@@ -7,6 +7,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
 import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
+import { defaultNode } from './details/default-node';
 import { tagResets } from './details/utils-and-reset';
 
 // type LayoutAlignMap = {
@@ -106,9 +107,9 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   if (isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === 'VERTICAL') {
-      // row is the default. We can omit it.
-      addStyle(styles, 'flex-direction', 'column');
+    if (node.layoutMode === (defaultNode.layoutMode === 'VERTICAL' ? 'HORIZONTAL' : 'VERTICAL')) {
+      // column is used as default in index.css reset. We can omit it.
+      addStyle(styles, 'flex-direction', defaultNode.layoutMode === 'VERTICAL' ? 'row' : 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);

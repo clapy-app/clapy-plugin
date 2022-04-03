@@ -1,19 +1,9 @@
-import { SceneNodeNoMethod } from '../../../common/sb-serialize.model';
+import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
 import { isChildrenMixin, isInstance, isText } from '../canvas-utils';
 
 // Extracted from Figma typings
 type RangeProp = keyof Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
 
-const baseBlacklist = [
-  'parent',
-  'children',
-  'removed',
-  'masterComponent',
-  'mainComponent',
-  'horizontalPadding',
-  'verticalPadding',
-  'cornerRadius',
-] as const;
 const rangeProps: RangeProp[] = [
   'fillStyleId',
   'fills',

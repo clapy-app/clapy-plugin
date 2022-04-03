@@ -76,11 +76,11 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
     perfMeasure('j');
-    console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-    console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
-    //
-    // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     if (env.isDev) {
+      // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
+      console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+      //
+      // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
@@ -89,8 +89,8 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
       perfMeasure('l');
       return csbResponse;
     }
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error(error.stack);
   }
 }
 

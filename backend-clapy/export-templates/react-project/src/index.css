@@ -6,9 +6,20 @@ body,
   height: 100%;
 }
 
-html,
+/* html,
 body,
 #root {
   display: flex;
   flex-direction: column;
+} */
+
+html,
+body,
+#root,
+body > div * {
+  display: flex;
+  flex-direction: column;
+  box-sizing: content-box;
+  margin: 0;
+  padding: 0;
 }

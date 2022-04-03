@@ -6,7 +6,7 @@ import { FlexOrTextNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 export function cursorFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
-  if (context.tagName === 'button') {
+  if (context.tagName === 'button' || context.tagName === 'label') {
     addStyle(styles, 'cursor', 'pointer');
   }
 }

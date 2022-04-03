@@ -22,7 +22,7 @@ export function addCssRule(context: NodeContext, className: string, styles: Decl
 }
 
 export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
-  const baseName = isRoot ? 'root' : node ? node.name : 'label';
+  const baseName = isRoot ? 'root' : node?.name ? node.name : 'label';
   return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
 }
 

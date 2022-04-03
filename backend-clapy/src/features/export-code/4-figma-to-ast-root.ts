@@ -6,10 +6,10 @@ import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.mo
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
 import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
-import { printStandalone } from './create-ts-compiler/parsing.utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
 import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
+import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
 export function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
   const nodeContext: NodeContext = {
@@ -43,9 +43,10 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
 
   mockUsefulMethods(node);
 
-  const extraAttributes = guessTagName(context, node);
-
   const styles: Dict<DeclarationPlain> = {};
+
+  const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
+  if (newNode) node = newNode;
 
   if (!isText(node) && !isFlexNode(node)) {
     warnNode(node, 'TODO Unsupported node');
@@ -96,7 +97,6 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
         };
         const childTsx = figmaToAstRec(contextForChildren, child);
         if (childTsx) {
-          printStandalone(childTsx);
           if (Array.isArray(childTsx)) {
             children.push(...childTsx);
           } else {
@@ -122,31 +122,4 @@ function mockUsefulMethods(node: SceneNodeNoMethod) {
   if (isText(node)) {
     node.getStyledTextSegments = () => (node as any)._textSegments;
   }
-}
-
-function guessTagName(context: NodeContext, node: SceneNodeNoMethod) {
-  const name = context.nodeNameLower;
-  const extraAttributes: ts.JsxAttribute[] = [];
-  if (
-    !context.componentContext.inInteractiveElement &&
-    isFlexNode(node) &&
-    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
-    (name === 'button' || (name.includes('button') && !name.includes('wrapper') && !name.includes('group')))
-  ) {
-    context.componentContext = { ...context.componentContext, inInteractiveElement: true };
-    context.tagName = 'button';
-  } else if (
-    !context.componentContext.inInteractiveElement &&
-    isFlexNode(node) &&
-    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
-    (name === 'checkbox' || (name.includes('checkbox') && !name.includes('wrapper') && !name.includes('group')))
-  ) {
-    // TODO
-    // context.componentContext = { ...context.componentContext, inInteractiveElement: true };
-    // context.tagName = 'input';
-    // extraAttributes.push(mkInputTypeAttr('checkbox'));
-  } else {
-    // Keep the default tag name
-  }
-  return extraAttributes;
 }
