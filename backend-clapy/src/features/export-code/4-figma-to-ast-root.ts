@@ -4,9 +4,17 @@ import { ts } from 'ts-morph';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
+import { getCompDirectory } from './create-ts-compiler/3-create-component';
 import { isChildrenMixin, isFlexNode, isText, isVector } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
-import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
+import {
+  addCssRule,
+  genClassName,
+  genImportName,
+  mkClassAttr,
+  mkImg,
+  mkTag,
+} from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
@@ -76,26 +84,47 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     }
     return ast;
   } else if (isVector(node)) {
-    const svg = await node.exportAsync({ format: 'SVG' });
-    // console.log('svg:', svg);
+    const { projectContext, compName } = context.componentContext;
+    // It is already a string, we have mocked it. We just reuse the interface for 90 % of the usages (much easier).
+    let svgContent = (await node.exportAsync({ format: 'SVG' })) as unknown as string;
+    svgContent = svgContent.replace(/<svg width="\d+" height="\d+"/, '<svg');
+
+    // Add SVG file to resources to create the file later
+    const svgPathVarName = genImportName(context);
+    projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
+
+    // Add import in file
+    context.componentContext.file.addImportDeclaration({
+      moduleSpecifier: `./${svgPathVarName}.svg`,
+      defaultImport: svgPathVarName,
+    });
+
+    // Add styles for this node
+    const context2 = mapTagStyles(context, node, styles);
+    const className = genClassName(context2, node, isRoot);
+    addCssRule(context, className, Object.values(styles));
+    // Generate AST
+    const classAttr = mkClassAttr(className);
+    const ast = mkImg(svgPathVarName, classAttr);
+    return ast;
   } else if (isFlexNode(node)) {
     // Add tag styles
-    const contextWithBorders = mapTagStyles(context, node, styles);
+    const context2 = mapTagStyles(context, node, styles);
 
-    const className = genClassName(context, node, isRoot);
+    const className = genClassName(context2, node, isRoot);
 
-    const cssRule = addCssRule(context, className);
+    const cssRule = addCssRule(context2, className);
 
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
       for (const child of node.children as SceneNode[]) {
         const contextForChildren: NodeContext = {
-          componentContext: context.componentContext,
+          componentContext: context2.componentContext,
           tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
           nodeNameLower: child.name.toLowerCase(),
           parentNode: node,
           parentStyles: styles,
-          parentContext: contextWithBorders,
+          parentContext: context2,
         };
         const childTsx = await figmaToAstRec(contextForChildren, child);
         if (childTsx) {
@@ -111,7 +140,7 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     cssRule.block.children.push(...Object.values(styles));
 
     const classAttr = mkClassAttr(className);
-    const tsx = mkTag(context.tagName, [...extraAttributes, classAttr], children);
+    const tsx = mkTag(context2.tagName, [...extraAttributes, classAttr], children);
     return tsx;
   }
 }

@@ -22,8 +22,21 @@ export function addCssRule(context: NodeContext, className: string, styles: Decl
 }
 
 export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
+  // No node when working on text segments. But can we find better class names than 'label' for this case?
   const baseName = isRoot ? 'root' : node?.name ? node.name : 'label';
   return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
+}
+
+export function genImportName(context: NodeContext) {
+  // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
+  let baseName =
+    context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower
+      ? context.parentContext?.nodeNameLower
+      : context.nodeNameLower;
+  if (baseName !== 'icon') {
+    baseName = `${baseName}Icon`;
+  }
+  return genUniqueName(context.componentContext.importNamesAlreadyUsed, baseName);
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
@@ -99,4 +112,18 @@ export function mkHrefAttr(url: string) {
 
 export function mkTargetBlankAttr() {
   return factory.createJsxAttribute(factory.createIdentifier('target'), factory.createStringLiteral('_blank'));
+}
+
+export function mkImg(srcVarName: string, ...extraAttributes: ts.JsxAttribute[]) {
+  return factory.createJsxSelfClosingElement(
+    factory.createIdentifier('img'),
+    undefined,
+    factory.createJsxAttributes([
+      factory.createJsxAttribute(
+        factory.createIdentifier('src'),
+        factory.createJsxExpression(undefined, factory.createIdentifier(srcVarName)),
+      ),
+      ...extraAttributes,
+    ]),
+  );
 }
