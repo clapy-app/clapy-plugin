@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
 import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, tagResets, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
@@ -62,10 +62,6 @@ export function borderFigmaToCode(
     }
   }
 
-  // If no border applied, check if a reset is required
-  if (tagResets[context.tagName]?.border) {
-    addStyle(styles, 'border', 'none');
-  }
   return {
     ...context,
     borderWidths: {

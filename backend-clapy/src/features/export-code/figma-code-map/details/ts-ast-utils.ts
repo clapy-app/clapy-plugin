@@ -29,7 +29,7 @@ export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isR
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
   const sanitize = pascalCase ? pascalize : camelize;
   let name = sanitize(baseName);
-  let i = 0;
+  let i = 1;
   while (usageCache.has(name)) {
     ++i;
     name = `${sanitize(baseName)}_${i}`;

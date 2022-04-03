@@ -4,7 +4,7 @@ import { ts } from 'ts-morph';
 import { Dict, FrameNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isFlexNode, isText } from '../create-ts-compiler/canvas-utils';
-import { addHugContents, defaultNode, makeDefaultNode } from '../figma-code-map/details/default-node';
+import { addHugContents, makeDefaultNode } from '../figma-code-map/details/default-node';
 import { mkInputTypeAttr } from '../figma-code-map/details/ts-ast-utils';
 
 const { factory } = ts;
@@ -49,9 +49,6 @@ export function guessTagNameAndUpdateNode(
             children: [node, nextSibling],
             itemSpacing: node.itemSpacing,
           };
-          if (defaultNode.layoutMode !== 'HORIZONTAL') {
-            overrides.layoutMode = 'HORIZONTAL';
-          }
           node = makeDefaultNode('input label', overrides, addHugContents());
           context.tagName = 'label';
           (siblings as SceneNode[]).splice(i, 2, node as SceneNode);
@@ -62,7 +59,7 @@ export function guessTagNameAndUpdateNode(
     context.componentContext = { ...context.componentContext, inInteractiveElement: true };
     context.tagName = 'input';
     extraAttributes.push(mkInputTypeAttr('checkbox'));
-    // Padding has no effect on checkboxes (Windows). Let's disable it and replace with width.
+    // Padding has no effect on native checkboxes (Windows). Let's disable it and replace with width until we support styled checkboxes.
     node.paddingTop = 0;
     node.paddingRight = 0;
     node.paddingBottom = 0;

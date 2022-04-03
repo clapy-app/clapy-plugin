@@ -4,7 +4,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, tagResets, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
@@ -33,10 +33,5 @@ export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode
       addStyle(styles, 'background', ...bgProps);
       return;
     }
-  }
-
-  // If no fill, any reset required? TBC
-  if (tagResets[context.tagName]?.background) {
-    addStyle(styles, 'background', 'none');
   }
 }

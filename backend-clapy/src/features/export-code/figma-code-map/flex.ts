@@ -8,7 +8,6 @@ import { NodeContextWithBorders } from '../code.model';
 import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
-import { tagResets } from './details/utils-and-reset';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -179,9 +178,9 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
     }
   } else {
     // If no padding applied, check if a reset is required
-    if (tagResets[context.tagName]?.padding) {
-      addStyle(styles, 'padding', 0);
-    }
+    // if (tagResets[context.tagName]?.padding) {
+    //   addStyle(styles, 'padding', 0);
+    // }
   }
 }
 
