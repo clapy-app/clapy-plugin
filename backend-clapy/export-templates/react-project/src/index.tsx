@@ -1,4 +1,4 @@
-import './index.css';
+import './resets.css';
 
 import { render } from 'react-dom';
 

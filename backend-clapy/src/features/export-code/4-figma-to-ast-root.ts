@@ -1,26 +1,33 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
-import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
-import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
-import { printStandalone } from './create-ts-compiler/parsing.utils';
+import { getCompDirectory } from './create-ts-compiler/3-create-component';
+import { isChildrenMixin, isFlexNode, isText, isVector } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
-import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
+import {
+  addCssRule,
+  genClassName,
+  genImportName,
+  mkClassAttr,
+  mkImg,
+  mkTag,
+} from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
+import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
+export async function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
   const nodeContext: NodeContext = {
     componentContext,
-    tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+    tagName: 'div', // Default value
     nodeNameLower: node.name.toLowerCase(),
     parentNode: null,
     parentStyles: null,
     parentContext: null,
   };
-  const tsx = figmaToAstRec(nodeContext, node, true);
+  const tsx = await figmaToAstRec(nodeContext, node, true);
 
   const cssAst = mkStylesheetCss(componentContext.cssRules);
 
@@ -36,18 +43,19 @@ export const layoutRulesOnTextForWrapper: Array<keyof TextNode> = [
   // ''
 ];
 
-function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
+async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   if (!node.visible) {
     return;
   }
 
   mockUsefulMethods(node);
 
-  const extraAttributes = guessTagName(context, node);
-
   const styles: Dict<DeclarationPlain> = {};
 
-  if (!isText(node) && !isFlexNode(node)) {
+  const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
+  if (newNode) node = newNode;
+
+  if (!isText(node) && !isFlexNode(node) && !isVector(node)) {
     warnNode(node, 'TODO Unsupported node');
     return;
   }
@@ -75,28 +83,51 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
       // return txt;
     }
     return ast;
+  } else if (isVector(node)) {
+    const { projectContext, compName } = context.componentContext;
+    // It is already a string, we have mocked it. We just reuse the interface for 90 % of the usages (much easier).
+    let svgContent = (await node.exportAsync({ format: 'SVG' })) as unknown as string;
+    svgContent = svgContent.replace(/<svg width="\d+" height="\d+"/, '<svg');
+
+    // Add SVG file to resources to create the file later
+    const svgPathVarName = genImportName(context);
+    projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
+
+    // Add import in file
+    context.componentContext.file.addImportDeclaration({
+      moduleSpecifier: `./${svgPathVarName}.svg`,
+      defaultImport: svgPathVarName,
+    });
+
+    // Add styles for this node
+    const context2 = mapTagStyles(context, node, styles);
+    const className = genClassName(context2, node, isRoot);
+    addCssRule(context, className, Object.values(styles));
+    // Generate AST
+    const classAttr = mkClassAttr(className);
+    const ast = mkImg(svgPathVarName, classAttr);
+    return ast;
   } else if (isFlexNode(node)) {
     // Add tag styles
-    const contextWithBorders = mapTagStyles(context, node, styles);
+    const context2 = mapTagStyles(context, node, styles);
 
-    const className = genClassName(context, node, isRoot);
+    const className = genClassName(context2, node, isRoot);
 
-    const cssRule = addCssRule(context, className);
+    const cssRule = addCssRule(context2, className);
 
     const children: ts.JsxChild[] = [];
     if (isChildrenMixin(node) && Array.isArray(node.children)) {
       for (const child of node.children as SceneNode[]) {
         const contextForChildren: NodeContext = {
-          componentContext: context.componentContext,
+          componentContext: context2.componentContext,
           tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
           nodeNameLower: child.name.toLowerCase(),
           parentNode: node,
           parentStyles: styles,
-          parentContext: contextWithBorders,
+          parentContext: context2,
         };
-        const childTsx = figmaToAstRec(contextForChildren, child);
+        const childTsx = await figmaToAstRec(contextForChildren, child);
         if (childTsx) {
-          printStandalone(childTsx);
           if (Array.isArray(childTsx)) {
             children.push(...childTsx);
           } else {
@@ -109,44 +140,16 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
     cssRule.block.children.push(...Object.values(styles));
 
     const classAttr = mkClassAttr(className);
-    const tsx = mkTag(context.tagName, [...extraAttributes, classAttr], children);
+    const tsx = mkTag(context2.tagName, [...extraAttributes, classAttr], children);
     return tsx;
   }
-}
-
-function isChildrenMixin(node: SceneNodeNoMethod | ChildrenMixin | Nil): node is ChildrenMixin {
-  return !!(node as ChildrenMixin)?.children;
 }
 
 function mockUsefulMethods(node: SceneNodeNoMethod) {
   if (isText(node)) {
     node.getStyledTextSegments = () => (node as any)._textSegments;
   }
-}
-
-function guessTagName(context: NodeContext, node: SceneNodeNoMethod) {
-  const name = context.nodeNameLower;
-  const extraAttributes: ts.JsxAttribute[] = [];
-  if (
-    !context.componentContext.inInteractiveElement &&
-    isFlexNode(node) &&
-    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
-    (name === 'button' || (name.includes('button') && !name.includes('wrapper') && !name.includes('group')))
-  ) {
-    context.componentContext = { ...context.componentContext, inInteractiveElement: true };
-    context.tagName = 'button';
-  } else if (
-    !context.componentContext.inInteractiveElement &&
-    isFlexNode(node) &&
-    ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
-    (name === 'checkbox' || (name.includes('checkbox') && !name.includes('wrapper') && !name.includes('group')))
-  ) {
-    // TODO
-    // context.componentContext = { ...context.componentContext, inInteractiveElement: true };
-    // context.tagName = 'input';
-    // extraAttributes.push(mkInputTypeAttr('checkbox'));
-  } else {
-    // Keep the default tag name
+  if (isVector(node)) {
+    node.exportAsync = () => (node as any)._svg;
   }
-  return extraAttributes;
 }

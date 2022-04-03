@@ -4,7 +4,6 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { addStyle } from '../css-gen/css-factories-high';
 import { parseFontStyle } from './details/fonts-utils';
-import { warnNode } from './details/utils-and-reset';
 
 export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   const { fontSize, fontName, letterSpacing, lineHeight, textCase, textDecoration } = textSegment;
@@ -54,7 +53,7 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {
-      warnNode(textSegment, 'TODO Unsupported letter spacing using percent');
+      addStyle(styles, 'letter-spacing', [letterSpacing.value / 100, 'em']);
     } else {
       addStyle(styles, 'letter-spacing', [letterSpacing.value, 'px']);
     }

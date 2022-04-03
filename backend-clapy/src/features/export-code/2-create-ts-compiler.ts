@@ -10,42 +10,14 @@ import { CodeDict, ComponentContext, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
-import { createComponent } from './create-ts-compiler/3-create-component';
+import { createComponent, getCompDirectory } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
-import { getFirstExportedComponentsInFileOrThrow, printStandalone } from './create-ts-compiler/parsing.utils';
+import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
 import { cssAstToString } from './css-gen/css-factories-low';
 import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
 
-export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMethod) {
-  // await wait(2000);
-  const projectContext: ProjectContext = {
-    compNamesAlreadyUsed: new Set(),
-  };
-  const componentContext: ComponentContext = {
-    projectContext,
-    classNamesAlreadyUsed: new Set(),
-    cssRules: [],
-    inInteractiveElement: false,
-  };
-  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
-
-  console.log(printStandalone(tsx));
-  console.log(cssAstToString(css));
-}
-
 export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload = false) {
   try {
-    // Most context elements here should be per component (but not compNamesAlreadyUsed).
-    // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
-    const projectContext: ProjectContext = {
-      compNamesAlreadyUsed: new Set(),
-    };
-    const componentContext: ComponentContext = {
-      projectContext,
-      classNamesAlreadyUsed: new Set(),
-      cssRules: [],
-      inInteractiveElement: false,
-    };
     // Initialize the project template with base files
     perfMeasure('a');
     const filesCsb = await readReactTemplateFiles();
@@ -61,9 +33,26 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
     addFilesToProject(project, files);
     perfMeasure('f');
 
-    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.name, true); // 'Button' - need to dedupe and find smarter names later
+    // Most context elements here should be per component (but not compNamesAlreadyUsed).
+    // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
+    const projectContext: ProjectContext = {
+      compNamesAlreadyUsed: new Set(),
+      resources,
+    };
 
-    await addComponentToProject(componentContext, figmaConfig, project, cssFiles, compName);
+    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.name, true);
+
+    const componentContext: ComponentContext = {
+      projectContext,
+      file: await createComponent(project, compName),
+      compName,
+      classNamesAlreadyUsed: new Set(),
+      importNamesAlreadyUsed: new Set(),
+      cssRules: [],
+      inInteractiveElement: false,
+    };
+
+    await addComponentToProject(componentContext, figmaConfig, cssFiles, compName);
     perfMeasure('g');
 
     addCompToAppRoot(project, compName);
@@ -76,11 +65,12 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
     perfMeasure('j');
-    console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-    console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
-    //
-    // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     if (env.isDev) {
+      // Useful for the dev in watch mode. Uncomment when needed.
+      // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
+      // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+      //
+      // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
@@ -89,29 +79,27 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
       perfMeasure('l');
       return csbResponse;
     }
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error(error.stack);
   }
 }
 
 async function addComponentToProject(
   componentContext: ComponentContext,
   figmaConfig: SceneNodeNoMethod,
-  project: Project,
   cssFiles: CodeDict,
   compName: string,
 ) {
-  // Copy the component template in project: placeholder to write the button code later
-  const buttonFile = await createComponent(project, compName);
+  const { file } = componentContext;
   perfMeasure('g1');
 
   // Get the returned expression that we want to replace
-  const { returnedExpression, compDeclaration } = getFirstExportedComponentsInFileOrThrow(buttonFile);
+  const { returnedExpression, compDeclaration } = getFirstExportedComponentsInFileOrThrow(file);
   perfMeasure('g2');
   compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
   perfMeasure('g3');
 
-  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
+  const [tsx, css] = await figmaToAstRootNode(componentContext, figmaConfig);
   perfMeasure('g4');
 
   // Replace the returned expression with the newly generated code
@@ -123,7 +111,7 @@ async function addComponentToProject(
   perfMeasure('g5');
 
   // Add CSS file.
-  cssFiles[`src/components/${compName}/${compName}.module.css`] = cssAstToString(css);
+  cssFiles[`${getCompDirectory(compName)}/${compName}.module.css`] = cssAstToString(css);
   perfMeasure('g6');
 }
 

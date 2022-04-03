@@ -10,6 +10,8 @@
 
 (1) Alternative: `yarn dev` through command-line to start everything
 
+Note: for now, `Hasura console` task is excluded from the default build because it's rarely useful in current developments. To start it, run this task or `yarn console` in the terminal. If you often need it, feel free to uncomment it in the default build task (.vscode/tasks.json, first task).
+
 ## Troubleshooting
 
 ### `Error: Cannot find module '/app/dist/main2'`

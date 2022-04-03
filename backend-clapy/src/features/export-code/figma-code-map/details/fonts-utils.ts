@@ -19,30 +19,30 @@ export const rangeProps: RangeProp[] = [
 ];
 
 const fontWeights = [
-  'Regular',
-  'Thin',
-  'ExtraLight',
-  'Light',
-  'SemiLight',
-  'DemiLight',
-  'Medium',
-  'SemiBold',
-  'Bold',
-  'ExtraBold',
-  'Black',
-].map(w => w.toLowerCase());
+  ['Regular'],
+  ['Thin'],
+  ['Extra', 'Light'],
+  ['Light'],
+  ['Semi', 'Light'],
+  ['Demi', 'Light'],
+  ['Medium'],
+  ['Semi', 'Bold'],
+  ['Bold'],
+  ['Extra', 'Bold'],
+  ['Black'],
+].map(w => w.join('\\s*').toLowerCase());
 const fontWeightRegexFragment = fontWeights.join('|');
 
 const fontStretchs = [
-  'UltraCondensed',
-  'ExtraCondensed',
-  'Condensed',
-  'SemiCondensed',
-  /* (normal) ,*/ 'SemiExpanded',
-  'Expanded',
-  'ExtraExpanded',
-  'UltraExpanded',
-].map(w => w.toLowerCase());
+  ['Ultra', 'Condensed'],
+  ['Extra', 'Condensed'],
+  ['Condensed'],
+  ['Semi', 'Condensed'],
+  ['Semi', 'Expanded'] /* normal */,
+  ['Expanded'],
+  ['Extra', 'Expanded'],
+  ['Ultra', 'Expanded'],
+].map(w => w.join('\\s*').toLowerCase());
 const fontStretchsRegexFragment = fontStretchs.join('|');
 
 const fontItalicStyles = ['Italic', 'Oblique'].map(w => w.toLowerCase());
@@ -57,10 +57,12 @@ export function parseFontStyle(style: string) {
   const match = style.match(fontStyleRegex);
   const fontStretch =
     fontStretchMapFontToCSS[
-      (match?.[2]?.toLowerCase() as keyof typeof fontStretchMapFontToCSS | undefined) || 'nostretch'
+      (match?.[2]?.replace(/\s*/g, '').toLowerCase() as keyof typeof fontStretchMapFontToCSS | undefined) || 'nostretch'
     ];
   const fontWeight =
-    fontWeightMapFontToCSS[(match?.[3]?.toLowerCase() as keyof typeof fontWeightMapFontToCSS | undefined) || 'regular'];
+    fontWeightMapFontToCSS[
+      (match?.[3]?.replace(/\s*/g, '').toLowerCase() as keyof typeof fontWeightMapFontToCSS | undefined) || 'regular'
+    ];
   const fontItalicStyle =
     fontItalicStyleMapFontToCSS[
       (match?.[4]?.toLowerCase() as keyof typeof fontItalicStyleMapFontToCSS | undefined) || 'noitalic'

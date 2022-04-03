@@ -5,16 +5,21 @@ import { Project, SourceFile } from 'ts-morph';
 
 import { componentTemplatePathTsx } from './load-file.utils';
 
+export function getCompDirectory(compName: string) {
+  return `src/components/${compName}`;
+}
+
+// Copy the component template in project: placeholder to write the button code later
 export async function createComponent(project: Project, name: string) {
   // TypeScript
   const componentTemplateTsx = await readFile(componentTemplatePathTsx, { encoding: 'utf8' });
-  const tsx = project.createSourceFile(
-    `src/components/${name}/${name}.tsx`,
+  const fileAst = project.createSourceFile(
+    `${getCompDirectory(name)}/${name}.tsx`,
     componentTemplateTsx /*, { overwrite: true }*/,
   );
-  updateCssImport(tsx, name);
+  updateCssImport(fileAst, name);
 
-  return tsx;
+  return fileAst;
 }
 
 function updateCssImport(file: SourceFile, name: string) {

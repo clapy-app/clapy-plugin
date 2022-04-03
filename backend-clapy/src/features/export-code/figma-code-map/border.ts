@@ -2,15 +2,20 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexTextVectorNode, isText, isVector } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, tagResets, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
-  node: FlexOrTextNode,
+  node: FlexTextVectorNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
+  if (isVector(node)) {
+    // Ignore borders for Vectors. They are already included in the SVG.
+    return contextNoBorder(context);
+  }
+
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
 
   if (isText(node)) {
@@ -18,15 +23,7 @@ export function borderFigmaToCode(
     if (visibleStrokes.length) {
       warnNode(node, 'TODO Unsupported stroke on text');
     }
-    return {
-      ...context,
-      borderWidths: {
-        borderTopWidth: 0,
-        borderRightWidth: 0,
-        borderBottomWidth: 0,
-        borderLeftWidth: 0,
-      },
-    };
+    return contextNoBorder(context);
   }
 
   if (visibleStrokes.length) {
@@ -35,6 +32,7 @@ export function borderFigmaToCode(
     }
     const stroke = visibleStrokes[0];
     if (stroke.type === 'SOLID') {
+      // Examples of properties not supported yet:
       // stroke.blendMode
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
       const { color, opacity } = stroke;
@@ -44,6 +42,10 @@ export function borderFigmaToCode(
           node,
           `TODO unsupported strokeAlign ${strokeAlign}, it is treated as INSIDE. Do we want to support it? Should we outline instead?`,
         );
+        // `outline` can make the trick. E.g. for 10px width and "CENTER":
+        // outline: 10px solid #4D1919;
+        // outline-offset: -5px;
+        // https://css-playground.com/view/68/css-outline-playground
       }
       const borderWidth = strokeWeight;
       const hex = figmaColorToCssHex(color, opacity);
@@ -62,10 +64,10 @@ export function borderFigmaToCode(
     }
   }
 
-  // If no border applied, check if a reset is required
-  if (tagResets[context.tagName]?.border) {
-    addStyle(styles, 'border', 'none');
-  }
+  return contextNoBorder(context);
+}
+
+function contextNoBorder(context: NodeContext) {
   return {
     ...context,
     borderWidths: {

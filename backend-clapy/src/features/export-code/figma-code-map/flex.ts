@@ -5,9 +5,9 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, FlexTextVectorNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { tagResets } from './details/utils-and-reset';
+import { defaultNode } from './details/default-node';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -60,7 +60,11 @@ const textAlignVerticalToJustifyContent: {
   BOTTOM: 'end',
 };
 
-export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+export function flexFigmaToCode(
+  context: NodeContextWithBorders,
+  node: FlexTextVectorNode,
+  styles: Dict<DeclarationPlain>,
+) {
   const isFlex = isFlexNode(node);
 
   const { parentStyles } = context;
@@ -106,9 +110,9 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTex
   if (isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === 'VERTICAL') {
-      // row is the default. We can omit it.
-      addStyle(styles, 'flex-direction', 'column');
+    if (node.layoutMode === (defaultNode.layoutMode === 'VERTICAL' ? 'HORIZONTAL' : 'VERTICAL')) {
+      // column is used as default in index.css reset. We can omit it.
+      addStyle(styles, 'flex-direction', defaultNode.layoutMode === 'VERTICAL' ? 'row' : 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
@@ -178,13 +182,13 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
     }
   } else {
     // If no padding applied, check if a reset is required
-    if (tagResets[context.tagName]?.padding) {
-      addStyle(styles, 'padding', 0);
-    }
+    // if (tagResets[context.tagName]?.padding) {
+    //   addStyle(styles, 'padding', 0);
+    // }
   }
 }
 
-function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+function applyWidth(context: NodeContextWithBorders, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
 
@@ -231,8 +235,8 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
   const shiftBottom = isFlex ? Math.max(node.paddingBottom, borderBottomWidth) : 0;
   const shiftLeft = isFlex ? Math.max(node.paddingLeft, borderLeftWidth) : 0;
 
-  const width = flags.useCssBorderBox ? node.width : node.width - shiftRight - shiftLeft;
-  const height = flags.useCssBorderBox ? node.height : node.height - shiftTop - shiftBottom;
+  const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
+  const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);

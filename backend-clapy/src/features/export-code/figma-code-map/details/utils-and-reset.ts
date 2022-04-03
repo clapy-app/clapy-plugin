@@ -1,6 +1,4 @@
-import { Dict2 } from '../../../../common/general-utils';
 import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { TagName } from '../../code.model';
 import { isStyledTextSegment } from '../../create-ts-compiler/canvas-utils';
 
 export function warnNode(node: SceneNodeNoMethod | StyledTextSegment, ...msg: any[]) {
@@ -10,20 +8,6 @@ export function warnNode(node: SceneNodeNoMethod | StyledTextSegment, ...msg: an
     console.warn(...msg, node.name, node.type, node.id);
   }
 }
-
-type ResetProps = 'border' | 'padding' | 'background' | 'boxSizingContent';
-
-export const tagResets: Dict2<TagName, Dict2<ResetProps, boolean>> = {
-  button: {
-    border: true,
-    padding: true,
-    background: true,
-    boxSizingContent: true,
-  },
-  input: {
-    border: true,
-  },
-};
 
 export function isMixed(value: any): value is typeof figma.mixed {
   return typeof value === 'symbol' || value === 'Mixed';

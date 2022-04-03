@@ -15,7 +15,7 @@
     "start:prod": "node dist/main",
     "up": "cd .. && yarn up",
     "stop": "cd .. && yarn stop",
-    "log": "cd .. && docker-compose logs -f --tail 100 backend",
+    "log": "cd .. && yarn log",
     "upgr": "yarn upgrade-interactive --latest",
     "prebuild": "rimraf dist",
     "build": "nest build",

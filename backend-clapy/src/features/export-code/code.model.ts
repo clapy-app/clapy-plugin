@@ -1,5 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
-import { ts } from 'ts-morph';
+import { SourceFile, ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode } from './create-ts-compiler/canvas-utils';
@@ -14,11 +14,15 @@ export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
 
 export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
+  readonly resources: CodeDict;
 }
 
 export interface ComponentContext {
   readonly projectContext: ProjectContext;
+  readonly file: SourceFile;
+  readonly compName: string;
   readonly classNamesAlreadyUsed: Set<string>;
+  readonly importNamesAlreadyUsed: Set<string>;
   readonly cssRules: CssRootNode[];
   // E.g. button, a... https://stackoverflow.com/a/39386695/4053349
   // Cannot really guess at project level, because components can have multiple usages.

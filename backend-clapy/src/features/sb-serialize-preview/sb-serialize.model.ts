@@ -238,8 +238,35 @@ export type OmitMethods<T> = {
   [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
-export type SceneNodeNoMethod = OmitMethods<SceneNode>;
+export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
 export type TextNodeNoMethod = OmitMethods<TextNode>;
+export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
+
+export const baseBlacklist = [
+  'parent',
+  'children',
+  'removed',
+  'masterComponent',
+  'mainComponent',
+  'horizontalPadding',
+  'verticalPadding',
+  'cornerRadius',
+  'fillGeometry',
+  'strokeGeometry',
+  'vectorPaths',
+  'backgrounds',
+  'backgroundStyleId',
+  'locked',
+  'constrainProportions',
+  'guides',
+  'expanded',
+  'relativeTransform',
+  'absoluteTransform',
+  'absoluteRenderBounds',
+  'vectorNetwork',
+] as const;
+
+type FrameNodeBlackList = typeof baseBlacklist[number];
 
 export interface CSBResponse {
   sandbox_id: string;

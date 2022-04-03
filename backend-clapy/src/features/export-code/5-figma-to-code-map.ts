@@ -3,8 +3,7 @@ import { ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
-import { FlexOrTextNode } from './create-ts-compiler/canvas-utils';
-import { addStyle } from './css-gen/css-factories-high';
+import { FlexTextVectorNode } from './create-ts-compiler/canvas-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
@@ -29,14 +28,15 @@ import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute'
 
 const { factory } = ts;
 
-export function mapCommonStyles(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
-  addStyle(styles, 'display', 'flex');
+export function mapCommonStyles(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
+  // Remove later once we are sure global resets in CSS is a good idea.
+  // addStyle(styles, 'display', 'flex');
   opacityFigmaToCode(context, node, styles);
   // blendMode
   // effects
 }
 
-export function mapTagStyles(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+export function mapTagStyles(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
   const context2 = borderFigmaToCode(context, node, styles);
   flexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);

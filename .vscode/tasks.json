@@ -10,8 +10,8 @@
 				"Figma plugin",
 				"Browser app (plugin dev)",
 				"Websocket app",
-				"Hasura console", // Already depends on Docker containers
-				// "Docker containers"
+				// "Hasura console", 
+				// "Docker containers" // Already marked as dependency of Hasura console, not needed here.
 			],
 			"presentation": {
 				"reveal": "never"
