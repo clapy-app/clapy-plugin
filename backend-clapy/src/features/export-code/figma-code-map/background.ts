@@ -2,11 +2,11 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexTextVectorNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
-export function backgroundFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+export function backgroundFigmaToCode(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
   if (isText(node)) return;
 

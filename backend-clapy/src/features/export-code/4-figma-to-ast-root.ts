@@ -1,26 +1,25 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
-import { Nil } from '../../common/general-utils';
 import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
-import { isFlexNode, isText } from './create-ts-compiler/canvas-utils';
+import { isChildrenMixin, isFlexNode, isText, isVector } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
 import { addCssRule, genClassName, mkClassAttr, mkTag } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
+export async function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
   const nodeContext: NodeContext = {
     componentContext,
-    tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+    tagName: 'div', // Default value
     nodeNameLower: node.name.toLowerCase(),
     parentNode: null,
     parentStyles: null,
     parentContext: null,
   };
-  const tsx = figmaToAstRec(nodeContext, node, true);
+  const tsx = await figmaToAstRec(nodeContext, node, true);
 
   const cssAst = mkStylesheetCss(componentContext.cssRules);
 
@@ -36,7 +35,7 @@ export const layoutRulesOnTextForWrapper: Array<keyof TextNode> = [
   // ''
 ];
 
-function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
+async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   if (!node.visible) {
     return;
   }
@@ -48,7 +47,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
   const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
   if (newNode) node = newNode;
 
-  if (!isText(node) && !isFlexNode(node)) {
+  if (!isText(node) && !isFlexNode(node) && !isVector(node)) {
     warnNode(node, 'TODO Unsupported node');
     return;
   }
@@ -76,6 +75,9 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
       // return txt;
     }
     return ast;
+  } else if (isVector(node)) {
+    const svg = await node.exportAsync({ format: 'SVG' });
+    // console.log('svg:', svg);
   } else if (isFlexNode(node)) {
     // Add tag styles
     const contextWithBorders = mapTagStyles(context, node, styles);
@@ -95,7 +97,7 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
           parentStyles: styles,
           parentContext: contextWithBorders,
         };
-        const childTsx = figmaToAstRec(contextForChildren, child);
+        const childTsx = await figmaToAstRec(contextForChildren, child);
         if (childTsx) {
           if (Array.isArray(childTsx)) {
             children.push(...childTsx);
@@ -114,12 +116,11 @@ function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: b
   }
 }
 
-function isChildrenMixin(node: SceneNodeNoMethod | ChildrenMixin | Nil): node is ChildrenMixin {
-  return !!(node as ChildrenMixin)?.children;
-}
-
 function mockUsefulMethods(node: SceneNodeNoMethod) {
   if (isText(node)) {
     node.getStyledTextSegments = () => (node as any)._textSegments;
+  }
+  if (isVector(node)) {
+    node.exportAsync = () => (node as any)._svg;
   }
 }

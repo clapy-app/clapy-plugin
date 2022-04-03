@@ -27,7 +27,7 @@ export async function tryIt2_createTsProjectCompiler(figmaConfig: SceneNodeNoMet
     cssRules: [],
     inInteractiveElement: false,
   };
-  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
+  const [tsx, css] = await figmaToAstRootNode(componentContext, figmaConfig);
 
   console.log(printStandalone(tsx));
   console.log(cssAstToString(css));
@@ -77,8 +77,9 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
     perfMeasure('j');
     if (env.isDev) {
+      // Useful for the dev in watch mode. Uncomment when needed.
       // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-      console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+      // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
       //
       // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       await writeToDisk(csbFiles);
@@ -111,7 +112,7 @@ async function addComponentToProject(
   compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
   perfMeasure('g3');
 
-  const [tsx, css] = figmaToAstRootNode(componentContext, figmaConfig);
+  const [tsx, css] = await figmaToAstRootNode(componentContext, figmaConfig);
   perfMeasure('g4');
 
   // Replace the returned expression with the newly generated code

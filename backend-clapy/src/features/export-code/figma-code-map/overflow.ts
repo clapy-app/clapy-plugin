@@ -2,9 +2,25 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { FlexOrTextNode } from '../create-ts-compiler/canvas-utils';
-import { guessOverflow } from '../smart-guesses/guessOverflow';
+import { FlexTextVectorNode, isText, isVector } from '../create-ts-compiler/canvas-utils';
+import { addStyle } from '../css-gen/css-factories-high';
 
-export function overflowFigmaToCode(context: NodeContext, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
-  guessOverflow(context, node, styles);
+export function overflowFigmaToCode(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
+  if (isText(node) || isVector(node)) return;
+  const name = context.nodeNameLower;
+  if (node.overflowDirection === 'BOTH') {
+    addStyle(styles, 'overflow', 'auto');
+  } else if (node.overflowDirection === 'VERTICAL') {
+    addStyle(styles, 'overflow-y', 'auto');
+    if (node.clipsContent) {
+      addStyle(styles, 'overflow-x', 'hidden');
+    }
+  } else if (node.overflowDirection === 'HORIZONTAL') {
+    addStyle(styles, 'overflow-x', 'auto');
+    if (node.clipsContent) {
+      addStyle(styles, 'overflow-y', 'hidden');
+    }
+  } else if (node.clipsContent) {
+    addStyle(styles, 'overflow', 'hidden');
+  }
 }

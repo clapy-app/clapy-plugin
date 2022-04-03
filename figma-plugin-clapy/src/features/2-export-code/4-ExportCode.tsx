@@ -34,7 +34,10 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
         console.log('sandbox:', url);
         // window.open(url, '_blank', 'noopener');
         setPreviewUrl(url);
+        return;
       }
+
+      setPreviewUrl('Done.');
     } catch (error) {
       setError(error);
       setPreviewUrl(undefined);

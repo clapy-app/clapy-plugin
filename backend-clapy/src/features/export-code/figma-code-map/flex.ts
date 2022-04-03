@@ -5,7 +5,7 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, FlexOrTextNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, FlexTextVectorNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
 
@@ -60,7 +60,11 @@ const textAlignVerticalToJustifyContent: {
   BOTTOM: 'end',
 };
 
-export function flexFigmaToCode(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+export function flexFigmaToCode(
+  context: NodeContextWithBorders,
+  node: FlexTextVectorNode,
+  styles: Dict<DeclarationPlain>,
+) {
   const isFlex = isFlexNode(node);
 
   const { parentStyles } = context;
@@ -184,7 +188,7 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
   }
 }
 
-function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, styles: Dict<DeclarationPlain>) {
+function applyWidth(context: NodeContextWithBorders, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
 
@@ -231,8 +235,8 @@ function applyWidth(context: NodeContextWithBorders, node: FlexOrTextNode, style
   const shiftBottom = isFlex ? Math.max(node.paddingBottom, borderBottomWidth) : 0;
   const shiftLeft = isFlex ? Math.max(node.paddingLeft, borderLeftWidth) : 0;
 
-  const width = flags.useCssBorderBox ? node.width : node.width - shiftRight - shiftLeft;
-  const height = flags.useCssBorderBox ? node.height : node.height - shiftTop - shiftBottom;
+  const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
+  const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);

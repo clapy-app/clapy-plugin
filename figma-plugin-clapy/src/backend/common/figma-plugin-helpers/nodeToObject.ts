@@ -1,5 +1,6 @@
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
-import { isChildrenMixin, isInstance, isText } from '../canvas-utils';
+import { isChildrenMixin, isInstance, isText, isVector } from '../canvas-utils';
+import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
 type RangeProp = keyof Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
@@ -24,6 +25,12 @@ const textBlacklist = new Set<string>([...baseBlacklist, ...rangeProps, 'charact
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
+interface Options {
+  skipChildren?: boolean;
+  skipParent?: boolean;
+  skipInstance?: boolean;
+}
+
 /**
  * Transform node to object with keys, that are hidden by default.
  * For example:
@@ -37,7 +44,8 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
  * @param node
  * @param withoutRelations
  */
-export function nodeToObject<T extends SceneNode>(node: T, withoutRelations?: boolean) {
+export async function nodeToObject<T extends SceneNode>(node: T, options: Options = {}) {
+  const { skipChildren = false, skipParent = true, skipInstance = true } = options;
   const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
   const obj: any = { id: node.id, type: node.type };
   const isTxt = isText(node);
@@ -58,14 +66,20 @@ export function nodeToObject<T extends SceneNode>(node: T, withoutRelations?: bo
   if (isTxt) {
     obj._textSegments = node.getStyledTextSegments(rangeProps);
   }
-  if (node.parent && !withoutRelations) {
+  if (isVector(node)) {
+    // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
+    // But ideally, we should do:
+    // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
+    obj._svg = utf8ArrayToStr(await node.exportAsync({ format: 'SVG' }));
+  }
+  if (node.parent && !skipParent) {
     obj.parent = { id: node.parent.id, type: node.parent.type };
   }
-  if (isChildrenMixin(node) && !withoutRelations) {
-    obj.children = node.children.map((child: any) => nodeToObject(child, withoutRelations));
+  if (isChildrenMixin(node) && !skipChildren) {
+    obj.children = await Promise.all(node.children.map((child: any) => nodeToObject(child, options)));
   }
-  if (isInstance(node) && node.mainComponent && !withoutRelations) {
-    obj.mainComponent = nodeToObject(node.mainComponent, withoutRelations);
+  if (isInstance(node) && node.mainComponent && !skipInstance) {
+    obj.mainComponent = nodeToObject(node.mainComponent, options);
   }
   return obj as SceneNodeNoMethod;
 }

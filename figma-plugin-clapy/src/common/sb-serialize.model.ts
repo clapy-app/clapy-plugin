@@ -251,6 +251,19 @@ export const baseBlacklist = [
   'horizontalPadding',
   'verticalPadding',
   'cornerRadius',
+  'fillGeometry',
+  'strokeGeometry',
+  'vectorPaths',
+  'backgrounds',
+  'backgroundStyleId',
+  'locked',
+  'constrainProportions',
+  'guides',
+  'expanded',
+  'relativeTransform',
+  'absoluteTransform',
+  'absoluteRenderBounds',
+  'vectorNetwork',
 ] as const;
 
 type FrameNodeBlackList = typeof baseBlacklist[number];

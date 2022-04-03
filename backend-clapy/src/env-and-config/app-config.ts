@@ -5,6 +5,7 @@ export const flags = {
   loadLibsTypings: false, // Slower ~1 second
   runDiagnostics: false, // Slower ~1.5 second
   formatCode: true, // Slower ~0.5 second
-  // TODO if changed to true, should update reset in resets.css.
-  useCssBorderBox: false,
+  // Better for max-width: 100%
+  // if changed to true, should update reset in resets.css.
+  useCssBoxSizingBorderBox: true,
 };

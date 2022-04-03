@@ -2,13 +2,13 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { FlexOrTextNode, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexTextVectorNode, isText } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
-  node: FlexOrTextNode,
+  node: FlexTextVectorNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
   const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
