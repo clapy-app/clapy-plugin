@@ -20,6 +20,7 @@ import {
   mkTargetBlankAttr,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
+import { effectsFigmaToCode } from './figma-code-map/effects';
 import { flexFigmaToCode } from './figma-code-map/flex';
 import { fontFigmaToCode } from './figma-code-map/font';
 import { opacityFigmaToCode } from './figma-code-map/opacity';
@@ -47,6 +48,7 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
   cursorFigmaToCode(context2, node, styles);
   overflowFigmaToCode(context2, node, styles);
   borderBoxFigmaToCode(context2, node, styles);
+  effectsFigmaToCode(context, node, styles);
   return context2;
   // scaleFactor
   // reactions => hover, must make the diff with target node (check the type?)
