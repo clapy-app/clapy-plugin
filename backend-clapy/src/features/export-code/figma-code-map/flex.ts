@@ -236,13 +236,18 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
   const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
+  const shouldApplyMaxSize = !parent || (parent.width >= node.width && parent.height >= node.height);
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);
-    addStyle(styles, 'max-width', [100, '%']);
+    if (shouldApplyMaxSize) {
+      addStyle(styles, 'max-width', [100, '%']);
+    }
   }
   if (fixedHeight) {
     addStyle(styles, 'height', [height, 'px']);
-    addStyle(styles, 'max-height', [100, '%']);
+    if (shouldApplyMaxSize) {
+      addStyle(styles, 'max-height', [100, '%']);
+    }
   }
   return {
     fixedWidth,
