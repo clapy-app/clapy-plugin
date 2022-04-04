@@ -1,5 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
 import { ArgTypes } from '../../../common/sb-serialize.model';
+import { getFigmaSelection } from '../../common/selection-utils';
 import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {
@@ -18,7 +19,7 @@ export function selectedSbComp(next: NextFn<SbAnySelection[]>) {
 }
 
 function prepareSbCompSelection() /* : SbCompSelection[] */ {
-  const selectedSbComp = figma.currentPage.selection.reduce((selections, selectedNode) => {
+  const selectedSbComp = getFigmaSelection().reduce((selections, selectedNode) => {
     const { node, sbUrl, storyId } = getParentCompNode(selectedNode);
     if (storyId && sbUrl && node) {
       // &args=kind:secondary;size:xxs

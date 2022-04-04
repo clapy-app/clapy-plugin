@@ -1,5 +1,5 @@
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
-import { isChildrenMixin, isInstance, isText, isVector } from '../canvas-utils';
+import { isChildrenMixin, isFrame, isInstance, isShape, isText } from '../../common/node-type-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -18,7 +18,7 @@ const rangeProps: RangeProp[] = [
   'textCase',
   'textDecoration',
   'textStyleId',
-]; /* as const */
+];
 /* as Writeable<typeof rangeProps> */
 const blacklist = new Set<string>(baseBlacklist);
 const textBlacklist = new Set<string>([...baseBlacklist, ...rangeProps, 'characters']);
@@ -42,12 +42,17 @@ interface Options {
  * ```
  *
  * @param node
- * @param withoutRelations
+ * @param options
  */
 export async function nodeToObject<T extends SceneNode>(node: T, options: Options = {}) {
   const { skipChildren = false, skipParent = true, skipInstance = true } = options;
+  let exportAsSvg = false;
+  let obj: any;
+  if (containsShapesOnly(node)) {
+    exportAsSvg = true;
+  }
   const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
-  const obj: any = { id: node.id, type: node.type };
+  obj = { id: node.id, type: node.type };
   const isTxt = isText(node);
   const bl = isTxt ? textBlacklist : blacklist;
   for (const [name, prop] of props) {
@@ -66,7 +71,15 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
   if (isTxt) {
     obj._textSegments = node.getStyledTextSegments(rangeProps);
   }
-  if (isVector(node)) {
+
+  const nodeIsShape = isShape(node);
+  if (nodeIsShape || exportAsSvg) {
+    obj.type = 'VECTOR' as typeof node.type;
+    if (nodeIsShape) {
+      node.effects = [];
+      node.effectStyleId = '';
+    }
+
     // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
     // But ideally, we should do:
     // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
@@ -75,13 +88,23 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
   if (node.parent && !skipParent) {
     obj.parent = { id: node.parent.id, type: node.parent.type };
   }
-  if (isChildrenMixin(node) && !skipChildren) {
+  if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
     obj.children = await Promise.all(node.children.map((child: any) => nodeToObject(child, options)));
   }
   if (isInstance(node) && node.mainComponent && !skipInstance) {
     obj.mainComponent = nodeToObject(node.mainComponent, options);
   }
   return obj as SceneNodeNoMethod;
+}
+
+function containsShapesOnly(node: SceneNode) {
+  if (!isFrame(node)) return false;
+  for (const child of node.children) {
+    if (!isShape(child)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349

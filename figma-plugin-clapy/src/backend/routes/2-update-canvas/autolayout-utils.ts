@@ -1,4 +1,4 @@
-import { isBaseFrameMixin, MyCompNode } from '../../common/canvas-utils';
+import { isBaseFrameMixin, MyCompNode } from '../../common/node-type-utils';
 
 export function horizontalFillContainer(node: MyCompNode) {
   const parentDirection = checkAndGetParentDirection(node);

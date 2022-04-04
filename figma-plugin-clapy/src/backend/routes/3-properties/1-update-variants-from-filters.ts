@@ -2,7 +2,7 @@ import { appConfig } from '../../../common/app-config';
 import { ArgTypeObj, NewVariant } from '../../../common/app-models';
 import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
-import { isComponentSet } from '../../common/canvas-utils';
+import { isComponentSet } from '../../common/node-type-utils';
 import { getSbCompSelection } from '../1-import-stories/1-select-node';
 import { getPageAndNode } from '../2-update-canvas/get-page-and-node';
 import {

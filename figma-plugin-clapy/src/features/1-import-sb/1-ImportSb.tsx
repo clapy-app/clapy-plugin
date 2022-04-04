@@ -212,8 +212,8 @@ export const ImportSb: FC = memo(function ImportSb() {
         <div>
           <p>Thanks for downloading Clapy!</p>
           <p>
-            This plugin is currently in closed beta. To try it, please join our Discord or Slack server and request an
-            early access (channel #request-early-access).
+            This plugin is currently in closed beta. To try it, please join our Discord server and request an early
+            access (channel #request-early-access).
           </p>
         </div>
         <Banner />

@@ -1,7 +1,7 @@
 import { ArgTypeUsed } from '../../../common/app-models';
 import { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues } from '../../../common/storybook-utils';
-import { isComponentSet, isPage, MyCompNode } from '../../common/canvas-utils';
+import { isComponentSet, isPage, MyCompNode } from '../../common/node-type-utils';
 import { getLayoutStoryId } from './3-import-sb-detail';
 
 export function setStoryFrameProperties(
@@ -64,6 +64,9 @@ export function listVariantProps(node: SceneNode, argTypes: ArgTypes) {
 }
 
 export function getParentCompNode(selectedNode: SceneNode) {
+  if (!selectedNode.visible) {
+    return {};
+  }
   let storyId: string | undefined = undefined;
   const pageSbUrl: string | undefined = figma.currentPage.getPluginData('sbUrl');
   const sbUrl = selectedNode.getPluginData('sbUrl') || pageSbUrl;

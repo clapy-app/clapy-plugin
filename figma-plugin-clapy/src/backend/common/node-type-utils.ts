@@ -134,3 +134,9 @@ export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
 export function isMyComp(node: LayoutNodeExtended | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
+
+export function isShape(
+  node: LayoutNodeExtended | Nil,
+): node is LineNode | EllipseNode | PolygonNode | StarNode | VectorNode {
+  return isLine(node) || isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
+}

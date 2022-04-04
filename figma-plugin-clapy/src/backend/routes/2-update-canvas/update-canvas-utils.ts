@@ -12,7 +12,7 @@ import {
   Properties,
   Property,
 } from '../../../common/sb-serialize.model';
-import { isFrame, isGroup, isLayout, isText, LayoutNode } from '../../common/canvas-utils';
+import { isFrame, isGroup, isLayout, isText, LayoutNode } from '../../common/node-type-utils';
 import { AbsoluteElementToAdd, BorderWidths, RenderContext } from '../1-import-stories/import-model';
 
 const loadedFonts = new Map<string, Promise<void>>();

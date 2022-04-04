@@ -1,6 +1,6 @@
 import { CElementNode, CPseudoElementNode, SbStory } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
-import { MyCompNode } from '../../common/canvas-utils';
+import { MyCompNode } from '../../common/node-type-utils';
 
 export const storiesSamples = {
   reactstrap: {

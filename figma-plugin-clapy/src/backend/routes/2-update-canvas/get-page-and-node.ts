@@ -1,4 +1,4 @@
-import { getPageById, isLayout, isMyComp, MyCompNode } from '../../common/canvas-utils';
+import { getPageById, isLayout, isMyComp, MyCompNode } from '../../common/node-type-utils';
 import { getCompNode } from '../1-import-stories/3-import-sb-detail';
 import { removeNode, withDefaultProps } from './update-canvas-utils';
 

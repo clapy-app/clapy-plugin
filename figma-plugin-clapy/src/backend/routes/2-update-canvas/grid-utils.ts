@@ -1,6 +1,7 @@
 import { ArgTypeObj } from '../../../common/app-models';
 import { Args } from '../../../common/sb-serialize.model';
-import { isComponentSet, WithChildrenNode } from '../../common/canvas-utils';
+import { isComponentSet, WithChildrenNode } from '../../common/node-type-utils';
+import { getFigmaSelection } from '../../common/selection-utils';
 import { resizeNode } from './update-canvas-utils';
 
 // The front gives the index (i = 0, 1, 2...) of the component to insert.
@@ -10,7 +11,7 @@ import { resizeNode } from './update-canvas-utils';
 // Boucle sur les éléments du tableau dans l'ordre, rendre en back et rendre ici avec coord et nodes en arg.
 
 export async function runGrid() {
-  const selectedNodes = figma.currentPage.selection;
+  const selectedNodes = getFigmaSelection();
   if (selectedNodes.length !== 1 || !isComponentSet(selectedNodes[0])) {
     console.warn('Not a valid selection for runGrid().');
     return;

@@ -18,7 +18,6 @@ export const defaultNode: FrameNodeNoMethod = {
   rotation: 0,
   layoutAlign: 'INHERIT',
   layoutGrow: 0,
-  exportSettings: [],
   fills: [],
   fillStyleId: 'fake',
   strokes: [],

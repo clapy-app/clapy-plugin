@@ -28,6 +28,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 133px;
+  justify-content: center;
 
   &:before {
     top: 0;

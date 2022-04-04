@@ -1,4 +1,4 @@
-import { DeclarationPlain } from 'css-tree';
+import { DeclarationPlain, RulePlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
 import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
@@ -10,6 +10,7 @@ import {
   mkSelectorCss,
   mkSelectorListCss,
 } from '../../css-gen/css-factories-low';
+import { warnNode } from './utils-and-reset';
 
 const { factory } = ts;
 const classImport = 'classes';
@@ -19,6 +20,16 @@ export function addCssRule(context: NodeContext, className: string, styles: Decl
   const cssRule = mkRuleCss(mkSelectorListCss([mkSelectorCss([mkClassSelectorCss(className)])]), mkBlockCss(styles));
   cssRules.push(cssRule);
   return cssRule;
+}
+
+export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: SceneNodeNoMethod) {
+  const { cssRules } = context.componentContext;
+  const i = cssRules.indexOf(cssRule);
+  if (i === -1) {
+    warnNode(node, 'Trying to remove CSS rule but it is not found in its parent:', JSON.stringify(cssRule));
+    return;
+  }
+  cssRules.splice(i, 1);
 }
 
 export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
@@ -114,7 +125,7 @@ export function mkTargetBlankAttr() {
   return factory.createJsxAttribute(factory.createIdentifier('target'), factory.createStringLiteral('_blank'));
 }
 
-export function mkImg(srcVarName: string, ...extraAttributes: ts.JsxAttribute[]) {
+export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
   return factory.createJsxSelfClosingElement(
     factory.createIdentifier('img'),
     undefined,

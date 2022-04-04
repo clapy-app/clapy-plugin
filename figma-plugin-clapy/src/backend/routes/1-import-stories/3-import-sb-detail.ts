@@ -1,5 +1,5 @@
 import { SbCompSelection } from '../../../common/app-models';
-import { isFrame, isLayout, isMyComp, MyCompNode } from '../../common/canvas-utils';
+import { isFrame, isLayout, isMyComp, MyCompNode } from '../../common/node-type-utils';
 import { resizeNode } from '../2-update-canvas/update-canvas-utils';
 import { SbStoryWithFolder } from './import-model';
 import { listVariantProps, setStoryFrameProperties } from './import-sb-utils';
