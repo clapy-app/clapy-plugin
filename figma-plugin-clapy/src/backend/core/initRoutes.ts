@@ -6,6 +6,7 @@ import {
   Routes,
   Subscriptions,
 } from '../../common/app-models';
+import { env } from '../../environment/env';
 
 export function initRoutes(routes: Routes) {
   figma.ui.onmessage = async ({ __id, type, payload, noResponse }: RequestMessage, props) => {
@@ -13,6 +14,9 @@ export function initRoutes(routes: Routes) {
     if (!handler) throw new Error(`Unknown message type for message: ${JSON.stringify({ type, payload })}`);
 
     try {
+      if (env.isDev) {
+        console.log('Calling route', type);
+      }
       const response = await handler(...payload, props);
       if (!noResponse) {
         const responseMessage: ResponseMessage = {
@@ -21,6 +25,9 @@ export function initRoutes(routes: Routes) {
           payload: response,
         };
         figma.ui.postMessage(responseMessage);
+      }
+      if (env.isDev) {
+        console.log('Completed route', type);
       }
     } catch (error: any) {
       if (!noResponse) {

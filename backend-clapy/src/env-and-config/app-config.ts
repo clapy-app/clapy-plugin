@@ -8,4 +8,5 @@ export const flags = {
   // Better for max-width: 100%
   // if changed to true, should update reset in resets.css.
   useCssBoxSizingBorderBox: true,
+  useFilterDropShadow: true,
 };
