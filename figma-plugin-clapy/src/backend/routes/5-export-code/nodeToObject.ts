@@ -102,7 +102,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
 }
 
 function containsShapesOnly(node: SceneNode) {
-  if (!isChildrenMixin(node)) return false;
+  if (!isChildrenMixin(node) || !node.children.length) return false;
   for (const child of node.children) {
     if (!isShape(child)) {
       return false;
