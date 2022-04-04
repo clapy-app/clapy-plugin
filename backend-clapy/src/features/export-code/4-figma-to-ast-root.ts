@@ -1,7 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
-import { Dict, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
 import { getCompDirectory } from './create-ts-compiler/3-create-component';
@@ -19,16 +19,16 @@ import {
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export async function figmaToAstRootNode(componentContext: ComponentContext, node: SceneNodeNoMethod) {
+export async function figmaToAstRootNode(componentContext: ComponentContext, { parent, root }: ExportCodePayload) {
   const nodeContext: NodeContext = {
     componentContext,
     tagName: 'div', // Default value
-    nodeNameLower: node.name.toLowerCase(),
-    parentNode: null,
+    nodeNameLower: root.name.toLowerCase(),
+    parentNode: parent,
     parentStyles: null,
     parentContext: null,
   };
-  const tsx = await figmaToAstRec(nodeContext, node, true);
+  const tsx = await figmaToAstRec(nodeContext, root, true);
 
   const cssAst = mkStylesheetCss(componentContext.cssRules);
 

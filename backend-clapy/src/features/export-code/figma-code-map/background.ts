@@ -2,13 +2,13 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { FlexTextVectorNode, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexTextVectorNode, isText, isVector } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function backgroundFigmaToCode(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
-  if (isText(node)) return;
+  if (isText(node) || isVector(node)) return;
 
   const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
   if (visibleFills.length) {

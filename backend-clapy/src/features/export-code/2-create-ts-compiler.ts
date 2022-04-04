@@ -2,7 +2,7 @@ import { Project, ts } from 'ts-morph';
 
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
-import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 import { figmaToAstRootNode } from './4-figma-to-ast-root';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
@@ -16,7 +16,7 @@ import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/pa
 import { cssAstToString } from './css-gen/css-factories-low';
 import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
 
-export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload = false) {
+export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload = false) {
   try {
     // Initialize the project template with base files
     perfMeasure('a');
@@ -40,7 +40,7 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
       resources,
     };
 
-    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.name, true);
+    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.root.name, true);
 
     const componentContext: ComponentContext = {
       projectContext,
@@ -52,10 +52,10 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
       inInteractiveElement: false,
     };
 
-    await addComponentToProject(componentContext, figmaConfig, cssFiles, compName);
+    await addComponentToProject(componentContext, figmaConfig, cssFiles);
     perfMeasure('g');
 
-    addCompToAppRoot(project, compName);
+    addCompToAppRoot(project, compName, figmaConfig.parent);
     perfMeasure('h');
 
     const tsFiles = await diagnoseFormatTsFiles(project);
@@ -86,11 +86,10 @@ export async function exportCode(figmaConfig: SceneNodeNoMethod, skipCsbUpload =
 
 async function addComponentToProject(
   componentContext: ComponentContext,
-  figmaConfig: SceneNodeNoMethod,
+  figmaConfig: ExportCodePayload,
   cssFiles: CodeDict,
-  compName: string,
 ) {
-  const { file } = componentContext;
+  const { file, compName } = componentContext;
   perfMeasure('g1');
 
   // Get the returned expression that we want to replace
@@ -115,12 +114,14 @@ async function addComponentToProject(
   perfMeasure('g6');
 }
 
-function addCompToAppRoot(project: Project, compName: string) {
+function addCompToAppRoot(project: Project, compName: string, parentNode: SceneNodeNoMethod) {
   const appFile = project.getSourceFileOrThrow('src/App.tsx');
   appFile.addImportDeclaration({
     moduleSpecifier: `./components/${compName}/${compName}`,
     namedImports: [compName],
   });
+
+  // TODO We can add a couple of attributes from parentNode into App.module.css's root class. If useful.
 
   const { jsx } = getFirstExportedComponentsInFileOrThrow(appFile);
   jsx.transform(traversal => {

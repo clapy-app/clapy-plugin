@@ -24,7 +24,8 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
     try {
       setError(undefined);
       setPreviewUrl('loading');
-      const nodes = await fetchPlugin('serializeSelectedNode');
+      const [parent, root] = await fetchPlugin('serializeSelectedNode');
+      const nodes = { parent, root };
 
       // console.log(JSON.stringify(nodes));
 

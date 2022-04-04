@@ -238,6 +238,11 @@ export type OmitMethods<T> = {
   [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
+export interface ExportCodePayload {
+  parent: FrameNode | ComponentNode | InstanceNode;
+  root: SceneNodeNoMethod;
+}
+
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
 export type TextNodeNoMethod = OmitMethods<TextNode>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
@@ -264,6 +269,7 @@ export const baseBlacklist = [
   'absoluteTransform',
   'absoluteRenderBounds',
   'vectorNetwork',
+  'exportSettings',
 ] as const;
 
 type FrameNodeBlackList = typeof baseBlacklist[number];
