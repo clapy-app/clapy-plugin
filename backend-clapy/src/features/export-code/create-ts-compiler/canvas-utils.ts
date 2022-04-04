@@ -5,7 +5,7 @@ export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }
 
-export function isPage(node: BaseNode | undefined): node is PageNode {
+export function isPage(node: BaseNode | SceneNodeNoMethod | Nil): node is PageNode {
   return node?.type === 'PAGE';
 }
 
@@ -136,10 +136,10 @@ export function isMyComp(node: SceneNodeNoMethod | Nil): node is MyCompNode {
 
 // GroupNode doesn't have auto-layout
 export type FlexNode = FrameNode | ComponentNode | InstanceNode /* | GroupNode */;
-export type ValidNode = FlexNode | TextNode | VectorNode;
+export type ValidNode = FlexNode | TextNode | VectorNode | RectangleNode;
 
 export function isValidNode(node: SceneNodeNoMethod | Nil): node is ValidNode {
-  return isFlexNode(node) || isText(node) || isVector(node);
+  return isFlexNode(node) || isText(node) || isVector(node) || isRectangle(node);
 }
 
 export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {

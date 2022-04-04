@@ -25,6 +25,7 @@ import { fontFigmaToCode } from './figma-code-map/font';
 import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
+import { transformFigmaToCode } from './figma-code-map/transform';
 
 const { factory } = ts;
 
@@ -32,6 +33,7 @@ export function mapCommonStyles(context: NodeContext, node: ValidNode, styles: D
   // Remove later once we are sure global resets in CSS is a good idea.
   // addStyle(styles, 'display', 'flex');
   opacityFigmaToCode(context, node, styles);
+  transformFigmaToCode(context, node, styles);
   // blendMode
   // effects
 }

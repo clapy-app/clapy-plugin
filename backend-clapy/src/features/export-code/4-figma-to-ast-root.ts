@@ -5,7 +5,15 @@ import { Dict, ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-prev
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
 import { getCompDirectory } from './create-ts-compiler/3-create-component';
-import { isChildrenMixin, isFlexNode, isGroup, isText, isVector } from './create-ts-compiler/canvas-utils';
+import {
+  isChildrenMixin,
+  isFlexNode,
+  isGroup,
+  isRectangle,
+  isText,
+  isValidNode,
+  isVector,
+} from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
 import {
   addCssRule,
@@ -47,11 +55,12 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
   const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
   if (newNode) node = newNode;
 
-  if (!isText(node) && !isFlexNode(node) && !isVector(node) && !isGroup(node)) {
+  if (!isValidNode(node) && !isGroup(node)) {
     warnNode(node, 'TODO Unsupported node');
     return;
   }
 
+  // Group is a special case: we go through it without creating a div, we don't read props since there is almost nothing interesting in it.
   if (isGroup(node)) {
     const childrenAst: ts.JsxChild[] = [];
     for (const child of node.children) {
@@ -124,7 +133,7 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     // Generate AST
     const ast = mkImg(svgPathVarName, attributes);
     return ast;
-  } else if (isFlexNode(node)) {
+  } else if (isFlexNode(node) || isRectangle(node)) {
     // Add tag styles
     const context2 = mapTagStyles(context, node, styles);
 
