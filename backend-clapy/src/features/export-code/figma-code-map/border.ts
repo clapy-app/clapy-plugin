@@ -2,13 +2,13 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { FlexTextVectorNode, isText, isVector } from '../create-ts-compiler/canvas-utils';
+import { isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function borderFigmaToCode(
   context: NodeContext,
-  node: FlexTextVectorNode,
+  node: ValidNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
   if (isVector(node)) {

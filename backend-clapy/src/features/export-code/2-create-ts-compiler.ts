@@ -13,8 +13,11 @@ import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
 import { createComponent, getCompDirectory } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
+import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { cssAstToString } from './css-gen/css-factories-low';
 import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
+
+const appCssPath = 'src/App.module.css';
 
 export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload = false) {
   try {
@@ -26,8 +29,8 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     perfMeasure('c');
     const project = await createProjectFromTsConfig(tsConfig);
     perfMeasure('d');
-    const cssFiles: CodeDict = {};
-    const [files, resources] = separateTsAndResources(rest);
+    const [files, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(rest);
+    const cssFiles: CodeDict = { [appCssPath]: appCss };
     perfMeasure('e');
     resources['tsconfig.json'] = tsConfig;
     addFilesToProject(project, files);
@@ -38,6 +41,8 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
       resources,
+      cssFiles,
+      // project // if useful
     };
 
     const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.root.name, true);
@@ -55,7 +60,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     await addComponentToProject(componentContext, figmaConfig, cssFiles);
     perfMeasure('g');
 
-    addCompToAppRoot(project, compName, figmaConfig.parent);
+    addCompToAppRoot(project, componentContext, figmaConfig.parent);
     perfMeasure('h');
 
     const tsFiles = await diagnoseFormatTsFiles(project);
@@ -114,12 +119,21 @@ async function addComponentToProject(
   perfMeasure('g6');
 }
 
-function addCompToAppRoot(project: Project, compName: string, parentNode: SceneNodeNoMethod) {
+function addCompToAppRoot(project: Project, componentContext: ComponentContext, parentNode: SceneNodeNoMethod) {
+  const {
+    compName,
+    projectContext: { cssFiles },
+  } = componentContext;
   const appFile = project.getSourceFileOrThrow('src/App.tsx');
   appFile.addImportDeclaration({
     moduleSpecifier: `./components/${compName}/${compName}`,
     namedImports: [compName],
   });
+
+  const updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode);
+  if (updatedAppCss) {
+    cssFiles[appCssPath] = updatedAppCss;
+  }
 
   // TODO We can add a couple of attributes from parentNode into App.module.css's root class. If useful.
 
