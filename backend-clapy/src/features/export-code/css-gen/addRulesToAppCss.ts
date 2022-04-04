@@ -2,14 +2,16 @@ import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree
 
 import { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { isValidNode } from '../create-ts-compiler/canvas-utils';
+import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { positionAbsoluteFigmaToCode } from '../figma-code-map/position-absolute';
 import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet } from './css-type-utils';
 
 export function addRulesToAppCss(appCss: string, parentNode: SceneNodeNoMethod) {
   if (!isValidNode(parentNode)) {
-    console.warn('Parent node is not valid to add CSS rules in App.module.css', parentNode);
+    if (!isPage(parentNode)) {
+      console.warn('Parent node is not valid to add CSS rules in App.module.css', parentNode);
+    }
     return;
   }
   const styles: Dict<DeclarationPlain> = {};

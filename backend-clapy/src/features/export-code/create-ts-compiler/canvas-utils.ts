@@ -5,7 +5,7 @@ export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }
 
-export function isPage(node: BaseNode | undefined): node is PageNode {
+export function isPage(node: BaseNode | SceneNodeNoMethod | Nil): node is PageNode {
   return node?.type === 'PAGE';
 }
 

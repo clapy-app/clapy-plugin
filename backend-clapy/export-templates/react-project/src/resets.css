@@ -8,6 +8,10 @@ body,
   flex-direction: column;
 }
 
+#root {
+  position: relative;
+}
+
 /* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
 body > div * {
   display: flex;
