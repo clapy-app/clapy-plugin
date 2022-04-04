@@ -1,5 +1,12 @@
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
-import { isChildrenMixin, isGroup, isInstance, isShape, isText } from '../../common/node-type-utils';
+import {
+  isChildrenMixin,
+  isGroup,
+  isInstance,
+  isRectangle,
+  isShapeExceptRectangle,
+  isText,
+} from '../../common/node-type-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -72,7 +79,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
     obj._textSegments = node.getStyledTextSegments(rangeProps);
   }
 
-  const nodeIsShape = isShape(node);
+  const nodeIsShape = isShapeExceptRectangle(node);
   if (nodeIsShape || exportAsSvg) {
     obj.type = 'VECTOR' as typeof node.type;
     if (nodeIsShape) {
@@ -104,7 +111,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
 function containsShapesOnly(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   for (const child of node.children) {
-    if (!isShape(child)) {
+    if (!isShapeExceptRectangle(child) && !isRectangle(child)) {
       return false;
     }
   }

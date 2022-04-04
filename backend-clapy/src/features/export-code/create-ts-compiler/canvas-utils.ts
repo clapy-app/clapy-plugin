@@ -135,7 +135,7 @@ export function isMyComp(node: SceneNodeNoMethod | Nil): node is MyCompNode {
 }
 
 // GroupNode doesn't have auto-layout
-export type FlexNode = FrameNode | ComponentNode | InstanceNode /* | GroupNode */;
+export type FlexNode = FrameNode | ComponentNode | ComponentSetNode | InstanceNode;
 export type ValidNode = FlexNode | TextNode | VectorNode | RectangleNode;
 
 export function isValidNode(node: SceneNodeNoMethod | Nil): node is ValidNode {
@@ -143,7 +143,7 @@ export function isValidNode(node: SceneNodeNoMethod | Nil): node is ValidNode {
 }
 
 export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {
-  return isFrame(node) || isComponent(node) || isInstance(node) /* || isGroup(node) */;
+  return isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node);
 }
 
 export function isStyledTextSegment(node: SceneNodeNoMethod | StyledTextSegment | Nil): node is StyledTextSegment {

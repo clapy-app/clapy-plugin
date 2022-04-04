@@ -137,6 +137,6 @@ export function isMyComp(node: LayoutNodeExtended | Nil): node is MyCompNode {
 
 export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode;
 
-export function isShape(node: LayoutNodeExtended | Nil): node is ShapeNode {
+export function isShapeExceptRectangle(node: LayoutNodeExtended | Nil): node is ShapeNode {
   return isLine(node) || isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
 }
