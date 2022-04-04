@@ -191,13 +191,6 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
 
-  const isParentAutoLayout = isFlex && parent?.layoutMode !== 'NONE';
-  const isParentVertical = parent?.layoutMode === 'VERTICAL';
-  const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
-  const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
-  const widthFillContainer = isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer;
-  const heightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
-
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
   const nodePrimaryAxisHugContents = isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO';
@@ -216,6 +209,15 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
     : nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
     : false;
+
+  const isParentAutoLayout = isFlex && parent?.layoutMode !== 'NONE';
+  const isParentVertical = parent?.layoutMode === 'VERTICAL';
+  const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
+  const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
+  const widthFillContainer =
+    (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) ||
+    (context.isPageLevel && !widthHugContents);
+  const heightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
 
   const isWidthPositionAbsoluteAutoSize =
     parent?.layoutMode === 'NONE' &&

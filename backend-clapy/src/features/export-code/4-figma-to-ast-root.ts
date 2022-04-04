@@ -9,6 +9,7 @@ import {
   isChildrenMixin,
   isFlexNode,
   isGroup,
+  isPage,
   isRectangle,
   isText,
   isValidNode,
@@ -35,6 +36,7 @@ export async function figmaToAstRootNode(componentContext: ComponentContext, { p
     parentNode: parent,
     parentStyles: null,
     parentContext: null,
+    isPageLevel: isPage(parent),
   };
   const tsx = await figmaToAstRec(nodeContext, root, true);
 

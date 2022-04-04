@@ -39,6 +39,7 @@ export interface NodeContext {
   parentStyles: Dict<DeclarationPlain> | null;
   parentNode: FlexNode | null;
   parentContext: NodeContextWithBorders | null;
+  isPageLevel?: boolean;
 }
 
 export interface BorderWidths {
