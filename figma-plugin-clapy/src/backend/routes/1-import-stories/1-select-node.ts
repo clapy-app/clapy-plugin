@@ -57,5 +57,5 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
 
 function show(node: FrameNode) {
   const date = new Date().toISOString().substring(0, 19).replace('T', ' ');
-  console.log(date, node.name, '=>', node);
+  console.log(date, node.name, `figma.getNodeById('${node.id}')`, '=>', node);
 }

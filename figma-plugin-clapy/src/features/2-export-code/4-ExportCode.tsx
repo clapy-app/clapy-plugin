@@ -2,9 +2,7 @@ import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../common/front-utils';
-import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
-import { CSBResponse } from '../../common/sb-serialize.model';
 import { Button } from '../../components/Button';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
@@ -27,16 +25,16 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       const [parent, root] = await fetchPlugin('serializeSelectedNode');
       const nodes = { parent, root };
 
-      // console.log(JSON.stringify(nodes));
+      console.log(JSON.stringify(nodes));
 
-      const { data } = await apiPost<CSBResponse>('code/export', nodes);
-      if (data) {
-        const url = `https://${data.sandbox_id}.csb.app/`;
-        console.log('sandbox:', url);
-        // window.open(url, '_blank', 'noopener');
-        setPreviewUrl(url);
-        return;
-      }
+      // const { data } = await apiPost<CSBResponse>('code/export', nodes);
+      // if (data) {
+      //   const url = `https://${data.sandbox_id}.csb.app/`;
+      //   console.log('sandbox:', url);
+      //   // window.open(url, '_blank', 'noopener');
+      //   setPreviewUrl(url);
+      //   return;
+      // }
 
       setPreviewUrl(undefined);
     } catch (error) {
