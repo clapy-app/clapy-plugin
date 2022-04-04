@@ -1,5 +1,5 @@
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
-import { isChildrenMixin, isFrame, isInstance, isShape, isText } from '../../common/node-type-utils';
+import { isChildrenMixin, isGroup, isInstance, isShape, isText } from '../../common/node-type-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -79,6 +79,10 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
       node.effects = [];
       node.effectStyleId = '';
     }
+    if (isGroup(node)) {
+      // Interesting properties like constraints are in the children nodes. Let's make a copy.
+      obj.constraints = (node.children[0] as ConstraintMixin)?.constraints;
+    }
 
     // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
     // But ideally, we should do:
@@ -98,7 +102,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
 }
 
 function containsShapesOnly(node: SceneNode) {
-  if (!isFrame(node)) return false;
+  if (!isChildrenMixin(node)) return false;
   for (const child of node.children) {
     if (!isShape(child)) {
       return false;

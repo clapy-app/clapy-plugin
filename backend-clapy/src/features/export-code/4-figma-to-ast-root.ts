@@ -5,7 +5,7 @@ import { Dict, ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-prev
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { ComponentContext, NodeContext } from './code.model';
 import { getCompDirectory } from './create-ts-compiler/3-create-component';
-import { isChildrenMixin, isFlexNode, isText, isVector } from './create-ts-compiler/canvas-utils';
+import { isChildrenMixin, isFlexNode, isGroup, isText, isVector } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
 import {
   addCssRule,
@@ -35,15 +35,6 @@ export async function figmaToAstRootNode(componentContext: ComponentContext, { p
   return [tsx, cssAst] as const;
 }
 
-// ok TODO separate ComponentContext and NodeContext. The latter has a ref to the former
-// -- TODO refactor styles to store in simple object instead of CSS AST obj? Is it that different? Maybe not.
-// TODO I should reuse FlexNode functions, see if any CSS rule was applied, if yes create the intermediate node
-
-// Array<keyof Intersect<FlexNode, TextNode>>
-export const layoutRulesOnTextForWrapper: Array<keyof TextNode> = [
-  // ''
-];
-
 async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   if (!node.visible) {
     return;
@@ -56,9 +47,24 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
   const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
   if (newNode) node = newNode;
 
-  if (!isText(node) && !isFlexNode(node) && !isVector(node)) {
+  if (!isText(node) && !isFlexNode(node) && !isVector(node) && !isGroup(node)) {
     warnNode(node, 'TODO Unsupported node');
     return;
+  }
+
+  if (isGroup(node)) {
+    const childrenAst: ts.JsxChild[] = [];
+    for (const child of node.children) {
+      const res = await figmaToAstRec(context, child);
+      if (res) {
+        if (Array.isArray(res)) {
+          childrenAst.push(...res);
+        } else {
+          childrenAst.push(res);
+        }
+      }
+    }
+    return childrenAst.length ? childrenAst : undefined;
   }
 
   // Add common styles (text and tags)
@@ -92,7 +98,8 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     const { projectContext, compName } = context.componentContext;
     // It is already a string, we have mocked it. We just reuse the interface for 90 % of the usages (much easier).
     let svgContent = (await node.exportAsync({ format: 'SVG' })) as unknown as string;
-    svgContent = svgContent.replace(/<svg width="\d+" height="\d+"/, '<svg');
+    // Remove width and height from SVG. Let the CSS define it.
+    svgContent = svgContent.replace(/^<svg width="\d+" height="\d+"/, '<svg');
 
     // Add SVG file to resources to create the file later
     const svgPathVarName = genImportName(context);

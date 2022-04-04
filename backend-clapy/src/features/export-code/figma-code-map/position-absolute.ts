@@ -2,12 +2,12 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexTextVectorNode, isFlexNode } from '../create-ts-compiler/canvas-utils';
+import { isFlexNode, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 export function positionAbsoluteFigmaToCode(
   context: NodeContextWithBorders,
-  node: FlexTextVectorNode,
+  node: ValidNode,
   styles: Dict<DeclarationPlain>,
 ) {
   const isFlex = isFlexNode(node);

@@ -5,7 +5,7 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, FlexTextVectorNode, isFlexNode, isLayout, isText } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, isFlexNode, isLayout, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
 
@@ -60,11 +60,7 @@ const textAlignVerticalToJustifyContent: {
   BOTTOM: 'end',
 };
 
-export function flexFigmaToCode(
-  context: NodeContextWithBorders,
-  node: FlexTextVectorNode,
-  styles: Dict<DeclarationPlain>,
-) {
+export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
 
   const { parentStyles } = context;
@@ -188,7 +184,7 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
   }
 }
 
-function applyWidth(context: NodeContextWithBorders, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
+function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
 

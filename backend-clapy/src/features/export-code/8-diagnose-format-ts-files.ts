@@ -71,12 +71,20 @@ export async function diagnoseFormatTsFiles(project: Project) {
 export async function prepareCssFiles(cssFiles: CodeDict) {
   for (const [path, content] of Object.entries(cssFiles)) {
     if (flags.formatCode && path.startsWith('src')) {
-      // Prettier
-      cssFiles[path] = prettier.format(content, {
-        ...(await getPrettierConfig()),
-        plugins: [parserCss],
-        filepath: path,
-      });
+      cssFiles[path] = await formatCssFile(path, content);
     }
+  }
+}
+
+export async function formatCssFile(path: string, content: string) {
+  if (flags.formatCode) {
+    // Prettier
+    return prettier.format(content, {
+      ...(await getPrettierConfig()),
+      plugins: [parserCss],
+      filepath: path,
+    });
+  } else {
+    return content;
   }
 }

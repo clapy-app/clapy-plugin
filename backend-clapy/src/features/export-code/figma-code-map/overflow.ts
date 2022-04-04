@@ -2,11 +2,11 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { FlexTextVectorNode, isText, isVector } from '../create-ts-compiler/canvas-utils';
+import { isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { guessScroll } from '../smart-guesses/guessScroll';
 
-export function overflowFigmaToCode(context: NodeContext, node: FlexTextVectorNode, styles: Dict<DeclarationPlain>) {
+export function overflowFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (isText(node) || isVector(node)) return;
   const { x, y } = guessScroll(context, node, styles);
   if (node.overflowDirection === 'BOTH' || (x && y)) {

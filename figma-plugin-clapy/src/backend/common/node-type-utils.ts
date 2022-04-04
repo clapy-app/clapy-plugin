@@ -135,8 +135,8 @@ export function isMyComp(node: LayoutNodeExtended | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
 
-export function isShape(
-  node: LayoutNodeExtended | Nil,
-): node is LineNode | EllipseNode | PolygonNode | StarNode | VectorNode {
+export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode;
+
+export function isShape(node: LayoutNodeExtended | Nil): node is ShapeNode {
   return isLine(node) || isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
 }
