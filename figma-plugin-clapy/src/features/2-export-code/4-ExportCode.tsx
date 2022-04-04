@@ -38,7 +38,7 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
         return;
       }
 
-      setPreviewUrl('Done.');
+      setPreviewUrl(undefined);
     } catch (error) {
       setError(error);
       setPreviewUrl(undefined);
