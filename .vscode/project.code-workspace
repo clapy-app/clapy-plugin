@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../"
+    },
+    {
+      "name": "backend-clapy",
+      "path": "../backend-clapy"
+    },
+    {
+      "name": "figma-plugin-clapy",
+      "path": "../figma-plugin-clapy"
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "backend-clapy/": true,
+      "figma-plugin-clapy/": true
+    },
+  }
+}
