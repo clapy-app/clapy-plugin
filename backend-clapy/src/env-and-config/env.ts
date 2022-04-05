@@ -36,6 +36,12 @@ const prod = {
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
 
+const isSsl = isTrue(process.env.REACT_APP_HASURA_SSL);
+const hasuraPort = `${process.env.REACT_APP_HASURA_PORT || ''}`;
+const portFragment =
+  !hasuraPort || (isSsl && hasuraPort === '443') || (!isSsl && hasuraPort === '80') ? '' : `:${hasuraPort}`;
+const hasuraHttp = `${isSsl ? 'https' : 'http'}://${process.env.REACT_APP_HASURA_HOSTNAME}${portFragment}`;
+
 export const env = {
   ...nonConfidentialEnv,
   isDev,
@@ -51,9 +57,7 @@ export const env = {
   localhostLatency: 400, // ms
   // Hasura
   hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET as string,
-  hasuraHttp: `${isTrue(process.env.REACT_APP_HASURA_SSL) ? 'https' : 'http'}://${
-    process.env.REACT_APP_HASURA_HOSTNAME
-  }:${process.env.REACT_APP_HASURA_PORT}/v1`,
+  hasuraHttp,
 };
 
 // variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.

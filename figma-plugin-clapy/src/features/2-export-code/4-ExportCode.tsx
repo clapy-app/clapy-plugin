@@ -31,6 +31,18 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       const [parent, root] = await fetchPlugin('serializeSelectedNode');
       const nodes = { parent, root };
 
+      // TODO test an image upload
+      // Add a dict of images I fill while going through the tree. Store node ID (& other useful info?)
+      // Get back to client. The client requests the back for each image, get the binary or whatever is applicable.
+      // Small UI update: 2 steps loading (show a loader?)
+      // The client uploads the image to cloudinary using their SDK
+      // Ensure we save the image hash.
+      // Save the hash + URL in database. If an image hash is found in DB, reuse the link instead of reuploading.
+      // Add the URLs in the top-level image dict. Send everything to the webservice.
+      // THe back adds the dict to the project context.
+      // When a node has an image, get the URL from the dict, the formatting info from the node and generate the code.
+      // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
+
       if (!env.isDev || enableCodeSandbox) {
         const { data } = await apiPost<CSBResponse>('code/export', nodes);
         if (data) {

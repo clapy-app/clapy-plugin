@@ -96,6 +96,8 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
     obj._textSegments = node.getStyledTextSegments(rangeProps);
   }
 
+  // If image, export it and send to front
+
   if (nodeIsShape || exportAsSvg) {
     obj.type = 'VECTOR' as typeof node.type;
     if (nodeIsShape) {
