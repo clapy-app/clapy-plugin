@@ -25,31 +25,30 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   if (fontItalicStyle !== 'normal') {
     addStyle(styles, 'font-style', fontItalicStyle);
   }
-  if (family !== 'Roboto') {
-    addStyle(
-      styles,
-      'font-family',
-      family,
-      ',',
-      'system-ui',
-      ',',
-      '-apple-system',
-      ',',
-      '"Segoe UI"',
-      ',',
-      'Roboto',
-      ',',
-      '"Helvetica Neue"',
-      ',',
-      'Arial',
-      ',',
-      '"Noto Sans"',
-      ',',
-      '"Liberation Sans"',
-      ',',
-      'sans-serif',
-    );
-  }
+  context.componentContext.projectContext.fontFamiliesUsed.add(family);
+  addStyle(
+    styles,
+    'font-family',
+    family,
+    ',',
+    'system-ui',
+    ',',
+    '-apple-system',
+    ',',
+    '"Segoe UI"',
+    ',',
+    'Roboto',
+    ',',
+    '"Helvetica Neue"',
+    ',',
+    'Arial',
+    ',',
+    '"Noto Sans"',
+    ',',
+    '"Liberation Sans"',
+    ',',
+    'sans-serif',
+  );
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {

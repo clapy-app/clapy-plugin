@@ -18,6 +18,7 @@ import { cssAstToString } from './css-gen/css-factories-low';
 import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
 
 const appCssPath = 'src/App.module.css';
+const indexHtmlPath = 'public/index.html';
 
 export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload = false) {
   try {
@@ -40,6 +41,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
     const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
+      fontFamiliesUsed: new Set(),
       resources,
       cssFiles,
       // project // if useful
@@ -67,6 +69,8 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     perfMeasure('i');
     await prepareCssFiles(cssFiles);
     // prepareResources(resources);
+
+    addFontsToIndexHtml(projectContext);
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
     perfMeasure('j');
@@ -163,4 +167,15 @@ function isJsxElement(node: ts.Node): node is ts.JsxElement {
   return node.kind === ts.SyntaxKind.JsxElement;
 }
 
-export function createTsProjectCompiler() {}
+function addFontsToIndexHtml(projectContext: ProjectContext) {
+  const { fontFamiliesUsed, resources } = projectContext;
+  if (fontFamiliesUsed.size) {
+    const familyUrlFragment = Array.from(fontFamiliesUsed.values())
+      .map(name => `family=${encodeURIComponent(name)}`)
+      .join('&');
+    resources[indexHtmlPath] = resources[indexHtmlPath].replace(
+      '</head>',
+      `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap" rel="stylesheet">\n</head>`,
+    );
+  }
+}

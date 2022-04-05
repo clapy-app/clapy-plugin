@@ -127,6 +127,10 @@ export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is C
   return !!(node as ChildrenMixin)?.children;
 }
 
+export function isMinimalStrokesMixin(node: BaseNode | MinimalStrokesMixin | Nil): node is MinimalStrokesMixin {
+  return !!(node as MinimalStrokesMixin)?.strokeAlign;
+}
+
 export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;

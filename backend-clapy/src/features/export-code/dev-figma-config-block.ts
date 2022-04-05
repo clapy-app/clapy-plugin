@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
 
 export const devFigmaConfig = {

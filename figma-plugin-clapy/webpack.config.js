@@ -29,7 +29,7 @@ module.exports = (env, argv) => {
   const distFolder = 'build';
   // const distFolder = 'build';
   if (isProduction) {
-    editJsonFile('./manifest.json', manifest => {
+    editJsonFile('./dist/manifest.json', manifest => {
       const mainSplit = manifest.main.split('/');
       mainSplit[0] = distFolder;
       manifest.main = mainSplit.join('/');

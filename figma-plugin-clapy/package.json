@@ -17,8 +17,8 @@
   "scripts": {
     "start": "yarn webpackdev",
     "dev": "npm-run-all --parallel dev-with-browser:plugin dev-with-browser:browser dev-with-browser:server",
-    "_build:staging": "yarn webpackbuild:staging && yarn build-step2",
-    "build:prod": "yarn webpackbuild:prod && yarn build-step2",
+    "_build:staging": "yarn build-step1 && yarn webpackbuild:staging && yarn build-step2",
+    "build:prod": "yarn build-step1 && yarn webpackbuild:prod && yarn build-step2",
     "up": "cd .. && yarn up",
     "upgr": "yarn upgrade-interactive --latest",
     "_________________ implementation details _________________": "",
@@ -31,7 +31,8 @@
     "webpackdev": "webpack --mode=development --env APP_ENV=dev --watch",
     "webpackbuild:staging": "webpack --mode=production --env APP_ENV=staging",
     "webpackbuild:prod": "webpack --mode=production --env APP_ENV=production",
-    "build-step2": "rimraf dist && mkdirp dist/build && ncp manifest.json dist/manifest.json && ncp build/index.html dist/build/index.html && ncp build/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
+    "build-step1": "ncp manifest.json dist/manifest.json",
+    "build-step2": "rimraf dist && mkdirp dist/build && ncp build/index.html dist/build/index.html && ncp build/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
     "analyzebundle": "yarn webpackbuild:staging --profile --json > stats.json",
     "killbyport": "sudo kill -9 `sudo lsof -t -i:9001`"
   },
