@@ -31,8 +31,8 @@
     "webpackdev": "webpack --mode=development --env APP_ENV=dev --watch",
     "webpackbuild:staging": "webpack --mode=production --env APP_ENV=staging",
     "webpackbuild:prod": "webpack --mode=production --env APP_ENV=production",
-    "build-step1": "ncp manifest.json dist/manifest.json",
-    "build-step2": "rimraf dist && mkdirp dist/build && ncp build/index.html dist/build/index.html && ncp build/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
+    "build-step1": "rimraf dist && mkdirp dist/build && ncp manifest.json dist/manifest.json",
+    "build-step2": "ncp build/index.html dist/build/index.html && ncp build/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
     "analyzebundle": "yarn webpackbuild:staging --profile --json > stats.json",
     "killbyport": "sudo kill -9 `sudo lsof -t -i:9001`"
   },
