@@ -52,20 +52,57 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
     }
   }, []);
   return (
-    <div className={classes.codeExportRow}>
-      <Button onClick={exportCode}>Generate selection preview (alpha)</Button>
-      {error ? (
-        <>Error! {error.message}</>
-      ) : (
-        <>
-          {previewUrl === 'loading' && 'loading...'}
-          {previewUrl && previewUrl !== 'loading' && (
-            <a target={'_blank'} href={previewUrl} rel='noreferrer'>
-              Open
-            </a>
-          )}
-        </>
-      )}
+    <>
+      <div className={classes.codeExportRow}>
+        <Button onClick={exportCode}>Generate selection preview (alpha)</Button>
+        {!error && (
+          <>
+            {previewUrl === 'loading' && 'loading...'}
+            {previewUrl && previewUrl !== 'loading' && (
+              <a target={'_blank'} href={previewUrl} rel='noreferrer'>
+                Open
+              </a>
+            )}
+          </>
+        )}
+      </div>
+
+      {!!error && <ErrorComp error={error} />}
+    </>
+  );
+});
+
+interface ErrorCompProps {
+  error: any;
+}
+
+const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) {
+  if (!error) return null;
+  const errorStr = JSON.stringify(error);
+  if (error === 'Interrupted') {
+    return (
+      <div>
+        <em>{errorStr}</em>
+      </div>
+    );
+  }
+  // Mail link generated with https://mailtolink.me/
+  const emailLink = `mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy.%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0AThe%20error%3A%0D%0A%0D%0A${encodeURIComponent(
+    errorStr,
+  )}`;
+  return (
+    <div className={classes.errorWrapper}>
+      <p>
+        Oops, something went wrong! Please contact us.{' '}
+        <a href={emailLink} target='_blank' rel='noopener noreferrer'>
+          Here is an email prefilled with the error message below
+        </a>
+        .
+      </p>
+      <p className={classes.errorWrapper2}>
+        <em>{/* error.message || */ errorStr}</em>
+      </p>
+      <hr />
     </div>
   );
 });

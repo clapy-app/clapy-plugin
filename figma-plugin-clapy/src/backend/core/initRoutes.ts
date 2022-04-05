@@ -30,19 +30,17 @@ export function initRoutes(routes: Routes) {
         console.log('Completed route', type);
       }
     } catch (error: any) {
+      error = error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`);
       if (!noResponse) {
         const responseError: ResponseMessageError = {
           __id,
           type,
-          error: error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`),
+          error: JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error))),
         };
         figma.ui.postMessage(responseError);
-        console.error('plugin route:', type);
-        const e: Error = error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`);
-        console.error(e);
-      } else {
-        console.error(error || `[Custom] Unknown error when running controller code on route ${type}.`);
       }
+      console.error('plugin route:', type, '__id:', __id);
+      console.error(error);
     }
   };
 }
