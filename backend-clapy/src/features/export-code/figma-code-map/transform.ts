@@ -8,7 +8,7 @@ import { addStyle } from '../css-gen/css-factories-high';
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (node.rotation) {
     addStyle(styles, 'transform', `rotate(${-node.rotation}deg)`);
-    if (isBaseFrameMixin(node) && node.layoutMode === 'NONE') {
+    if (isBaseFrameMixin(node) && context.parentNode?.layoutMode === 'NONE') {
       addStyle(styles, 'transform-origin', `top left`);
     }
   }

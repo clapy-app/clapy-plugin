@@ -6,6 +6,7 @@ import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse } from '../../common/sb-serialize.model';
 import { Button } from '../../components/Button';
+import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
 
@@ -15,6 +16,9 @@ export const ExportCode: FC = memo(function ExportCode() {
 
   return <ExportCodeInner />;
 });
+
+// Flag for development only. Will be ignored in production.
+const enableCodeSandbox = false;
 
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);
@@ -27,15 +31,17 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       const [parent, root] = await fetchPlugin('serializeSelectedNode');
       const nodes = { parent, root };
 
-      // console.log(JSON.stringify(nodes));
-
-      const { data } = await apiPost<CSBResponse>('code/export', nodes);
-      if (data) {
-        const url = `https://${data.sandbox_id}.csb.app/`;
-        console.log('sandbox:', url);
-        // window.open(url, '_blank', 'noopener');
-        setPreviewUrl(url);
-        return;
+      if (!env.isDev || enableCodeSandbox) {
+        const { data } = await apiPost<CSBResponse>('code/export', nodes);
+        if (data) {
+          const url = `https://${data.sandbox_id}.csb.app/`;
+          console.log('sandbox:', url);
+          // window.open(url, '_blank', 'noopener');
+          setPreviewUrl(url);
+          return;
+        }
+      } else {
+        console.log(JSON.stringify(nodes));
       }
 
       setPreviewUrl(undefined);

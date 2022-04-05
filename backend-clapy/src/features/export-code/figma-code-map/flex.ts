@@ -190,6 +190,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
 
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
+  const parentIsFlex = isFlexNode(parent);
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
@@ -210,7 +211,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
     : false;
 
-  const isParentAutoLayout = isFlex && parent?.layoutMode !== 'NONE';
+  const isParentAutoLayout = parentIsFlex && parent?.layoutMode !== 'NONE';
   const isParentVertical = parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
