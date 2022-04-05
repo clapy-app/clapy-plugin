@@ -64,7 +64,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
   const nodeIsShape = isShapeExceptRectangle(node);
   const saveAsSvg = nodeIsShape || exportAsSvg;
   const nodeIsLayout = isLayout(node);
-  const cancelRotation = saveAsSvg && nodeIsLayout;
+  const cancelRotation = saveAsSvg && nodeIsLayout && node.rotation && !isInstance(node);
 
   let currentRotation: number | undefined = undefined;
   if (cancelRotation) {
