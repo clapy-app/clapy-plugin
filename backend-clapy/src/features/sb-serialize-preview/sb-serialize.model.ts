@@ -241,6 +241,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode;
   root: SceneNodeNoMethod;
+  images: Dict<string>;
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;

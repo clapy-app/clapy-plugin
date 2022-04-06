@@ -39,9 +39,7 @@ export async function figmaToAstRootNode(componentContext: ComponentContext, { p
     isPageLevel: isPage(parent),
   };
   const tsx = await figmaToAstRec(nodeContext, root, true);
-
   const cssAst = mkStylesheetCss(componentContext.cssRules);
-
   return [tsx, cssAst] as const;
 }
 

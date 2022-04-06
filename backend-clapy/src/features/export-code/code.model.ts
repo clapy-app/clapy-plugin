@@ -17,6 +17,7 @@ export interface ProjectContext {
   readonly fontFamiliesUsed: Set<string>;
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
+  readonly images: Dict<string>;
 }
 
 export interface ComponentContext {

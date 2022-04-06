@@ -44,6 +44,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
       fontFamiliesUsed: new Set(),
       resources,
       cssFiles,
+      images: figmaConfig.images,
       // project // if useful
     };
 

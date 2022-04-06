@@ -131,6 +131,14 @@ export function isMinimalStrokesMixin(node: BaseNode | MinimalStrokesMixin | Nil
   return !!(node as MinimalStrokesMixin)?.strokeAlign;
 }
 
+export function isMinimalFillsMixin(node: BaseNode | MinimalFillsMixin | Nil): node is MinimalFillsMixin {
+  return !!(node as MinimalFillsMixin)?.fills;
+}
+
+export function isExportMixin(node: BaseNode | ExportMixin | Nil): node is ExportMixin {
+  return !!(node as ExportMixin)?.exportAsync;
+}
+
 export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;

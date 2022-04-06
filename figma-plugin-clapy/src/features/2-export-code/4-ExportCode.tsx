@@ -1,6 +1,7 @@
 import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { ExportImageMap } from '../../common/app-models';
 import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
@@ -9,6 +10,7 @@ import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
+import { cloudinaryUploadUrl } from './cloudinary';
 
 export const ExportCode: FC = memo(function ExportCode() {
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
@@ -16,6 +18,15 @@ export const ExportCode: FC = memo(function ExportCode() {
 
   return <ExportCodeInner />;
 });
+
+async function uploadAsset(fileAsUint8ArrayRaw: number[]) {
+  const fileUint = Uint8Array.from(fileAsUint8ArrayRaw);
+  const blob = new Blob([fileUint]);
+  const formData = new FormData();
+  formData.append('file', blob);
+  formData.append('upload_preset', env.isDev ? 'code-export-dev' : 'code-export');
+  return (await (await fetch(cloudinaryUploadUrl, { method: 'POST', body: formData })).json()).secure_url;
+}
 
 // Flag for development only. Will be ignored in production.
 const enableCodeSandbox = false;
@@ -28,19 +39,26 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
     try {
       setError(undefined);
       setPreviewUrl('loading');
-      const [parent, root] = await fetchPlugin('serializeSelectedNode');
-      const nodes = { parent, root };
 
-      // TODO test an image upload
-      // Add a dict of images I fill while going through the tree. Store node ID (& other useful info?)
-      // Get back to client. The client requests the back for each image, get the binary or whatever is applicable.
+      // Extract the Figma configuration
+      const [parent, root, imagesFigmaIds] = await fetchPlugin('serializeSelectedNode');
+      const images: ExportImageMap = {};
+      const nodes = { parent, root, images };
+
+      // Upload assets to a CDN before generating the code
+      for (const imageFigmaId of imagesFigmaIds) {
+        const [fileAsUint8ArrayRaw, hash] = await fetchPlugin('extractImage', imageFigmaId);
+        if (fileAsUint8ArrayRaw) {
+          const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+          images[imageFigmaId] = assetUrl;
+        }
+      }
+
+      // TODO improvements for images
       // Small UI update: 2 steps loading (show a loader?)
-      // The client uploads the image to cloudinary using their SDK
-      // Ensure we save the image hash.
-      // Save the hash + URL in database. If an image hash is found in DB, reuse the link instead of reuploading.
-      // Add the URLs in the top-level image dict. Send everything to the webservice.
-      // THe back adds the dict to the project context.
-      // When a node has an image, get the URL from the dict, the formatting info from the node and generate the code.
+      // Check if the hash is already in database. If yes, reuse the URL.
+      // If not, upload to CDN and save the hash + URL in database.
+      // When a node has an image, apply relevant formattings using the info from the node.
       // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
 
       if (!env.isDev || enableCodeSandbox) {

@@ -1,10 +1,12 @@
 import { flags } from '../../../common/app-config';
+import { ExportImages } from '../../../common/app-models';
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
 import {
   isChildrenMixin,
   isGroup,
   isInstance,
   isLayout,
+  isMinimalFillsMixin,
   isMinimalStrokesMixin,
   isRectangle,
   isShapeExceptRectangle,
@@ -35,15 +37,19 @@ const textBlacklist = new Set<string>([...baseBlacklist, ...rangeProps, 'charact
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
+export interface SerializeContext {
+  images: ExportImages;
+}
+
 interface Options {
-  skipChildren?: boolean;
-  skipParent?: boolean;
-  skipInstance?: boolean;
+  skipChildren: boolean;
+  skipParent: boolean;
+  skipInstance: boolean;
 }
 
 /**
  * Transform node to object with keys, that are hidden by default.
- * For example:
+ * @example
  * ```ts
  * const node = figma.currentPage.findOne((el) => el.type === "TEXT");
  * console.log(Object.keys(node).length) // 1
@@ -54,7 +60,7 @@ interface Options {
  * @param node
  * @param options
  */
-export async function nodeToObject<T extends SceneNode>(node: T, options: Options = {}) {
+export async function nodeToObject<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
   const { skipChildren = false, skipParent = true, skipInstance = true } = options;
   let exportAsSvg = false;
   let obj: any;
@@ -99,7 +105,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
   // If image, export it and send to front
 
   if (nodeIsShape || exportAsSvg) {
-    obj.type = 'VECTOR' as typeof node.type;
+    obj.type = 'VECTOR' as VectorNode['type'];
     if (nodeIsShape) {
       node.effects = [];
       node.effectStyleId = '';
@@ -117,6 +123,9 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
     // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
 
     obj._svg = utf8ArrayToStr(await node.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
+  } else if (treatAsImage(node)) {
+    // Add images to dict
+    context.images.push(node.id);
   }
 
   if (cancelRotation) {
@@ -128,12 +137,23 @@ export async function nodeToObject<T extends SceneNode>(node: T, options: Option
     obj.parent = { id: node.parent.id, type: node.parent.type };
   }
   if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
-    obj.children = await Promise.all(node.children.map((child: any) => nodeToObject(child, options)));
+    obj.children = await Promise.all(node.children.map((child: any) => nodeToObject(child, context, options)));
   }
   if (isInstance(node) && node.mainComponent && !skipInstance) {
-    obj.mainComponent = nodeToObject(node.mainComponent, options);
+    obj.mainComponent = nodeToObject(node.mainComponent, context, options);
   }
   return obj as SceneNodeNoMethod;
+}
+
+function treatAsImage(node: SceneNode) {
+  if (isMinimalFillsMixin(node) && Array.isArray(node.fills)) {
+    for (const fill of node.fills as ReadonlyArray<Paint>) {
+      if (fill.type === 'IMAGE') {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function containsShapesOnly(node: SceneNode) {

@@ -4,8 +4,9 @@ import { ts } from 'ts-morph';
 import { Dict, FrameNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isFlexNode, isText } from '../create-ts-compiler/canvas-utils';
+import { addStyle } from '../css-gen/css-factories-high';
 import { addHugContents, makeDefaultNode } from '../figma-code-map/details/default-node';
-import { mkInputTypeAttr } from '../figma-code-map/details/ts-ast-utils';
+import { mkInputTypeAttr, mkSrcStaticAttribute } from '../figma-code-map/details/ts-ast-utils';
 
 const { factory } = ts;
 
@@ -16,6 +17,12 @@ export function guessTagNameAndUpdateNode(
 ) {
   const name = context.nodeNameLower;
   const extraAttributes: ts.JsxAttribute[] = [];
+  const { images } = context.componentContext.projectContext;
+  if (images[node.id]) {
+    context.tagName = 'img';
+    extraAttributes.push(mkSrcStaticAttribute(images[node.id]));
+    addStyle(styles, 'object-fit', 'cover');
+  }
   if (
     !context.componentContext.inInteractiveElement &&
     isFlexNode(node) &&

@@ -138,3 +138,7 @@ export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
     ]),
   );
 }
+
+export function mkSrcStaticAttribute(src: string) {
+  return factory.createJsxAttribute(factory.createIdentifier('src'), factory.createStringLiteral(src));
+}
