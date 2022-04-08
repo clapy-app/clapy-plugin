@@ -5,7 +5,7 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, isFlexNode, isLayout, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, isFlexNode, isGroup, isLayout, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
 
@@ -73,7 +73,8 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
     nodeCounterAxisHugContents,
   } = applyWidth(context, node, styles);
 
-  if (node.layoutGrow === 1) {
+  // Flex: 1 if it's a figma rule or it's a top-level component
+  if (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents)) {
     addStyle(styles, 'flex', 1);
   }
 
@@ -187,10 +188,12 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
 function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
+  const nodeIsGroup = isGroup(node);
 
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
   const parentIsFlex = isFlexNode(parent);
+  const parentIsAbsolute = isGroup(parent) || (isFlexNode(parent) && parent?.layoutMode === 'NONE');
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
@@ -212,19 +215,24 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
     : false;
 
   const isParentAutoLayout = parentIsFlex && parent?.layoutMode !== 'NONE';
-  const isParentVertical = parent?.layoutMode === 'VERTICAL';
+  const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
   const widthFillContainer =
     (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) ||
     (context.isPageLevel && !widthHugContents);
-  const heightFillContainer = isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer;
+  const heightFillContainer =
+    (isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer) ||
+    (context.isPageLevel && !heightHugContents);
 
   const isWidthPositionAbsoluteAutoSize =
-    parent?.layoutMode === 'NONE' &&
+    !nodeIsGroup &&
+    parentIsAbsolute &&
     (node.constraints.horizontal === 'STRETCH' || node.constraints.horizontal === 'SCALE');
   const isHeightPositionAbsoluteAutoSize =
-    parent?.layoutMode === 'NONE' && (node.constraints.vertical === 'STRETCH' || node.constraints.vertical === 'SCALE');
+    !nodeIsGroup &&
+    parentIsAbsolute &&
+    (node.constraints.vertical === 'STRETCH' || node.constraints.vertical === 'SCALE');
 
   const fixedWidth = !isWidthPositionAbsoluteAutoSize && !widthFillContainer && !widthHugContents;
   const fixedHeight = !isHeightPositionAbsoluteAutoSize && !heightFillContainer && !heightHugContents;

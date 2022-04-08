@@ -9,6 +9,7 @@ import { Dict } from './sb-serialize.model';
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;
   noRetry?: boolean;
+  isAppApi?: boolean;
 }
 
 export interface ApiResponse<T>
@@ -84,7 +85,7 @@ export function useApiPost<T>(url: string, body?: any, options?: UsePostOptions<
  * @param config eventual Axios config, e.g. to add custom HTTP headers
  */
 export async function apiGetUnauthenticated<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-  return httpGetUnauthenticated(apiFullUrl(url), config);
+  return httpGetUnauthenticated(apiFullUrl(url), { ...config, isAppApi: true });
 }
 
 /**
@@ -98,7 +99,7 @@ export async function apiPostUnauthenticated<T>(
   body?: any,
   config?: ApiRequestConfig,
 ): Promise<ApiResponse<T>> {
-  return httpPostUnauthenticated(apiFullUrl(url), body, config);
+  return httpPostUnauthenticated(apiFullUrl(url), body, { ...config, isAppApi: true });
 }
 
 export async function apiPostFile<T>(
@@ -141,11 +142,11 @@ async function httpReqUnauthenticated<T>(
   config: ApiRequestConfig | undefined,
   sendRequest: (url: string, config: RequestInit) => Promise<Response>,
 ): Promise<ApiResponse<T>> {
-  const { noRetry, query, ...fetchConfig } = config || {};
+  const { noRetry, query, isAppApi, ...fetchConfig } = config || {};
   url = mkUrl(url, query);
   let resp: ApiResponse<T> | undefined;
   try {
-    resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig)));
+    resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)));
   } catch (e) {
     const err: Error = e as any;
     if (err.message === 'Failed to fetch') {
@@ -169,7 +170,7 @@ async function httpReqUnauthenticated<T>(
       await wait(1000);
       // tslint:disable-next-line:no-console
       console.info('Retrying HTTP request...');
-      resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig)));
+      resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)));
     }
   }
   if (!resp.ok) {
@@ -205,14 +206,12 @@ async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiRe
 }
 
 const requiredHeaders = {
-  // CSRF protection if the server requires this token
-  'X-Requested-By': env.securityRequestedByHeader,
   Accept: 'application/json',
   'Content-Type': 'application/json',
 };
 export const defaultOptions = { headers: requiredHeaders }; // Useful for tests
 
-function extendConfig(config: RequestInit | undefined): RequestInit {
+function extendConfig(config: RequestInit | undefined, isAppApi: boolean | undefined): RequestInit {
   const { headers, ...otherConf } = config || ({} as RequestInit);
   return {
     ...otherConf,
@@ -220,6 +219,8 @@ function extendConfig(config: RequestInit | undefined): RequestInit {
     headers: {
       ...headers,
       ...requiredHeaders,
+      // CSRF protection if the server requires this token
+      ...(isAppApi && { 'X-Requested-By': env.securityRequestedByHeader }),
     },
   };
 }

@@ -2,8 +2,14 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { isFlexNode, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isFlexNode, isGroup, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
+
+function applyPositionRelative(styles: Dict<DeclarationPlain>) {
+  if (!styles.position) {
+    addStyle(styles, 'position', 'relative');
+  }
+}
 
 export function positionAbsoluteFigmaToCode(
   context: NodeContextWithBorders,
@@ -11,26 +17,39 @@ export function positionAbsoluteFigmaToCode(
   styles: Dict<DeclarationPlain>,
 ) {
   const isFlex = isFlexNode(node);
+  const isGrp = isGroup(node);
 
   if (isFlex && node.layoutMode === 'NONE') {
-    addStyle(styles, 'position', 'relative');
+    applyPositionRelative(styles);
+  }
+
+  // If we are here, the group was not skipped. It means the parent is a flex node (frame, instance...) with auto-layout. We must treat the group as a wrapper for position absolute, with scale mode.
+  if (isGrp) {
+    applyPositionRelative(styles);
+    return;
   }
 
   const { parentNode, parentContext } = context;
+  const parentIsGroup = isGroup(parentNode);
+  const parentIsAbsolute = parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE');
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = parentContext?.borderWidths || {
     borderTopWidth: 0,
     borderRightWidth: 0,
     borderBottomWidth: 0,
     borderLeftWidth: 0,
   };
-  if (parentNode?.layoutMode === 'NONE') {
+  if (parentIsAbsolute) {
     addStyle(styles, 'position', 'absolute');
-    const { horizontal, vertical } = node.constraints;
+    const { horizontal, vertical } = parentIsGroup
+      ? ({ horizontal: 'SCALE', vertical: 'SCALE' } as Constraints)
+      : node.constraints;
     // STRETCH and SCALE are only applicable with fixed size (disabled on the UI with hug contents)
 
-    const left = node.x - borderLeftWidth;
-    // Don't subtract borderLeftWidth, it's already included in node.x.
-    const right = parentNode.width - node.x - node.width - borderRightWidth;
+    // When an element is absolutely positioned in a group (itself within an autolayout frame), we apply the SCALE mode relative to the group. Since x/y are relative to the groupe parent, we adjust x/y to ensure the scale works well.
+    const nodeX = parentIsGroup ? node.x - parentNode.x : node.x;
+    const left = nodeX - borderLeftWidth;
+    // Don't subtract borderLeftWidth, it's already included in nodeX.
+    const right = parentNode.width - nodeX - node.width - borderRightWidth;
     const parentWidth = parentNode.width - borderLeftWidth - borderRightWidth;
 
     let translateX = false;
@@ -49,9 +68,10 @@ export function positionAbsoluteFigmaToCode(
       addStyle(styles, 'right', [(right / parentWidth) * 100, '%']);
     }
 
-    const top = node.y - borderTopWidth;
-    // Don't subtract borderTopWidth, it's already included in node.y.
-    const bottom = parentNode.height - node.y - node.height - borderBottomWidth;
+    const nodeY = parentIsGroup ? node.y - parentNode.y : node.y;
+    const top = nodeY - borderTopWidth;
+    // Don't subtract borderTopWidth, it's already included in nodeY.
+    const bottom = parentNode.height - nodeY - node.height - borderBottomWidth;
     const parentHeight = parentNode.height - borderTopWidth - borderBottomWidth;
     let translateY = false;
 

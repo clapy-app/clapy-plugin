@@ -1,18 +1,57 @@
+import { ExportImages } from '../../../common/app-models';
 import { getFigmaSelection } from '../../common/selection-utils';
-import { nodeToObject } from './nodeToObject';
+import { nodeToObject, SerializeContext } from './nodeToObject';
 
 export function serializeSelectedNode() {
   const selection = getFigmaSelection();
   if (selection?.length !== 1) {
     throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
   }
-  const selectedNode = selection[0];
+  const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
-  const node = selectedNode;
+
+  const images: ExportImages = {};
+  const context: SerializeContext = { images };
+
   return Promise.all([
     node.parent
-      ? nodeToObject(node.parent as SceneNode, { skipChildren: true, skipInstance: true, skipParent: true })
+      ? nodeToObject(node.parent as SceneNode, context, { skipChildren: true, skipInstance: true, skipParent: true })
       : null,
-    nodeToObject(node),
+    nodeToObject(node, context, { skipChildren: false, skipInstance: true, skipParent: true }),
+    images,
   ]);
 }
+
+// Let's keep this code for now, it's useful to extract images and upload to CDN.
+// BUT we'll need to adapt it: an image hash is already available in each fill, and we can retrieve the original image bytes with a method like figma.getImageByHash (not sure of the method name).
+
+// export async function extractImage(nodeId: string) {
+//   const node = figma.getNodeById(nodeId);
+//   if (!node || !isExportMixin(node)) return [null, null];
+//   const fileUint = await node.exportAsync({
+//     format: 'JPG',
+//     useAbsoluteBounds: true,
+//   });
+//   if (isMinimalFillsMixin(node) && Array.isArray(node.fills)) {
+//     for (const fill of node.fills as Paint[]) {
+//       if (fill.type === 'IMAGE') {
+//         // fill.imageHash
+//       }
+//     }
+//   }
+//   // If sent as object, it's complex to convert to ArrayBuffer. And ArrayBuffer cannot be sent directly here.
+//   // With an array, we can recreate the Uint8Array in the front, then read the ArrayBuffer, then send to Cloudinary.
+//   const image = Array.from(fileUint);
+//   const wordArray = uint8ArrayToWordArray(fileUint);
+//   const hash = CryptoJS.SHA256(wordArray).toString();
+//   return [image, hash] as const;
+// }
+
+// // Source: https://stackoverflow.com/a/33918579/4053349
+// function uint8ArrayToWordArray(i8a: Uint8Array) {
+//   var a = [];
+//   for (var i = 0; i < i8a.length; i += 4) {
+//     a.push((i8a[i] << 24) | (i8a[i + 1] << 16) | (i8a[i + 2] << 8) | i8a[i + 3]);
+//   }
+//   return CryptoJS.lib.WordArray.create(a, i8a.length);
+// }

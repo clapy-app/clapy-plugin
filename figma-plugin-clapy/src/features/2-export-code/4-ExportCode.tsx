@@ -1,6 +1,7 @@
 import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { ExportImageMap } from '../../common/app-models';
 import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
@@ -28,8 +29,26 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
     try {
       setError(undefined);
       setPreviewUrl('loading');
-      const [parent, root] = await fetchPlugin('serializeSelectedNode');
-      const nodes = { parent, root };
+
+      // Extract the Figma configuration
+      const [parent, root, imagesFigmaIds] = await fetchPlugin('serializeSelectedNode');
+      const images: ExportImageMap = {};
+      const nodes = { parent, root, images };
+
+      // Upload assets to a CDN before generating the code
+      for (const [imageFigmaId, imageFigmaUrl] of Object.entries(imagesFigmaIds)) {
+        // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
+        // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+        images[imageFigmaId] = imageFigmaUrl;
+      }
+
+      // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
+      // TODO improvements for images
+      // Small UI update: 2 steps loading (show a loader?)
+      // Check if the hash is already in database. If yes, reuse the URL.
+      // If not, upload to CDN and save the hash + URL in database.
+      // When a node has an image, apply relevant formattings using the info from the node.
+      // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
 
       if (!env.isDev || enableCodeSandbox) {
         const { data } = await apiPost<CSBResponse>('code/export', nodes);
@@ -45,7 +64,10 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       }
 
       setPreviewUrl(undefined);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message === 'NODE_NOT_VISIBLE') {
+        error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
+      }
       setError(error);
       setPreviewUrl(undefined);
       throw error;

@@ -79,7 +79,7 @@ const PreviewAreaInner: FC = memo(function PreviewAreaInner() {
     // <p>Figma ID: {figmaId}</p>
     return (
       <div>
-        <p>Sorry, we couldn’t identify this component. Please select a component imported from Storybook with Clapy.</p>
+        <p>We couldn’t identify this component. Please select a component imported from Storybook with Clapy.</p>
         <p>
           If you have any question, please {/* Mail link generated with https://mailtolink.me/ */}{' '}
           <a

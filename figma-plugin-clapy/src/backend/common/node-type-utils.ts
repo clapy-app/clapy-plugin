@@ -131,6 +131,18 @@ export function isMinimalStrokesMixin(node: BaseNode | MinimalStrokesMixin | Nil
   return !!(node as MinimalStrokesMixin)?.strokeAlign;
 }
 
+export function isMinimalFillsMixin(node: BaseNode | MinimalFillsMixin | Nil): node is MinimalFillsMixin {
+  return !!(node as MinimalFillsMixin)?.fills;
+}
+
+export function isFillsArray(node: MinimalFillsMixin['fills']): node is readonly Paint[] {
+  return Array.isArray(node);
+}
+
+export function isExportMixin(node: BaseNode | ExportMixin | Nil): node is ExportMixin {
+  return !!(node as ExportMixin)?.exportAsync;
+}
+
 export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
@@ -143,4 +155,9 @@ export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | Vector
 
 export function isShapeExceptRectangle(node: LayoutNodeExtended | Nil): node is ShapeNode {
   return isLine(node) || isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
+}
+
+export function isStyledTextSegment(node: SceneNode | StyledTextSegment | Nil): node is StyledTextSegment {
+  const sts = node as StyledTextSegment;
+  return sts.characters != null && sts.start != null && sts.end != null;
 }

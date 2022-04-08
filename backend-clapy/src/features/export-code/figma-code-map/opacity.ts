@@ -6,7 +6,11 @@ import { ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 export function opacityFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (node.opacity !== 1) {
-    addStyle(styles, 'opacity', node.opacity);
+  addOpacity(styles, node.opacity);
+}
+
+export function addOpacity(styles: Dict<DeclarationPlain>, opacity: number | undefined) {
+  if (!styles.opacity && opacity != null && opacity !== 1) {
+    addStyle(styles, 'opacity', opacity);
   }
 }

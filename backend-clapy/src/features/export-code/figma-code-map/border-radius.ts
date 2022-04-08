@@ -2,11 +2,11 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 export function borderRadiusFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (isText(node) || isVector(node)) return;
+  if (isText(node) || isVector(node) || isGroup(node)) return;
   const { topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius } = node;
   if (topLeftRadius || topRightRadius || bottomRightRadius || bottomLeftRadius) {
     if (topLeftRadius === topRightRadius && topLeftRadius === bottomRightRadius && topLeftRadius === bottomLeftRadius) {

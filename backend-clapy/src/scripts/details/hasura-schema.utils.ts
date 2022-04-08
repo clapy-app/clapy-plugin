@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 
-import { wait } from '../common/general-utils';
-import { env } from '../env-and-config/env';
-import { backendDir, pluginDir } from '../root';
+import { wait } from '../../common/general-utils';
+import { env } from '../../env-and-config/env';
+import { backendDir, pluginDir } from '../../root';
 
 // Require dev dependencies:
 // mkdirp
@@ -11,7 +11,7 @@ import { backendDir, pluginDir } from '../root';
 // @graphql-codegen/cli
 // @graphql-codegen/typescript
 
-const rootHasuraUrl = env.hasuraHttp;
+const rootHasuraUrl = `${env.hasuraHttp}/v1`;
 
 const secret = env.hasuraAdminSecret;
 const frontGeneratedDir = `${pluginDir}/generated`;

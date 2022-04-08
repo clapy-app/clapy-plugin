@@ -19,6 +19,7 @@
       "multipleSelection": true
     }
   ],
+  "enablePrivatePluginApi": true,
   "permissions": [
     "currentuser"
   ]

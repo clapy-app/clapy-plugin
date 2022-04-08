@@ -16,7 +16,13 @@ export function guessTagNameAndUpdateNode(
 ) {
   const name = context.nodeNameLower;
   const extraAttributes: ts.JsxAttribute[] = [];
-  if (
+  // If I want to use an img, the below code is the way to go. But the generic and simple way to handle multiple fills will be to use backgrounds, which is closer to how figma does it anyway.
+  // const { images } = context.componentContext.projectContext;
+  /* if (images[node.id]) {
+    context.tagName = 'img';
+    extraAttributes.push(mkSrcStaticAttribute(images[node.id]));
+    addStyle(styles, 'object-fit', 'cover');
+  } else */ if (
     !context.componentContext.inInteractiveElement &&
     isFlexNode(node) &&
     ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&

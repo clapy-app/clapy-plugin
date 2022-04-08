@@ -22,13 +22,24 @@ wss.on('connection', ws => {
             console.log(
               obj.__source === 'browser' ? 'Request' : 'Response',
               obj.type,
+              obj.__id,
+              'from',
+              obj.__source,
               '- error:',
               obj.error,
               '- has payload:',
               !!obj.payload,
             );
           } else {
-            console.log(obj.__source === 'browser' ? 'Request' : 'Response', obj.type, '- has payload:', !!obj.payload);
+            console.log(
+              obj.__source === 'browser' ? 'Request' : 'Response',
+              obj.type,
+              obj.__id,
+              'from',
+              obj.__source,
+              '- has payload:',
+              !!obj.payload,
+            );
           }
         }
         client.send(message);
