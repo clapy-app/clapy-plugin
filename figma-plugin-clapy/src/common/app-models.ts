@@ -67,6 +67,6 @@ export interface NewVariant {
   args: Args;
 }
 
-export type ExportImages = string[];
+export type ExportImages = ExportImageMap;
 
 export type ExportImageMap = Dict<string>;

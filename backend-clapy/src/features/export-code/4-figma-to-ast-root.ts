@@ -6,11 +6,11 @@ import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-
 import { ComponentContext, NodeContext } from './code.model';
 import { getCompDirectory } from './create-ts-compiler/3-create-component';
 import {
+  isBlockNode,
   isChildrenMixin,
   isFlexNode,
   isGroup,
   isPage,
-  isRectangle,
   isText,
   isValidNode,
   isVector,
@@ -43,11 +43,23 @@ export async function figmaToAstRootNode(componentContext: ComponentContext, { p
   return [tsx, cssAst] as const;
 }
 
+// true if there is a parent frame (ignoring groups) and it is autolayout. False otherwise (no parent frame, e.g. group then top-level) or the parent frame is not autolayout.
+function firstParentFrameIsAutoLayout(context: NodeContext | null): boolean {
+  if (!context) return false;
+  const { parentContext, parentNode } = context;
+  if (isGroup(parentNode)) {
+    return firstParentFrameIsAutoLayout(parentContext);
+  }
+  if (isFlexNode(parentNode)) {
+    return parentNode.layoutMode !== 'NONE';
+  }
+  return false;
+}
+
 async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
   if (!node.visible) {
     return;
   }
-
   mockUsefulMethods(node);
 
   const styles: Dict<DeclarationPlain> = {};
@@ -60,11 +72,25 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     return;
   }
 
-  // Group is a special case: we go through it without creating a div, we don't read props since there is almost nothing interesting in it.
-  if (isGroup(node)) {
+  const { parentNode, parentStyles, parentContext } = context;
+  const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
+  // With groups, there are 2 special cases:
+  // - The parent is a frame, not auto-layout
+  // - The parent is a group
+  // In both cases, the child group has no impact in the layout. It is skipped and children are directly rendered.
+  // For auto-layout frames as parent, groups are processed in the position-absolute.ts file. Groups are treated similarly to non-autolayout frames, with just a small change in the x/y calculation of children + the position mode is SCALE.
+  if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
     const childrenAst: ts.JsxChild[] = [];
     for (const child of node.children) {
-      const res = await figmaToAstRec(context, child);
+      const contextForChildren: NodeContext = {
+        componentContext: context.componentContext,
+        tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+        nodeNameLower: child.name.toLowerCase(),
+        parentNode: parentNode,
+        parentStyles: parentStyles,
+        parentContext: parentContext,
+      };
+      const res = await figmaToAstRec(contextForChildren, child);
       if (res) {
         if (Array.isArray(res)) {
           childrenAst.push(...res);
@@ -133,7 +159,7 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     // Generate AST
     const ast = mkImg(svgPathVarName, attributes);
     return ast;
-  } else if (isFlexNode(node) || isRectangle(node)) {
+  } else if (isBlockNode(node)) {
     // Add tag styles
     const context2 = mapTagStyles(context, node, styles);
 

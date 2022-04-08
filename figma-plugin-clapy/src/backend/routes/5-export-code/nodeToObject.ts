@@ -1,13 +1,16 @@
 import { flags } from '../../../common/app-config';
 import { ExportImages } from '../../../common/app-models';
+import { warnNode } from '../../../common/error-utils';
 import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
 import {
   isChildrenMixin,
+  isFillsArray,
   isGroup,
   isInstance,
   isLayout,
   isMinimalFillsMixin,
   isMinimalStrokesMixin,
+  isPage,
   isRectangle,
   isShapeExceptRectangle,
   isText,
@@ -61,88 +64,113 @@ interface Options {
  * @param options
  */
 export async function nodeToObject<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
-  const { skipChildren = false, skipParent = true, skipInstance = true } = options;
-  let exportAsSvg = false;
-  let obj: any;
-  if (containsShapesOnly(node)) {
-    exportAsSvg = true;
-  }
-  const nodeIsShape = isShapeExceptRectangle(node);
-  const saveAsSvg = nodeIsShape || exportAsSvg;
-  const nodeIsLayout = isLayout(node);
-  const cancelRotation = saveAsSvg && nodeIsLayout && node.rotation && !isInstance(node);
+  try {
+    if (!isPage(node) && !node.visible) {
+      throw new Error('NODE_NOT_VISIBLE');
+    }
+    const { skipChildren = false, skipParent = true, skipInstance = true } = options;
+    let exportAsSvg = false;
+    let obj: any;
+    if (containsShapesOnly(node)) {
+      exportAsSvg = true;
+    }
+    const nodeIsShape = isShapeExceptRectangle(node);
+    const saveAsSvg = nodeIsShape || exportAsSvg;
+    const nodeIsLayout = isLayout(node);
+    const cancelRotation = saveAsSvg && nodeIsLayout && node.rotation && !isInstance(node);
 
-  let currentRotation: number | undefined = undefined;
-  if (cancelRotation) {
-    // SVG exports include the rotation, but coordinates don't match.
-    // The workaround is to cancel the rotation, the time to extract the various properties. And we still add the rotation in the exported object to be applied in the output.
-    // A better approach would be to better understand the link between the rotation and the coordinates in the exported SVG to write the corresponding CSS (would be better in terms of performance?)
-    currentRotation = node.rotation;
-    node.rotation = 0;
-  }
+    let currentRotation: number | undefined = undefined;
+    if (cancelRotation) {
+      // SVG exports include the rotation, but coordinates don't match.
+      // The workaround is to cancel the rotation, the time to extract the various properties. And we still add the rotation in the exported object to be applied in the output.
+      // A better approach would be to better understand the link between the rotation and the coordinates in the exported SVG to write the corresponding CSS (would be better in terms of performance?)
+      currentRotation = node.rotation;
+      node.rotation = 0;
+    }
 
-  const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
-  obj = { id: node.id, type: node.type };
-  const isTxt = isText(node);
-  const bl = isTxt ? textBlacklist : blacklist;
-  for (const [name, prop] of props) {
-    if (prop.get && !bl.has(name)) {
-      try {
-        if (typeof obj[name] === 'symbol') {
-          obj[name] = 'Mixed';
-        } else {
-          obj[name] = prop.get.call(node);
+    const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
+    obj = { id: node.id, type: node.type };
+    const isTxt = isText(node);
+    const bl = isTxt ? textBlacklist : blacklist;
+    for (const [name, prop] of props) {
+      if (prop.get && !bl.has(name)) {
+        try {
+          if (typeof obj[name] === 'symbol') {
+            obj[name] = 'Mixed';
+          } else {
+            obj[name] = prop.get.call(node);
+          }
+        } catch (err) {
+          obj[name] = undefined;
         }
-      } catch (err) {
-        obj[name] = undefined;
       }
     }
-  }
-  if (isTxt) {
-    obj._textSegments = node.getStyledTextSegments(rangeProps);
-  }
-
-  // If image, export it and send to front
-
-  if (nodeIsShape || exportAsSvg) {
-    obj.type = 'VECTOR' as VectorNode['type'];
-    if (nodeIsShape) {
-      node.effects = [];
-      node.effectStyleId = '';
-    }
-    if (isGroup(node)) {
-      // Interesting properties like constraints are in the children nodes. Let's make a copy.
-      obj.constraints = (node.children[0] as ConstraintMixin)?.constraints;
+    if (isTxt) {
+      obj._textSegments = node.getStyledTextSegments(rangeProps);
     }
 
-    // Change all stroke positions to center to fix the bad SVG export bug
-    fixStrokeAlign(node);
+    // If image, export it and send to front
 
-    // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
-    // But ideally, we should do:
-    // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
+    if (nodeIsShape || exportAsSvg) {
+      obj.type = 'VECTOR' as VectorNode['type'];
+      if (nodeIsShape) {
+        node.effects = [];
+        node.effectStyleId = '';
+      }
+      if (isGroup(node)) {
+        // Interesting properties like constraints are in the children nodes. Let's make a copy.
+        obj.constraints = (node.children[0] as ConstraintMixin)?.constraints;
+      }
 
-    obj._svg = utf8ArrayToStr(await node.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
-  } else if (treatAsImage(node)) {
-    // Add images to dict
-    context.images.push(node.id);
-  }
+      // Change all stroke positions to center to fix the bad SVG export bug
+      fixStrokeAlign(node);
 
-  if (cancelRotation) {
-    node.rotation = currentRotation as number;
-    obj.rotation = currentRotation as number;
-  }
+      // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
+      // But ideally, we should do:
+      // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
 
-  if (node.parent && !skipParent) {
-    obj.parent = { id: node.parent.id, type: node.parent.type };
+      obj._svg = utf8ArrayToStr(await node.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
+    } else if (isMinimalFillsMixin(node) && isFillsArray(node.fills)) {
+      for (const fill of node.fills) {
+        if (fill.type === 'IMAGE') {
+          if (!fill.imageHash) {
+            warnNode(
+              node,
+              'Image fill has no hash, I should check and understand why. Ignoring image:',
+              JSON.stringify(fill),
+            );
+          } else {
+            const imageFigmaUrl = `https://www.figma.com/file/${figma.fileKey}/image/${fill.imageHash}`;
+            context.images[fill.imageHash] = imageFigmaUrl;
+          }
+        }
+      }
+    }
+
+    if (cancelRotation) {
+      node.rotation = currentRotation as number;
+      obj.rotation = currentRotation as number;
+    }
+
+    if (node.parent && !skipParent) {
+      obj.parent = { id: node.parent.id, type: node.parent.type };
+    }
+    if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
+      obj.children = await Promise.all(
+        node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
+      );
+    }
+    if (isInstance(node) && node.mainComponent && !skipInstance) {
+      obj.mainComponent = nodeToObject(node.mainComponent, context, options);
+    }
+    return obj as SceneNodeNoMethod;
+  } catch (error) {
+    if (typeof error === 'string') {
+      error = new Error(error);
+    }
+    Object.assign(error, { nodeName: node.name });
+    throw error;
   }
-  if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
-    obj.children = await Promise.all(node.children.map((child: any) => nodeToObject(child, context, options)));
-  }
-  if (isInstance(node) && node.mainComponent && !skipInstance) {
-    obj.mainComponent = nodeToObject(node.mainComponent, context, options);
-  }
-  return obj as SceneNodeNoMethod;
 }
 
 function treatAsImage(node: SceneNode) {

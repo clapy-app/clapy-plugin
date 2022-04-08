@@ -10,7 +10,6 @@ import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
-import { cloudinaryUploadUrl } from './cloudinary';
 
 export const ExportCode: FC = memo(function ExportCode() {
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
@@ -18,15 +17,6 @@ export const ExportCode: FC = memo(function ExportCode() {
 
   return <ExportCodeInner />;
 });
-
-async function uploadAsset(fileAsUint8ArrayRaw: number[]) {
-  const fileUint = Uint8Array.from(fileAsUint8ArrayRaw);
-  const blob = new Blob([fileUint]);
-  const formData = new FormData();
-  formData.append('file', blob);
-  formData.append('upload_preset', env.isDev ? 'code-export-dev' : 'code-export');
-  return (await (await fetch(cloudinaryUploadUrl, { method: 'POST', body: formData })).json()).secure_url;
-}
 
 // Flag for development only. Will be ignored in production.
 const enableCodeSandbox = false;
@@ -46,14 +36,13 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       const nodes = { parent, root, images };
 
       // Upload assets to a CDN before generating the code
-      for (const imageFigmaId of imagesFigmaIds) {
-        const [fileAsUint8ArrayRaw, hash] = await fetchPlugin('extractImage', imageFigmaId);
-        if (fileAsUint8ArrayRaw) {
-          const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
-          images[imageFigmaId] = assetUrl;
-        }
+      for (const [imageFigmaId, imageFigmaUrl] of Object.entries(imagesFigmaIds)) {
+        // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
+        // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+        images[imageFigmaId] = imageFigmaUrl;
       }
 
+      // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
       // TODO improvements for images
       // Small UI update: 2 steps loading (show a loader?)
       // Check if the hash is already in database. If yes, reuse the URL.
@@ -75,7 +64,10 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       }
 
       setPreviewUrl(undefined);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message === 'NODE_NOT_VISIBLE') {
+        error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
+      }
       setError(error);
       setPreviewUrl(undefined);
       throw error;

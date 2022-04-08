@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
@@ -11,7 +11,7 @@ export function borderFigmaToCode(
   node: ValidNode,
   styles: Dict<DeclarationPlain>,
 ): NodeContextWithBorders {
-  if (isVector(node)) {
+  if (isVector(node) || isGroup(node)) {
     // Ignore borders for Vectors. They are already included in the SVG.
     return contextNoBorder(context);
   }
