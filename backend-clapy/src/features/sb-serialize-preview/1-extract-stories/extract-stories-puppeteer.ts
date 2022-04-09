@@ -94,7 +94,12 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
     }
     return { v, stories, title: brandTitle } as SbStoriesWrapper;
   } catch (error: any) {
-    return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
+    try {
+      return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
+    } catch (error) {
+      const dummyError = new Error('Unknown error while catching the error in puppeteer');
+      return { hasError: true, message: dummyError.message, stack: dummyError.stack };
+    }
   }
 }
 
