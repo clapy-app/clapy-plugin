@@ -13,7 +13,7 @@ import { AppModule } from './app.module';
 import { CsrfGuard } from './auth/csrf.guard';
 import { UnknownExceptionFilter } from './core/unknown-exception.filter';
 import { env } from './env-and-config/env';
-import { sbSerializePreview } from './features/sb-serialize-preview/2-serialize-preview';
+import { extractStories } from './features/sb-serialize-preview/1-extract-stories';
 
 const port = env.port;
 const logger = new Logger('main');
@@ -25,20 +25,24 @@ async function bootstrap() {
       // const storybookId = 'buttons-button--overview';
 
       // const sbUrl = 'http://nonexistingdomaiiine.com/';
-      const sbUrl = 'https://reactstrap.github.io';
+      // const sbUrl = 'https://reactstrap.github.io';
+      const sbUrl = 'https://www.intuit.com/qbmds-components/sb/storybook';
       // const storybookId = 'components-accordion--accordion';
       // const storybookId = 'components-badge--links';
       // const storybookId = 'components-alert--alert-content';
       // const storybookId = 'components-alert--dismiss';
       // const storybookId = 'components-alert--alert';
-      const storybookId = 'components-card--content-types';
+      // const storybookId = 'components-card--content-types';
+      const storybookId = 'core-atoms-button--intro';
 
       // const sbUrl = 'http://localhost:9009';
       // const storybookId = 'atoms-avatar--default-story';
       // const storybookId = 'atoms-avatar--user-with-avatar-and-registration-success';
 
       const url = `${sbUrl}/iframe.html?id=${storybookId}&viewMode=story`;
-      const nodes = await sbSerializePreview(url);
+
+      await extractStories(`${sbUrl}/index.html`);
+      // const nodes = await sbSerializePreview(url);
       // console.log('nodes:');
       // console.log(JSON.stringify(nodes));
       // console.log(nodes.length, `node${nodes.length > 1 ? 's' : ''}`);
