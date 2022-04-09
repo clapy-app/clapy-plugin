@@ -4,6 +4,7 @@ import { ArgTypeObj } from '../../../common/app-models';
 import { apiGet } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
+import { sbUrlIframe } from '../../../common/storybook-utils';
 import { env } from '../../../environment/env';
 import { buildArgsMatrix } from './buildArgsMatrix';
 
@@ -19,6 +20,7 @@ export async function renderComponent(
   pageId: string,
   setLoadingTxt: (label: string) => void,
   interruptedRef: MutableRefObject<boolean>,
+  skipHistoryCommit?: boolean,
 ) {
   if (!env.isDev) {
     setLoadingTxt(`Render story ${storyLabel}...`);
@@ -49,6 +51,7 @@ export async function renderComponent(
           i,
           j,
           setLoadingTxt,
+          skipHistoryCommit,
         );
 
         if (newFigmaId) {
@@ -69,7 +72,7 @@ export async function renderComponent(
     }
 
     // Render in Figma, translating HTML/CSS to Figma nodes
-    await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId);
+    await fetchPlugin('updateCanvas', nodes, figmaId, storyId, pageId, skipHistoryCommit);
   }
 }
 
@@ -85,11 +88,12 @@ export async function renderVariant(
   i: number,
   j: number,
   setLoadingTxt: (label: string) => void,
+  skipHistoryCommit?: boolean,
 ) {
   const query = Object.entries(args)
     .map(([key, value]) => `${key}:${value}`)
     .join(';');
-  const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story&args=${query}`;
+  const url = `${sbUrlIframe(sbUrl)}?id=${storyId}&viewMode=story&args=${query}`;
   if (env.isDev) {
     setLoadingTxt(`Render story ${storyLabel} variant (web)...`);
   }
@@ -109,6 +113,7 @@ export async function renderVariant(
     args,
     i,
     j,
+    skipHistoryCommit,
   );
   return newFigmaId;
 }

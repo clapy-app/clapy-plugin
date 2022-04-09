@@ -3,7 +3,13 @@ import { isComponentSet } from '../../common/node-type-utils';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
 
-export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: string, pageId: string) {
+export async function updateCanvas(
+  sbNodes: CNode[],
+  figmaId: string,
+  storyId: string,
+  pageId: string,
+  skipHistoryCommit?: boolean,
+) {
   try {
     const { page, node } = getPageAndNode(pageId, figmaId, storyId);
     if (!page || !node || !node.parent) {
@@ -16,6 +22,13 @@ export async function updateCanvas(sbNodes: CNode[], figmaId: string, storyId: s
 
     await renderParentNode(node, sbNodes, storyId);
   } finally {
-    figma.commitUndo();
+    // If the flag is passed, we should make an explicit call to commitUndo from the front. Useful when importing the whole storybook, to avoid polluting the history.
+    if (!skipHistoryCommit) {
+      figma.commitUndo();
+    }
   }
+}
+
+export function commitUndo() {
+  figma.commitUndo();
 }

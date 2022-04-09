@@ -28,6 +28,7 @@ import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
 import { track } from './detail/analytics';
+import { ErrorComp } from './detail/ErrorComp';
 import { renderComponent } from './detail/renderComponent';
 import { setSelection } from './import-slice';
 
@@ -169,6 +170,7 @@ export const ImportSb: FC = memo(function ImportSb() {
               pageId,
               setLoadingTxt,
               interruptedRef,
+              true,
             );
             if (interruptedRef.current) {
               setError('Interrupted');
@@ -196,7 +198,10 @@ export const ImportSb: FC = memo(function ImportSb() {
         const durationInS = endTimer(importTimerRef);
         track('run-import', 'error', { error: msg, durationInS });
       })
-      .finally(() => setLoadingTxt(undefined));
+      .finally(() => {
+        fetchPluginNoResponse('commitUndo');
+        setLoadingTxt(undefined);
+      });
   }, [sbSelection, sbUrl]);
 
   const detachPage = useCallback(() => {
@@ -263,28 +268,8 @@ export const ImportSb: FC = memo(function ImportSb() {
           <p>{loadingTxt}</p>
         </>
       )}
-      {!!error && (
-        <p>
-          {error !== 'Interrupted' && (
-            <>
-              Oops, something went wrong! Please retry later or contact us if the problem persists. The error message
-              {/* Mail link generated with https://mailtolink.me/ */}{' '}
-              <a
-                href={`mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy%3A%0D%0A%0D%0A${JSON.stringify(
-                  error,
-                )}%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                you can send us
-              </a>
-              :{' '}
-            </>
-          )}
-          <em>{error}</em>
-        </p>
-      )}
-      <hr />
+
+      <ErrorComp error={error} />
       <ExportCode />
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}

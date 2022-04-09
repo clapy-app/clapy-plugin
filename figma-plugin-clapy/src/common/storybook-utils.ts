@@ -11,6 +11,12 @@ export function sanitizeSbUrl(storybookBaseUrl: string) {
   );
 }
 
+export function sbUrlIframe(sbUrl: string) {
+  // https://monstorybook.com => https://monstorybook.com/iframe.html
+  // https://monstorybook.com/index.html => https://monstorybook.com/iframe.html
+  return `${sbUrl.replace(/\/[^\/]*.html/, '')}/iframe.html`;
+}
+
 export function argTypesToValuesFiltered(
   argName: string,
   argType: ArgType,
