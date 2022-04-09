@@ -1,5 +1,6 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
 import { ArgTypes } from '../../../common/sb-serialize.model';
+import { sbUrlIframe } from '../../../common/storybook-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
@@ -23,7 +24,7 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
     const { node, sbUrl, storyId } = getParentCompNode(selectedNode);
     if (storyId && sbUrl && node) {
       // &args=kind:secondary;size:xxs
-      const storyUrl = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
+      const storyUrl = `${sbUrlIframe(sbUrl)}?id=${storyId}&viewMode=story`;
       const argTypes: ArgTypes = JSON.parse(node.getPluginData('storyArgTypes') || '{}');
       const initialArgs: ArgTypes = JSON.parse(node.getPluginData('storyInitialArgs') || '{}');
       const selection: SbCompSelection = {

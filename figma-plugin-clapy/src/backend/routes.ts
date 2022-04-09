@@ -1,6 +1,6 @@
 import { getSbCompSelection, selectedSbComp } from './routes/1-import-stories/1-select-node';
 import { detachPage, getStoriesSamples, importStories } from './routes/1-import-stories/2-import-sb-routes';
-import { updateCanvas } from './routes/2-update-canvas/1-update-canvas';
+import { commitUndo, updateCanvas } from './routes/2-update-canvas/1-update-canvas';
 import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-variant';
 import { runGrid } from './routes/2-update-canvas/grid-utils';
 import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
@@ -24,6 +24,7 @@ export const routes = {
   detachPage: detachPage,
   updateCanvas: updateCanvas,
   updateCanvasVariant: updateCanvasVariant,
+  commitUndo: commitUndo,
 
   updateVariantsFromFilters: updateVariantsFromFilters,
 

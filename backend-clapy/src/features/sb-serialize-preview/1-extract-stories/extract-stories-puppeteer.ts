@@ -92,7 +92,9 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
         title,
       };
     }
-    return { v, stories, title: brandTitle } as SbStoriesWrapper;
+    // Let's stringify/parse to ensure we have removed everything that's not serializable. Otherwise, the whole result is replaced with `undefined` outside puppeteer.
+    // E.g. args and initialArgs can contain functions as handler props.
+    return JSON.parse(JSON.stringify({ v, stories, title: brandTitle })) as SbStoriesWrapper;
   } catch (error: any) {
     try {
       return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;

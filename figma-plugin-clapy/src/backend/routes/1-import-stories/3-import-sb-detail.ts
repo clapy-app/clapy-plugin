@@ -1,4 +1,5 @@
 import { SbCompSelection } from '../../../common/app-models';
+import { sbUrlIframe } from '../../../common/storybook-utils';
 import { isFrame, isLayout, isMyComp, MyCompNode } from '../../common/node-type-utils';
 import { resizeNode } from '../2-update-canvas/update-canvas-utils';
 import { SbStoryWithFolder } from './import-model';
@@ -72,7 +73,7 @@ export function createFrames(storyEntries: StoryEntries, sbUrl: string, page: Pa
 
     nodes.push(frame);
     // &args=kind:secondary;size:xxs
-    const url = `${sbUrl}/iframe.html?id=${storyId}&viewMode=story`;
+    const url = `${sbUrlIframe(sbUrl)}?id=${storyId}&viewMode=story`;
     response.push({
       figmaId: frame.id,
       tagFigmaId: frame.id,

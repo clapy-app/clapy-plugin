@@ -13,7 +13,6 @@ import { AppModule } from './app.module';
 import { CsrfGuard } from './auth/csrf.guard';
 import { UnknownExceptionFilter } from './core/unknown-exception.filter';
 import { env } from './env-and-config/env';
-import { extractStories } from './features/sb-serialize-preview/1-extract-stories';
 
 const port = env.port;
 const logger = new Logger('main');
@@ -41,7 +40,7 @@ async function bootstrap() {
 
       const url = `${sbUrl}/iframe.html?id=${storybookId}&viewMode=story`;
 
-      await extractStories(`${sbUrl}/index.html`);
+      // await extractStories(`${sbUrl}/index.html`);
       // const nodes = await sbSerializePreview(url);
       // console.log('nodes:');
       // console.log(JSON.stringify(nodes));

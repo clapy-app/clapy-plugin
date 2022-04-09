@@ -170,6 +170,7 @@ export const ImportSb: FC = memo(function ImportSb() {
               pageId,
               setLoadingTxt,
               interruptedRef,
+              true,
             );
             if (interruptedRef.current) {
               setError('Interrupted');
@@ -197,7 +198,10 @@ export const ImportSb: FC = memo(function ImportSb() {
         const durationInS = endTimer(importTimerRef);
         track('run-import', 'error', { error: msg, durationInS });
       })
-      .finally(() => setLoadingTxt(undefined));
+      .finally(() => {
+        fetchPluginNoResponse('commitUndo');
+        setLoadingTxt(undefined);
+      });
   }, [sbSelection, sbUrl]);
 
   const detachPage = useCallback(() => {

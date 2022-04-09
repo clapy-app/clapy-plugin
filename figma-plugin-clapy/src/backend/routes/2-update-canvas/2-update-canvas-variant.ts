@@ -29,6 +29,7 @@ export async function updateCanvasVariant(
   args: Args,
   i: number,
   j: number,
+  skipHistoryCommit?: boolean,
 ) {
   try {
     const gap = appConfig.variantsGridGap;
@@ -139,6 +140,9 @@ export async function updateCanvasVariant(
 
     return componentSet.id;
   } finally {
-    figma.commitUndo();
+    // If the flag is passed, we should make an explicit call to commitUndo from the front. Useful when importing the whole storybook, to avoid polluting the history.
+    if (!skipHistoryCommit) {
+      figma.commitUndo();
+    }
   }
 }
