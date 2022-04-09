@@ -2,6 +2,7 @@ import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { ExportImageMap } from '../../common/app-models';
+import { handleError } from '../../common/error-utils';
 import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
@@ -9,6 +10,7 @@ import { CSBResponse } from '../../common/sb-serialize.model';
 import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
+import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
 
 export const ExportCode: FC = memo(function ExportCode() {
@@ -65,6 +67,7 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
 
       setPreviewUrl(undefined);
     } catch (error: any) {
+      handleError(error);
       if (error?.message === 'NODE_NOT_VISIBLE') {
         error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
       }
@@ -89,42 +92,11 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
         )}
       </div>
 
-      {!!error && <ErrorComp error={error} />}
+      <ErrorComp error={error} />
     </>
   );
 });
 
-interface ErrorCompProps {
+export interface ErrorCompProps {
   error: any;
 }
-
-const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) {
-  if (!error) return null;
-  const errorStr = JSON.stringify(error);
-  if (error === 'Interrupted') {
-    return (
-      <div>
-        <em>{errorStr}</em>
-      </div>
-    );
-  }
-  // Mail link generated with https://mailtolink.me/
-  const emailLink = `mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy.%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0AThe%20error%3A%0D%0A%0D%0A${encodeURIComponent(
-    errorStr,
-  )}`;
-  return (
-    <div className={classes.errorWrapper}>
-      <p>
-        Oops, something went wrong! Please contact us.{' '}
-        <a href={emailLink} target='_blank' rel='noopener noreferrer'>
-          Here is an email prefilled with the error message below
-        </a>
-        .
-      </p>
-      <p className={classes.errorWrapper2}>
-        <em>{/* error.message || */ errorStr}</em>
-      </p>
-      <hr />
-    </div>
-  );
-});
