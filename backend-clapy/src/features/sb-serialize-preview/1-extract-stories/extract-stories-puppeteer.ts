@@ -96,12 +96,7 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
     // E.g. args and initialArgs can contain functions as handler props.
     return JSON.parse(JSON.stringify({ v, stories, title: brandTitle })) as SbStoriesWrapper;
   } catch (error: any) {
-    try {
-      return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
-    } catch (error) {
-      const dummyError = new Error('Unknown error while catching the error in puppeteer');
-      return { hasError: true, message: dummyError.message, stack: dummyError.stack } as ErrorResp;
-    }
+    return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
   }
 }
 
