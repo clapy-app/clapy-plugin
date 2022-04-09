@@ -17,20 +17,20 @@ if (!isDev && !isStaging && !isProd) {
 
 // Add here non-confidential environment-based configurations (e.g. domains, base URLs)
 const dev = {
-  auth0Domain: 'aol-perso.eu.auth0.com',
-  auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
+  auth0Domain: 'clapy.eu.auth0.com',
+  auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
   baseUrl: 'http://localhost:4141',
 };
 
 const staging = {
-  auth0Domain: 'aol-perso.eu.auth0.com',
-  auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
+  auth0Domain: 'clapy.eu.auth0.com',
+  auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
   baseUrl: 'todo',
 };
 
 const prod = {
-  auth0Domain: 'aol-perso.eu.auth0.com',
-  auth0ClientId: 'UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9',
+  auth0Domain: 'clapy.eu.auth0.com',
+  auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
   baseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 

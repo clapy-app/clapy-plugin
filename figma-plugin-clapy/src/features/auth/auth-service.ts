@@ -116,9 +116,9 @@ export async function getAuth0Id() {
 export const roleAlphaDTC = 'alpha_design_to_code';
 
 export interface AccessTokenDecoded {
-  // Audience - if array, second member could be "https://aol-perso.eu.auth0.com/userinfo"
+  // Audience - if array, second member could be "https://clapy.eu.auth0.com/userinfo"
   aud: 'clapy' | ['clapy', ...string[]];
-  azp: string; // "UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9" - Client ID of the app to which the token was delivered
+  azp: string; // "6erPCh883JBV4COxwAHLbhbgNgarqaq5" - Client ID of the app to which the token was delivered
   exp: number; // 1647606409 - Expiration time
   'https://hasura.io/jwt/claims': {
     'x-hasura-allowed-roles': string[]; // ['team@earlymetrics.com', 'all@foo.com']
@@ -127,7 +127,7 @@ export interface AccessTokenDecoded {
   };
   'https://clapy.co/roles'?: string[];
   iat: number; // 1647520009 - Issued at
-  iss: string; // "https://aol-perso.eu.auth0.com/" - Issuer
+  iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
   sub: string; // "auth0|622f597dc4b56e0071615ebe" - auth0 user ID
 }
