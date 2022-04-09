@@ -31,21 +31,16 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         } else {
           const imageUrl = images[fill.imageHash];
           bgImages.push(`url("${imageUrl}")`);
-          if (fill.scaleMode === 'FIT') {
-            bgSizes.push('contain');
-          } else if (fill.scaleMode === 'FILL' || fill.scaleMode === 'CROP' || fill.scaleMode === 'TILE') {
-            // To support TILE, we need to calculate the image size based on intrinsic sizes and fill.scalingFactor (percentage). To get the intrinsic size of the images:
-            // https://stackoverflow.com/questions/15696527/node-get-image-properties-height-width
-            // For CROP, no idea how to get the image position in the crop. It doesn't seem to be available in the fill object.
-            // In the meanwhile, in both cases, we fallback to FILL behavior.
-            bgSizes.push('cover');
-          } else {
+
+          let scaleMode = fill.scaleMode;
+          if (!scaleModeToBgSize[scaleMode]) {
             warnNode(
               node,
               'TODO What, a fill type which is none of FIT, FILL, CROP, TILE? Not supported and to check. We fallback to FILL behavior.',
             );
-            bgSizes.push('cover');
+            scaleMode = 'FILL';
           }
+          bgSizes.push(scaleModeToBgSize[scaleMode]);
 
           // Apply the first opacity I find
           addOpacity(styles, fill.opacity);
@@ -85,3 +80,14 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
     // }
   }
 }
+
+const scaleModeToBgSize = {
+  FIT: 'contain',
+  FILL: 'cover',
+  // To support TILE, we need to calculate the image size based on intrinsic sizes and fill.scalingFactor (percentage). To get the intrinsic size of the images:
+  // https://stackoverflow.com/questions/15696527/node-get-image-properties-height-width
+  // For CROP, no idea how to get the image position in the crop. It doesn't seem to be available in the fill object.
+  // In the meanwhile, in both cases, we fallback to FILL behavior.
+  CROP: 'cover',
+  TILE: 'cover',
+};
