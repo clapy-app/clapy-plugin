@@ -98,7 +98,7 @@ export async function extractStoriesPuppeteer(sbUrl: string) {
       return { hasError: true, message: error.message, stack: error.stack, status: error.status } as ErrorResp;
     } catch (error) {
       const dummyError = new Error('Unknown error while catching the error in puppeteer');
-      return { hasError: true, message: dummyError.message, stack: dummyError.stack };
+      return { hasError: true, message: dummyError.message, stack: dummyError.stack } as ErrorResp;
     }
   }
 }
