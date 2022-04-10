@@ -41,6 +41,12 @@ function zeroOneToHex(value: number) {
   return hex.length === 1 ? `0${hex}` : hex;
 }
 
+export function round(num: number, precision = 4) {
+  let res = Math.round(num * 10 ** precision) / 10 ** precision;
+  // To avoid -0 (not nice for display)
+  return res === 0 ? 0 : res;
+}
+
 function parseTransformationMatrix(transformationMatrix: Transform) {
   const [[a, c, tx], [b, d, ty]] = transformationMatrix;
   const sx = round(Math.sign(a) * Math.sqrt(a * a + b * b));
@@ -56,12 +62,6 @@ function parseTransformationMatrix(transformationMatrix: Transform) {
     sy,
     rotation, // in degrees
   };
-}
-
-function round(num: number, precision = 4) {
-  let res = Math.round(num * 10 ** precision) / 10 ** precision;
-  // To avoid -0 (not nice for display)
-  return res === 0 ? 0 : res;
 }
 
 function radiansToDegrees(radians: number) {
