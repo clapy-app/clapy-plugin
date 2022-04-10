@@ -3,7 +3,7 @@ import jwtDecode from 'jwt-decode';
 import { handleError } from '../../common/error-utils';
 import { openWindowStep1, openWindowStep2 } from '../../common/front-utils';
 import { wait } from '../../common/general-utils';
-import { fetchPlugin } from '../../common/plugin-utils';
+import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { dispatchOther } from '../../core/redux/redux.utils';
 import { env } from '../../environment/env';
@@ -12,7 +12,8 @@ import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoad
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
-const redirectUri = `${apiBaseUrl}/login/callback`;
+const redirectUri = `${apiBaseUrl}/login/callback?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
+const loggedOutCallbackUrl = `${apiBaseUrl}/logged-out?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 
 let _accessToken: string | null = null;
 /**
@@ -99,7 +100,7 @@ export function logout() {
   _tokenType = null;
   const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
     client_id: auth0ClientId,
-    returnTo: `${apiBaseUrl}/logged-out`,
+    returnTo: loggedOutCallbackUrl,
   });
   window.open(url, '_blank');
   fetchPlugin('clearCachedTokens').catch(handleError);
@@ -164,6 +165,7 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
     code,
     redirect_uri: redirectUri,
     code_verifier: verifier,
+    from: isFigmaPlugin ? 'desktop' : 'browser',
   };
 
   const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, {

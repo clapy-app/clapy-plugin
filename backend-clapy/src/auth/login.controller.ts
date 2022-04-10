@@ -29,10 +29,11 @@ export class LoginController {
   @Get('debug')
   @Render('debug')
   @IsBrowserGet()
-  debug() {
+  debug(@Query('from') from: string = 'browser') {
     return {
       inMemoryReadTokenCache: JSON.stringify(inMemoryReadTokenCache),
       inMemoryWriteTokenCache: JSON.stringify(inMemoryWriteTokenCache),
+      from,
     };
   }
 
@@ -56,7 +57,11 @@ export class LoginController {
   @Get('login/callback')
   @Render('login-callback')
   @IsBrowserGet()
-  loginCallback(@Query('code') code: string, @Query('state') writeToken: string) {
+  loginCallback(
+    @Query('code') code: string,
+    @Query('state') writeToken: string,
+    @Query('from') from: string = 'browser',
+  ) {
     const writeTokenEntry = inMemoryWriteTokenCache[writeToken];
     if (!writeTokenEntry) {
       throw new Error(`Write token invalid or already consumed`);
@@ -72,14 +77,14 @@ export class LoginController {
     if (writeTokenEntry) {
       delete inMemoryWriteTokenCache[writeToken];
     }
-    return { writeToken, authEnv };
+    return { authEnv, from };
   }
 
   @Get('logged-out')
   @Render('logged-out')
   @IsBrowserGet()
-  loggedOut() {
-    return {};
+  loggedOut(@Query('from') from: string = 'browser') {
+    return { from };
   }
 
   @Get('read-code')
@@ -100,7 +105,7 @@ export class LoginController {
   }
 
   @Post('proxy-get-token')
-  proxyToken(@Body() body: any, @Headers('read_token') readToken: string) {
+  proxyToken(@Body() body: any = {}, @Headers('read_token') readToken: string) {
     if (!readToken) throw new Error(`No read_token in query parameters.`);
     if (!inMemoryReadTokenCache[readToken]) throw new Error(`Invalid read_token in query parameters.`);
 

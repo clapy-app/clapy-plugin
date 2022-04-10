@@ -98,7 +98,15 @@ async function bootstrap() {
   // }
 
   // Security: various middleware (https://docs.nestjs.com/techniques/security)
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          'script-src': ["'self'", "'unsafe-inline'"],
+        },
+      },
+    }),
+  );
   // Security: add rate limit
   app.use(
     rateLimit({

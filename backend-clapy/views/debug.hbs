@@ -9,6 +9,16 @@
 <body>
   <p>Read token cache: {{ inMemoryReadTokenCache }}</p>
   <p>Write token cache: {{ inMemoryWriteTokenCache }}</p>
+  <script type="text/javascript">
+    if ("{{ from }}" === "desktop") {
+      window.location.href = 'figma://clapy';
+    } else {
+      if (window.opener) {
+        window.opener.focus();
+      }
+      window.close();
+    }
+  </script>
 </body>
 
 </html>

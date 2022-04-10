@@ -4,12 +4,6 @@
 <head>
   <meta charset="utf-8" />
   <title>Clapy</title>
-<script type="text/javascript">
-  if (window.opener) {
-    window.opener.focus();
-    window.close();
-  }
-</script>
 </head>
 
 <body>
@@ -48,6 +42,16 @@
 
     //}
   })().catch(err => console.error(err));
+</script>
+<script type="text/javascript">
+  if ("{{ from }}" === "desktop") {
+    window.location.href = 'figma://clapy';
+  } else {
+    if (window.opener) {
+      window.opener.focus();
+    }
+    window.close();
+  }
 </script>
 
 </html>
