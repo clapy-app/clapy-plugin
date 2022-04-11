@@ -42,6 +42,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
       fontFamiliesUsed: new Set(),
+      assetsAlreadyUsed: new Set(),
       resources,
       cssFiles,
       images: figmaConfig.images,

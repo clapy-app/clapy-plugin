@@ -1,7 +1,8 @@
+import filetype from 'magic-bytes.js';
+
 import { flags } from '../../../common/app-config';
-import { ExportImages } from '../../../common/app-models';
 import { warnNode } from '../../../common/error-utils';
-import { baseBlacklist, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
+import { baseBlacklist, ExportImageEntry, ExportImages, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
 import {
   isChildrenMixin,
   isFillsArray,
@@ -140,8 +141,25 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
               JSON.stringify(fill),
             );
           } else {
+            const image = figma.getImageByHash(fill.imageHash);
             const imageFigmaUrl = `https://www.figma.com/file/${figma.fileKey}/image/${fill.imageHash}`;
-            context.images[fill.imageHash] = imageFigmaUrl;
+            const imageObj: ExportImageEntry = {
+              url: imageFigmaUrl,
+            };
+            if (!image) {
+              warnNode(node, 'BUG Image hash available in fill, but image not found in global figma.getImageByHash.');
+            } else {
+              const fileType = filetype(await image.getBytesAsync());
+              // { extension: "png",
+              //   mime: "image/png",
+              //   typename: "png" }
+              if (!image || !fileType[0]) {
+                warnNode(node, 'BUG Image file type is not recognized by the file-type library.');
+              } else {
+                Object.assign(imageObj, fileType[0]);
+              }
+            }
+            context.images[fill.imageHash] = imageObj;
           }
         }
       }

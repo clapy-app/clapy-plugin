@@ -1,11 +1,11 @@
 import { DeclarationPlain } from 'css-tree';
 import { SourceFile, ts } from 'ts-morph';
 
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportImageMap } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
-export type CsbDict = Dict<{ content: string }>;
+export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
 export type CodeDict = Dict<string>;
 
 export type TagName = keyof JSX.IntrinsicElements;
@@ -15,9 +15,10 @@ export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
 export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly fontFamiliesUsed: Set<string>;
+  readonly assetsAlreadyUsed: Set<string>;
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
-  readonly images: Dict<string>;
+  readonly images: ExportImageMap;
 }
 
 export interface ComponentContext {

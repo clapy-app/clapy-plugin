@@ -19,6 +19,9 @@ module.exports = (env, argv) => {
   const isDevEnv = appEnv === 'dev' || appEnv === 'development';
   const isStagingEnv = appEnv === 'staging';
   const isProdEnv = appEnv === 'production' || appEnv === 'prod';
+  const hasJsxRuntime = true;
+  const shouldUseReactRefresh = true;
+  const shouldUseSourceMap = true;
   // If not production and not browser, it's a normal dev env in Figma.
 
   require('dotenv').config({
@@ -66,6 +69,8 @@ module.exports = (env, argv) => {
       }),
     },
 
+    target: 'web',
+
     devServer: {
       static: {
         directory: path.join(__dirname, distFolder),
@@ -96,6 +101,28 @@ module.exports = (env, argv) => {
           ],
         },
 
+        // Process any JS outside of the app with Babel.
+        // Unlike the application JS, we only compile the standard ES features.
+        {
+          test: /\.(js|mjs)$/,
+          exclude: /@babel(?:\/|\\{1,2})runtime/,
+          loader: require.resolve('babel-loader'),
+          options: {
+            babelrc: false,
+            configFile: false,
+            compact: false,
+            presets: [[require.resolve('babel-preset-react-app/dependencies'), { helpers: true }]],
+            cacheDirectory: true,
+            // See #6846 for context on why cacheCompression is disabled
+            cacheCompression: false,
+            // Babel sourcemaps are needed for debugging into node_modules
+            // code.  Without the options below, debuggers like VSCode
+            // show incorrect code and set breakpoints on the wrong lines.
+            sourceMaps: shouldUseSourceMap,
+            inputSourceMap: shouldUseSourceMap,
+          },
+        },
+
         // Enables including CSS by doing "import './file.css'" in your TypeScript code
         {
           test: /\.(sa|sc|c)ss$/i,
@@ -115,7 +142,23 @@ module.exports = (env, argv) => {
     },
 
     // Webpack tries these extensions for you if you omit the extension like "import './file'"
-    resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js'] },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.jsx', '.js'],
+      fallback: {
+        fs: false,
+        stream: false,
+        buffer: require.resolve('buffer'),
+        'node:buffer': require.resolve('buffer'),
+        stream: require.resolve('stream-browserify'),
+        'node:stream': require.resolve('stream-browserify'),
+      },
+      alias: {
+        // 'node:buffer': 'buffer', // KO
+        // 'node:stream': 'stream', // KO
+        // 'stream': 'stream-browserify',
+        // zlib: 'browserify-zlib',
+      },
+    },
 
     output: {
       filename: '[name].js',
@@ -141,6 +184,11 @@ module.exports = (env, argv) => {
           PREVIEW_ENV: JSON.stringify(previewEnv),
           APP_ENV: JSON.stringify(appEnv),
         },
+      }),
+      // Work around for Buffer is undefined:
+      // https://github.com/webpack/changelog-v5/issues/10
+      new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
       }),
       // new BundleAnalyzerPlugin(),
     ].filter(Boolean),

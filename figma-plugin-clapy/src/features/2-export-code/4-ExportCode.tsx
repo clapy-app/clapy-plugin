@@ -1,12 +1,11 @@
 import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ExportImageMap } from '../../common/app-models';
 import { handleError } from '../../common/error-utils';
 import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
-import { CSBResponse } from '../../common/sb-serialize.model';
+import { CSBResponse, ExportImageMap } from '../../common/sb-serialize.model';
 import { Button } from '../../components/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';

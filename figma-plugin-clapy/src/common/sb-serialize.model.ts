@@ -1,3 +1,5 @@
+import { FileTypeResult } from 'file-type';
+
 export type { Property } from 'csstype';
 
 // import type { Properties as CSSProperties } from 'csstype';
@@ -241,7 +243,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode;
   root: SceneNodeNoMethod;
-  images: Dict<string>;
+  images: ExportImageMap;
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
@@ -278,3 +280,8 @@ type FrameNodeBlackList = typeof baseBlacklist[number];
 export interface CSBResponse {
   sandbox_id: string;
 }
+
+export type ExportImages = ExportImageMap;
+export type ExportImageEntry = { url: string } & Partial<FileTypeResult>;
+
+export type ExportImageMap = Dict<ExportImageEntry>;

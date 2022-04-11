@@ -9,6 +9,9 @@ export function getCompDirectory(compName: string) {
   return `src/components/${compName}`;
 }
 
+export const assetsDirName = 'assets';
+export const assetsPath = `src/${assetsDirName}`;
+
 // Copy the component template in project: placeholder to write the button code later
 export async function createComponent(project: Project, name: string) {
   // TypeScript

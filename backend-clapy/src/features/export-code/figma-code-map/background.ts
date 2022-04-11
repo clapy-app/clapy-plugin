@@ -4,8 +4,10 @@ import { PropertiesHyphen } from 'csstype';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
+import { assetsDirName, assetsPath } from '../create-ts-compiler/3-create-component';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
+import { genUniqueName } from './details/ts-ast-utils';
 import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
 import { addOpacity } from './opacity';
 
@@ -37,8 +39,16 @@ export function backgroundFigmaToCode(
         if (!fill.imageHash) {
           warnNode(node, 'Fill image has null imageHash! Not expected, to debug. Fill:', JSON.stringify(fill));
         } else {
-          const imageUrl = images[fill.imageHash];
-          bgImages.push(`url("${imageUrl}")`);
+          const imageEntry = images[fill.imageHash];
+
+          const {
+            componentContext: { projectContext },
+          } = context;
+          const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
+          const imageFileName = `${assetName}.${imageEntry.ext || 'jpg'}`;
+          projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+
+          bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
 
           let scaleMode = fill.scaleMode;
           if (!scaleModeToBgSize[scaleMode]) {
