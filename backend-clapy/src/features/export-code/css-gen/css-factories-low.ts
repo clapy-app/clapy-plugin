@@ -3,6 +3,8 @@ import {
   BlockPlain,
   ClassSelector,
   Combinator,
+  Comment,
+  CssNodePlain,
   DeclarationPlain,
   Dimension,
   Identifier,
@@ -16,11 +18,12 @@ import {
   StyleSheetPlain,
   TypeSelector,
   ValuePlain,
+  WhiteSpace,
 } from 'css-tree';
 
 import { csstree } from '../create-ts-compiler/csstree';
 
-export function cssAstToString(css: StyleSheetPlain) {
+export function cssAstToString(css: CssNodePlain) {
   return csstree.generate(csstree.fromPlainObject(css));
 }
 
@@ -143,4 +146,20 @@ export function mkOperatorCss(value: CssOperators) {
     value,
   };
   return dimension;
+}
+
+export function mkNewLine() {
+  const nl: WhiteSpace = {
+    type: 'WhiteSpace',
+    value: '\n',
+  };
+  return nl;
+}
+
+export function mkCommentCss(value: string) {
+  const comment: Comment = {
+    type: 'Comment',
+    value,
+  };
+  return comment;
 }

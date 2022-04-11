@@ -5,7 +5,7 @@ import { NodeContextWithBorders } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { positionAbsoluteFigmaToCode } from '../figma-code-map/position-absolute';
-import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet } from './css-type-utils';
+import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet, stylesToList } from './css-type-utils';
 
 export function addRulesToAppCss(appCss: string, parentNode: SceneNodeNoMethod) {
   if (!isValidNode(parentNode)) {
@@ -27,7 +27,7 @@ export function addRulesToAppCss(appCss: string, parentNode: SceneNodeNoMethod) 
     if (isRule(child) && isRootRule(child) && isDeclarationListOrThrow(child.block.children)) {
       const block: BlockPlain = {
         type: 'Block',
-        children: Object.values(styles),
+        children: stylesToList(styles),
       };
       const block2 = csstree.fromPlainObject(block) as Block;
       child.block.children.appendList(block2.children as List<Declaration>);

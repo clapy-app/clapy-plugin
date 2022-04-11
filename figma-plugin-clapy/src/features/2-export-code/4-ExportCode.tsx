@@ -11,6 +11,7 @@ import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
 import { selectIsAlphaDTCUser } from '../auth/auth-slice';
+import { uploadAssetFromUrl } from './cloudinary';
 
 export const ExportCode: FC = memo(function ExportCode() {
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
@@ -32,15 +33,20 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       setPreviewUrl('loading');
 
       // Extract the Figma configuration
-      const [parent, root, imagesFigmaIds] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, imagesExtracted] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap = {};
       const nodes = { parent, root, images };
 
       // Upload assets to a CDN before generating the code
-      for (const [imageFigmaId, imageFigmaUrl] of Object.entries(imagesFigmaIds)) {
+      for (const [imageHash, imageFigmaUrl] of Object.entries(imagesExtracted)) {
         // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
         // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
-        images[imageFigmaId] = imageFigmaUrl;
+
+        // Replace Figma asset URL with our own CDN. Benefits:
+        // - Avoid CORS issue in codesandbox when exporting the project as zip
+        // - Allows image compression if useful later, instead of keeping the original HD image.
+        const url = await uploadAssetFromUrl(imageFigmaUrl.url, imageHash);
+        images[imageHash] = { ...imageFigmaUrl, url };
       }
 
       // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique

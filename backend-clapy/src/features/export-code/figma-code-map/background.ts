@@ -53,6 +53,8 @@ export function backgroundFigmaToCode(
 
           // Write image in public directory - the codesandbox workaround
           projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
+          // stylesToList() includes a workaround for webpack to ignore those public paths (to work with CRA CLI)
+          // (add comment `webpackIgnore: true`).
           bgImages.push(`url("${imageFileName}")`);
 
           let scaleMode = fill.scaleMode;
