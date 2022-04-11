@@ -1,6 +1,8 @@
-import { CssNode, Declaration, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
+import { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
 
+import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { csstree } from '../create-ts-compiler/csstree';
+import { mkCommentCss, mkNewLine } from './css-factories-low';
 
 export function isStyleSheet(node: CssNode): node is StyleSheet {
   return node.type === 'StyleSheet';
@@ -48,4 +50,23 @@ export function getRuleFirstSelector(node: Rule) {
 export function isRootRule(node: Rule) {
   const selector = getRuleFirstSelector(node);
   return csstree.generate(selector) === '.root';
+}
+
+export function stylesToList(styles: Dict<DeclarationPlain>): DeclarationPlain[] {
+  const stylesList: DeclarationPlain[] = [];
+  for (const style of Object.values(styles)) {
+    // Workaround described in background.ts: prefix url('path_in_public_dir') with /* webpackIgnore: true */
+    // to work both with CRA CLI and codesandbox.
+    // - codesandbox: put assets in public folder instead of source (csb bundling doesn't process CSS url() :( )
+    // - CRA CLI with the above comment to leave the public URL instead of having webpack processing it.
+    if (style.property === 'background-image') {
+      stylesList.push(
+        mkNewLine() as any,
+        mkCommentCss(' webpackIgnore: true - to make it works in codesandbox ') as any,
+      );
+    }
+
+    stylesList.push(style);
+  }
+  return stylesList;
 }

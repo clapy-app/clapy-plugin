@@ -1,4 +1,4 @@
-import { ExportImages } from '../../../common/app-models';
+import { ExportImages } from '../../../common/sb-serialize.model';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { nodeToObject, SerializeContext } from './nodeToObject';
 

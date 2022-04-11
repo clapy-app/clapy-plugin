@@ -42,6 +42,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
     const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
       fontFamiliesUsed: new Set(),
+      assetsAlreadyUsed: new Set(),
       resources,
       cssFiles,
       images: figmaConfig.images,
@@ -84,7 +85,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
-    if (!skipCsbUpload) {
+    if (!env.isDev || !skipCsbUpload) {
       const csbResponse = await uploadToCSB(csbFiles);
       perfMeasure('l');
       return csbResponse;

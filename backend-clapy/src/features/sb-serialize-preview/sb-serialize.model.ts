@@ -241,7 +241,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode;
   root: SceneNodeNoMethod;
-  images: Dict<string>;
+  images: ExportImageMap;
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
@@ -278,3 +278,16 @@ type FrameNodeBlackList = typeof baseBlacklist[number];
 export interface CSBResponse {
   sandbox_id: string;
 }
+
+// From magic-bytes.js, for portability with the backend that doesn't have the lib
+type Info = {
+  mime?: string;
+  extension?: string;
+};
+type GuessedFile = Info & {
+  typename: string;
+};
+export type ExportImages = ExportImageMap;
+export type ExportImageEntry = { url: string } & Partial<GuessedFile>;
+
+export type ExportImageMap = Dict<ExportImageEntry>;

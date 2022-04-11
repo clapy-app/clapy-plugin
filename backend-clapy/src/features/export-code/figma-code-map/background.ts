@@ -1,19 +1,29 @@
+import { extractLinearGradientParamsFromTransform, extractRadialOrDiamondGradientParams } from '@figma-plugin/helpers';
 import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import { NodeContextWithBorders } from '../code.model';
+import { publicPath } from '../create-ts-compiler/3-create-component';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
+import { genUniqueName } from './details/ts-ast-utils';
+import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
 import { addOpacity } from './opacity';
 
-export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+export function backgroundFigmaToCode(
+  context: NodeContextWithBorders,
+  node: ValidNode,
+  styles: Dict<DeclarationPlain>,
+) {
   // Text color is handled separately (color.ts)
   if (isText(node) || isVector(node) || isGroup(node)) return;
 
   const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
   if (visibleFills.length) {
+    const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
+    const width = node.width - borderRightWidth - borderLeftWidth;
+    const height = node.height - borderTopWidth - borderBottomWidth;
     const { images } = context.componentContext.projectContext;
     const bgColors: string[] = [];
     const bgImages: string[] = [];
@@ -29,8 +39,23 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         if (!fill.imageHash) {
           warnNode(node, 'Fill image has null imageHash! Not expected, to debug. Fill:', JSON.stringify(fill));
         } else {
-          const imageUrl = images[fill.imageHash];
-          bgImages.push(`url("${imageUrl}")`);
+          const imageEntry = images[fill.imageHash];
+
+          const {
+            componentContext: { projectContext },
+          } = context;
+          const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
+          const imageFileName = `${assetName}.${imageEntry.extension || 'jpg'}`;
+
+          // Write image in assets directory - the clean solution
+          // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+          // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
+
+          // Write image in public directory - the codesandbox workaround
+          projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
+          // stylesToList() includes a workaround for webpack to ignore those public paths (to work with CRA CLI)
+          // (add comment `webpackIgnore: true`).
+          bgImages.push(`url("${imageFileName}")`);
 
           let scaleMode = fill.scaleMode;
           if (!scaleModeToBgSize[scaleMode]) {
@@ -51,14 +76,45 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
           // }
         }
       } else if (fill.type === 'GRADIENT_LINEAR') {
-        // fill.gradientStops
+        const {
+          start: [startX, startY],
+          end: [endX, endY],
+        } = extractLinearGradientParamsFromTransform(width, height, fill.gradientTransform);
+        const angle = round(angleFromPointsAsCss(startX, startY, endX, endY), 1);
+        // This rule is an approximation. A Notion ticket is created to replace with an exact equivalent:
+        // https://www.notion.so/Fill-linear-gradient-convert-Figma-rule-into-the-exact-equivalent-in-CSS-6a8f9c7fd59047658256b0b88b7d3c38
         bgImages.push(
-          `linear-gradient(135deg, ${fill.gradientStops
+          `linear-gradient(${angle}deg, ${fill.gradientStops
+            .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
+            .join(', ')})`,
+        );
+      } else if (fill.type === 'GRADIENT_RADIAL' || fill.type === 'GRADIENT_DIAMOND') {
+        let {
+          rotation,
+          center: [centerX, centerY],
+          radius: [radiusX, radiusY],
+        } = extractRadialOrDiamondGradientParams(width, height, fill.gradientTransform);
+        // Same as linear, to improve. But even worse: extractRadialOrDiamondGradientParams is buggy, the radius tends to be wrong depending on the rotation.
+        // Rotation not supported either, but it can be trickier to support it.
+        bgImages.push(
+          `radial-gradient(ellipse ${radiusX}px ${radiusY}px at ${centerX}px ${centerY}px, ${fill.gradientStops
+            .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
+            .join(', ')})`,
+        );
+      } else if (fill.type === 'GRADIENT_ANGULAR') {
+        let {
+          rotation,
+          center: [centerX, centerY],
+          radius: [radiusX, radiusY],
+        } = extractRadialOrDiamondGradientParams(width, height, fill.gradientTransform);
+        // conic-gradient(from 66deg at 90px 101px, red, orange, yellow, green, blue)
+        bgImages.push(
+          `conic-gradient(from ${rotation + 90}deg at ${centerX}px ${centerY}px, ${fill.gradientStops
             .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
             .join(', ')})`,
         );
       } else {
-        warnNode(node, 'TODO Unsupported non solid background, fill', JSON.stringify(fill));
+        warnNode(node, 'TODO Unsupported background fill', JSON.stringify(fill));
       }
     }
     if (bgColors.length) {
@@ -91,3 +147,12 @@ const scaleModeToBgSize = {
   CROP: 'cover',
   TILE: 'cover',
 };
+
+function angleFromPointsAsCss(ax: number, ay: number, bx: number, by: number) {
+  const dy = by - ay;
+  const dx = bx - ax;
+  let theta = Math.atan2(dy, dx); // range (-PI, PI]
+  theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+  //if (theta < 0) theta = 360 + theta; // range [0, 360)
+  return theta + 90;
+}

@@ -1,6 +1,9 @@
 import axios from 'axios';
+import { createWriteStream } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
 import { dirname, resolve } from 'path';
+import * as stream from 'stream';
+import { promisify } from 'util';
 
 import { env } from '../../env-and-config/env';
 import { backendDir } from '../../root';
@@ -20,12 +23,30 @@ export async function uploadToCSB(files: CsbDict) {
 
 export async function writeToDisk(files: CsbDict) {
   Promise.all(
-    Object.entries(files).map(async ([path, { content }]) => {
+    Object.entries(files).map(async ([path, { content, isBinary }]) => {
       const dir = resolve(`${backendDir}/atest-gen/${dirname(path)}`);
       const file = resolve(`${backendDir}/atest-gen/${path}`);
       // console.log('Create:', file);
       await mkdir(dir, { recursive: true });
-      return writeFile(file, content);
+      if (!isBinary) {
+        return writeFile(file, content);
+      } else {
+        return downloadFile(content, file);
+      }
     }),
   );
+}
+
+const finished = promisify(stream.finished);
+
+export async function downloadFile(fileUrl: string, outputLocationPath: string) {
+  const writer = createWriteStream(outputLocationPath);
+  return axios({
+    method: 'get',
+    url: fileUrl,
+    responseType: 'stream',
+  }).then(async response => {
+    response.data.pipe(writer);
+    return finished(writer);
+  });
 }

@@ -16,6 +16,7 @@ import {
   isVector,
 } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
+import { stylesToList } from './css-gen/css-type-utils';
 import {
   addCssRule,
   genClassName,
@@ -114,7 +115,7 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
 
     if (!context.parentStyles || Object.keys(flexStyles).length) {
       const className = genClassName(context, node, isRoot);
-      const styleDeclarations = [...Object.values(styles), ...Object.values(flexStyles)];
+      const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
       let attributes: ts.JsxAttribute[] = [];
       if (styleDeclarations.length) {
         addCssRule(context, className, styleDeclarations);
@@ -149,7 +150,7 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     // Add styles for this node
     const context2 = mapTagStyles(context, node, styles);
     const className = genClassName(context2, node, isRoot);
-    const styleDeclarations = Object.values(styles);
+    const styleDeclarations = stylesToList(styles);
     let attributes: ts.JsxAttribute[] = [];
     if (styleDeclarations.length) {
       addCssRule(context, className, styleDeclarations);
@@ -191,10 +192,10 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
       }
     }
 
-    const styleDeclarations = Object.values(styles);
+    const styleDeclarations = stylesToList(styles);
     let attributes: ts.JsxAttribute[] = [];
     if (styleDeclarations.length) {
-      cssRule.block.children.push(...Object.values(styles));
+      cssRule.block.children.push(...styleDeclarations);
       attributes.push(mkClassAttr(className));
     } else {
       removeCssRule(context, cssRule, node);

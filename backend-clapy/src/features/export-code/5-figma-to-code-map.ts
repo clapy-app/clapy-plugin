@@ -4,6 +4,7 @@ import { ts } from 'ts-morph';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { ValidNode } from './create-ts-compiler/canvas-utils';
+import { stylesToList } from './css-gen/css-type-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
@@ -95,7 +96,7 @@ function textNodeToAst(
   let ast: ts.JsxChild = factory.createJsxText(textSegment.characters, false);
   if (!singleChild) {
     const className = genClassName(context);
-    addCssRule(context, className, Object.values(styles));
+    addCssRule(context, className, stylesToList(styles));
     const classAttr = mkClassAttr(className);
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {

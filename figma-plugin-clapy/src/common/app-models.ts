@@ -1,5 +1,5 @@
 import { _Routes, _Subscriptions } from '../backend/routes';
-import { Args, ArgTypes, Dict } from './sb-serialize.model';
+import { Args, ArgTypes } from './sb-serialize.model';
 
 export type ObjKey = string | number | symbol;
 
@@ -66,7 +66,3 @@ export interface NewVariant {
   j: number;
   args: Args;
 }
-
-export type ExportImages = ExportImageMap;
-
-export type ExportImageMap = Dict<string>;

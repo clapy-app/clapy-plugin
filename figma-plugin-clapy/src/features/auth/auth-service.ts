@@ -3,7 +3,7 @@ import jwtDecode from 'jwt-decode';
 import { handleError } from '../../common/error-utils';
 import { openWindowStep1, openWindowStep2 } from '../../common/front-utils';
 import { wait } from '../../common/general-utils';
-import { fetchPlugin } from '../../common/plugin-utils';
+import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { dispatchOther } from '../../core/redux/redux.utils';
 import { env } from '../../environment/env';
@@ -12,7 +12,8 @@ import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoad
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
-const redirectUri = `${apiBaseUrl}/login/callback`;
+const redirectUri = `${apiBaseUrl}/login/callback?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
+const loggedOutCallbackUrl = `${apiBaseUrl}/logged-out?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 
 let _accessToken: string | null = null;
 /**
@@ -99,7 +100,7 @@ export function logout() {
   _tokenType = null;
   const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
     client_id: auth0ClientId,
-    returnTo: `${apiBaseUrl}/logged-out`,
+    returnTo: loggedOutCallbackUrl,
   });
   window.open(url, '_blank');
   fetchPlugin('clearCachedTokens').catch(handleError);
@@ -116,9 +117,9 @@ export async function getAuth0Id() {
 export const roleAlphaDTC = 'alpha_design_to_code';
 
 export interface AccessTokenDecoded {
-  // Audience - if array, second member could be "https://aol-perso.eu.auth0.com/userinfo"
+  // Audience - if array, second member could be "https://clapy.eu.auth0.com/userinfo"
   aud: 'clapy' | ['clapy', ...string[]];
-  azp: string; // "UacC8wcgdrZyVtPU71J1SNqTuEN8rLe9" - Client ID of the app to which the token was delivered
+  azp: string; // "6erPCh883JBV4COxwAHLbhbgNgarqaq5" - Client ID of the app to which the token was delivered
   exp: number; // 1647606409 - Expiration time
   'https://hasura.io/jwt/claims': {
     'x-hasura-allowed-roles': string[]; // ['team@earlymetrics.com', 'all@foo.com']
@@ -127,7 +128,7 @@ export interface AccessTokenDecoded {
   };
   'https://clapy.co/roles'?: string[];
   iat: number; // 1647520009 - Issued at
-  iss: string; // "https://aol-perso.eu.auth0.com/" - Issuer
+  iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
   sub: string; // "auth0|622f597dc4b56e0071615ebe" - auth0 user ID
 }
@@ -164,6 +165,7 @@ async function fetchTokensFromCode(code: string, verifier: string, readToken: st
     code,
     redirect_uri: redirectUri,
     code_verifier: verifier,
+    from: isFigmaPlugin ? 'desktop' : 'browser',
   };
 
   const { data } = await apiPostUnauthenticated<ExchangeTokenResponse>('proxy-get-token', exchangeOptions, {
