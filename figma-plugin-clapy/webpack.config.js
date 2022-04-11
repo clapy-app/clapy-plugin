@@ -19,8 +19,6 @@ module.exports = (env, argv) => {
   const isDevEnv = appEnv === 'dev' || appEnv === 'development';
   const isStagingEnv = appEnv === 'staging';
   const isProdEnv = appEnv === 'production' || appEnv === 'prod';
-  const hasJsxRuntime = true;
-  const shouldUseReactRefresh = true;
   const shouldUseSourceMap = true;
   // If not production and not browser, it's a normal dev env in Figma.
 
@@ -144,18 +142,15 @@ module.exports = (env, argv) => {
     // Webpack tries these extensions for you if you omit the extension like "import './file'"
     resolve: {
       extensions: ['.tsx', '.ts', '.jsx', '.js'],
+      // Examples, if required:
       fallback: {
-        fs: false,
-        stream: false,
-        buffer: require.resolve('buffer'),
-        'node:buffer': require.resolve('buffer'),
-        stream: require.resolve('stream-browserify'),
-        'node:stream': require.resolve('stream-browserify'),
+        // fs: false,
+        // stream: false,
+        // buffer: require.resolve('buffer'),
+        // stream: require.resolve('stream-browserify'),
       },
       alias: {
-        // 'node:buffer': 'buffer', // KO
-        // 'node:stream': 'stream', // KO
-        // 'stream': 'stream-browserify',
+        // stream: 'stream-browserify',
         // zlib: 'browserify-zlib',
       },
     },
@@ -184,11 +179,6 @@ module.exports = (env, argv) => {
           PREVIEW_ENV: JSON.stringify(previewEnv),
           APP_ENV: JSON.stringify(appEnv),
         },
-      }),
-      // Work around for Buffer is undefined:
-      // https://github.com/webpack/changelog-v5/issues/10
-      new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer'],
       }),
       // new BundleAnalyzerPlugin(),
     ].filter(Boolean),
