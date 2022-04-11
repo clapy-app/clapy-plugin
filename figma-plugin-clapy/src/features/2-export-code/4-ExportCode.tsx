@@ -20,7 +20,7 @@ export const ExportCode: FC = memo(function ExportCode() {
 });
 
 // Flag for development only. Will be ignored in production.
-const enableCodeSandbox = false;
+const enableCodeSandbox = true;
 
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);

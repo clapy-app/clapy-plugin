@@ -11,6 +11,7 @@ export function getCompDirectory(compName: string) {
 
 export const assetsDirName = 'assets';
 export const assetsPath = `src/${assetsDirName}`;
+export const publicPath = `public`;
 
 // Copy the component template in project: placeholder to write the button code later
 export async function createComponent(project: Project, name: string) {

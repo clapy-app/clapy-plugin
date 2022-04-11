@@ -1,5 +1,3 @@
-import { FileTypeResult } from 'file-type';
-
 export type { Property } from 'csstype';
 
 // import type { Properties as CSSProperties } from 'csstype';
@@ -281,7 +279,15 @@ export interface CSBResponse {
   sandbox_id: string;
 }
 
+// From magic-bytes.js, for portability with the backend that doesn't have the lib
+type Info = {
+  mime?: string;
+  extension?: string;
+};
+type GuessedFile = Info & {
+  typename: string;
+};
 export type ExportImages = ExportImageMap;
-export type ExportImageEntry = { url: string } & Partial<FileTypeResult>;
+export type ExportImageEntry = { url: string } & Partial<GuessedFile>;
 
 export type ExportImageMap = Dict<ExportImageEntry>;

@@ -4,7 +4,7 @@ import { PropertiesHyphen } from 'csstype';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { assetsDirName, assetsPath } from '../create-ts-compiler/3-create-component';
+import { publicPath } from '../create-ts-compiler/3-create-component';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { genUniqueName } from './details/ts-ast-utils';
@@ -45,10 +45,15 @@ export function backgroundFigmaToCode(
             componentContext: { projectContext },
           } = context;
           const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
-          const imageFileName = `${assetName}.${imageEntry.ext || 'jpg'}`;
-          projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+          const imageFileName = `${assetName}.${imageEntry.extension || 'jpg'}`;
 
-          bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
+          // Write image in assets directory - the clean solution
+          // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+          // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
+
+          // Write image in public directory - the codesandbox workaround
+          projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
+          bgImages.push(`url("${imageFileName}")`);
 
           let scaleMode = fill.scaleMode;
           if (!scaleModeToBgSize[scaleMode]) {
