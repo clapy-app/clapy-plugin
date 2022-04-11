@@ -72,3 +72,7 @@ https://github.com/reworkcss/css  12M downloads, 1.4k likes -- seems to focus on
 downloads are weekly figures on npmjs.com.
 
 Inspiration to convert figma config to CSS: https://github.com/figma-plugin-helper-functions/figma-plugin-helpers/blob/master/src/helpers/getCSSStyles.ts
+
+## CDN for assets
+
+Uploaded on Cloudinary - Antoine OL account - https://cloudinary.com/console/c-4ef63b1d9baacdff4573fef39c2ef0/media_library/folders/home

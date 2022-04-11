@@ -241,7 +241,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode;
   root: SceneNodeNoMethod;
-  images: ExportImageMap;
+  images: ExportImageMap2;
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
@@ -287,7 +287,11 @@ type Info = {
 type GuessedFile = Info & {
   typename: string;
 };
-export type ExportImages = ExportImageMap;
-export type ExportImageEntry = { url: string } & Partial<GuessedFile>;
+export type ExportImageEntry = {
+  // Uint8Array serialized (with Array.from(uint8Array)).
+  // Unserialize with Uint8Array.from(bytes)
+  bytes: number[];
+} & Partial<GuessedFile>;
 
-export type ExportImageMap = Dict<ExportImageEntry>;
+export type ExportImagesFigma = Dict<ExportImageEntry>;
+export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;

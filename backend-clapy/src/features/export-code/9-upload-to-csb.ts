@@ -28,8 +28,15 @@ export async function writeToDisk(files: CsbDict) {
     rm(`${backendDir}/atest-gen/package.json`, { recursive: true, force: true }),
     rm(`${backendDir}/atest-gen/tsconfig.json`, { recursive: true, force: true }),
   ]);
-  Promise.all(
+  return Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
+      if (!content) {
+        console.warn('BUG No content at path', path);
+        if (isBinary) {
+          console.warn('(is binary)');
+        }
+        return;
+      }
       const dir = resolve(`${backendDir}/atest-gen/${dirname(path)}`);
       const file = resolve(`${backendDir}/atest-gen/${path}`);
       // console.log('Create:', file);
