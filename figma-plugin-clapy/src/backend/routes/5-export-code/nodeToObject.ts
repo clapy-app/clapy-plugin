@@ -187,11 +187,12 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       obj.mainComponent = nodeToObject(node.mainComponent, context, options);
     }
     return obj as SceneNodeNoMethod;
-  } catch (error) {
+  } catch (error: any) {
     if (typeof error === 'string') {
       error = new Error(error);
     }
-    Object.assign(error, { nodeName: node.name });
+    const nodeName = error.nodeName ? `${node.name} > ${error.nodeName}` : node.name;
+    Object.assign(error, { nodeName: nodeName });
     throw error;
   }
 }
