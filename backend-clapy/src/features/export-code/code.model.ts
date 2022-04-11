@@ -1,7 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import { SourceFile, ts } from 'ts-morph';
 
-import { Dict, ExportImageMap } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
@@ -18,7 +18,7 @@ export interface ProjectContext {
   readonly assetsAlreadyUsed: Set<string>;
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
-  readonly images: ExportImageMap;
+  readonly images: ExportImageMap2;
 }
 
 export interface ComponentContext {

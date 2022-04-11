@@ -1,4 +1,4 @@
-import { ExportImages } from '../../../common/sb-serialize.model';
+import { ExportImagesFigma } from '../../../common/sb-serialize.model';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { nodeToObject, SerializeContext } from './nodeToObject';
 
@@ -10,7 +10,7 @@ export function serializeSelectedNode() {
   const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
-  const images: ExportImages = {};
+  const images: ExportImagesFigma = {};
   const context: SerializeContext = { images };
 
   return Promise.all([

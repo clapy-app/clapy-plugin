@@ -5,8 +5,7 @@ const resourceType = 'auto';
 
 export const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
 
-export async function uploadAssetFromUintArrayRaw(fileAsUint8ArrayRaw: number[], imageHash: string) {
-  const fileUint = Uint8Array.from(fileAsUint8ArrayRaw);
+export async function uploadAssetFromUintArrayRaw(fileUint: Uint8Array, imageHash: string) {
   const blob = new Blob([fileUint]);
   return uploadAsset(blob, imageHash);
 }

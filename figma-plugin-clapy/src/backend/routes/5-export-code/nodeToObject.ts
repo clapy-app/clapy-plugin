@@ -2,7 +2,12 @@ import filetype from 'magic-bytes.js';
 
 import { flags } from '../../../common/app-config';
 import { warnNode } from '../../../common/error-utils';
-import { baseBlacklist, ExportImageEntry, ExportImages, SceneNodeNoMethod } from '../../../common/sb-serialize.model';
+import {
+  baseBlacklist,
+  ExportImageEntry,
+  ExportImagesFigma,
+  SceneNodeNoMethod,
+} from '../../../common/sb-serialize.model';
 import {
   isChildrenMixin,
   isFillsArray,
@@ -42,7 +47,7 @@ const textBlacklist = new Set<string>([...baseBlacklist, ...rangeProps, 'charact
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 export interface SerializeContext {
-  images: ExportImages;
+  images: ExportImagesFigma;
 }
 
 interface Options {
@@ -142,24 +147,24 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
             );
           } else {
             const image = figma.getImageByHash(fill.imageHash);
-            const imageFigmaUrl = `https://www.figma.com/file/${figma.fileKey}/image/${fill.imageHash}`;
-            const imageObj: ExportImageEntry = {
-              url: imageFigmaUrl,
-            };
             if (!image) {
               warnNode(node, 'BUG Image hash available in fill, but image not found in global figma.getImageByHash.');
             } else {
-              const fileType = filetype(await image.getBytesAsync());
-              // { extension: "png",
-              //   mime: "image/png",
-              //   typename: "png" }
+              // If I need the hidden URL later:
+              // https://www.figma.com/file/${figma.fileKey}/image/${fill.imageHash}
+              const uint8Array = await image.getBytesAsync();
+              const imageObj: ExportImageEntry = {
+                bytes: Array.from(uint8Array),
+              };
+              // E.g. [{ extension: "png", mime: "image/png", typename: "png" }]
+              const fileType = filetype(uint8Array);
               if (!image || !fileType[0]) {
                 warnNode(node, 'BUG Image file type is not recognized by the file-type library.');
               } else {
                 Object.assign(imageObj, fileType[0]);
               }
+              context.images[fill.imageHash] = imageObj;
             }
-            context.images[fill.imageHash] = imageObj;
           }
         }
       }
@@ -182,11 +187,12 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       obj.mainComponent = nodeToObject(node.mainComponent, context, options);
     }
     return obj as SceneNodeNoMethod;
-  } catch (error) {
+  } catch (error: any) {
     if (typeof error === 'string') {
       error = new Error(error);
     }
-    Object.assign(error, { nodeName: node.name });
+    const nodeName = error.nodeName ? `${node.name} > ${error.nodeName}` : node.name;
+    Object.assign(error, { nodeName: nodeName });
     throw error;
   }
 }
@@ -205,7 +211,22 @@ function treatAsImage(node: SceneNode) {
 function containsShapesOnly(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   for (const child of node.children) {
-    if (!isShapeExceptRectangle(child) && !isRectangle(child)) {
+    if (!isShapeExceptRectangle(child) && !isRectangleWithoutImage(child)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
+  if (!isRectangle(node)) {
+    return false;
+  }
+  if (!isFillsArray(node.fills)) {
+    return true;
+  }
+  for (const fill of node.fills) {
+    if (fill.type === 'IMAGE') {
       return false;
     }
   }

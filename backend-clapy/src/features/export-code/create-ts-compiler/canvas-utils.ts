@@ -128,14 +128,9 @@ export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is C
 
 export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
-export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
-
-export function isMyComp(node: SceneNodeNoMethod | Nil): node is MyCompNode {
-  return isFrame(node) || isComponentSet(node) || isComponent(node);
-}
-
+// ComponentSetNode is not included in FlexNode.
+export type FlexNode = FrameNode | ComponentNode | InstanceNode;
 // GroupNode doesn't have auto-layout
-export type FlexNode = FrameNode | ComponentNode | ComponentSetNode | InstanceNode;
 export type BlockNode = FlexNode | RectangleNode | GroupNode;
 export type ValidNode = BlockNode | TextNode | VectorNode;
 
@@ -148,7 +143,7 @@ export function isBlockNode(node: SceneNodeNoMethod | Nil): node is BlockNode {
 }
 
 export function isFlexNode(node: SceneNodeNoMethod | Nil): node is FlexNode {
-  return isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node);
+  return isFrame(node) || isComponent(node) || isInstance(node);
 }
 
 export function isStyledTextSegment(node: SceneNodeNoMethod | StyledTextSegment | Nil): node is StyledTextSegment {

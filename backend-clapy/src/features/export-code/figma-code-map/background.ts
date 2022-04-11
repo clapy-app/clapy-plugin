@@ -38,43 +38,48 @@ export function backgroundFigmaToCode(
       } else if (fill.type === 'IMAGE') {
         if (!fill.imageHash) {
           warnNode(node, 'Fill image has null imageHash! Not expected, to debug. Fill:', JSON.stringify(fill));
-        } else {
-          const imageEntry = images[fill.imageHash];
-
-          const {
-            componentContext: { projectContext },
-          } = context;
-          const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
-          const imageFileName = `${assetName}.${imageEntry.extension || 'jpg'}`;
-
-          // Write image in assets directory - the clean solution
-          // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
-          // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
-
-          // Write image in public directory - the codesandbox workaround
-          projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
-          // stylesToList() includes a workaround for webpack to ignore those public paths (to work with CRA CLI)
-          // (add comment `webpackIgnore: true`).
-          bgImages.push(`url("${imageFileName}")`);
-
-          let scaleMode = fill.scaleMode;
-          if (!scaleModeToBgSize[scaleMode]) {
-            warnNode(
-              node,
-              'TODO What, a fill type which is none of FIT, FILL, CROP, TILE? Not supported and to check. We fallback to FILL behavior.',
-            );
-            scaleMode = 'FILL';
-          }
-          bgSizes.push(scaleModeToBgSize[scaleMode]);
-
-          // Apply the first opacity I find
-          addOpacity(styles, fill.opacity);
-
-          // Rotation in background is not supported yet. The below code does not work that well.
-          // if (fill.rotation && !rotation) {
-          //   rotation = fill.rotation;
-          // }
+          continue;
         }
+        const imageEntry = images[fill.imageHash];
+
+        if (!imageEntry.url) {
+          warnNode(node, 'BUG node image fill without URL:', JSON.stringify(fill));
+          continue;
+        }
+
+        const {
+          componentContext: { projectContext },
+        } = context;
+        const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
+        const imageFileName = `${assetName}.${imageEntry.extension || 'jpg'}`;
+
+        // Write image in assets directory - the clean solution
+        // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+        // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
+
+        // Write image in public directory - the codesandbox workaround
+        projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
+        // stylesToList() includes a workaround for webpack to ignore those public paths (to work with CRA CLI)
+        // (add comment `webpackIgnore: true`).
+        bgImages.push(`url("${imageFileName}")`);
+
+        let scaleMode = fill.scaleMode;
+        if (!scaleModeToBgSize[scaleMode]) {
+          warnNode(
+            node,
+            'TODO What, a fill type which is none of FIT, FILL, CROP, TILE? Not supported and to check. We fallback to FILL behavior.',
+          );
+          scaleMode = 'FILL';
+        }
+        bgSizes.push(scaleModeToBgSize[scaleMode]);
+
+        // Apply the first opacity I find
+        addOpacity(styles, fill.opacity);
+
+        // Rotation in background is not supported yet. The below code does not work that well.
+        // if (fill.rotation && !rotation) {
+        //   rotation = fill.rotation;
+        // }
       } else if (fill.type === 'GRADIENT_LINEAR') {
         const {
           start: [startX, startY],
