@@ -9,6 +9,7 @@ import {
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import {
+  isBlendMixin,
   isChildrenMixin,
   isFillsArray,
   isGroup,
@@ -20,7 +21,9 @@ import {
   isRectangle,
   isShapeExceptRectangle,
   isText,
+  LayoutNode,
 } from '../../common/node-type-utils';
+import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -81,6 +84,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     const { skipChildren = false, skipParent = true, skipInstance = true } = options;
     const nodeIsShape = isShapeExceptRectangle(node);
     let exportAsSvg = nodeIsShape;
+    let exportAsImage = false;
     let obj: any;
     if (!context.isInInstance && isInstance(node)) {
       context = { ...context, isInInstance: true };
@@ -122,27 +126,58 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       obj._textSegments = node.getStyledTextSegments(rangeProps);
     }
 
+    const isBlend = isBlendMixin(node);
+    if (isBlend) {
+      if (containsImageRecursive(node)) {
+        exportAsImage = true;
+      } else {
+        exportAsSvg = true;
+      }
+    }
+
     // If image, export it and send to front
 
     if (exportAsSvg) {
-      obj.type = 'VECTOR' as VectorNode['type'];
-      if (nodeIsShape) {
-        node.effects = [];
-        node.effectStyleId = '';
+      let nodeToExport: T = node;
+      let copyForExport: LayoutNode | undefined = undefined;
+      try {
+        if (isBlend) {
+          // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
+          // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
+          // inside instances of components.
+          copyForExport = node.clone();
+          if (copyForExport.isMask) {
+            copyForExport.isMask = false;
+          }
+          nodeToExport = copyForExport as T;
+        }
+
+        obj.type = 'VECTOR' as VectorNode['type'];
+        if (isShapeExceptRectangle(nodeToExport)) {
+          nodeToExport.effects = [];
+          nodeToExport.effectStyleId = '';
+        }
+        if (isGroup(nodeToExport)) {
+          // Interesting properties like constraints are in the children nodes. Let's make a copy.
+          obj.constraints = (nodeToExport.children[0] as ConstraintMixin)?.constraints;
+        }
+
+        // Change all stroke positions to center to fix the bad SVG export bug
+        fixStrokeAlign(nodeToExport);
+
+        // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
+        // But ideally, we should do:
+        // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
+
+        try {
+          obj._svg = utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
+        } catch (error) {
+          warnNode(node, 'Failed to export node as SVG, ignoring.');
+          console.error(error);
+        }
+      } finally {
+        removeNode(copyForExport);
       }
-      if (isGroup(node)) {
-        // Interesting properties like constraints are in the children nodes. Let's make a copy.
-        obj.constraints = (node.children[0] as ConstraintMixin)?.constraints;
-      }
-
-      // Change all stroke positions to center to fix the bad SVG export bug
-      fixStrokeAlign(node);
-
-      // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
-      // But ideally, we should do:
-      // obj._svg = new TextDecoder().decode(await node.exportAsync({ format: 'SVG' }));
-
-      obj._svg = utf8ArrayToStr(await node.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
     } else if (isMinimalFillsMixin(node) && isFillsArray(node.fills)) {
       for (const fill of node.fills) {
         if (fill.type === 'IMAGE') {
@@ -265,6 +300,11 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
       return false;
     }
   }
+  return true;
+}
+
+function containsImageRecursive(node: SceneNode): boolean {
+  // TODO
   return true;
 }
 

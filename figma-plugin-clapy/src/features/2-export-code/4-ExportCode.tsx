@@ -23,7 +23,7 @@ export const ExportCode: FC = memo(function ExportCode() {
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
-const sendToApi = true;
+const sendToApi = false;
 
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);

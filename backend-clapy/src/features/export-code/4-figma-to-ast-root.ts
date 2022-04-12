@@ -134,6 +134,10 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     const { projectContext, compName } = context.componentContext;
     // It is already a string, we have mocked it. We just reuse the interface for 90 % of the usages (much easier).
     let svgContent = (await node.exportAsync({ format: 'SVG' })) as unknown as string;
+    if (!svgContent) {
+      warnNode(node, 'No SVG content, skipping.');
+      return;
+    }
     // Remove width and height from SVG. Let the CSS define it.
     svgContent = svgContent.replace(/^<svg width="\d+" height="\d+"/, '<svg');
 

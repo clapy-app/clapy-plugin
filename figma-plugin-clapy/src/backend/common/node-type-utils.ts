@@ -55,6 +55,9 @@ type LayoutNodeExtended =
   | LinkUnfurlNode
   | MediaNode;
 
+// clone() method available on nodes: Page, frame, group, slice, rectangle, line, ellipse, polygon, star, vector, text, componentSet, component, instance, BooleanOperationNode, sticky, stamp, ShapeWithText, CodeBlockNode, Connector, Widget, Embed, LinkUnfurl, Media
+// Let's approximate with Layout.
+
 export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
   return !!node && layoutTypes.has(node.type);
 }
@@ -133,6 +136,11 @@ export function isMinimalStrokesMixin(node: BaseNode | MinimalStrokesMixin | Nil
 
 export function isMinimalFillsMixin(node: BaseNode | MinimalFillsMixin | Nil): node is MinimalFillsMixin {
   return !!(node as MinimalFillsMixin)?.fills;
+}
+
+// Has isMask property
+export function isBlendMixin(node: BaseNode | BlendMixin | Nil): node is BlendMixin {
+  return !!(node as BlendMixin)?.blendMode;
 }
 
 export function isFillsArray(node: MinimalFillsMixin['fills']): node is readonly Paint[] {
