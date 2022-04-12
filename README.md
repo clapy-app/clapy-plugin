@@ -43,8 +43,8 @@ Fork: https://github.com/antoineol/opentype.js
 
 - codesandbox uses parcel to bundle in the browser.
 - AST tools:
-    https://astexplorer.net/ to list AST tools
     https://ts-ast-viewer.com/ for typescript AST playground
+    https://astexplorer.net/ to list AST tools and play, e.g. CSS AST
 - Puppeteer optimised for concurrent requests: https://stackoverflow.com/questions/57898974/calling-puppeteer-from-rest-api
 
 ## Figma plugin tips

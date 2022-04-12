@@ -135,6 +135,7 @@ export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
         factory.createIdentifier('src'),
         factory.createJsxExpression(undefined, factory.createIdentifier(srcVarName)),
       ),
+      factory.createJsxAttribute(factory.createIdentifier('alt'), factory.createStringLiteral('')),
       ...extraAttributes,
     ]),
   );

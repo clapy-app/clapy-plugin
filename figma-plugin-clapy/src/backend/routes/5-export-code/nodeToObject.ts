@@ -22,6 +22,7 @@ import {
   isShapeExceptRectangle,
   isText,
   LayoutNode,
+  ShapeNode,
 } from '../../common/node-type-utils';
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
@@ -127,9 +128,10 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     }
 
     const isBlend = isBlendMixin(node);
-    if (isBlend) {
+    if (isBlend && node.isMask) {
       if (containsImageRecursive(node)) {
         exportAsImage = true;
+        exportAsSvg = false;
       } else {
         exportAsSvg = true;
       }
@@ -138,24 +140,24 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     // If image, export it and send to front
 
     if (exportAsSvg) {
-      let nodeToExport: T = node;
+      let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {
         if (isBlend) {
           // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
           // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
           // inside instances of components.
-          copyForExport = node.clone();
-          if (copyForExport.isMask) {
-            copyForExport.isMask = false;
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+          if ((nodeToExport as BlendMixin).isMask) {
+            (nodeToExport as BlendMixin).isMask = false;
           }
-          nodeToExport = copyForExport as T;
         }
 
         obj.type = 'VECTOR' as VectorNode['type'];
         if (isShapeExceptRectangle(nodeToExport)) {
-          nodeToExport.effects = [];
-          nodeToExport.effectStyleId = '';
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+          (nodeToExport as ShapeNode).effects = [];
+          (nodeToExport as ShapeNode).effectStyleId = '';
         }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
@@ -312,6 +314,14 @@ function getOppositeSide(rotation: number, adjacent: number) {
   const rotationRad = (rotation * Math.PI) / 180;
   const tangent = Math.sin(rotationRad);
   return tangent * adjacent;
+}
+
+function ensureCloned<T extends LayoutNode>(node: T, clone: T | undefined): [T, T] {
+  if (!clone) {
+    clone = node.clone() as T;
+    node = clone;
+  }
+  return [node, clone];
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349
