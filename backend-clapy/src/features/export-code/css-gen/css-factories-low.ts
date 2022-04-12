@@ -22,6 +22,7 @@ import {
 } from 'css-tree';
 
 import { csstree } from '../create-ts-compiler/csstree';
+import { round } from '../figma-code-map/details/utils-and-reset';
 
 export function cssAstToString(css: CssNodePlain) {
   return csstree.generate(csstree.fromPlainObject(css));
@@ -106,9 +107,13 @@ export function mkValueCss(children: ValueFragment[]) {
 }
 
 export function mkDimensionCss(value: number, unit: string) {
+  value = round(value);
+  if (value === 0) {
+    return mkNumberCss(0);
+  }
   const dimension: Dimension = {
     type: 'Dimension',
-    value: value.toString(),
+    value: round(value).toString(),
     unit,
   };
   return dimension;
@@ -132,7 +137,7 @@ export function mkRawCss(value: string) {
 export function mkNumberCss(value: number) {
   const dimension: NumberNode = {
     type: 'Number',
-    value: value.toString(),
+    value: round(value).toString(),
   };
   return dimension;
 }

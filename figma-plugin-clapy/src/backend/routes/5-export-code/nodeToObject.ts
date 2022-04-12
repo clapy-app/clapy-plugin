@@ -48,6 +48,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 export interface SerializeContext {
   images: ExportImagesFigma;
+  isInInstance?: boolean;
 }
 
 interface Options {
@@ -55,6 +56,9 @@ interface Options {
   skipParent: boolean;
   skipInstance: boolean;
 }
+
+// Let's keep it a week or two to ensure we don't need it. Then remove the flag and dead code if we validate the rotation workaround is not required anymore.
+const useCancelRotationWorkaround = false;
 
 /**
  * Transform node to object with keys, that are hidden by default.
@@ -75,21 +79,24 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       throw new Error('NODE_NOT_VISIBLE');
     }
     const { skipChildren = false, skipParent = true, skipInstance = true } = options;
-    let exportAsSvg = false;
+    const nodeIsShape = isShapeExceptRectangle(node);
+    let exportAsSvg = nodeIsShape;
     let obj: any;
-    if (containsShapesOnly(node)) {
+    if (!context.isInInstance && isInstance(node)) {
+      context = { ...context, isInInstance: true };
+    }
+    if (!exportAsSvg && containsShapesOnly(node)) {
       exportAsSvg = true;
     }
-    const nodeIsShape = isShapeExceptRectangle(node);
-    const saveAsSvg = nodeIsShape || exportAsSvg;
     const nodeIsLayout = isLayout(node);
-    const cancelRotation = saveAsSvg && nodeIsLayout && node.rotation && !isInstance(node);
+    const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
+    const cancelRotation = useCancelRotationWorkaround && isSvgWithRotation && !context.isInInstance;
 
     let currentRotation: number | undefined = undefined;
     if (cancelRotation) {
       // SVG exports include the rotation, but coordinates don't match.
       // The workaround is to cancel the rotation, the time to extract the various properties. And we still add the rotation in the exported object to be applied in the output.
-      // A better approach would be to better understand the link between the rotation and the coordinates in the exported SVG to write the corresponding CSS (would be better in terms of performance?)
+      // A better approach would be to better understand the link between the rotation and the coordinates in the exported SVG to write the corresponding CSS (would be better in terms of performance? + work in instances)
       currentRotation = node.rotation;
       node.rotation = 0;
     }
@@ -117,7 +124,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
 
     // If image, export it and send to front
 
-    if (nodeIsShape || exportAsSvg) {
+    if (exportAsSvg) {
       obj.type = 'VECTOR' as VectorNode['type'];
       if (nodeIsShape) {
         node.effects = [];
@@ -173,6 +180,34 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     if (cancelRotation) {
       node.rotation = currentRotation as number;
       obj.rotation = currentRotation as number;
+    } else if (isSvgWithRotation) {
+      const { rotation, width, height } = obj;
+      const rotationRad = (rotation * Math.PI) / 180;
+      // Adjust x/y depending on the rotation. Figma's x/y are the coordinates of the original top/left corner after rotation. In CSS, it's the top-left corner of the final square containing the SVG.
+      // Sounds a bit complex. We could avoid that by rotating in CSS instead. But It will have other side effects, like the space used in the flow (different in Figma and CSS).
+      if (rotation >= -180 && rotation <= -90) {
+        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        obj.x -= obj.width;
+        obj.y -= getOppositeSide(90 - (rotation + 180), height);
+      } else if (rotation > -90 && rotation <= 0) {
+        obj.x += getOppositeSide(rotation, height);
+        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        // Do nothing for y
+      } else if (rotation > 0 && rotation <= 90) {
+        obj.width = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+        obj.height = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        // Do nothing for x
+        obj.y -= getOppositeSide(rotation, width);
+      } else if (rotation > 90 && rotation <= 180) {
+        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        obj.x -= getOppositeSide(rotation - 90, width);
+        obj.y -= obj.height;
+      }
+      // Here, the rotation is already included in the exported SVG. We shouldn't keep the CSS rotation.
+      obj.rotation = 0;
     }
 
     if (node.parent && !skipParent) {
@@ -231,6 +266,12 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
     }
   }
   return true;
+}
+
+function getOppositeSide(rotation: number, adjacent: number) {
+  const rotationRad = (rotation * Math.PI) / 180;
+  const tangent = Math.sin(rotationRad);
+  return tangent * adjacent;
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349

@@ -62,26 +62,27 @@ export function genUniqueName(usageCache: Set<string>, baseName: string, pascalC
   return name;
 }
 
-// TODO delete? Unused?
-function sanitizeClassName(name: string) {
-  return camelize(name);
-  // Inspiration: https://stackoverflow.com/a/7627603/4053349
-  // return name.replace(/[^a-z0-9]/gi, '_');
-}
-
 // https://stackoverflow.com/a/2970667/4053349
 function pascalize(str: string) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
-    if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-    return match.toUpperCase();
-  });
+  return prefixIfNumber(
+    str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
+      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+      return match.toUpperCase();
+    }),
+  );
 }
 
 function camelize(str: string) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
-    if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-    return index === 0 ? match.toLowerCase() : match.toUpperCase();
-  });
+  return prefixIfNumber(
+    str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
+      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+      return index === 0 ? match.toLowerCase() : match.toUpperCase();
+    }),
+  );
+}
+
+function prefixIfNumber(varName: string) {
+  return varName.match(/^\d/) ? `_${varName}` : varName;
 }
 
 export function mkFragment(children: ts.JsxChild[]) {

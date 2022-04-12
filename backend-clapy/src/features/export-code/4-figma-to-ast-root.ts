@@ -161,6 +161,12 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     const ast = mkImg(svgPathVarName, attributes);
     return ast;
   } else if (isBlockNode(node)) {
+    // if (isComponent(node)) {
+    //   console.log('Component', node);
+    // } else if (isInstance(node)) {
+    //   console.log('Instance', node);
+    // }
+
     // Add tag styles
     const context2 = mapTagStyles(context, node, styles);
 

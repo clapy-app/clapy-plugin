@@ -46,3 +46,9 @@ export function keyBy<T>(array: T[], field: keyof T) {
 export function getDuration(start: number, end: number) {
   return Math.round(end - start) / 1000;
 }
+
+export function round(num: number, precision = 4) {
+  let res = Math.round(num * 10 ** precision) / 10 ** precision;
+  // To avoid -0 (not nice for display)
+  return res === 0 ? 0 : res;
+}

@@ -20,7 +20,7 @@ import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils
 const appCssPath = 'src/App.module.css';
 const indexHtmlPath = 'public/index.html';
 
-export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload = false) {
+export async function exportCode(figmaConfig: ExportCodePayload, uploadToCsb = true) {
   try {
     // Initialize the project template with base files
     perfMeasure('a');
@@ -85,7 +85,7 @@ export async function exportCode(figmaConfig: ExportCodePayload, skipCsbUpload =
       await writeToDisk(csbFiles);
       perfMeasure('k');
     }
-    if (!env.isDev || !skipCsbUpload) {
+    if (!env.isDev || uploadToCsb) {
       const csbResponse = await uploadToCSB(csbFiles);
       perfMeasure('l');
       return csbResponse;

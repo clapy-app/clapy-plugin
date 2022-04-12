@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { createWriteStream } from 'fs';
-import { mkdir, rm, writeFile } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { dirname, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
@@ -22,11 +22,12 @@ export async function uploadToCSB(files: CsbDict) {
 }
 
 export async function writeToDisk(files: CsbDict) {
+  // Should remove extra files after writing updates to avoid breaking the webpack watch.
   await Promise.all([
-    rm(`${backendDir}/atest-gen/public`, { recursive: true, force: true }),
-    rm(`${backendDir}/atest-gen/src`, { recursive: true, force: true }),
-    rm(`${backendDir}/atest-gen/package.json`, { recursive: true, force: true }),
-    rm(`${backendDir}/atest-gen/tsconfig.json`, { recursive: true, force: true }),
+    // rm(`${backendDir}/atest-gen/src/components`, { recursive: true, force: true }),
+    // rm(`${backendDir}/atest-gen/public`, { recursive: true, force: true }),
+    // rm(`${backendDir}/atest-gen/package.json`, { recursive: true, force: true }),
+    // rm(`${backendDir}/atest-gen/tsconfig.json`, { recursive: true, force: true }),
   ]);
   return Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
