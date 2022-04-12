@@ -10,7 +10,7 @@ async function main() {
   perfReset('Starting...');
 
   // Send to codesandbox
-  await new CodeController().exportCode(devFigmaConfig, true);
+  await new CodeController().exportCode(devFigmaConfig, false);
 
   // await insertTrackings();
 
