@@ -38,7 +38,7 @@ export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isR
   return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
 }
 
-export function genImportName(context: NodeContext) {
+export function genComponentImportName(context: NodeContext) {
   // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
   let baseName =
     context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower
@@ -135,6 +135,7 @@ export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
         factory.createIdentifier('src'),
         factory.createJsxExpression(undefined, factory.createIdentifier(srcVarName)),
       ),
+      factory.createJsxAttribute(factory.createIdentifier('alt'), factory.createStringLiteral('')),
       ...extraAttributes,
     ]),
   );
@@ -142,4 +143,12 @@ export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
 
 export function mkSrcStaticAttribute(src: string) {
   return factory.createJsxAttribute(factory.createIdentifier('src'), factory.createStringLiteral(src));
+}
+
+export function mkComponentUsage(compName: string) {
+  return factory.createJsxSelfClosingElement(
+    factory.createIdentifier(compName),
+    undefined,
+    factory.createJsxAttributes([]),
+  );
 }

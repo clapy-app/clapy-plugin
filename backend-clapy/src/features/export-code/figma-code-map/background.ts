@@ -4,10 +4,9 @@ import { PropertiesHyphen } from 'csstype';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { publicPath } from '../create-ts-compiler/3-create-component';
+import { writeAsset } from '../create-ts-compiler/3-create-component';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { genUniqueName } from './details/ts-ast-utils';
 import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
 import { addOpacity } from './opacity';
 
@@ -47,21 +46,14 @@ export function backgroundFigmaToCode(
           continue;
         }
 
-        const {
-          componentContext: { projectContext },
-        } = context;
-        const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
-        const imageFileName = `${assetName}.${imageEntry.extension || 'jpg'}`;
+        const extension = imageEntry.extension || 'jpg';
+        const content = imageEntry.url;
+        const assetCssUrl = writeAsset(context, node, extension, content);
 
-        // Write image in assets directory - the clean solution
-        // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
-        // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
-
-        // Write image in public directory - the codesandbox workaround
-        projectContext.resources[`${publicPath}/${imageFileName}`] = imageEntry.url;
-        // stylesToList() includes a workaround for webpack to ignore those public paths (to work with CRA CLI)
-        // (add comment `webpackIgnore: true`).
-        bgImages.push(`url("${imageFileName}")`);
+        // webpackIgnore is a workaround for webpack to ignore those public paths (to work with CRA CLI)
+        // - codesandbox: put assets in public folder instead of source (csb bundling doesn't process CSS url() :( )
+        // - CRA CLI with the above comment to leave the public URL instead of having webpack processing it.
+        bgImages.push(`/* webpackIgnore: true */ url("${assetCssUrl}")`);
 
         let scaleMode = fill.scaleMode;
         if (!scaleModeToBgSize[scaleMode]) {

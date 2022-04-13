@@ -3,15 +3,19 @@
 import { readFile } from 'fs/promises';
 import { Project, SourceFile } from 'ts-morph';
 
+import { NodeContext } from '../code.model';
+import { genUniqueName } from '../figma-code-map/details/ts-ast-utils';
+import { BaseNode2 } from './canvas-utils';
 import { componentTemplatePathTsx } from './load-file.utils';
 
 export function getCompDirectory(compName: string) {
   return `src/components/${compName}`;
 }
 
-export const assetsDirName = 'assets';
-export const assetsPath = `src/${assetsDirName}`;
-export const publicPath = `public`;
+// Both variables must be consistent.
+export const assetsResourceDir = `public/assets/`;
+// Here, '', '/' or '.' points to the public directory.
+export const assetsCssBaseUrl = 'assets/';
 
 // Copy the component template in project: placeholder to write the button code later
 export async function createComponent(project: Project, name: string) {
@@ -33,4 +37,20 @@ function updateCssImport(file: SourceFile, name: string) {
   declaration.setModuleSpecifier(`./${name}.module.css`);
 }
 
-function updateFunctionName(file: SourceFile, name: string) {}
+export function writeAsset(context: NodeContext, node: BaseNode2, extension: string, content: string) {
+  const {
+    componentContext: { projectContext },
+  } = context;
+  const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
+  const imageFileName = `${assetName}.${extension}`;
+
+  // Write image in assets directory - the clean solution
+  // projectContext.resources[`${assetsPath}/${imageFileName}`] = imageEntry.url;
+  // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
+
+  // Write image in public directory - the codesandbox workaround
+  projectContext.resources[`${assetsResourceDir}/${imageFileName}`] = content;
+
+  const assetCssUrl = `${assetsCssBaseUrl}${imageFileName}`;
+  return assetCssUrl;
+}

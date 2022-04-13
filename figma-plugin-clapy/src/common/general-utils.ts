@@ -52,3 +52,7 @@ export function round(num: number, precision = 4) {
   // To avoid -0 (not nice for display)
   return res === 0 ? 0 : res;
 }
+
+export function isArrayOf<T>(node: any): node is T[] {
+  return Array.isArray(node);
+}

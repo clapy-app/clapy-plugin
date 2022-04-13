@@ -1,17 +1,18 @@
 import filetype from 'magic-bytes.js';
 
 import { flags } from '../../../common/app-config';
-import { warnNode } from '../../../common/error-utils';
+import { handleError, warnNode } from '../../../common/error-utils';
+import { isArrayOf } from '../../../common/general-utils';
 import {
   baseBlacklist,
   ExportImageEntry,
   ExportImagesFigma,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
+import { env } from '../../../environment/env';
 import {
   isBlendMixin,
   isChildrenMixin,
-  isFillsArray,
   isGroup,
   isInstance,
   isLayout,
@@ -22,12 +23,14 @@ import {
   isShapeExceptRectangle,
   isText,
   LayoutNode,
+  ShapeNode,
 } from '../../common/node-type-utils';
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
-type RangeProp = keyof Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
+type StyledTextSegment2 = Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
+type RangeProp = keyof StyledTextSegment2;
 
 const rangeProps: RangeProp[] = [
   'fillStyleId',
@@ -84,7 +87,6 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     const { skipChildren = false, skipParent = true, skipInstance = true } = options;
     const nodeIsShape = isShapeExceptRectangle(node);
     let exportAsSvg = nodeIsShape;
-    let exportAsImage = false;
     let obj: any;
     if (!context.isInInstance && isInstance(node)) {
       context = { ...context, isInInstance: true };
@@ -127,35 +129,39 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     }
 
     const isBlend = isBlendMixin(node);
-    if (isBlend) {
-      if (containsImageRecursive(node)) {
-        exportAsImage = true;
-      } else {
-        exportAsSvg = true;
-      }
+    if (isBlend && node.isMask) {
+      exportAsSvg = true;
     }
 
-    // If image, export it and send to front
-
     if (exportAsSvg) {
-      let nodeToExport: T = node;
+      let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {
         if (isBlend) {
           // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
           // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
           // inside instances of components.
-          copyForExport = node.clone();
-          if (copyForExport.isMask) {
-            copyForExport.isMask = false;
+          if ((nodeToExport as BlendMixin).isMask) {
+            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+            (nodeToExport as BlendMixin).isMask = false;
+            if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
+              // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
+              // Well, images with transparency would be useful. Later.
+              nodeToExport.fills = [
+                {
+                  type: 'SOLID',
+                  color: { r: 0, g: 0, b: 0 },
+                },
+              ];
+            }
           }
-          nodeToExport = copyForExport as T;
         }
 
         obj.type = 'VECTOR' as VectorNode['type'];
         if (isShapeExceptRectangle(nodeToExport)) {
-          nodeToExport.effects = [];
-          nodeToExport.effectStyleId = '';
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+          (nodeToExport as ShapeNode).effects = [];
+          (nodeToExport as ShapeNode).effectStyleId = '';
         }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
@@ -178,7 +184,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       } finally {
         removeNode(copyForExport);
       }
-    } else if (isMinimalFillsMixin(node) && isFillsArray(node.fills)) {
+    } else if (isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
       for (const fill of node.fills) {
         if (fill.type === 'IMAGE') {
           if (!fill.imageHash) {
@@ -249,12 +255,14 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       obj.parent = { id: node.parent.id, type: node.parent.type };
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
-      obj.children = await Promise.all(
-        node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
-      );
+      obj.children = (
+        await Promise.all(
+          node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
+        )
+      ).filter(child => !!child);
     }
     if (isInstance(node) && node.mainComponent && !skipInstance) {
-      obj.mainComponent = nodeToObject(node.mainComponent, context, options);
+      obj.mainComponent = await nodeToObject(node.mainComponent, context, options);
     }
     return obj as SceneNodeNoMethod;
   } catch (error: any) {
@@ -263,19 +271,13 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     }
     const nodeName = error.nodeName ? `${node.name} > ${error.nodeName}` : node.name;
     Object.assign(error, { nodeName: nodeName });
-    throw error;
-  }
-}
-
-function treatAsImage(node: SceneNode) {
-  if (isMinimalFillsMixin(node) && Array.isArray(node.fills)) {
-    for (const fill of node.fills as ReadonlyArray<Paint>) {
-      if (fill.type === 'IMAGE') {
-        return true;
-      }
+    if (!env.isProd) {
+      throw error;
     }
+    // Production: don't block the process
+    handleError(error);
+    return;
   }
-  return false;
 }
 
 function containsShapesOnly(node: SceneNode) {
@@ -292,7 +294,7 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
   if (!isRectangle(node)) {
     return false;
   }
-  if (!isFillsArray(node.fills)) {
+  if (!isArrayOf<Paint>(node.fills)) {
     return true;
   }
   for (const fill of node.fills) {
@@ -303,15 +305,18 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
   return true;
 }
 
-function containsImageRecursive(node: SceneNode): boolean {
-  // TODO
-  return true;
-}
-
 function getOppositeSide(rotation: number, adjacent: number) {
   const rotationRad = (rotation * Math.PI) / 180;
   const tangent = Math.sin(rotationRad);
   return tangent * adjacent;
+}
+
+function ensureCloned<T extends LayoutNode>(node: T, clone: T | undefined): [T, T] {
+  if (!clone) {
+    clone = node.clone() as T;
+    node = clone;
+  }
+  return [node, clone];
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349

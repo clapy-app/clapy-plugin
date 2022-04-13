@@ -239,7 +239,7 @@ export type OmitMethods<T> = {
 };
 
 export interface ExportCodePayload {
-  parent: FrameNode | ComponentNode | InstanceNode;
+  parent: FrameNode | ComponentNode | InstanceNode | PageNode;
   root: SceneNodeNoMethod;
   images: ExportImageMap2;
 }
@@ -273,7 +273,7 @@ export const baseBlacklist = [
   'exportSettings',
 ] as const;
 
-type FrameNodeBlackList = typeof baseBlacklist[number];
+export type FrameNodeBlackList = typeof baseBlacklist[number];
 
 export interface CSBResponse {
   sandbox_id: string;

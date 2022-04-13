@@ -23,7 +23,7 @@ export const ExportCode: FC = memo(function ExportCode() {
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
-const sendToApi = false;
+const sendToApi = true;
 
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);
@@ -64,6 +64,9 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       // When a node has an image, apply relevant formattings using the info from the node.
       // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
 
+      if (env.isDev) {
+        console.log(JSON.stringify(nodes));
+      }
       if (!env.isDev || sendToApi) {
         const { data } = await apiPost<CSBResponse>('code/export', nodes);
         if (data) {
@@ -73,8 +76,6 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
           setPreviewUrl(url);
           return;
         }
-      } else {
-        console.log(JSON.stringify(nodes));
       }
 
       setPreviewUrl(undefined);

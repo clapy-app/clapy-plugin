@@ -1,8 +1,8 @@
 import { DeclarationPlain } from 'css-tree';
-import { SourceFile, ts } from 'ts-morph';
+import { Project, SourceFile, ts } from 'ts-morph';
 
 import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
-import { FlexNode } from './create-ts-compiler/canvas-utils';
+import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
@@ -16,6 +16,7 @@ export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly fontFamiliesUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
+  project: Project;
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
@@ -34,13 +35,15 @@ export interface ComponentContext {
   readonly inInteractiveElement?: boolean;
 }
 
+export type ParentNode = FlexNode | GroupNode2 | PageNode2;
+
 // Mutable
 export interface NodeContext {
   componentContext: ComponentContext;
   nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
-  parentNode: FlexNode | GroupNode | null;
+  parentNode: ParentNode | null;
   parentContext: NodeContextOptionalBorders | null;
   isPageLevel?: boolean;
 }

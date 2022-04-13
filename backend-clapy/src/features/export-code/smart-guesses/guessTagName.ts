@@ -3,7 +3,7 @@ import { ts } from 'ts-morph';
 
 import { Dict, FrameNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { isFlexNode, isText } from '../create-ts-compiler/canvas-utils';
+import { isFlexNode, isText, SceneNode2 } from '../create-ts-compiler/canvas-utils';
 import { addHugContents, makeDefaultNode } from '../figma-code-map/details/default-node';
 import { mkInputTypeAttr } from '../figma-code-map/details/ts-ast-utils';
 
@@ -41,7 +41,7 @@ export function guessTagNameAndUpdateNode(
     // function isCheckbox() {}
 
     if (context.parentNode && context.parentContext?.tagName !== 'label') {
-      const siblings = context.parentNode.children;
+      const siblings = context.parentNode.children as readonly SceneNode2[];
       const i = siblings.indexOf(node);
       if (i !== -1) {
         const nextSibling = siblings[i + 1];

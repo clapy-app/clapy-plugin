@@ -5,7 +5,7 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, isFlexNode, isGroup, isLayout, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { FlexNode, isFlexNode, isGroup, isLayout, isPage, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
 
@@ -85,7 +85,7 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
-    if (!parentAlignItems || parentAlignItems === 'stretch') {
+    if (parentStyles && (!parentAlignItems || parentAlignItems === 'stretch')) {
       addStyle(styles, 'align-self', 'flex-start');
     }
   }
@@ -192,7 +192,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
 
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
-  const parentIsFlex = isFlexNode(parent);
+  const parentIsFlex = !parent || isFlexNode(parent);
   const parentIsAbsolute = isGroup(parent) || (isFlexNode(parent) && parent?.layoutMode === 'NONE');
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
@@ -214,7 +214,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
     : false;
 
-  const isParentAutoLayout = parentIsFlex && parent?.layoutMode !== 'NONE';
+  const isParentAutoLayout = !parent || (parentIsFlex && parent?.layoutMode !== 'NONE');
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
@@ -245,7 +245,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
   const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
-  const shouldApplyMaxSize = !parent || (parent.width >= node.width && parent.height >= node.height);
+  const shouldApplyMaxSize = !parent || isPage(parent) || (parent.width >= node.width && parent.height >= node.height);
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);
     if (shouldApplyMaxSize) {

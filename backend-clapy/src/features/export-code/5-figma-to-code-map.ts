@@ -3,7 +3,7 @@ import { ts } from 'ts-morph';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
-import { ValidNode } from './create-ts-compiler/canvas-utils';
+import { TextNode2, ValidNode } from './create-ts-compiler/canvas-utils';
 import { stylesToList } from './css-gen/css-type-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
@@ -11,7 +11,6 @@ import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
 import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
 import { colorFigmaToCode } from './figma-code-map/color';
 import { cursorFigmaToCode } from './figma-code-map/cursor';
-import { rangeProps } from './figma-code-map/details/fonts-utils';
 import {
   addCssRule,
   genClassName,
@@ -24,6 +23,7 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { effectsFigmaToCode } from './figma-code-map/effects';
 import { flexFigmaToCode } from './figma-code-map/flex';
 import { fontFigmaToCode } from './figma-code-map/font';
+import { maskFigmaToCode } from './figma-code-map/mask';
 import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
@@ -49,7 +49,8 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
   cursorFigmaToCode(context2, node, styles);
   overflowFigmaToCode(context2, node, styles);
   borderBoxFigmaToCode(context2, node, styles);
-  effectsFigmaToCode(context, node, styles);
+  effectsFigmaToCode(context2, node, styles);
+  maskFigmaToCode(context2, node, styles);
   return context2;
   // scaleFactor
   // reactions => hover, must make the diff with target node (check the type?)
@@ -115,7 +116,11 @@ function textNodeToAst(
   return ast;
 }
 
-export function mapTextStyles(context: NodeContext, node: TextNode, styles: Dict<DeclarationPlain>): JsxOneOrMore {
-  const textSegments: StyledTextSegment[] = node.getStyledTextSegments(rangeProps);
-  return textSegments.map(segment => textNodeToAst(context, segment, textSegments.length === 1, styles));
+export function mapTextStyles(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
+  const textSegments: StyledTextSegment[] | undefined = node._textSegments;
+  if (!textSegments) return;
+  const ast: JsxOneOrMore = textSegments.map(segment =>
+    textNodeToAst(context, segment, textSegments.length === 1, styles),
+  );
+  return ast;
 }
