@@ -1,6 +1,8 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
+import { env } from '../../env-and-config/env';
+import { handleError } from '../../utils';
 import { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import {
@@ -72,129 +74,139 @@ function firstParentFrameIsAutoLayout(context: NodeContext | null): boolean {
 }
 
 async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node: SceneNode2, isRoot?: boolean) {
-  if (!node.visible) {
-    return;
-  }
-
-  const styles: Dict<DeclarationPlain> = {};
-
-  const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
-  if (newNode) node = newNode;
-
-  if (!isValidNode(node) && !isGroup(node)) {
-    warnNode(node, 'TODO Unsupported node');
-    return;
-  }
-
-  const { parentNode, parentStyles, parentContext } = context;
-  const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
-  // With groups, there are 2 special cases:
-  // - The parent is a frame, not auto-layout
-  // - The parent is a group
-  // In both cases, the child group has no impact in the layout. It is skipped and children are directly rendered.
-  // For auto-layout frames as parent, groups are processed in the position-absolute.ts file. Groups are treated similarly to non-autolayout frames, with just a small change in the x/y calculation of children + the position mode is SCALE.
-  // Note: skipping the group may not be desired if it contains masks. Behavior to investigate on Figma.
-  // Also check the existing logic on group when not skipped. It may have an assumption on the use case (e.g. assumes it's absolute positioning), which may become wrong if we change the conditions here.
-  if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
-    const childrenAst: ts.JsxChild[] = [];
-    await recurseOnChildren(context, node, childrenAst, styles, true);
-    return childrenAst.length ? childrenAst : undefined;
-  }
-
-  // Add common styles (text and tags)
-  mapCommonStyles(context, node, styles);
-
-  if (isText(node)) {
-    // Add text styles
-    let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-    if (!ast) {
-      warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
+  try {
+    if (!node.visible) {
       return;
     }
 
-    const flexStyles: Dict<DeclarationPlain> = {};
-    mapTagStyles(context, node, flexStyles);
+    const styles: Dict<DeclarationPlain> = {};
 
-    if (!context.parentStyles || Object.keys(flexStyles).length) {
+    const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
+    if (newNode) node = newNode;
+
+    if (!isValidNode(node) && !isGroup(node)) {
+      warnNode(node, 'TODO Unsupported node');
+      return;
+    }
+
+    const { parentNode, parentStyles, parentContext } = context;
+    const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
+    // With groups, there are 2 special cases:
+    // - The parent is a frame, not auto-layout
+    // - The parent is a group
+    // In both cases, the child group has no impact in the layout. It is skipped and children are directly rendered.
+    // For auto-layout frames as parent, groups are processed in the position-absolute.ts file. Groups are treated similarly to non-autolayout frames, with just a small change in the x/y calculation of children + the position mode is SCALE.
+    // Note: skipping the group may not be desired if it contains masks. Behavior to investigate on Figma.
+    // Also check the existing logic on group when not skipped. It may have an assumption on the use case (e.g. assumes it's absolute positioning), which may become wrong if we change the conditions here.
+    if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
+      const childrenAst: ts.JsxChild[] = [];
+      await recurseOnChildren(context, node, childrenAst, styles, true);
+      return childrenAst.length ? childrenAst : undefined;
+    }
+
+    // Add common styles (text and tags)
+    mapCommonStyles(context, node, styles);
+
+    if (isText(node)) {
+      // Add text styles
+      let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
+      if (!ast) {
+        warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
+        return;
+      }
+
+      const flexStyles: Dict<DeclarationPlain> = {};
+      mapTagStyles(context, node, flexStyles);
+
+      if (!context.parentStyles || Object.keys(flexStyles).length) {
+        const className = genClassName(context, node, isRoot);
+        const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
+        let attributes: ts.JsxAttribute[] = [];
+        if (styleDeclarations.length) {
+          addCssRule(context, className, styleDeclarations);
+          attributes.push(mkClassAttr(className));
+        }
+        ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
+      } else {
+        Object.assign(context.parentStyles, styles);
+        // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
+        // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
+
+        // return txt;
+      }
+      return ast;
+    } else if (isVector(node)) {
+      const { projectContext, compName } = context.componentContext;
+      let svgContent = readSvg(node);
+      if (!svgContent) {
+        warnNode(node, 'BUG No SVG content, skipping.');
+        return;
+      }
+
+      // Add SVG file to resources to create the file later
+      const svgPathVarName = genComponentImportName(context);
+      projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
+
+      // Add import in file
+      context.componentContext.file.addImportDeclaration({
+        moduleSpecifier: `./${svgPathVarName}.svg`,
+        defaultImport: svgPathVarName,
+      });
+
+      // Add styles for this node
+      context = mapTagStyles(context, node, styles);
       const className = genClassName(context, node, isRoot);
-      const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
+      const styleDeclarations = stylesToList(styles);
       let attributes: ts.JsxAttribute[] = [];
       if (styleDeclarations.length) {
         addCssRule(context, className, styleDeclarations);
         attributes.push(mkClassAttr(className));
       }
-      ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
-    } else {
-      Object.assign(context.parentStyles, styles);
-      // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
-      // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
 
-      // return txt;
+      // Generate AST
+      const ast = mkImg(svgPathVarName, attributes);
+      return ast;
+    } else if (isBlockNode(node)) {
+      // if (isComponent(node)) {
+      //   console.log('Component', node);
+      // } else if (isInstance(node)) {
+      //   console.log('Instance', node);
+      // }
+
+      // Add tag styles
+      const context2 = mapTagStyles(context, node, styles);
+
+      const className = genClassName(context2, node, isRoot);
+
+      // the CSS rule is created before checking the children so that it appears first in the CSS file.
+      // After generating the children, we can add the final list of rules or remove it if no rule.
+      const cssRule = addCssRule(context2, className);
+
+      const children: ts.JsxChild[] = [];
+      if (isChildrenMixin(node)) {
+        await recurseOnChildren(context2, node, children, styles);
+      }
+
+      const styleDeclarations = stylesToList(styles);
+      let attributes: ts.JsxAttribute[] = [];
+      if (styleDeclarations.length) {
+        cssRule.block.children.push(...styleDeclarations);
+        attributes.push(mkClassAttr(className));
+      } else {
+        removeCssRule(context, cssRule, node);
+      }
+
+      const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
+      return tsx;
     }
-    return ast;
-  } else if (isVector(node)) {
-    const { projectContext, compName } = context.componentContext;
-    let svgContent = readSvg(node);
-    if (!svgContent) {
-      warnNode(node, 'BUG No SVG content, skipping.');
-      return;
+  } catch (error) {
+    warnNode(node, 'Failed to generate node with error below. Skipping the node.');
+    if (!env.isProd) {
+      throw error;
     }
-
-    // Add SVG file to resources to create the file later
-    const svgPathVarName = genComponentImportName(context);
-    projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
-
-    // Add import in file
-    context.componentContext.file.addImportDeclaration({
-      moduleSpecifier: `./${svgPathVarName}.svg`,
-      defaultImport: svgPathVarName,
-    });
-
-    // Add styles for this node
-    context = mapTagStyles(context, node, styles);
-    const className = genClassName(context, node, isRoot);
-    const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
-    if (styleDeclarations.length) {
-      addCssRule(context, className, styleDeclarations);
-      attributes.push(mkClassAttr(className));
-    }
-
-    // Generate AST
-    const ast = mkImg(svgPathVarName, attributes);
-    return ast;
-  } else if (isBlockNode(node)) {
-    // if (isComponent(node)) {
-    //   console.log('Component', node);
-    // } else if (isInstance(node)) {
-    //   console.log('Instance', node);
-    // }
-
-    // Add tag styles
-    const context2 = mapTagStyles(context, node, styles);
-
-    const className = genClassName(context2, node, isRoot);
-
-    // the CSS rule is created before checking the children so that it appears first in the CSS file.
-    // After generating the children, we can add the final list of rules or remove it if no rule.
-    const cssRule = addCssRule(context2, className);
-
-    const children: ts.JsxChild[] = [];
-    if (isChildrenMixin(node)) {
-      await recurseOnChildren(context2, node, children, styles);
-    }
-
-    const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
-    if (styleDeclarations.length) {
-      cssRule.block.children.push(...styleDeclarations);
-      attributes.push(mkClassAttr(className));
-    } else {
-      removeCssRule(context, cssRule, node);
-    }
-
-    const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
-    return tsx;
+    // Production: don't block the process
+    handleError(error);
+    return;
   }
 }
 

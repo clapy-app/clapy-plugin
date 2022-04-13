@@ -1,7 +1,7 @@
 import filetype from 'magic-bytes.js';
 
 import { flags } from '../../../common/app-config';
-import { warnNode } from '../../../common/error-utils';
+import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf } from '../../../common/general-utils';
 import {
   baseBlacklist,
@@ -9,6 +9,7 @@ import {
   ExportImagesFigma,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
+import { env } from '../../../environment/env';
 import {
   isBlendMixin,
   isChildrenMixin,
@@ -254,12 +255,14 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       obj.parent = { id: node.parent.id, type: node.parent.type };
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
-      obj.children = await Promise.all(
-        node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
-      );
+      obj.children = (
+        await Promise.all(
+          node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
+        )
+      ).filter(child => !!child);
     }
     if (isInstance(node) && node.mainComponent && !skipInstance) {
-      obj.mainComponent = nodeToObject(node.mainComponent, context, options);
+      obj.mainComponent = await nodeToObject(node.mainComponent, context, options);
     }
     return obj as SceneNodeNoMethod;
   } catch (error: any) {
@@ -268,7 +271,12 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     }
     const nodeName = error.nodeName ? `${node.name} > ${error.nodeName}` : node.name;
     Object.assign(error, { nodeName: nodeName });
-    throw error;
+    if (!env.isProd) {
+      throw error;
+    }
+    // Production: don't block the process
+    handleError(error);
+    return;
   }
 }
 
