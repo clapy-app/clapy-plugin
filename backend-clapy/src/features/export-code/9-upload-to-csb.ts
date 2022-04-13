@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { createWriteStream } from 'fs';
-import { mkdir, writeFile } from 'fs/promises';
-import { dirname, resolve } from 'path';
+import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
+import glob from 'glob';
+import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
 
@@ -21,15 +22,11 @@ export async function uploadToCSB(files: CsbDict) {
   return data;
 }
 
+const globPromise = promisify(glob);
+
 export async function writeToDisk(files: CsbDict) {
-  // Should remove extra files after writing updates to avoid breaking the webpack watch.
-  await Promise.all([
-    // rm(`${backendDir}/atest-gen/src/components`, { recursive: true, force: true }),
-    // rm(`${backendDir}/atest-gen/public`, { recursive: true, force: true }),
-    // rm(`${backendDir}/atest-gen/package.json`, { recursive: true, force: true }),
-    // rm(`${backendDir}/atest-gen/tsconfig.json`, { recursive: true, force: true }),
-  ]);
-  return Promise.all(
+  const filePaths: string[] = [];
+  await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
       if (!content) {
         console.warn('BUG No content at path', path);
@@ -40,6 +37,7 @@ export async function writeToDisk(files: CsbDict) {
       }
       const dir = resolve(`${backendDir}/atest-gen/${dirname(path)}`);
       const file = resolve(`${backendDir}/atest-gen/${path}`);
+      filePaths.push(file);
       // console.log('Create:', file);
       await mkdir(dir, { recursive: true });
       if (!isBinary) {
@@ -49,6 +47,16 @@ export async function writeToDisk(files: CsbDict) {
       }
     }),
   );
+
+  // Remove old files
+  const srcMatches = await globPromise(resolve(`${backendDir}/atest-gen/src/**/*.*`), { ignore: filePaths });
+  const publicMatches = await globPromise(resolve(`${backendDir}/atest-gen/public/**/*.*`), { ignore: filePaths });
+  await Promise.all([...srcMatches, ...publicMatches].map(match => unlink(match)));
+  // Then remove empty folders
+  await Promise.all([
+    cleanEmptyFoldersRecursively(`${backendDir}/atest-gen/src`),
+    cleanEmptyFoldersRecursively(`${backendDir}/atest-gen/public`),
+  ]);
 }
 
 const finished = promisify(stream.finished);
@@ -63,4 +71,29 @@ export async function downloadFile(fileUrl: string, outputLocationPath: string) 
     response.data.pipe(writer);
     return finished(writer);
   });
+}
+
+async function cleanEmptyFoldersRecursively(folder: string) {
+  const isDir = (await lstat(folder)).isDirectory();
+  if (!isDir) {
+    return;
+  }
+  let files = await readdir(folder);
+  if (files.length > 0) {
+    await Promise.all(
+      files.map(file => {
+        const fullPath = join(folder, file);
+        return cleanEmptyFoldersRecursively(fullPath);
+      }),
+    );
+
+    // re-evaluate files; after deleting subfolder
+    // we may have parent folder empty now
+    files = await readdir(folder);
+  }
+
+  if (files.length == 0) {
+    await rmdir(folder);
+    return;
+  }
 }

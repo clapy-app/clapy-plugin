@@ -7,7 +7,7 @@ import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { JsxOneOrMore, NodeContext, NodeContextOptionalBorders, NodeContextWithBorders } from './code.model';
-import { getCompDirectory, writeAsset } from './create-ts-compiler/3-create-component';
+import { writeAsset } from './create-ts-compiler/3-create-component';
 import {
   ChildrenMixin2,
   FlexNode,
@@ -50,14 +50,7 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
     // If component or instance, generate the code in a separate component file and reference it here.
     if (isComponent(node) || isInstance(node)) {
       const node2 = { ...node, type: 'FRAME' as const };
-      const componentContext = await genComponent(
-        context.componentContext.projectContext,
-        node2,
-        context.parentNode,
-        context.componentContext.file,
-        `..`,
-        context.componentContext,
-      );
+      const componentContext = await genComponent(context.componentContext, node2, context.parentNode);
       return mkComponentUsage(componentContext.compName);
     }
 
@@ -127,7 +120,7 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
 
       // Add SVG file to resources to create the file later
       const svgPathVarName = genComponentImportName(context);
-      projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
+      projectContext.resources[`${context.componentContext.compDir}/${svgPathVarName}.svg`] = svgContent;
 
       // Add import in file
       context.componentContext.file.addImportDeclaration({

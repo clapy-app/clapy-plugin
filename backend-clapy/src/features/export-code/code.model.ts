@@ -25,6 +25,8 @@ export interface ProjectContext {
 export interface ComponentContext {
   readonly projectContext: ProjectContext;
   readonly file: SourceFile;
+  readonly pageName: string | undefined;
+  readonly compDir: string;
   readonly compName: string;
   readonly classNamesAlreadyUsed: Set<string>;
   readonly importNamesAlreadyUsed: Set<string>;

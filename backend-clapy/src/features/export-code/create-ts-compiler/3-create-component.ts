@@ -8,23 +8,16 @@ import { genUniqueName } from '../figma-code-map/details/ts-ast-utils';
 import { BaseNode2 } from './canvas-utils';
 import { componentTemplatePathTsx } from './load-file.utils';
 
-export function getCompDirectory(compName: string) {
-  return `src/components/${compName}`;
-}
-
 // Both variables must be consistent.
 export const assetsResourceDir = `public/assets/`;
 // Here, '', '/' or '.' points to the public directory.
 export const assetsCssBaseUrl = 'assets/';
 
 // Copy the component template in project: placeholder to write the button code later
-export async function createComponent(project: Project, name: string) {
+export async function createComponent(project: Project, dirPath: string, name: string) {
   // TypeScript
   const componentTemplateTsx = await readFile(componentTemplatePathTsx, { encoding: 'utf8' });
-  const fileAst = project.createSourceFile(
-    `${getCompDirectory(name)}/${name}.tsx`,
-    componentTemplateTsx /*, { overwrite: true }*/,
-  );
+  const fileAst = project.createSourceFile(`${dirPath}/${name}.tsx`, componentTemplateTsx /*, { overwrite: true }*/);
   updateCssImport(fileAst, name);
 
   return fileAst;
