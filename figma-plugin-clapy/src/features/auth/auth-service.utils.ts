@@ -21,6 +21,7 @@ export function createVerifier() {
   return random;
 }
 
+// TODO replace sha.js with sha256-uint8array for faster/lighter hash?
 export function createChallenge(verifier: string) {
   const b64Chars: { [index: string]: string } = { '+': '-', '/': '_', '=': '' };
   return (

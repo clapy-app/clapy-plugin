@@ -143,10 +143,6 @@ export function isBlendMixin(node: BaseNode | BlendMixin | Nil): node is BlendMi
   return !!(node as BlendMixin)?.blendMode;
 }
 
-export function isFillsArray(node: MinimalFillsMixin['fills']): node is readonly Paint[] {
-  return Array.isArray(node);
-}
-
 export function isExportMixin(node: BaseNode | ExportMixin | Nil): node is ExportMixin {
   return !!(node as ExportMixin)?.exportAsync;
 }

@@ -50,3 +50,7 @@ export function keyBy<T>(array: T[], field: keyof T) {
 export async function waitInfinite(setClearer?: (clearer: () => void) => void) {
   return wait(2147483647, setClearer);
 }
+
+export function isArrayOf<T>(node: any): node is T[] {
+  return Array.isArray(node);
+}

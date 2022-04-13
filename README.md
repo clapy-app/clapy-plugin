@@ -46,6 +46,7 @@ Fork: https://github.com/antoineol/opentype.js
     https://ts-ast-viewer.com/ for typescript AST playground
     https://astexplorer.net/ to list AST tools and play, e.g. CSS AST
 - Puppeteer optimised for concurrent requests: https://stackoverflow.com/questions/57898974/calling-puppeteer-from-rest-api
+- If need to hash images, binaries... the lib sha256-uint8array can help. I also tried crypto-js and use sha.js in another context, but they seem bigger/slower.
 
 ## Figma plugin tips
 

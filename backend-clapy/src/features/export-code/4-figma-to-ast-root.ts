@@ -1,26 +1,34 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
-import { Dict, ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
+import { isArrayOf } from '../../common/general-utils';
+import { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
-import { ComponentContext, NodeContext } from './code.model';
-import { getCompDirectory } from './create-ts-compiler/3-create-component';
+import { ComponentContext, JsxOneOrMore, NodeContext, NodeContextWithBorders } from './code.model';
+import { getCompDirectory, writeAsset } from './create-ts-compiler/3-create-component';
 import {
+  FlexNode,
+  GroupNode2,
+  isBlendMixin,
   isBlockNode,
   isChildrenMixin,
   isFlexNode,
+  isFrame,
   isGroup,
   isPage,
   isText,
   isValidNode,
   isVector,
+  Masker,
+  SceneNode2,
 } from './create-ts-compiler/canvas-utils';
 import { mkStylesheetCss } from './css-gen/css-factories-low';
 import { stylesToList } from './css-gen/css-type-utils';
+import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   genClassName,
-  genImportName,
+  genComponentImportName,
   mkClassAttr,
   mkImg,
   mkTag,
@@ -57,11 +65,10 @@ function firstParentFrameIsAutoLayout(context: NodeContext | null): boolean {
   return false;
 }
 
-async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRoot?: boolean) {
+async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node: SceneNode2, isRoot?: boolean) {
   if (!node.visible) {
     return;
   }
-  mockUsefulMethods(node);
 
   const styles: Dict<DeclarationPlain> = {};
 
@@ -108,7 +115,11 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
 
   if (isText(node)) {
     // Add text styles
-    let ast = mapTextStyles(context, node, styles);
+    let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
+    if (!ast) {
+      warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
+      return;
+    }
 
     const flexStyles: Dict<DeclarationPlain> = {};
     mapTagStyles(context, node, flexStyles);
@@ -132,17 +143,14 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     return ast;
   } else if (isVector(node)) {
     const { projectContext, compName } = context.componentContext;
-    // It is already a string, we have mocked it. We just reuse the interface for 90 % of the usages (much easier).
-    let svgContent = (await node.exportAsync({ format: 'SVG' })) as unknown as string;
+    let svgContent = readSvg(node);
     if (!svgContent) {
-      warnNode(node, 'No SVG content, skipping.');
+      warnNode(node, 'BUG No SVG content, skipping.');
       return;
     }
-    // Remove width and height from SVG. Let the CSS define it.
-    svgContent = svgContent.replace(/^<svg width="\d+" height="\d+"/, '<svg');
 
     // Add SVG file to resources to create the file later
-    const svgPathVarName = genImportName(context);
+    const svgPathVarName = genComponentImportName(context);
     projectContext.resources[`${getCompDirectory(compName)}/${svgPathVarName}.svg`] = svgContent;
 
     // Add import in file
@@ -152,8 +160,8 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     });
 
     // Add styles for this node
-    const context2 = mapTagStyles(context, node, styles);
-    const className = genClassName(context2, node, isRoot);
+    context = mapTagStyles(context, node, styles);
+    const className = genClassName(context, node, isRoot);
     const styleDeclarations = stylesToList(styles);
     let attributes: ts.JsxAttribute[] = [];
     if (styleDeclarations.length) {
@@ -181,13 +189,51 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
     const cssRule = addCssRule(context2, className);
 
     const children: ts.JsxChild[] = [];
-    if (isChildrenMixin(node) && Array.isArray(node.children)) {
-      for (const child of node.children as SceneNode[]) {
+    if (isChildrenMixin(node) && isArrayOf<SceneNode2>(node.children)) {
+      let masker: Masker | undefined = undefined;
+      for (const child of node.children) {
+        if (isFrame(child)) {
+          // frames reset the masking. The frame and next elements are not masked.
+          masker = undefined;
+        } else if (isBlendMixin(child) && child.isMask) {
+          child.skip = true;
+          masker = undefined; // In case we ignore the mask because of an error, don't mask target elements (vs wrong mask)
+          if (!isVector(child)) {
+            warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
+            continue;
+          }
+          let svgContent = readSvg(child);
+          if (!svgContent) {
+            warnNode(child, 'BUG Mask SVG has no content, skipping.');
+            continue;
+          }
+          const extension = 'svg';
+          const assetCssUrl = writeAsset(context, node, extension, svgContent);
+
+          masker = {
+            width: child.width,
+            height: child.height,
+            // TODO Instead of Figma raw x/y, we may need to use the calculated top/left from flex.ts.
+            // Test with borders, padding, scale mode for left in %...
+            x: child.x,
+            y: child.y,
+            url: assetCssUrl,
+          };
+        } else if (masker) {
+          // Extend the node interface to add the mask info to process it with other properties
+          child.maskedBy = masker;
+        }
+      }
+
+      for (const child of node.children) {
+        if (child.skip) {
+          continue;
+        }
         const contextForChildren: NodeContext = {
           componentContext: context2.componentContext,
           tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
           nodeNameLower: child.name.toLowerCase(),
-          parentNode: node,
+          parentNode: node as FlexNode | GroupNode2,
           parentStyles: styles,
           parentContext: context2,
         };
@@ -213,14 +259,5 @@ async function figmaToAstRec(context: NodeContext, node: SceneNodeNoMethod, isRo
 
     const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
     return tsx;
-  }
-}
-
-function mockUsefulMethods(node: SceneNodeNoMethod) {
-  if (isText(node)) {
-    node.getStyledTextSegments = () => (node as any)._textSegments;
-  }
-  if (isVector(node)) {
-    node.exportAsync = () => (node as any)._svg;
   }
 }

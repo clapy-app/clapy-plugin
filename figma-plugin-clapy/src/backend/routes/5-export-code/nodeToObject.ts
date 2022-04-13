@@ -2,6 +2,7 @@ import filetype from 'magic-bytes.js';
 
 import { flags } from '../../../common/app-config';
 import { warnNode } from '../../../common/error-utils';
+import { isArrayOf } from '../../../common/general-utils';
 import {
   baseBlacklist,
   ExportImageEntry,
@@ -11,7 +12,6 @@ import {
 import {
   isBlendMixin,
   isChildrenMixin,
-  isFillsArray,
   isGroup,
   isInstance,
   isLayout,
@@ -28,7 +28,8 @@ import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
-type RangeProp = keyof Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
+type StyledTextSegment2 = Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
+type RangeProp = keyof StyledTextSegment2;
 
 const rangeProps: RangeProp[] = [
   'fillStyleId',
@@ -85,7 +86,6 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     const { skipChildren = false, skipParent = true, skipInstance = true } = options;
     const nodeIsShape = isShapeExceptRectangle(node);
     let exportAsSvg = nodeIsShape;
-    let exportAsImage = false;
     let obj: any;
     if (!context.isInInstance && isInstance(node)) {
       context = { ...context, isInInstance: true };
@@ -129,15 +129,8 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
 
     const isBlend = isBlendMixin(node);
     if (isBlend && node.isMask) {
-      if (containsImageRecursive(node)) {
-        exportAsImage = true;
-        exportAsSvg = false;
-      } else {
-        exportAsSvg = true;
-      }
+      exportAsSvg = true;
     }
-
-    // If image, export it and send to front
 
     if (exportAsSvg) {
       let nodeToExport = node as LayoutNode;
@@ -147,9 +140,19 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
           // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
           // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
           // inside instances of components.
-          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
           if ((nodeToExport as BlendMixin).isMask) {
+            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
             (nodeToExport as BlendMixin).isMask = false;
+            if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
+              // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
+              // Well, images with transparency would be useful. Later.
+              nodeToExport.fills = [
+                {
+                  type: 'SOLID',
+                  color: { r: 0, g: 0, b: 0 },
+                },
+              ];
+            }
           }
         }
 
@@ -180,7 +183,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       } finally {
         removeNode(copyForExport);
       }
-    } else if (isMinimalFillsMixin(node) && isFillsArray(node.fills)) {
+    } else if (isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
       for (const fill of node.fills) {
         if (fill.type === 'IMAGE') {
           if (!fill.imageHash) {
@@ -269,17 +272,6 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
   }
 }
 
-function treatAsImage(node: SceneNode) {
-  if (isMinimalFillsMixin(node) && Array.isArray(node.fills)) {
-    for (const fill of node.fills as ReadonlyArray<Paint>) {
-      if (fill.type === 'IMAGE') {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 function containsShapesOnly(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   for (const child of node.children) {
@@ -294,7 +286,7 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
   if (!isRectangle(node)) {
     return false;
   }
-  if (!isFillsArray(node.fills)) {
+  if (!isArrayOf<Paint>(node.fills)) {
     return true;
   }
   for (const fill of node.fills) {
@@ -302,11 +294,6 @@ function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
       return false;
     }
   }
-  return true;
-}
-
-function containsImageRecursive(node: SceneNode): boolean {
-  // TODO
   return true;
 }
 

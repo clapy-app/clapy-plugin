@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import { SourceFile, ts } from 'ts-morph';
 
 import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
-import { FlexNode } from './create-ts-compiler/canvas-utils';
+import { FlexNode, GroupNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
@@ -40,7 +40,7 @@ export interface NodeContext {
   nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
-  parentNode: FlexNode | GroupNode | null;
+  parentNode: FlexNode | GroupNode2 | null;
   parentContext: NodeContextOptionalBorders | null;
   isPageLevel?: boolean;
 }

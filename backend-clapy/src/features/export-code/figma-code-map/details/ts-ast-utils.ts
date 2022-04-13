@@ -38,7 +38,7 @@ export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isR
   return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
 }
 
-export function genImportName(context: NodeContext) {
+export function genComponentImportName(context: NodeContext) {
   // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
   let baseName =
     context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower

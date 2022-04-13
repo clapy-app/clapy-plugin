@@ -273,7 +273,7 @@ export const baseBlacklist = [
   'exportSettings',
 ] as const;
 
-type FrameNodeBlackList = typeof baseBlacklist[number];
+export type FrameNodeBlackList = typeof baseBlacklist[number];
 
 export interface CSBResponse {
   sandbox_id: string;
