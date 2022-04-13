@@ -41,7 +41,14 @@ export async function exportCode({ images, root, parent }: ExportCodePayload, up
     };
 
     const appFile = project.getSourceFileOrThrow('src/App.tsx');
-    const componentContext = await genComponent(projectContext, root, parent, appFile, `./components`);
+    const fakeParentComponentContext = {
+      projectContext,
+      file: appFile,
+      pageName: undefined,
+      compName: 'App',
+      inInteractiveElement: false,
+    } as ComponentContext;
+    const componentContext = await genComponent(fakeParentComponentContext, root, parent);
 
     addCompToAppRoot(project, componentContext, parent, appFile);
 
