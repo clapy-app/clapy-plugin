@@ -151,7 +151,7 @@ export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node i
   return !!(node as BaseFrameMixin)?.layoutMode;
 }
 
-interface ChildrenMixin2 {
+export interface ChildrenMixin2 {
   readonly children: ReadonlyArray<SceneNode2>;
 }
 

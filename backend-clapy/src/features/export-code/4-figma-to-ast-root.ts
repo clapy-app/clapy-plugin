@@ -1,12 +1,18 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
-import { isArrayOf } from '../../common/general-utils';
 import { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
-import { ComponentContext, JsxOneOrMore, NodeContext, NodeContextWithBorders } from './code.model';
+import {
+  ComponentContext,
+  JsxOneOrMore,
+  NodeContext,
+  NodeContextOptionalBorders,
+  NodeContextWithBorders,
+} from './code.model';
 import { getCompDirectory, writeAsset } from './create-ts-compiler/3-create-component';
 import {
+  ChildrenMixin2,
   FlexNode,
   GroupNode2,
   isBlendMixin,
@@ -87,26 +93,11 @@ async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node
   // - The parent is a group
   // In both cases, the child group has no impact in the layout. It is skipped and children are directly rendered.
   // For auto-layout frames as parent, groups are processed in the position-absolute.ts file. Groups are treated similarly to non-autolayout frames, with just a small change in the x/y calculation of children + the position mode is SCALE.
+  // Note: skipping the group may not be desired if it contains masks. Behavior to investigate on Figma.
+  // Also check the existing logic on group when not skipped. It may have an assumption on the use case (e.g. assumes it's absolute positioning), which may become wrong if we change the conditions here.
   if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
     const childrenAst: ts.JsxChild[] = [];
-    for (const child of node.children) {
-      const contextForChildren: NodeContext = {
-        componentContext: context.componentContext,
-        tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
-        nodeNameLower: child.name.toLowerCase(),
-        parentNode: parentNode,
-        parentStyles: parentStyles,
-        parentContext: parentContext,
-      };
-      const res = await figmaToAstRec(contextForChildren, child);
-      if (res) {
-        if (Array.isArray(res)) {
-          childrenAst.push(...res);
-        } else {
-          childrenAst.push(res);
-        }
-      }
-    }
+    await recurseOnChildren(context, node, childrenAst, styles, true);
     return childrenAst.length ? childrenAst : undefined;
   }
 
@@ -189,63 +180,8 @@ async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node
     const cssRule = addCssRule(context2, className);
 
     const children: ts.JsxChild[] = [];
-    if (isChildrenMixin(node) && isArrayOf<SceneNode2>(node.children)) {
-      let masker: Masker | undefined = undefined;
-      for (const child of node.children) {
-        if (isFrame(child)) {
-          // frames reset the masking. The frame and next elements are not masked.
-          masker = undefined;
-        } else if (isBlendMixin(child) && child.isMask) {
-          child.skip = true;
-          masker = undefined; // In case we ignore the mask because of an error, don't mask target elements (vs wrong mask)
-          if (!isVector(child)) {
-            warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
-            continue;
-          }
-          let svgContent = readSvg(child);
-          if (!svgContent) {
-            warnNode(child, 'BUG Mask SVG has no content, skipping.');
-            continue;
-          }
-          const extension = 'svg';
-          const assetCssUrl = writeAsset(context, node, extension, svgContent);
-
-          masker = {
-            width: child.width,
-            height: child.height,
-            // TODO Instead of Figma raw x/y, we may need to use the calculated top/left from flex.ts.
-            // Test with borders, padding, scale mode for left in %...
-            x: child.x,
-            y: child.y,
-            url: assetCssUrl,
-          };
-        } else if (masker) {
-          // Extend the node interface to add the mask info to process it with other properties
-          child.maskedBy = masker;
-        }
-      }
-
-      for (const child of node.children) {
-        if (child.skip) {
-          continue;
-        }
-        const contextForChildren: NodeContext = {
-          componentContext: context2.componentContext,
-          tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
-          nodeNameLower: child.name.toLowerCase(),
-          parentNode: node as FlexNode | GroupNode2,
-          parentStyles: styles,
-          parentContext: context2,
-        };
-        const childTsx = await figmaToAstRec(contextForChildren, child);
-        if (childTsx) {
-          if (Array.isArray(childTsx)) {
-            children.push(...childTsx);
-          } else {
-            children.push(childTsx);
-          }
-        }
-      }
+    if (isChildrenMixin(node)) {
+      await recurseOnChildren(context2, node, children, styles);
     }
 
     const styleDeclarations = stylesToList(styles);
@@ -259,5 +195,71 @@ async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node
 
     const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
     return tsx;
+  }
+}
+
+async function recurseOnChildren(
+  context: NodeContextOptionalBorders,
+  node: SceneNode2 & ChildrenMixin2,
+  children: ts.JsxChild[],
+  styles: Dict<DeclarationPlain>,
+  passParentToChildContext?: boolean,
+) {
+  let masker: Masker | undefined = undefined;
+  for (const child of node.children) {
+    if (isBlendMixin(child) && child.isMask) {
+      child.skip = true;
+      masker = undefined; // In case we ignore the mask because of an error, don't mask target elements (vs wrong mask)
+      if (!isVector(child)) {
+        warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
+        continue;
+      }
+      let svgContent = readSvg(child);
+      if (!svgContent) {
+        warnNode(child, 'BUG Mask SVG has no content, skipping.');
+        continue;
+      }
+      const extension = 'svg';
+      const assetCssUrl = writeAsset(context, node, extension, svgContent);
+
+      masker = {
+        width: child.width,
+        height: child.height,
+        // TODO Instead of Figma raw x/y, we may need to use the calculated top/left from flex.ts.
+        // Test with borders, padding, scale mode for left in %...
+        x: child.x,
+        y: child.y,
+        url: assetCssUrl,
+      };
+    } else if (isFrame(child) && child.clipsContent) {
+      // frames reset the masking. The frame and next elements are not masked.
+      masker = undefined;
+    } else if (masker) {
+      // Extend the node interface to add the mask info to process it with other properties
+      child.maskedBy = masker;
+    }
+  }
+
+  const { parentNode, parentStyles, parentContext } = context;
+  for (const child of node.children) {
+    if (child.skip) {
+      continue;
+    }
+    const contextForChildren: NodeContext = {
+      componentContext: context.componentContext,
+      tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+      nodeNameLower: child.name.toLowerCase(),
+      parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
+      parentStyles: passParentToChildContext ? parentStyles : styles,
+      parentContext: passParentToChildContext ? parentContext : context,
+    };
+    const childTsx = await figmaToAstRec(contextForChildren, child);
+    if (childTsx) {
+      if (Array.isArray(childTsx)) {
+        children.push(...childTsx);
+      } else {
+        children.push(childTsx);
+      }
+    }
   }
 }
