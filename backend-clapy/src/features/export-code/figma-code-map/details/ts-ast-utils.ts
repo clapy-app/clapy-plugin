@@ -144,3 +144,11 @@ export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
 export function mkSrcStaticAttribute(src: string) {
   return factory.createJsxAttribute(factory.createIdentifier('src'), factory.createStringLiteral(src));
 }
+
+export function mkComponentUsage(compName: string) {
+  return factory.createJsxSelfClosingElement(
+    factory.createIdentifier(compName),
+    undefined,
+    factory.createJsxAttributes([]),
+  );
+}

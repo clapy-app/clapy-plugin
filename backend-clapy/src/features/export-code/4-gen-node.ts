@@ -3,15 +3,10 @@ import { ts } from 'ts-morph';
 
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
-import { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict } from '../sb-serialize-preview/sb-serialize.model';
+import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
-import {
-  ComponentContext,
-  JsxOneOrMore,
-  NodeContext,
-  NodeContextOptionalBorders,
-  NodeContextWithBorders,
-} from './code.model';
+import { JsxOneOrMore, NodeContext, NodeContextOptionalBorders, NodeContextWithBorders } from './code.model';
 import { getCompDirectory, writeAsset } from './create-ts-compiler/3-create-component';
 import {
   ChildrenMixin2,
@@ -20,17 +15,17 @@ import {
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
+  isComponent,
   isFlexNode,
   isFrame,
   isGroup,
-  isPage,
+  isInstance,
   isText,
   isValidNode,
   isVector,
   Masker,
   SceneNode2,
 } from './create-ts-compiler/canvas-utils';
-import { mkStylesheetCss } from './css-gen/css-factories-low';
 import { stylesToList } from './css-gen/css-type-utils';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
@@ -38,6 +33,7 @@ import {
   genClassName,
   genComponentImportName,
   mkClassAttr,
+  mkComponentUsage,
   mkImg,
   mkTag,
   removeCssRule,
@@ -45,38 +41,24 @@ import {
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export async function figmaToAstRootNode(componentContext: ComponentContext, { parent, root }: ExportCodePayload) {
-  const nodeContext: NodeContext = {
-    componentContext,
-    tagName: 'div', // Default value
-    nodeNameLower: root.name.toLowerCase(),
-    parentNode: parent,
-    parentStyles: null,
-    parentContext: null,
-    isPageLevel: isPage(parent),
-  };
-  const tsx = await figmaToAstRec(nodeContext, root, true);
-  const cssAst = mkStylesheetCss(componentContext.cssRules);
-  return [tsx, cssAst] as const;
-}
-
-// true if there is a parent frame (ignoring groups) and it is autolayout. False otherwise (no parent frame, e.g. group then top-level) or the parent frame is not autolayout.
-function firstParentFrameIsAutoLayout(context: NodeContext | null): boolean {
-  if (!context) return false;
-  const { parentContext, parentNode } = context;
-  if (isGroup(parentNode)) {
-    return firstParentFrameIsAutoLayout(parentContext);
-  }
-  if (isFlexNode(parentNode)) {
-    return parentNode.layoutMode !== 'NONE';
-  }
-  return false;
-}
-
-async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node: SceneNode2, isRoot?: boolean) {
+export async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node: SceneNode2, isRoot?: boolean) {
   try {
     if (!node.visible) {
       return;
+    }
+
+    // If component or instance, generate the code in a separate component file and reference it here.
+    if (isComponent(node) || isInstance(node)) {
+      const node2 = { ...node, type: 'FRAME' as const };
+      const componentContext = await genComponent(
+        context.componentContext.projectContext,
+        node2,
+        context.parentNode,
+        context.componentContext.file,
+        `..`,
+        context.componentContext,
+      );
+      return mkComponentUsage(componentContext.compName);
     }
 
     const styles: Dict<DeclarationPlain> = {};
@@ -167,12 +149,6 @@ async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node
       const ast = mkImg(svgPathVarName, attributes);
       return ast;
     } else if (isBlockNode(node)) {
-      // if (isComponent(node)) {
-      //   console.log('Component', node);
-      // } else if (isInstance(node)) {
-      //   console.log('Instance', node);
-      // }
-
       // Add tag styles
       const context2 = mapTagStyles(context, node, styles);
 

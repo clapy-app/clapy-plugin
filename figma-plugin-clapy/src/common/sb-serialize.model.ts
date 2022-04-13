@@ -239,7 +239,7 @@ export type OmitMethods<T> = {
 };
 
 export interface ExportCodePayload {
-  parent: FrameNode | ComponentNode | InstanceNode;
+  parent: FrameNode | ComponentNode | InstanceNode | PageNode;
   root: SceneNodeNoMethod;
   images: ExportImageMap2;
 }

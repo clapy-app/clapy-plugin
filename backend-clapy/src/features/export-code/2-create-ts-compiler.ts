@@ -1,41 +1,32 @@
-import { Project, ts } from 'ts-morph';
+import { Project, SourceFile, ts } from 'ts-morph';
 
-import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
-import { ExportCodePayload, SceneNodeNoMethod } from '../sb-serialize-preview/sb-serialize.model';
-import { figmaToAstRootNode } from './4-figma-to-ast-root';
+import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
+import { genComponent } from './3-gen-component';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { CodeDict, ComponentContext, ProjectContext } from './code.model';
+import { CodeDict, ComponentContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { createProjectFromTsConfig, separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { addFilesToProject } from './create-ts-compiler/2-add-files-to-project';
-import { createComponent, getCompDirectory } from './create-ts-compiler/3-create-component';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
-import { cssAstToString } from './css-gen/css-factories-low';
-import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
+import { mkComponentUsage } from './figma-code-map/details/ts-ast-utils';
 
 const appCssPath = 'src/App.module.css';
 const indexHtmlPath = 'public/index.html';
 
-export async function exportCode(figmaConfig: ExportCodePayload, uploadToCsb = true) {
+export async function exportCode({ images, root, parent }: ExportCodePayload, uploadToCsb = true) {
   try {
     // Initialize the project template with base files
-    perfMeasure('a');
     const filesCsb = await readReactTemplateFiles();
-    perfMeasure('b');
     const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
-    perfMeasure('c');
     const project = await createProjectFromTsConfig(tsConfig);
-    perfMeasure('d');
     const [files, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(rest);
     const cssFiles: CodeDict = { [appCssPath]: appCss };
-    perfMeasure('e');
     resources['tsconfig.json'] = tsConfig;
     addFilesToProject(project, files);
-    perfMeasure('f');
 
     // Most context elements here should be per component (but not compNamesAlreadyUsed).
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -43,39 +34,24 @@ export async function exportCode(figmaConfig: ExportCodePayload, uploadToCsb = t
       compNamesAlreadyUsed: new Set(),
       fontFamiliesUsed: new Set(),
       assetsAlreadyUsed: new Set(),
+      project,
       resources,
       cssFiles,
-      images: figmaConfig.images,
-      // project // if useful
+      images,
     };
 
-    const compName = genUniqueName(projectContext.compNamesAlreadyUsed, figmaConfig.root.name, true);
+    const appFile = project.getSourceFileOrThrow('src/App.tsx');
+    const componentContext = await genComponent(projectContext, root, parent, appFile, `./components`);
 
-    const componentContext: ComponentContext = {
-      projectContext,
-      file: await createComponent(project, compName),
-      compName,
-      classNamesAlreadyUsed: new Set(),
-      importNamesAlreadyUsed: new Set(),
-      cssRules: [],
-      inInteractiveElement: false,
-    };
-
-    await addComponentToProject(componentContext, figmaConfig, cssFiles);
-    perfMeasure('g');
-
-    addCompToAppRoot(project, componentContext, figmaConfig.parent);
-    perfMeasure('h');
+    addCompToAppRoot(project, componentContext, parent, appFile);
 
     const tsFiles = await diagnoseFormatTsFiles(project);
-    perfMeasure('i');
     await prepareCssFiles(cssFiles);
     // prepareResources(resources);
 
     addFontsToIndexHtml(projectContext);
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
-    perfMeasure('j');
     if (env.isDev) {
       // Useful for the dev in watch mode. Uncomment when needed.
       // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
@@ -83,11 +59,9 @@ export async function exportCode(figmaConfig: ExportCodePayload, uploadToCsb = t
       //
       // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       await writeToDisk(csbFiles);
-      perfMeasure('k');
     }
     if (!env.isDev || uploadToCsb) {
       const csbResponse = await uploadToCSB(csbFiles);
-      perfMeasure('l');
       return csbResponse;
     }
   } catch (error: any) {
@@ -95,54 +69,25 @@ export async function exportCode(figmaConfig: ExportCodePayload, uploadToCsb = t
   }
 }
 
-async function addComponentToProject(
+function addCompToAppRoot(
+  project: Project,
   componentContext: ComponentContext,
-  figmaConfig: ExportCodePayload,
-  cssFiles: CodeDict,
+  parentNode: ParentNode,
+  appFile: SourceFile,
 ) {
-  const { file, compName } = componentContext;
-  perfMeasure('g1');
-
-  // Get the returned expression that we want to replace
-  const { returnedExpression, compDeclaration } = getFirstExportedComponentsInFileOrThrow(file);
-  perfMeasure('g2');
-  compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
-  perfMeasure('g3');
-
-  const [tsx, css] = await figmaToAstRootNode(componentContext, figmaConfig);
-  perfMeasure('g4');
-
-  // Replace the returned expression with the newly generated code
-  returnedExpression.transform((/* traversal */) => {
-    // traversal.currentNode
-    // traversal.visitChildren()
-    return (Array.isArray(tsx) ? mkFragment(tsx) : tsx) || ts.factory.createNull();
-  });
-  perfMeasure('g5');
-
-  // Add CSS file.
-  cssFiles[`${getCompDirectory(compName)}/${compName}.module.css`] = cssAstToString(css);
-  perfMeasure('g6');
-}
-
-function addCompToAppRoot(project: Project, componentContext: ComponentContext, parentNode: SceneNodeNoMethod) {
   const {
     compName,
     projectContext: { cssFiles },
   } = componentContext;
-  const appFile = project.getSourceFileOrThrow('src/App.tsx');
-  appFile.addImportDeclaration({
-    moduleSpecifier: `./components/${compName}/${compName}`,
-    namedImports: [compName],
-  });
 
+  // Specific to the root node. Don't apply on other components.
+  // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
   const updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode);
   if (updatedAppCss) {
     cssFiles[appCssPath] = updatedAppCss;
   }
 
-  // TODO We can add a couple of attributes from parentNode into App.module.css's root class. If useful.
-
+  // Insert the root component into App.tsx
   const { jsx } = getFirstExportedComponentsInFileOrThrow(appFile);
   jsx.transform(traversal => {
     const node = traversal.currentNode;
@@ -151,17 +96,7 @@ function addCompToAppRoot(project: Project, componentContext: ComponentContext, 
     }
     const { openingElement, closingElement } = node;
     const { factory } = ts;
-    return factory.createJsxElement(
-      openingElement,
-      [
-        factory.createJsxSelfClosingElement(
-          factory.createIdentifier(compName),
-          undefined,
-          factory.createJsxAttributes([]),
-        ),
-      ],
-      closingElement,
-    );
+    return factory.createJsxElement(openingElement, [mkComponentUsage(compName)], closingElement);
   });
 }
 

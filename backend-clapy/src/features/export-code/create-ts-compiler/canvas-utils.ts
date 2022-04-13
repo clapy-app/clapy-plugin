@@ -83,67 +83,67 @@ export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
 }
 
-export function isLayout(node: BaseNode2 | null | undefined): node is LayoutMixin & BaseNode2 {
+export function isLayout(node: BaseNode2 | SceneNode2 | null | undefined): node is LayoutMixin & BaseNode2 {
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: SceneNode2 | Nil): node is GroupNode2 {
+export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode2 {
   return node?.type === 'GROUP';
 }
 
-export function isSlice(node: SceneNode2 | Nil): node is SliceNode {
+export function isSlice(node: BaseNode2 | SceneNode2 | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
-export function isRectangle(node: SceneNode2 | Nil): node is RectangleNode2 {
+export function isRectangle(node: BaseNode2 | SceneNode2 | Nil): node is RectangleNode2 {
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: SceneNode2 | Nil): node is LineNode {
+export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
-export function isEllipse(node: SceneNode2 | Nil): node is EllipseNode {
+export function isEllipse(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
-export function isPolygon(node: SceneNode2 | Nil): node is PolygonNode {
+export function isPolygon(node: BaseNode2 | SceneNode2 | Nil): node is PolygonNode {
   return node?.type === 'POLYGON';
 }
 
-export function isStar(node: SceneNode2 | Nil): node is StarNode {
+export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: SceneNode2 | Nil): node is VectorNode2 {
+export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode2 {
   return node?.type === 'VECTOR';
 }
 
-export function isText(node: SceneNode2 | Nil): node is TextNode2 {
+export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: SceneNode2 | Nil): node is BooleanOperationNode {
+export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
-export function isStamp(node: SceneNode2 | Nil): node is StampNode {
+export function isStamp(node: BaseNode2 | SceneNode2 | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
-export function isComponentSet(node: SceneNode2 | Nil): node is ComponentSetNode {
+export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is ComponentSetNode {
   return node?.type === 'COMPONENT_SET';
 }
 
-export function isFrame(node: SceneNode2 | Nil /* BaseNode2 | BaseFrameMixin | undefined */): node is FrameNode2 {
+export function isFrame(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 {
   return (node as BaseNode2)?.type === 'FRAME';
 }
 
-export function isComponent(node: SceneNode2 | Nil): node is ComponentNode2 {
+export function isComponent(node: BaseNode2 | SceneNode2 | Nil): node is ComponentNode2 {
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: SceneNode2 | BaseNode2 | Nil): node is InstanceNode2 {
+export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
   return node?.type === 'INSTANCE';
 }
 
@@ -164,25 +164,27 @@ export function isBlendMixin(node: BaseNode2 | BlendMixin | Nil): node is BlendM
   return !!(node as BlendMixin)?.blendMode;
 }
 
+export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSegment | Nil): node is StyledTextSegment {
+  const sts = node as StyledTextSegment;
+  return sts.characters != null && sts.start != null && sts.end != null;
+}
+
 // ComponentSetNode is not included in FlexNode.
 export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
-// GroupNode doesn't have auto-layout
-export type BlockNode = FlexNode | RectangleNode2 | GroupNode2;
-export type ValidNode = BlockNode | TextNode2 | VectorNode2;
 
-export function isValidNode(node: SceneNode2 | Nil): node is ValidNode {
-  return isBlockNode(node) || isText(node) || isVector(node);
-}
-
-export function isBlockNode(node: SceneNode2 | Nil): node is BlockNode {
-  return isFlexNode(node) || isRectangle(node) || isGroup(node);
-}
-
-export function isFlexNode(node: SceneNode2 | Nil): node is FlexNode {
+export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
   return isFrame(node) || isComponent(node) || isInstance(node);
 }
 
-export function isStyledTextSegment(node: SceneNode2 | StyledTextSegment | Nil): node is StyledTextSegment {
-  const sts = node as StyledTextSegment;
-  return sts.characters != null && sts.start != null && sts.end != null;
+// GroupNode doesn't have auto-layout
+export type BlockNode = FlexNode | RectangleNode2 | GroupNode2;
+
+export function isBlockNode(node: BaseNode2 | SceneNode2 | Nil): node is BlockNode {
+  return isFlexNode(node) || isRectangle(node) || isGroup(node);
+}
+
+export type ValidNode = BlockNode | TextNode2 | VectorNode2;
+
+export function isValidNode(node: BaseNode2 | SceneNode2 | Nil): node is ValidNode {
+  return isBlockNode(node) || isText(node) || isVector(node);
 }
