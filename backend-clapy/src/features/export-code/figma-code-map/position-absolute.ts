@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { isFlexNode, isGroup, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 function applyPositionRelative(styles: Dict<DeclarationPlain>) {
@@ -69,11 +69,15 @@ export function positionAbsoluteFigmaToCode(
     }
 
     const nodeY = parentIsGroup ? node.y - parentNode.y : node.y;
-    const top = nodeY - borderTopWidth;
+    let top = nodeY - borderTopWidth;
     // Don't subtract borderTopWidth, it's already included in nodeY.
     const bottom = parentNode.height - nodeY - node.height - borderBottomWidth;
     const parentHeight = parentNode.height - borderTopWidth - borderBottomWidth;
     let translateY = false;
+
+    if (isLine(node)) {
+      top -= node.strokeWeight;
+    }
 
     if (vertical === 'MIN') {
       addStyle(styles, 'top', [top, 'px']);
