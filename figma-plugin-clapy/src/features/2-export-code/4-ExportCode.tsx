@@ -6,7 +6,7 @@ import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
-import { Button } from '../../components/Button';
+import { Button } from '../../components-old/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
@@ -35,9 +35,9 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       setPreviewUrl('loading');
 
       // Extract the Figma configuration
-      const [parent, root, imagesExtracted] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, imagesExtracted, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images };
+      const nodes = { parent, root, images, extraConfig };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {

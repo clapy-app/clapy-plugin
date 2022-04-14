@@ -5,7 +5,16 @@ import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { FlexNode, isFlexNode, isGroup, isLayout, isPage, isText, ValidNode } from '../create-ts-compiler/canvas-utils';
+import {
+  FlexNode,
+  isFlexNode,
+  isGroup,
+  isLayout,
+  isLine,
+  isPage,
+  isText,
+  ValidNode,
+} from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { defaultNode } from './details/default-node';
 
@@ -74,7 +83,7 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
   } = applyWidth(context, node, styles);
 
   // Flex: 1 if it's a figma rule or it's a top-level component
-  if (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents)) {
+  if (!isLine(node) && (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents))) {
     addStyle(styles, 'flex', 1);
   }
 

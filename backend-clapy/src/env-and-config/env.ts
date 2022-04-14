@@ -17,14 +17,14 @@ if (!isDev && !isStaging && !isProd) {
 
 // Add here non-confidential environment-based configurations (e.g. domains, base URLs)
 const dev = {
-  auth0Domain: 'clapy.eu.auth0.com',
-  auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
+  auth0Domain: 'clapy-dev.eu.auth0.com',
+  auth0ClientId: 'BxwH4Y8N4xsrJp55lm4UTWblnHVDRDz9',
   baseUrl: 'http://localhost:4141',
 };
 
 const staging = {
-  auth0Domain: 'clapy.eu.auth0.com',
-  auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
+  auth0Domain: 'todo',
+  auth0ClientId: 'todo',
   baseUrl: 'todo',
 };
 

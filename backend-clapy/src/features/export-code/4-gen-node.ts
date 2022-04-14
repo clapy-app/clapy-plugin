@@ -101,7 +101,8 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
           addCssRule(context, className, styleDeclarations);
           attributes.push(mkClassAttr(className));
         }
-        ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
+        // Div or span? Need use cases to understand the expected behavior.
+        ast = mkTag('span', attributes, Array.isArray(ast) ? ast : [ast]);
       } else {
         Object.assign(context.parentStyles, styles);
         // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,

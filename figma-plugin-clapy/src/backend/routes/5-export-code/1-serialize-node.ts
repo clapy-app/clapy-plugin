@@ -12,6 +12,9 @@ export function serializeSelectedNode() {
 
   const images: ExportImagesFigma = {};
   const context: SerializeContext = { images };
+  const extraConfig = {
+    isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+  };
 
   return Promise.all([
     node.parent
@@ -19,6 +22,7 @@ export function serializeSelectedNode() {
       : null,
     nodeToObject(node, context, { skipChildren: false, skipInstance: true, skipParent: true }),
     images,
+    extraConfig,
   ]);
 }
 

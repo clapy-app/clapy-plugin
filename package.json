@@ -12,7 +12,7 @@
     "preview": "cd backend-clapy/atest-gen && yarn start",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive --latest",
-    "up": "docker-compose up -d db hasura backend",
+    "up": "docker-compose stop dev && docker-compose up -d db hasura backend",
     "up2": "docker-compose stop backend && docker-compose up -d dev",
     "stop": "docker-compose stop",
     "fixtime": "sudo ntpdate -sb time.nist.gov",

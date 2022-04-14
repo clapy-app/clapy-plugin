@@ -4,10 +4,26 @@
 <head>
   <meta charset="utf-8" />
   <title>Clapy</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>You are now signed out. You can close this window and go back to Figma.</h1>
+  {{#if mustReauth}}
+  <h2>We couldn't automatically refresh your session. Please reauthenticate to get back to work.</h2>
+  {{else}}
+  <h2>You are now signed out. You can close this window and go back to Figma.</h2>
+  {{/if}}
 </body>
 <script type="text/javascript">
   if ("{{ from }}" === "desktop") {

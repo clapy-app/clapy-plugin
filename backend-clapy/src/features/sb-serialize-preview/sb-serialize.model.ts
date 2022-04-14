@@ -242,6 +242,7 @@ export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode | PageNode;
   root: SceneNodeNoMethod;
   images: ExportImageMap2;
+  extraConfig: { isClapyFile: boolean };
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;

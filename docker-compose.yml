@@ -11,6 +11,7 @@ x-backend:
   volumes:
     - node_modules:/app/node_modules
     - ./backend-clapy:/app
+    - ./figma-plugin-clapy/src/components:/plugin/components
   env_file: .env
   environment:
     ISDOCKER: 'true'

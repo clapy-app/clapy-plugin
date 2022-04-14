@@ -13,6 +13,8 @@ export const assetsResourceDir = `public/assets/`;
 // Here, '', '/' or '.' points to the public directory.
 export const assetsCssBaseUrl = 'assets/';
 
+let _templateAst: SourceFile | undefined = undefined;
+
 // Copy the component template in project: placeholder to write the button code later
 export async function createComponent(project: Project, dirPath: string, name: string) {
   // TypeScript

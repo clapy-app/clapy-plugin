@@ -11,7 +11,8 @@ export async function addFilesToProject(project: Project, files: Dict<string>) {
     }
     /* const file = */ project.createSourceFile(path, content /*, { overwrite: true }*/);
   }
-  await project.save();
+  // It seems saving the files to the file system is not required for our use case.
+  // await project.save();
 }
 
 // export function addFilesToProject0(project: Project, files: ProjectFiles) {

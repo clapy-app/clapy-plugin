@@ -18,7 +18,7 @@ import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
-import { Button } from '../../components/Button';
+import { Button } from '../../components-old/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
 import { ExportCode } from '../2-export-code/4-ExportCode';

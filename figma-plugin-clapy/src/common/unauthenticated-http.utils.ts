@@ -177,7 +177,8 @@ async function httpReqUnauthenticated<T>(
     const { data, headers, status, statusText, type, url } = resp || {};
     const data2: any = data;
     if (status === 403 || data2?.error?.error === 'invalid_grant') {
-      logout();
+      console.warn('Logout because getting 403 on request. Not authorized, not an authentication issue.');
+      logout(true);
     }
     throw Object.assign(
       new Error(data2?.message || (typeof data2?.error === 'string' && data2.error) || '[http utils] Failed request'),
