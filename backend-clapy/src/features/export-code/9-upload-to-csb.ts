@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { createWriteStream } from 'fs';
 import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
-import glob from 'glob';
 import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
@@ -22,11 +21,12 @@ export async function uploadToCSB(files: CsbDict) {
   return data;
 }
 
-const globPromise = promisify(glob);
-
 const srcCompPrefix = 'src/components/';
 
 export async function writeToDisk(files: CsbDict, isClapyFile: boolean) {
+  const glob = require('glob');
+  const globPromise = promisify(glob);
+
   const filePaths: string[] = [];
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
