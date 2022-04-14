@@ -95,12 +95,12 @@ export async function refreshTokens() {
   throw new Error(interactiveSignInMsg);
 }
 
-export function logout() {
+export function logout(mustReauth?: boolean) {
   setAccessToken(null);
   _tokenType = null;
   const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
     client_id: auth0ClientId,
-    returnTo: loggedOutCallbackUrl,
+    returnTo: mustReauth ? `${loggedOutCallbackUrl}&reauth` : loggedOutCallbackUrl,
   });
   window.open(url, '_blank');
   fetchPlugin('clearCachedTokens').catch(handleError);

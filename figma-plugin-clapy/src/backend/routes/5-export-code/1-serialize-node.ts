@@ -12,6 +12,7 @@ export function serializeSelectedNode() {
 
   const images: ExportImagesFigma = {};
   const context: SerializeContext = { images };
+  // console.log(figma.fileKey); // TODO Bdl7eeSo61mEXcFs5sgD7n for Clapy wireframes?
 
   return Promise.all([
     node.parent

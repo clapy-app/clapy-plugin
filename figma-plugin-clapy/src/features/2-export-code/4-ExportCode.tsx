@@ -6,7 +6,7 @@ import { useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
-import { Button } from '../../components/Button';
+import { Button } from '../../components-old/Button';
 import { env } from '../../environment/env';
 import classes from '../1-import-sb/1-ImportSb.module.scss';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';

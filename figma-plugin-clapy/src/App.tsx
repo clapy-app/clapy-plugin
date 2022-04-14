@@ -19,7 +19,6 @@ export const App: FC = memo(function App() {
     <div className={styles.container}>
       <div className={styles.body}>
         <ImportSb />
-        {/* <Sample /> */}
       </div>
       <div className={styles.footer}>
         <a

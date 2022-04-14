@@ -83,8 +83,9 @@ export class LoginController {
   @Get('logged-out')
   @Render('logged-out')
   @IsBrowserGet()
-  loggedOut(@Query('from') from: string = 'browser') {
-    return { from };
+  loggedOut(@Query('from') from: string = 'browser', @Query('reauth') reauth: string) {
+    const mustReauth = reauth != null;
+    return { from, mustReauth };
   }
 
   @Get('read-code')

@@ -1,5 +1,6 @@
 import { Project, SourceFile, ts } from 'ts-morph';
 
+import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
@@ -19,6 +20,7 @@ const indexHtmlPath = 'public/index.html';
 
 export async function exportCode({ images, root, parent }: ExportCodePayload, uploadToCsb = true) {
   try {
+    perfMeasure('a');
     // Initialize the project template with base files
     const filesCsb = await readReactTemplateFiles();
     const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
@@ -27,6 +29,7 @@ export async function exportCode({ images, root, parent }: ExportCodePayload, up
     const cssFiles: CodeDict = { [appCssPath]: appCss };
     resources['tsconfig.json'] = tsConfig;
     addFilesToProject(project, files);
+    perfMeasure('b');
 
     // Most context elements here should be per component (but not compNamesAlreadyUsed).
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -48,24 +51,33 @@ export async function exportCode({ images, root, parent }: ExportCodePayload, up
       compName: 'App',
       inInteractiveElement: false,
     } as ComponentContext;
+    perfMeasure('c');
     const componentContext = await genComponent(fakeParentComponentContext, root, parent);
+    perfMeasure('d');
 
     addCompToAppRoot(project, componentContext, parent, appFile);
+    perfMeasure('e');
 
-    const tsFiles = await diagnoseFormatTsFiles(project);
+    const tsFiles = await diagnoseFormatTsFiles(project); // Takes time with many files
+    perfMeasure('f');
     await prepareCssFiles(cssFiles);
+    perfMeasure('g');
     // prepareResources(resources);
 
     addFontsToIndexHtml(projectContext);
+    perfMeasure('h');
 
     const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
+    perfMeasure('i');
     if (env.isDev) {
       // Useful for the dev in watch mode. Uncomment when needed.
       // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
       // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
       //
       // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
-      await writeToDisk(csbFiles);
+      perfMeasure('j');
+      await writeToDisk(csbFiles); // Takes time with many files
+      perfMeasure('k');
     }
     if (!env.isDev || uploadToCsb) {
       const csbResponse = await uploadToCSB(csbFiles);
