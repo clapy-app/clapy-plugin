@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, NodeContextWithBorders } from '../code.model';
-import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isGroup, isLine, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
@@ -49,7 +49,8 @@ export function borderFigmaToCode(
       }
       const borderWidth = strokeWeight;
       const hex = figmaColorToCssHex(color, opacity);
-      addStyle(styles, 'border', 'solid', [borderWidth, 'px'], hex);
+      const propName = isLine(node) ? 'border-bottom' : 'border';
+      addStyle(styles, propName, 'solid', [borderWidth, 'px'], hex);
       return {
         ...context,
         borderWidths: {

@@ -26,7 +26,7 @@ export type LayoutNode =
   | GroupNode2
   | SliceNode
   | RectangleNode2
-  | LineNode
+  | LineNode2
   | EllipseNode
   | PolygonNode
   | StarNode
@@ -78,6 +78,7 @@ export type ComponentNode2 = ExtendNodeType<ComponentNode>;
 export type InstanceNode2 = ExtendNodeType<InstanceNode>;
 export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode>;
+export type LineNode2 = ExtendNodeType<LineNode>;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
@@ -99,7 +100,7 @@ export function isRectangle(node: BaseNode2 | SceneNode2 | Nil): node is Rectang
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode {
+export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode2 {
   return node?.type === 'LINE';
 }
 
@@ -177,10 +178,10 @@ export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode
 }
 
 // GroupNode doesn't have auto-layout
-export type BlockNode = FlexNode | RectangleNode2 | GroupNode2;
+export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | LineNode2;
 
 export function isBlockNode(node: BaseNode2 | SceneNode2 | Nil): node is BlockNode {
-  return isFlexNode(node) || isRectangle(node) || isGroup(node);
+  return isFlexNode(node) || isRectangle(node) || isGroup(node) || isLine(node);
 }
 
 export type ValidNode = BlockNode | TextNode2 | VectorNode2;

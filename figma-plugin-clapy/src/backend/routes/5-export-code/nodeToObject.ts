@@ -20,7 +20,7 @@ import {
   isMinimalStrokesMixin,
   isPage,
   isRectangle,
-  isShapeExceptRectangle,
+  isShapeExceptDivable,
   isText,
   LayoutNode,
   ShapeNode,
@@ -85,7 +85,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
       throw new Error('NODE_NOT_VISIBLE');
     }
     const { skipChildren = false, skipParent = true, skipInstance = true } = options;
-    const nodeIsShape = isShapeExceptRectangle(node);
+    const nodeIsShape = isShapeExceptDivable(node);
     let exportAsSvg = nodeIsShape;
     let obj: any;
     if (!context.isInInstance && isInstance(node)) {
@@ -158,7 +158,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
         }
 
         obj.type = 'VECTOR' as VectorNode['type'];
-        if (isShapeExceptRectangle(nodeToExport)) {
+        if (isShapeExceptDivable(nodeToExport)) {
           [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
           (nodeToExport as ShapeNode).effects = [];
           (nodeToExport as ShapeNode).effectStyleId = '';
@@ -283,7 +283,7 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
 function containsShapesOnly(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   for (const child of node.children) {
-    if (!isShapeExceptRectangle(child) && !isRectangleWithoutImage(child)) {
+    if (!isShapeExceptDivable(child) && !isRectangleWithoutImage(child)) {
       return false;
     }
   }
