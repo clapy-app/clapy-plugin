@@ -47,10 +47,34 @@ export function borderFigmaToCode(
         // outline-offset: -5px;
         // https://css-playground.com/view/68/css-outline-playground
       }
-      const borderWidth = strokeWeight;
+      let borderWidth = strokeWeight;
       const hex = figmaColorToCssHex(color, opacity);
-      const propName = isLine(node) ? 'border-bottom' : 'border';
-      addStyle(styles, propName, 'solid', [borderWidth, 'px'], hex);
+      if (isLine(node)) {
+        if (borderWidth <= 1) {
+          // Another way to do that for horizontal lines is box-shadow, but it doesn't work well with rotations and/or vertical lines.
+          // box-shadow: 0 -1px 0 #000;
+          addStyle(styles, 'border-bottom', 'solid', [borderWidth, 'px'], hex);
+          addStyle(styles, 'margin-bottom', [-borderWidth, 'px']);
+        } else {
+          addStyle(styles, 'outline', 'solid', [borderWidth / 2, 'px'], hex);
+        }
+      } else if (node.width <= 1) {
+        addStyle(styles, 'border-right', 'solid', [borderWidth, 'px'], hex);
+        addStyle(styles, 'margin-right', [-borderWidth, 'px']);
+      } else if (node.height <= 1) {
+        addStyle(styles, 'border-bottom', 'solid', [borderWidth, 'px'], hex);
+        addStyle(styles, 'margin-bottom', [-borderWidth, 'px']);
+      } else {
+        addStyle(styles, 'outline', 'solid', [borderWidth, 'px'], hex);
+        if (strokeAlign === 'INSIDE') {
+          addStyle(styles, 'outline-offset', [-borderWidth, 'px']);
+        } else if (strokeAlign === 'CENTER') {
+          addStyle(styles, 'outline-offset', [-borderWidth / 2, 'px']);
+        }
+      }
+      // TODO Let's just disable borders until we are sure it's not required anymore.
+      // After 2-3 weeks, we can remove all usages of context.borderWidths.
+      borderWidth = 0;
       return {
         ...context,
         borderWidths: {

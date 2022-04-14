@@ -28,6 +28,7 @@ import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
 import { transformFigmaToCode } from './figma-code-map/transform';
+import { zindexFigmaToCode } from './figma-code-map/zindex';
 
 const { factory } = ts;
 
@@ -42,6 +43,7 @@ export function mapCommonStyles(context: NodeContext, node: ValidNode, styles: D
 
 export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const context2 = borderFigmaToCode(context, node, styles);
+  zindexFigmaToCode(context2, node, styles);
   flexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);
   borderRadiusFigmaToCode(context2, node, styles);

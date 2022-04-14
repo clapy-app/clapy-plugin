@@ -254,16 +254,25 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
   const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
-  const shouldApplyMaxSize = !parent || isPage(parent) || (parent.width >= node.width && parent.height >= node.height);
+  const parentHasHorizontalScroll =
+    parent && parentIsFlex && (parent.overflowDirection === 'HORIZONTAL' || parent.overflowDirection === 'BOTH');
+  const parentHasVerticalScroll =
+    parent && parentIsFlex && (parent.overflowDirection === 'VERTICAL' || parent.overflowDirection === 'BOTH');
+  const parentIsPage = isPage(parent);
+  const parentRequireMaxSize = !parent || parentIsPage;
+  const parentIsBiggerThanNode = parent && !parentIsPage && parent.width >= node.width && parent.height >= node.height;
+
+  const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
+  const shouldApplyMaxHeight = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasVerticalScroll);
   if (fixedWidth) {
     addStyle(styles, 'width', [width, 'px']);
-    if (shouldApplyMaxSize) {
+    if (shouldApplyMaxWidth) {
       addStyle(styles, 'max-width', [100, '%']);
     }
   }
   if (fixedHeight) {
     addStyle(styles, 'height', [height, 'px']);
-    if (shouldApplyMaxSize) {
+    if (shouldApplyMaxHeight) {
       addStyle(styles, 'max-height', [100, '%']);
     }
   }
