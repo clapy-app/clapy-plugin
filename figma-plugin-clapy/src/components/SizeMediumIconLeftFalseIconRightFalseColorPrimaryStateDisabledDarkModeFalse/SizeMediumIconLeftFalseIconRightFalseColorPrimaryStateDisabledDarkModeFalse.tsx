@@ -1,6 +1,0 @@
-import classes from './SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse.module.css';
-import { SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse_2 } from './SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse_2/SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse_2';
-
-export function SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse() {
-  return <SizeMediumIconLeftFalseIconRightFalseColorPrimaryStateDisabledDarkModeFalse_2 />;
-}

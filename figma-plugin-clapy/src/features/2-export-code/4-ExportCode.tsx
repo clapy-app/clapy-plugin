@@ -35,9 +35,9 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       setPreviewUrl('loading');
 
       // Extract the Figma configuration
-      const [parent, root, imagesExtracted] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, imagesExtracted, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images };
+      const nodes = { parent, root, images, extraConfig };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {

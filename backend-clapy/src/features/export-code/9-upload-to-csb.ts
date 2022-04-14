@@ -26,7 +26,7 @@ const globPromise = promisify(glob);
 
 const srcCompPrefix = 'src/components/';
 
-export async function writeToDisk(files: CsbDict) {
+export async function writeToDisk(files: CsbDict, isClapyFile: boolean) {
   const filePaths: string[] = [];
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
@@ -39,7 +39,7 @@ export async function writeToDisk(files: CsbDict) {
       }
 
       const files = [`${backendDir}/atest-gen/${path}`];
-      if (path.startsWith(srcCompPrefix)) {
+      if (isClapyFile && path.startsWith(srcCompPrefix)) {
         files.push(`${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`);
       }
 
@@ -60,9 +60,15 @@ export async function writeToDisk(files: CsbDict) {
   );
 
   // Remove old files
-  const srcMatches = await globPromise(resolve(`${backendDir}/atest-gen/src/**/*.*`), { ignore: filePaths });
-  const publicMatches = await globPromise(resolve(`${backendDir}/atest-gen/public/**/*.*`), { ignore: filePaths });
-  await Promise.all([...srcMatches, ...publicMatches].map(match => unlink(match)));
+  const globsToClean = [
+    globPromise(resolve(`${backendDir}/atest-gen/src/**/*.*`), { ignore: filePaths }),
+    globPromise(resolve(`${backendDir}/atest-gen/public/**/*.*`), { ignore: filePaths }),
+  ];
+  if (isClapyFile) {
+    globsToClean.push(globPromise(resolve(`${dockerPluginCompDir}/**/*.*`), { ignore: filePaths }));
+  }
+  const [srcMatches, publicMatches, clapyMatches] = await Promise.all(globsToClean);
+  await Promise.all([...srcMatches, ...publicMatches, ...(clapyMatches || [])].map(match => unlink(match)));
   // Then remove empty folders
   await Promise.all([
     cleanEmptyFoldersRecursively(`${backendDir}/atest-gen/src`),

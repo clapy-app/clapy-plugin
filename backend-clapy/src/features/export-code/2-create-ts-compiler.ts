@@ -18,7 +18,7 @@ import { mkComponentUsage } from './figma-code-map/details/ts-ast-utils';
 const appCssPath = 'src/App.module.css';
 const indexHtmlPath = 'public/index.html';
 
-export async function exportCode({ images, root, parent }: ExportCodePayload, uploadToCsb = true) {
+export async function exportCode({ images, root, parent, extraConfig }: ExportCodePayload, uploadToCsb = true) {
   try {
     perfMeasure('a');
     // Initialize the project template with base files
@@ -76,7 +76,7 @@ export async function exportCode({ images, root, parent }: ExportCodePayload, up
       //
       // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       perfMeasure('j');
-      await writeToDisk(csbFiles); // Takes time with many files
+      await writeToDisk(csbFiles, extraConfig.isClapyFile); // Takes time with many files
       perfMeasure('k');
     }
     if (!env.isDev || uploadToCsb) {
