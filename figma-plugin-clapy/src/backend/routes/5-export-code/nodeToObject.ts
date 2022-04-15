@@ -1,5 +1,6 @@
 import filetype from 'magic-bytes.js';
 
+import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf } from '../../../common/general-utils';
@@ -25,7 +26,6 @@ import {
   LayoutNode,
   ShapeNode,
 } from '../../common/node-type-utils';
-import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings

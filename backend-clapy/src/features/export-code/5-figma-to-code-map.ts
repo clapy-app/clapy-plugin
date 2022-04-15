@@ -11,6 +11,7 @@ import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
 import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
 import { colorFigmaToCode } from './figma-code-map/color';
 import { cursorFigmaToCode } from './figma-code-map/cursor';
+import { escapeHTML } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   genClassName,
@@ -96,7 +97,7 @@ function textNodeToAst(
   // Add text segment styles
   mapTextFragmentStyles(context, textSegment, styles);
 
-  let ast: ts.JsxChild = factory.createJsxText(textSegment.characters, false);
+  let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
   if (!singleChild) {
     const className = genClassName(context);
     addCssRule(context, className, stylesToList(styles));

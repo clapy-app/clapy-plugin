@@ -15,6 +15,12 @@ import { addStyle } from '../css-gen/css-factories-high';
 import { guessScroll } from '../smart-guesses/guessScroll';
 
 export function overflowFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  if (isVector(node)) {
+    if (!(node as any).clipsContent) {
+      // SVG might paint some content outside their viewbox (supported on Figma). If clipsContent is disabled, the overflow is visible.
+      addStyle(styles, 'overflow', 'visible');
+    }
+  }
   if (isText(node) || isVector(node) || isRectangle(node) || isComponentSet(node) || isGroup(node) || isLine(node))
     return;
   const { x, y } = guessScroll(context, node, styles);

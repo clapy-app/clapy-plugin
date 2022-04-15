@@ -1,3 +1,4 @@
+import { transform } from '@svgr/core';
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
 
@@ -6,6 +7,7 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
+import { getPrettierConfig } from './8-diagnose-format-ts-files';
 import { JsxOneOrMore, NodeContext, NodeContextOptionalBorders, NodeContextWithBorders } from './code.model';
 import { writeAsset } from './create-ts-compiler/3-create-component';
 import {
@@ -34,7 +36,6 @@ import {
   genComponentImportName,
   mkClassAttr,
   mkComponentUsage,
-  mkImg,
   mkTag,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
@@ -119,14 +120,31 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
         return;
       }
 
-      // Add SVG file to resources to create the file later
       const svgPathVarName = genComponentImportName(context);
-      projectContext.resources[`${context.componentContext.compDir}/${svgPathVarName}.svg`] = svgContent;
+
+      const svgTsCode = await transform(
+        svgContent,
+        {
+          typescript: true,
+          exportType: 'named',
+          namedExport: svgPathVarName,
+          jsxRuntime: 'automatic',
+          dimensions: false,
+          memo: true,
+          // svgo could be useful to optimise the SVGs. To try later.
+          plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx', '@svgr/plugin-prettier'],
+          prettierConfig: await getPrettierConfig(),
+        },
+        { componentName: svgPathVarName },
+      );
+
+      // Add SVG as React component. It's the preferred solution over img pointing to SVG file because overflow: visible works as direct SVG and doesn't through img (if the SVG paints content outside the viewbox, which works on Figma).
+      projectContext.resources[`${context.componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
 
       // Add import in file
       context.componentContext.file.addImportDeclaration({
-        moduleSpecifier: `./${svgPathVarName}.svg`,
-        defaultImport: svgPathVarName,
+        moduleSpecifier: `./${svgPathVarName}`,
+        namedImports: [svgPathVarName],
       });
 
       // Add styles for this node
@@ -140,7 +158,7 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
       }
 
       // Generate AST
-      const ast = mkImg(svgPathVarName, attributes);
+      const ast = mkComponentUsage(svgPathVarName, attributes);
       return ast;
     } else if (isBlockNode(node)) {
       // Add tag styles

@@ -47,7 +47,7 @@ export function genComponentImportName(context: NodeContext) {
   if (baseName !== 'icon') {
     baseName = `${baseName}Icon`;
   }
-  return genUniqueName(context.componentContext.importNamesAlreadyUsed, baseName);
+  return genUniqueName(context.componentContext.importNamesAlreadyUsed, baseName, true);
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
@@ -126,29 +126,30 @@ export function mkTargetBlankAttr() {
   return factory.createJsxAttribute(factory.createIdentifier('target'), factory.createStringLiteral('_blank'));
 }
 
-export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
-  return factory.createJsxSelfClosingElement(
-    factory.createIdentifier('img'),
-    undefined,
-    factory.createJsxAttributes([
-      factory.createJsxAttribute(
-        factory.createIdentifier('src'),
-        factory.createJsxExpression(undefined, factory.createIdentifier(srcVarName)),
-      ),
-      factory.createJsxAttribute(factory.createIdentifier('alt'), factory.createStringLiteral('')),
-      ...extraAttributes,
-    ]),
-  );
-}
+// If useful. Keep a couple of weeks and remove later.
+// export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
+//   return factory.createJsxSelfClosingElement(
+//     factory.createIdentifier('img'),
+//     undefined,
+//     factory.createJsxAttributes([
+//       factory.createJsxAttribute(
+//         factory.createIdentifier('src'),
+//         factory.createJsxExpression(undefined, factory.createIdentifier(srcVarName)),
+//       ),
+//       factory.createJsxAttribute(factory.createIdentifier('alt'), factory.createStringLiteral('')),
+//       ...extraAttributes,
+//     ]),
+//   );
+// }
 
 export function mkSrcStaticAttribute(src: string) {
   return factory.createJsxAttribute(factory.createIdentifier('src'), factory.createStringLiteral(src));
 }
 
-export function mkComponentUsage(compName: string) {
+export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttribute[]) {
   return factory.createJsxSelfClosingElement(
     factory.createIdentifier(compName),
     undefined,
-    factory.createJsxAttributes([]),
+    factory.createJsxAttributes(extraAttributes || []),
   );
 }

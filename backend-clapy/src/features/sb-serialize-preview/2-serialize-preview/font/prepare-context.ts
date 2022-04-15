@@ -1,7 +1,7 @@
 import { Font } from 'opentype.js';
 
-import { unquoteAndTrimString } from '../../../../utils';
 import { NodeParseContext } from '../../2-serialize-preview';
+import { unquoteAndTrimString } from '../../../../utils';
 import { Dict } from '../../sb-serialize.model';
 import { loadFromUrl } from './load-font';
 
