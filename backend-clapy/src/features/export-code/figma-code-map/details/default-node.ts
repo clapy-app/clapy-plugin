@@ -54,6 +54,7 @@ export const defaultNode: FrameNodeNoMethod = {
   overlayBackgroundInteraction: 'NONE',
   reactions: [],
   children: [],
+  stuckNodes: [],
 };
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNodeNoMethod>[]): FrameNodeNoMethod {

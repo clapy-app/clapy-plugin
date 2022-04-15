@@ -1,6 +1,6 @@
-import classes from './Frame57.module.css';
 import { MadeWithClapy } from '../MadeWithClapy/MadeWithClapy';
 import discordLogoIcon from './discordLogoIcon.svg';
+import classes from './Frame57.module.css';
 
 export function Frame57() {
   return (

@@ -62,63 +62,65 @@ export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: LayoutNodeExtended | Nil): node is GroupNode {
+export function isGroup(node: BaseNode | SceneNode | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
 
-export function isSlice(node: LayoutNodeExtended | Nil): node is SliceNode {
+export function isSlice(node: BaseNode | SceneNode | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
-export function isRectangle(node: LayoutNodeExtended | Nil): node is RectangleNode {
+export function isRectangle(node: BaseNode | SceneNode | Nil): node is RectangleNode {
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: LayoutNodeExtended | Nil): node is LineNode {
+export function isLine(node: BaseNode | SceneNode | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
-export function isEllipse(node: LayoutNodeExtended | Nil): node is EllipseNode {
+export function isEllipse(node: BaseNode | SceneNode | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
-export function isPolygon(node: LayoutNodeExtended | Nil): node is PolygonNode {
+export function isPolygon(node: BaseNode | SceneNode | Nil): node is PolygonNode {
   return node?.type === 'POLYGON';
 }
 
-export function isStar(node: LayoutNodeExtended | Nil): node is StarNode {
+export function isStar(node: BaseNode | SceneNode | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: LayoutNodeExtended | Nil): node is VectorNode {
+export function isVector(node: BaseNode | SceneNode | Nil): node is VectorNode {
   return node?.type === 'VECTOR';
 }
 
-export function isText(node: LayoutNodeExtended | Nil): node is TextNode {
+export function isText(node: BaseNode | SceneNode | Nil): node is TextNode {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: LayoutNodeExtended | Nil): node is BooleanOperationNode {
+export function isBooleanOperation(node: BaseNode | SceneNode | Nil): node is BooleanOperationNode {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
-export function isStamp(node: LayoutNodeExtended | Nil): node is StampNode {
+export function isStamp(node: BaseNode | SceneNode | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
-export function isComponentSet(node: LayoutNodeExtended | Nil): node is ComponentSetNode {
+export function isComponentSet(node: BaseNode | SceneNode | Nil): node is ComponentSetNode {
   return node?.type === 'COMPONENT_SET';
 }
 
-export function isFrame(node: LayoutNodeExtended | Nil /* BaseNode | BaseFrameMixin | undefined */): node is FrameNode {
+export function isFrame(
+  node: BaseNode | SceneNode | Nil /* BaseNode | BaseFrameMixin | undefined */,
+): node is FrameNode {
   return (node as BaseNode)?.type === 'FRAME';
 }
 
-export function isComponent(node: LayoutNodeExtended | Nil): node is ComponentNode {
+export function isComponent(node: BaseNode | SceneNode | Nil): node is ComponentNode {
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: LayoutNodeExtended | BaseNode | Nil): node is InstanceNode {
+export function isInstance(node: BaseNode | SceneNode | BaseNode | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
 
@@ -151,13 +153,13 @@ export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
 
-export function isMyComp(node: LayoutNodeExtended | Nil): node is MyCompNode {
+export function isMyComp(node: BaseNode | SceneNode | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
 
 export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode;
 
-export function isShapeExceptDivable(node: LayoutNodeExtended | Nil): node is ShapeNode {
+export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is ShapeNode {
   // Rectangle and line are excluded
   return isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
 }
