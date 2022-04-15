@@ -28,6 +28,7 @@ import { maskFigmaToCode } from './figma-code-map/mask';
 import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
+import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches';
 import { transformFigmaToCode } from './figma-code-map/transform';
 import { zindexFigmaToCode } from './figma-code-map/zindex';
 
@@ -54,6 +55,7 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
   borderBoxFigmaToCode(context2, node, styles);
   effectsFigmaToCode(context2, node, styles);
   maskFigmaToCode(context2, node, styles);
+  textNodePatchesFigmaToCode(context2, node, styles);
   return context2;
   // scaleFactor
   // reactions => hover, must make the diff with target node (check the type?)

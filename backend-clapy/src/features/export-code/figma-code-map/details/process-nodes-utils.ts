@@ -48,12 +48,15 @@ const htmlEntitiesMap = {
   '>': '&gt;',
   "'": '&#39;',
   '"': '&quot;',
+  '\n': '<br />', // Hack, it's not an HTML entity to escape but a replacement we need to do anyway.
 };
-type htmlEntitiesKeys = keyof typeof htmlEntitiesMap;
+type EntitiesToEscape = keyof typeof htmlEntitiesMap;
+const entities = Object.keys(htmlEntitiesMap) as Array<EntitiesToEscape>;
+type htmlEntitiesKeys = EntitiesToEscape;
 
 // A more complete version, if required: https://www.npmjs.com/package/html-entities
 export function escapeHTML(str: string) {
-  return str.replace(/[&<>'"]/g, (tag: string) => {
+  return str.replace(new RegExp(`[${entities.join('')}]`, 'g'), (tag: string) => {
     const res = htmlEntitiesMap[tag as htmlEntitiesKeys];
     return res;
   });

@@ -21,6 +21,7 @@ body > div * {
   padding: 0;
   background: none;
   border: none;
+  flex-shrink: 0;
 }
 
 body button {
