@@ -35,8 +35,8 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
     // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
     const projectContext: ProjectContext = {
       compNamesAlreadyUsed: new Set(),
-      fontFamiliesUsed: new Set(),
       assetsAlreadyUsed: new Set(),
+      fontWeightUsed: new Map(),
       project,
       resources,
       cssFiles,
@@ -124,10 +124,19 @@ function isJsxElement(node: ts.Node): node is ts.JsxElement {
 }
 
 function addFontsToIndexHtml(projectContext: ProjectContext) {
-  const { fontFamiliesUsed, resources } = projectContext;
-  if (fontFamiliesUsed.size) {
-    const familyUrlFragment = Array.from(fontFamiliesUsed.values())
-      .map(name => `family=${encodeURIComponent(name)}`)
+  const { fontWeightUsed, resources } = projectContext;
+  if (fontWeightUsed.size) {
+    const familyUrlFragment = Array.from(fontWeightUsed.entries())
+      .map(([familyName, weightSet]) => {
+        let weightFragment;
+        const weightValues = weightSet.values();
+        if (!weightSet.size || (weightSet.size === 1 && weightValues.next().value === 400)) {
+          weightFragment = '';
+        } else {
+          weightFragment = `:wght@${Array.from(weightValues).sort().join(';')}`;
+        }
+        return `family=${encodeURIComponent(familyName)}${weightFragment}`;
+      })
       .join('&');
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '</head>',
