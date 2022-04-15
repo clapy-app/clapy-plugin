@@ -3,9 +3,14 @@ import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { addStyle } from '../css-gen/css-factories-high';
-import { parseFontStyle } from './details/fonts-utils';
+import { parseFontStyle, replaceFontWeightWithLabel } from './details/fonts-utils';
 
 export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+  const {
+    componentContext: {
+      projectContext: { fontWeightUsed },
+    },
+  } = context;
   const { fontSize, fontName, letterSpacing, lineHeight, textCase, textDecoration } = textSegment;
 
   addStyle(styles, 'font-size', [fontSize, 'px']);
@@ -16,8 +21,8 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
 
   const { family, style } = fontName;
   const { fontWeight, fontStretch, fontItalicStyle } = parseFontStyle(style);
-  if (fontWeight !== 'normal') {
-    addStyle(styles, 'font-weight', fontWeight);
+  if (fontWeight !== 400) {
+    addStyle(styles, 'font-weight', replaceFontWeightWithLabel(fontWeight));
   }
   if (fontStretch !== 'normal') {
     addStyle(styles, 'font-stretch', fontStretch);
@@ -25,7 +30,10 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   if (fontItalicStyle !== 'normal') {
     addStyle(styles, 'font-style', fontItalicStyle);
   }
-  context.componentContext.projectContext.fontFamiliesUsed.add(family);
+
+  // Add font weight used, mapped to the family, to build the google fonts URL at the end
+  getSetInMap(fontWeightUsed, family).add(fontWeight);
+
   addStyle(
     styles,
     'font-family',
@@ -69,4 +77,16 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   if (textDecoration !== 'NONE') {
     addStyle(styles, 'text-decoration', textDecoration === 'STRIKETHROUGH' ? 'line-through' : 'underline');
   }
+}
+
+/**
+ * Return the Set found in the map at the given key. If there is no set for this key, it is created, added to the map and returned.
+ */
+function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, key: MapKey) {
+  let set = map.get(key);
+  if (!set) {
+    set = new Set();
+    map.set(key, set);
+  }
+  return set;
 }

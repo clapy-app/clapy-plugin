@@ -70,6 +70,12 @@ export function parseFontStyle(style: string) {
   return { fontStretch, fontWeight, fontItalicStyle };
 }
 
+export function replaceFontWeightWithLabel(fontWeight: number) {
+  if (fontWeight === 400) return 'normal';
+  if (fontWeight === 700) return 'bold';
+  return fontWeight;
+}
+
 // font-weight
 const fontWeightMapFontToCSS = {
   thin: 100,
@@ -77,10 +83,10 @@ const fontWeightMapFontToCSS = {
   light: 300,
   semilight: 350,
   demilight: 350,
-  regular: 'normal' /* 400 */, // default
+  regular: 400, // 'normal' - default
   medium: 500,
   semibold: 600,
-  bold: 'bold' /* 700 */,
+  bold: 700, // 'bold'
   extrabold: 800,
   black: 900,
 } as const;

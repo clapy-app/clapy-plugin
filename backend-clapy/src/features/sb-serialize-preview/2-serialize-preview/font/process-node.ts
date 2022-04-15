@@ -1,5 +1,5 @@
-import { checkIsFontIcon, unquoteAndTrimString } from '../../../../utils';
 import { NodeParseContext } from '../../2-serialize-preview';
+import { checkIsFontIcon, unquoteAndTrimString } from '../../../../utils';
 import { CNode, isCPseudoElementNode } from '../../sb-serialize.model';
 import { fontIconUnicodeToSVG } from './load-font';
 

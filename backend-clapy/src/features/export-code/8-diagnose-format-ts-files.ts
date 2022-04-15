@@ -1,4 +1,6 @@
+import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
+import { resolve } from 'path';
 import parserCss from 'prettier/parser-postcss';
 import parserTypeScript from 'prettier/parser-typescript';
 import prettier from 'prettier/standalone';
@@ -11,7 +13,7 @@ import { CodeDict } from './code.model';
 
 let _prettierConfig: any;
 
-async function getPrettierConfig() {
+export async function getPrettierConfig() {
   if (!_prettierConfig) {
     _prettierConfig = JSON.parse(await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }));
   }
@@ -56,11 +58,17 @@ export async function diagnoseFormatTsFiles(project: Project) {
       // content = formatter.format(results);
       //
       // Prettier
-      content = prettier.format(content, {
-        ...(await getPrettierConfig()),
-        plugins: [parserTypeScript],
-        filepath: path,
-      });
+      try {
+        content = prettier.format(content, {
+          ...(await getPrettierConfig()),
+          pluginSearchDirs: [resolve(`${backendDir}/node_modules`)],
+          plugins: [parserTypeScript, prettierFormatPlugin],
+          filepath: path,
+        });
+      } catch (error) {
+        console.warn(`Error while formatting with prettier the file ${path}. Formatting is skipped.`);
+        console.warn(error);
+      }
     }
 
     tsFiles[path] = content;

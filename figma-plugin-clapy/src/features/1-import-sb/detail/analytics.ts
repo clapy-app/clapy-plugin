@@ -1,5 +1,4 @@
 // import { gql } from '@apollo/client';
-
 import { Clapy_Analytics } from '../../../../generated/schema';
 import { handleError } from '../../../common/error-utils';
 import { fetchPlugin } from '../../../common/plugin-utils';

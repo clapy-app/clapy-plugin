@@ -1,9 +1,9 @@
-import classes from './LoginHome.module.css';
-import group13Icon from './group13Icon.svg';
-import { Frame65 } from './Frame65/Frame65';
 import { Button } from './Button/Button';
 import { Button_2 } from './Button_2/Button_2';
 import { Frame57 } from './Frame57/Frame57';
+import { Frame65 } from './Frame65/Frame65';
+import group13Icon from './group13Icon.svg';
+import classes from './LoginHome.module.css';
 
 export function LoginHome() {
   return (

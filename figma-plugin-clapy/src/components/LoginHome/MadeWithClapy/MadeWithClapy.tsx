@@ -1,5 +1,5 @@
-import classes from './MadeWithClapy.module.css';
 import { Logomark } from '../Logomark/Logomark';
+import classes from './MadeWithClapy.module.css';
 
 export function MadeWithClapy() {
   return (

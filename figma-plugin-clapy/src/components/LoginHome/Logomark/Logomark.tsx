@@ -1,5 +1,5 @@
-import classes from './Logomark.module.css';
 import frame31Icon from './frame31Icon.svg';
+import classes from './Logomark.module.css';
 
 export function Logomark() {
   return (

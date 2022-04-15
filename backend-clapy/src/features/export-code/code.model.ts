@@ -14,9 +14,9 @@ export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
 
 export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
-  readonly fontFamiliesUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
-  project: Project;
+  readonly fontWeightUsed: Map<string, Set<number>>;
+  readonly project: Project;
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
