@@ -39,6 +39,7 @@
     "@svgr/core": "^6.2.1",
     "@svgr/plugin-jsx": "^6.2.1",
     "@svgr/plugin-prettier": "^6.1.2",
+    "@svgr/plugin-svgo": "^6.2.0",
     "@trivago/prettier-plugin-sort-imports": "^3.2.0",
     "axios": "^0.26.1",
     "body-parser": "^1.20.0",

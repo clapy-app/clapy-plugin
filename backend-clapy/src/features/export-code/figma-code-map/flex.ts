@@ -13,6 +13,7 @@ import {
   isLine,
   isPage,
   isText,
+  isVector,
   ValidNode,
 } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
@@ -251,8 +252,8 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const shiftBottom = isFlex ? Math.max(node.paddingBottom, borderBottomWidth) : 0;
   const shiftLeft = isFlex ? Math.max(node.paddingLeft, borderLeftWidth) : 0;
 
-  const width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
-  const height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
+  let width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
+  let height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
   const parentHasHorizontalScroll =
     parent && parentIsFlex && (parent.overflowDirection === 'HORIZONTAL' || parent.overflowDirection === 'BOTH');
@@ -265,12 +266,21 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
   const shouldApplyMaxHeight = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasVerticalScroll);
   if (fixedWidth) {
+    // Patch for svg 0 width with stroke to match Figma behavior
+    // The other part of the patch is in readSvg (process-nodes-utils.ts).
+    if (isVector(node) && node.strokeWeight > width) {
+      width = node.strokeWeight;
+    }
     addStyle(styles, 'width', [width, 'px']);
     if (shouldApplyMaxWidth) {
       addStyle(styles, 'max-width', [100, '%']);
     }
   }
   if (fixedHeight) {
+    // Patch for svg 0 height with stroke to match Figma behavior
+    if (isVector(node) && node.strokeWeight > height) {
+      height = node.strokeWeight;
+    }
     addStyle(styles, 'height', [height, 'px']);
     if (shouldApplyMaxHeight) {
       addStyle(styles, 'max-height', [100, '%']);
