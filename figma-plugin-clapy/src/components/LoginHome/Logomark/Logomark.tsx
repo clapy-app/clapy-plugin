@@ -1,10 +1,10 @@
-import frame31Icon from './frame31Icon.svg';
+import { Frame31Icon } from './Frame31Icon';
 import classes from './Logomark.module.css';
 
 export function Logomark() {
   return (
     <div className={classes.root}>
-      <img src={frame31Icon} alt='' className={classes.frame31} />
+      <Frame31Icon className={classes.frame31} />
     </div>
   );
 }

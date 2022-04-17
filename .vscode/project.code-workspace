@@ -18,5 +18,6 @@
       "backend-clapy/": true,
       "figma-plugin-clapy/": true
     },
+    "liveServer.settings.multiRootWorkspaceName": "backend-clapy",
   }
 }

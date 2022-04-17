@@ -20,9 +20,11 @@
     'Liberation Sans', sans-serif;
   text-align: center;
   justify-content: center;
+  white-space: nowrap;
 }
 .discordLogo {
   width: 24px;
   max-width: 100%;
   align-self: stretch;
+  overflow: visible;
 }

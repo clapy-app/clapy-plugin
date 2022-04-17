@@ -61,7 +61,12 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
   // reactions => hover, must make the diff with target node (check the type?)
 }
 
-function mapTextFragmentStyles(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+function mapTextFragmentStyles(
+  context: NodeContext,
+  textSegment: StyledTextSegment,
+  styles: Dict<DeclarationPlain>,
+  node: TextNode2,
+) {
   colorFigmaToCode(context, textSegment, styles);
   fontFigmaToCode(context, textSegment, styles);
 
@@ -88,28 +93,35 @@ function mapTextFragmentStyles(context: NodeContext, textSegment: StyledTextSegm
 //--------------------------------------------------------------------------------
 // Details for text - it is split into fragments, each applying its styles
 
+interface StylesRef {
+  styles?: Dict<DeclarationPlain>;
+}
+
 function textNodeToAst(
   context: NodeContext,
   textSegment: StyledTextSegment,
-  singleChild: boolean,
   parentStyles: Dict<DeclarationPlain>,
+  node: TextNode2,
+  firstChildStylesRef: StylesRef,
 ) {
   const styles: Dict<DeclarationPlain> = {};
+  const singleChild = node._textSegments?.length === 1;
 
   // Add text segment styles
-  mapTextFragmentStyles(context, textSegment, styles);
+  mapTextFragmentStyles(context, textSegment, styles, node);
 
   let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
   if (!singleChild) {
     const className = genClassName(context);
     addCssRule(context, className, stylesToList(styles));
+    firstChildStylesRef.styles = styles;
     const classAttr = mkClassAttr(className);
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {
         // hyperlink of type NODE not handled for now
         ast = mkTag('a', [classAttr, mkHrefAttr(textSegment.hyperlink.value), mkTargetBlankAttr()], [ast]);
       } else {
-        warnNode(textSegment, 'Unsupported hyperlink of type node');
+        warnNode(textSegment, 'TODO Unsupported hyperlink of type node');
         ast = mkTag('span', [classAttr], [ast]);
       }
     } else {
@@ -121,11 +133,40 @@ function textNodeToAst(
   return ast;
 }
 
-export function mapTextStyles(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
+export function mapTextStyles(
+  context: NodeContext,
+  node: TextNode2,
+  styles: Dict<DeclarationPlain>,
+): JsxOneOrMore | undefined {
   const textSegments: StyledTextSegment[] | undefined = node._textSegments;
   if (!textSegments) return;
-  const ast: JsxOneOrMore = textSegments.map(segment =>
-    textNodeToAst(context, segment, textSegments.length === 1, styles),
+  const firstChildStylesRef: StylesRef = {};
+  let ast: ts.JsxChild[] | ts.JsxElement = textSegments.map(segment =>
+    textNodeToAst(context, segment, styles, node, firstChildStylesRef),
   );
+  // If there are multiple text segments, we wrap in a span to:
+  // - preserve the inline, including spaces between text segments
+  // - make its positioning easier, e.g. vertically centered in a flex container
+  if (firstChildStylesRef.styles) {
+    // If we have the styles of the first child, it means we have more than one text fragments, so we should wrap.
+    // And we can use it to extract the font-family and font-size, to apply on the wrapper.
+    // The reason why we need to apply those is that an inline wrapper's layout is impacted by those styles (e.g. it changes the baseline location, and potentially other things).
+    let classAttr: ts.JsxAttribute | undefined = undefined;
+    if (firstChildStylesRef.styles['font-size'] || firstChildStylesRef.styles['font-family']) {
+      const wrapperStyles: Dict<DeclarationPlain> = {
+        'font-size': firstChildStylesRef.styles['font-size'],
+        'font-family': firstChildStylesRef.styles['font-family'],
+      };
+      const className = genClassName(context, undefined, undefined, 'labelWrapper');
+      addCssRule(context, className, stylesToList(wrapperStyles));
+      classAttr = mkClassAttr(className);
+    } else {
+      warnNode(
+        node,
+        'BUG No font-size or font-family to apply on the span wrapper. As of now, texts are supposed to always have those styles applied. To review.',
+      );
+    }
+    ast = mkTag('span', classAttr ? [classAttr] : [], ast);
+  }
   return ast;
 }
