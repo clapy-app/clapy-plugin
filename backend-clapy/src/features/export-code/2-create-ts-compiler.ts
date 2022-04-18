@@ -1,4 +1,4 @@
-import { Project, SourceFile, ts } from 'ts-morph';
+import { SourceFile, ts } from 'ts-morph';
 
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
@@ -55,7 +55,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
     const componentContext = await genComponent(fakeParentComponentContext, root, parent);
     perfMeasure('d');
 
-    addCompToAppRoot(project, componentContext, parent, appFile);
+    addCompToAppRoot(componentContext, parent, appFile);
     perfMeasure('e');
 
     const tsFiles = await diagnoseFormatTsFiles(project); // Takes time with many files
@@ -76,7 +76,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
       //
       // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
       perfMeasure('j');
-      await writeToDisk(csbFiles, extraConfig.isClapyFile); // Takes time with many files
+      await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
       perfMeasure('k');
     }
     if (!env.isDev || uploadToCsb) {
@@ -88,12 +88,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   }
 }
 
-function addCompToAppRoot(
-  project: Project,
-  componentContext: ComponentContext,
-  parentNode: ParentNode,
-  appFile: SourceFile,
-) {
+function addCompToAppRoot(componentContext: ComponentContext, parentNode: ParentNode, appFile: SourceFile) {
   const {
     compName,
     projectContext: { cssFiles },

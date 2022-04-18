@@ -263,8 +263,11 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const parentRequireMaxSize = !parent || parentIsPage;
   const parentIsBiggerThanNode = parent && !parentIsPage && parent.width >= node.width && parent.height >= node.height;
 
-  const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
-  const shouldApplyMaxHeight = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasVerticalScroll);
+  // Let's try fewer cases with max width/height and see how it goes.
+  // To adapt with more use cases identified.
+
+  // const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
+  const shouldApplyMaxHeight = parentRequireMaxSize; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
   if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
@@ -272,9 +275,9 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
       width = node.strokeWeight;
     }
     addStyle(styles, 'width', [width, 'px']);
-    if (shouldApplyMaxWidth) {
-      addStyle(styles, 'max-width', [100, '%']);
-    }
+    // if (shouldApplyMaxWidth) {
+    //   addStyle(styles, 'max-width', [100, '%']);
+    // }
   }
   if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
