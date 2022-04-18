@@ -1,8 +1,8 @@
 import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
-import classes from './Frame72.module.css';
+import classes from './Header.module.css';
 import { LogOutIcon } from './LogOutIcon';
 
-export function Frame72() {
+export function Header() {
   return (
     <div className={classes.root}>
       <HorizontalTabs />

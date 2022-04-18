@@ -7,6 +7,7 @@ import { App } from './App';
 import { PreviewMode } from './core/dev-preview-mode/PreviewMode';
 import { store } from './core/redux/store';
 import './core/theme/global.scss';
+import './resets.css';
 
 // Bug with React 18.0.0:
 // The Logout button does not re-render when the current user data are available. Issue with redux selectors? We stick to React 17 for now.

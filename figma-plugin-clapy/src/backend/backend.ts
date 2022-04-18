@@ -9,7 +9,8 @@ figma.showUI(__html__);
 if (isPreviewInFigma) {
   figma.ui.resize(300, 200);
 } else {
-  figma.ui.resize(400, 450);
+  // Must match src/core/dev-preview-mode/PreviewMode.module.css
+  figma.ui.resize(404, 600);
 }
 
 initRoutes(routes);

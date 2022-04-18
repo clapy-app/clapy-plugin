@@ -1,8 +1,8 @@
 import { MadeWithClapy } from '../MadeWithClapy/MadeWithClapy';
 import { DiscordLogoIcon } from './DiscordLogoIcon';
-import classes from './Frame59.module.css';
+import classes from './Footer.module.css';
 
-export function Frame59() {
+export function Footer() {
   return (
     <div className={classes.root}>
       <MadeWithClapy />

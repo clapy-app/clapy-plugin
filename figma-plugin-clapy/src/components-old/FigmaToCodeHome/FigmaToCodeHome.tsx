@@ -3,7 +3,7 @@ import classes from './FigmaToCodeHome.module.css';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
 
-export function FigmaToCodeHome() {
+export function FigmaToCodeHome2() {
   return (
     <div className={classes.root}>
       <Header />
