@@ -15,13 +15,7 @@ export function LoginHome() {
           </div>
           <div className={classes.frame54}>
             <div className={classes.frame52}>
-              <div className={classes.beta}>
-                <span className={classes.labelWrapper}>
-                  <span className={classes.label}>b</span>
-                  <span className={classes.label_2}>e</span>
-                  <span className={classes.label_3}>ta</span>
-                </span>
-              </div>
+              <div className={classes.beta}>beta</div>
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ import { promisify } from 'util';
 import { env } from '../../env-and-config/env';
 import { backendDir, dockerPluginCompDir } from '../../root';
 import { CSBResponse } from '../sb-serialize-preview/sb-serialize.model';
-import { CsbDict } from './code.model';
+import { CodeDict, ComponentContext, CsbDict } from './code.model';
 
 export async function uploadToCSB(files: CsbDict) {
   const { data } = await axios.post<CSBResponse>('https://codesandbox.io/api/v1/sandboxes/define?json=1', {
@@ -23,11 +23,13 @@ export async function uploadToCSB(files: CsbDict) {
 
 const srcCompPrefix = 'src/components/';
 
-export async function writeToDisk(files: CsbDict, isClapyFile: boolean) {
+export async function writeToDisk(files: CsbDict, componentContext: ComponentContext, isClapyFile: boolean) {
   const glob = require('glob');
   const globPromise = promisify(glob);
+  const { compName } = componentContext;
 
   const filePaths: string[] = [];
+  const filesToWrite: CodeDict = {};
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
       if (!content) {
@@ -50,7 +52,7 @@ export async function writeToDisk(files: CsbDict, isClapyFile: boolean) {
           filePaths.push(file);
           await mkdir(dir, { recursive: true });
           if (!isBinary) {
-            await writeFile(file, content);
+            filesToWrite[file] = content;
           } else {
             await downloadFile(content, file);
           }
@@ -58,22 +60,32 @@ export async function writeToDisk(files: CsbDict, isClapyFile: boolean) {
       );
     }),
   );
+  // Write all files in parallel here to avoid webpack bugs, not detecting some files while re-bundling because they are written too late.
+  await Promise.all(Object.entries(filesToWrite).map(([path, content]) => writeFile(path, content)));
 
-  // Remove old files
-  const globsToClean = [
-    globPromise(resolve(`${backendDir}/atest-gen/src/**/*.*`), { ignore: filePaths }),
-    globPromise(resolve(`${backendDir}/atest-gen/public/**/*.*`), { ignore: filePaths }),
+  // List files and directories to clean up
+  const dirsToClean = [
+    // src
+    `${backendDir}/atest-gen/src`,
+    // public
+    `${backendDir}/atest-gen/public`,
   ];
   if (isClapyFile) {
-    globsToClean.push(globPromise(resolve(`${dockerPluginCompDir}/**/*.*`), { ignore: filePaths }));
+    // clapy plugin
+    dirsToClean.push(`${dockerPluginCompDir}/${compName}`);
   }
-  const [srcMatches, publicMatches, clapyMatches] = await Promise.all(globsToClean);
+
+  // Is a delay useful here to wait for webpack to rebuild first?
+
+  // Remove extra files
+  const globsToClean = dirsToClean.map(dir => `${dir}/**/*.*`);
+  const [srcMatches, publicMatches, clapyMatches] = await Promise.all(
+    globsToClean.map(g => globPromise(resolve(g), { ignore: filePaths })),
+  );
   await Promise.all([...srcMatches, ...publicMatches, ...(clapyMatches || [])].map(match => unlink(match)));
+
   // Then remove empty folders
-  await Promise.all([
-    cleanEmptyFoldersRecursively(`${backendDir}/atest-gen/src`),
-    cleanEmptyFoldersRecursively(`${backendDir}/atest-gen/public`),
-  ]);
+  await Promise.all(dirsToClean.map(dir => cleanEmptyFoldersRecursively(dir)));
 }
 
 const finished = promisify(stream.finished);

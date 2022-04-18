@@ -1,0 +1,24 @@
+.root {
+  height: 50px;
+  flex: 1;
+  place-content: center;
+  align-items: center;
+  position: relative;
+}
+.divider {
+  height: 1px;
+  align-self: stretch;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #eaecf0;
+}
+.tabs {
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
