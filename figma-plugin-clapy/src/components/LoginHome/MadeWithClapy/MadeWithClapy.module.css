@@ -3,13 +3,14 @@
   border-radius: 6.5882px;
 }
 ._ButtonBase {
-  border: solid 0.8235px #fff;
+  outline: solid 0.8235px #fff;
+  outline-offset: -0.8235px;
   align-self: flex-start;
   flex-direction: row;
   place-content: center;
   align-items: center;
   gap: 5px;
-  padding: 5.7647px 10.7059px;
+  padding: 6.5882px 11.5294px;
   border-radius: 6.5882px;
   overflow: hidden;
   filter: drop-shadow(0px 0.8235294222831726px 1.6470588445663452px #1018280d);

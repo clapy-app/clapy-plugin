@@ -129,11 +129,11 @@ function addFontsToIndexHtml(projectContext: ProjectContext) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())
       .map(([familyName, weightSet]) => {
         let weightFragment;
-        const weightValues = weightSet.values();
-        if (!weightSet.size || (weightSet.size === 1 && weightValues.next().value === 400)) {
+        const weightValues = Array.from(weightSet);
+        if (!weightSet.size || (weightSet.size === 1 && weightValues[0] === 400)) {
           weightFragment = '';
         } else {
-          weightFragment = `:wght@${Array.from(weightValues).sort().join(';')}`;
+          weightFragment = `:wght@${weightValues.sort().join(';')}`;
         }
         return `family=${encodeURIComponent(familyName)}${weightFragment}`;
       })

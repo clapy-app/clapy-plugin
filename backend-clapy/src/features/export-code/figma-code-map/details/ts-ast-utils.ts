@@ -32,9 +32,14 @@ export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: Sc
   cssRules.splice(i, 1);
 }
 
-export function genClassName(context: NodeContext, node?: SceneNodeNoMethod, isRoot?: boolean) {
+export function genClassName(
+  context: NodeContext,
+  node?: SceneNodeNoMethod,
+  isRoot?: boolean,
+  defaultClassName = 'label',
+) {
   // No node when working on text segments. But can we find better class names than 'label' for this case?
-  const baseName = isRoot ? 'root' : node?.name ? node.name : 'label';
+  const baseName = isRoot ? 'root' : node?.name ? node.name : defaultClassName;
   return genUniqueName(context.componentContext.classNamesAlreadyUsed, baseName);
 }
 
@@ -65,20 +70,30 @@ export function genUniqueName(usageCache: Set<string>, baseName: string, pascalC
 // https://stackoverflow.com/a/2970667/4053349
 function pascalize(str: string) {
   return prefixIfNumber(
-    str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
-      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-      return match.toUpperCase();
-    }),
+    removeAccents(str)
+      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
+        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+        return match.toUpperCase();
+      })
+      // Truncate if variable name is too long
+      .substring(0, 30),
   );
 }
 
 function camelize(str: string) {
   return prefixIfNumber(
-    str.replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
-      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-      return index === 0 ? match.toLowerCase() : match.toUpperCase();
-    }),
+    removeAccents(str)
+      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
+        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+        return index === 0 ? match.toLowerCase() : match.toUpperCase();
+      })
+      // Truncate if variable name is too long
+      .substring(0, 30),
   );
+}
+
+function removeAccents(value: string) {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
 function prefixIfNumber(varName: string) {

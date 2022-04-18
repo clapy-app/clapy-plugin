@@ -1,5 +1,5 @@
 import { MadeWithClapy } from '../MadeWithClapy/MadeWithClapy';
-import discordLogoIcon from './discordLogoIcon.svg';
+import { DiscordLogoIcon } from './DiscordLogoIcon';
 import classes from './Frame57.module.css';
 
 export function Frame57() {
@@ -7,7 +7,7 @@ export function Frame57() {
     <div className={classes.root}>
       <MadeWithClapy />
       <div className={classes.contactUs}>Contact us</div>
-      <img src={discordLogoIcon} alt='' className={classes.discordLogo} />
+      <DiscordLogoIcon className={classes.discordLogo} />
     </div>
   );
 }

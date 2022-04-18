@@ -247,8 +247,10 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
         obj.x -= getOppositeSide(rotation - 90, width);
         obj.y -= obj.height;
       }
+
       // Here, the rotation is already included in the exported SVG. We shouldn't keep the CSS rotation.
-      obj.rotation = 0;
+      // Update: resetting here should not be required anymore. We skip it in the API. To test, confirm, and delete this code in a few weeks.
+      // obj.rotation = 0;
     }
 
     if (node.parent && !skipParent) {

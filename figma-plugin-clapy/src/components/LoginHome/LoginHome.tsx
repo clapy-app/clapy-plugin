@@ -2,7 +2,7 @@ import { Button } from './Button/Button';
 import { Button_2 } from './Button_2/Button_2';
 import { Frame57 } from './Frame57/Frame57';
 import { Frame65 } from './Frame65/Frame65';
-import group13Icon from './group13Icon.svg';
+import { Group13Icon } from './Group13Icon';
 import classes from './LoginHome.module.css';
 
 export function LoginHome() {
@@ -11,11 +11,17 @@ export function LoginHome() {
       <div className={classes.frame58}>
         <div className={classes.logoBeta}>
           <div>
-            <img src={group13Icon} alt='' className={classes.group13} />
+            <Group13Icon className={classes.group13} />
           </div>
           <div className={classes.frame54}>
             <div className={classes.frame52}>
-              <div className={classes.beta}>beta</div>
+              <div className={classes.beta}>
+                <span className={classes.labelWrapper}>
+                  <span className={classes.label}>b</span>
+                  <span className={classes.label_2}>e</span>
+                  <span className={classes.label_3}>ta</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -23,7 +29,7 @@ export function LoginHome() {
           <Frame65 />
           <div className={classes.frame60}>
             <div className={classes.signInToClapy}>Sign in to Clapy</div>
-            <div className={classes.generateCleanCodeFromFigmaInstantlyReactHTMLCSS}>
+            <div className={classes.generateCleanCodeFromFigmaInst}>
               Generate clean code from Figma instantly (React, HTML, CSS).
             </div>
           </div>
