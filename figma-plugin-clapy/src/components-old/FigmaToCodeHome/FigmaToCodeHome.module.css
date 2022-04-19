@@ -1,0 +1,18 @@
+.previewTitle {
+  color: #000;
+  font-size: 24px;
+  line-height: 126.5%;
+  font-weight: 600;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  text-align: center;
+  justify-content: end;
+}
+
+.openResult {
+  align-self: stretch;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}

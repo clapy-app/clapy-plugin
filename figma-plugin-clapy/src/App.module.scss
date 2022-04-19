@@ -1,21 +1,27 @@
 @import './core/theme/variables.scss';
 
-.container {
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  flex: 1;
-  justify-content: space-between;
-  gap: 32px;
+.root {
+  height: 100%;
+  font-family: sans-serif;
+  background-color: #e5e5e5;
 }
 
-.body {
-  display: flex;
-  flex-direction: column;
-}
+// .container {
+//   display: flex;
+//   flex-direction: column;
+//   padding: 1rem;
+//   flex: 1;
+//   justify-content: space-between;
+//   gap: 32px;
+// }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+// .body {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .footer {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+// }

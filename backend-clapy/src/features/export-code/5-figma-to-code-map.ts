@@ -17,6 +17,7 @@ import {
   genClassName,
   mkClassAttr,
   mkHrefAttr,
+  mkNoReferrerAttr,
   mkTag,
   mkTargetBlankAttr,
 } from './figma-code-map/details/ts-ast-utils';
@@ -119,7 +120,11 @@ function textNodeToAst(
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {
         // hyperlink of type NODE not handled for now
-        ast = mkTag('a', [classAttr, mkHrefAttr(textSegment.hyperlink.value), mkTargetBlankAttr()], [ast]);
+        ast = mkTag(
+          'a',
+          [classAttr, mkHrefAttr(textSegment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr()],
+          [ast],
+        );
       } else {
         warnNode(textSegment, 'TODO Unsupported hyperlink of type node');
         ast = mkTag('span', [classAttr], [ast]);

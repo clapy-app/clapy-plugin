@@ -70,9 +70,7 @@ module.exports = (env, argv) => {
     target: 'web',
 
     devServer: {
-      static: {
-        directory: path.join(__dirname, distFolder),
-      },
+      static: false,
       open: true,
       hot: true,
       historyApiFallback: true,
@@ -135,7 +133,10 @@ module.exports = (env, argv) => {
         },
 
         // Allows you to use "import logo from './logo.svg'" in TypeScript to get a data URI
-        { test: /\.(png|jpg|gif|webp|svg|zip)$/, use: [{ loader: 'url-loader' }] },
+        {
+          test: /\.(png|jpg|gif|webp|svg|zip)$/,
+          type: 'asset/inline',
+        },
       ],
     },
 

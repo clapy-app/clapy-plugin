@@ -1,0 +1,44 @@
+.root {
+  height: 212px;
+  align-self: stretch;
+  flex-direction: row;
+  place-content: center;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: #f3f3f3;
+}
+.previewPlaceholderText {
+  color: #696969;
+  font-size: 16px;
+  font-family: Nunito Sans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  width: 278px;
+  text-align: center;
+}
+
+.previewPlaceholderImage {
+  max-width: 100%;
+  flex: 1;
+  align-self: stretch;
+  /* background-image: url('./previewPlaceholder.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain; */
+}
+
+.rootLoading {
+  height: 212px;
+  align-self: stretch;
+  flex-direction: row;
+  padding: 16px;
+  border-radius: 12px;
+}
+.loadingGif {
+  flex: 1;
+  align-self: stretch;
+  background-image: url('./loadingGif.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}

@@ -1,0 +1,37 @@
+.root {
+  flex-direction: row;
+  border-radius: 6.5882px;
+}
+._ButtonBase {
+  outline: solid 0.8235px #fff;
+  outline-offset: -0.8235px;
+  align-self: flex-start;
+  flex-direction: row;
+  place-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 6.5882px 11.5294px;
+  border-radius: 6.5882px;
+  overflow: hidden;
+  filter: drop-shadow(0px 0.8235294222831726px 1.6470588445663452px #1018280d);
+}
+.frame66 {
+  width: 68px;
+  height: 10px;
+  align-items: flex-start;
+  position: relative;
+}
+.text {
+  color: #fff;
+  font-size: 10.7059px;
+  line-height: 16.4706px;
+  font-weight: bold;
+  font-family: Spartan, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  width: 68px;
+  height: 12px;
+  justify-content: center;
+  position: absolute;
+  left: 0.4706px;
+  top: 0;
+}

@@ -1,0 +1,52 @@
+.root {
+  height: 50px;
+  align-self: stretch;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.button {
+  width: 50px;
+  align-self: stretch;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+/* .button:not(.disabled):focus {
+  outline: solid 1px #155eef;
+  background-color: #155eef;
+} */
+
+.button:not(.disabled):hover {
+  background-color: #f9fafB;
+}
+
+.button:not(.disabled):active {
+  background-color: #f2f2f3;
+}
+
+._ButtonBase {
+  width: 50px;
+  flex: 1;
+  flex-direction: row;
+  place-content: center;
+  align-items: center;
+  padding: 14.875px;
+  overflow: hidden;
+}
+
+.logOut {
+  width: 21.25px;
+  height: 21.25px;
+}
+
+.rectangle11 {
+  height: 1px;
+  align-self: stretch;
+}
+
+.rectangle12 {
+  height: 1px;
+  align-self: stretch;
+  background-color: #eaecf0;
+}

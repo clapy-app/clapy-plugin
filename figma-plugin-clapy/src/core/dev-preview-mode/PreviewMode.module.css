@@ -13,9 +13,10 @@
 }
 .previewPluginWrapper {
   position: relative;
-  height: 450px;
-  width: 400px;
-  border: 1px solid black;
+  /* Must match src/backend/backend.ts */
+  height: 600px;
+  width: 404px;
+  outline: 1px solid black;
   overflow: auto;
 
   /* Must match global.scss #react-page for children-oriented styles */

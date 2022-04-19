@@ -22,9 +22,10 @@ body > div * {
   background: none;
   border: none;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
-body button {
+body button:not(:disabled) {
   cursor: pointer;
 }
 
@@ -34,6 +35,10 @@ body label {
   cursor: pointer;
 }
 
-body span {
+body span, body a {
   display: inline;
+}
+
+img {
+  object-fit: contain;
 }

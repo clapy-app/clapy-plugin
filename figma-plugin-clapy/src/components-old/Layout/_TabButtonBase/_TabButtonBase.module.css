@@ -1,0 +1,36 @@
+.root {
+  flex: 1;
+  place-content: center;
+  overflow: hidden;
+  transition: background-color 150ms ease-in-out;
+}
+.root.active, .root:hover {
+  background-color: #eff4ff;
+}
+.content {
+  align-self: stretch;
+  flex-direction: row;
+  place-content: center;
+  padding: 12px;
+}
+.text {
+  color: #667085;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+  transition: color 150ms ease-in-out;
+}
+.active .text, .root:hover .text {
+  color: #004eeb;
+}
+.bottomBorder {
+  height: 2px;
+  align-self: stretch;
+  transition: background-color 150ms ease-in-out;
+}
+.active .bottomBorder, .root:hover .bottomBorder {
+  background-color: #004eeb;
+}
