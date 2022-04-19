@@ -1,0 +1,33 @@
+.root {
+  outline: solid 1px #fda29b;
+  outline-offset: -1px;
+  width: 312px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  position: absolute;
+  left: 9px;
+  top: 12px;
+  border-radius: 8px;
+  background-color: #fffbfa;
+}
+.content {
+  z-index: 0;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: 12px;
+}
+.supportingText {
+  color: #d92d20;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+}
+.actions {
+  z-index: 0;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+}

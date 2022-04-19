@@ -48,6 +48,8 @@ const htmlEntitiesMap = {
   '>': '&gt;',
   "'": '&#39;',
   '"': '&quot;',
+  '{': '&#123;',
+  '}': '&#125;',
 };
 type EntitiesToEscape = keyof typeof htmlEntitiesMap;
 const entities = Object.keys(htmlEntitiesMap) as Array<EntitiesToEscape>;
