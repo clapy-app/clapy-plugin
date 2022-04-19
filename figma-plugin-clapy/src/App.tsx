@@ -1,9 +1,11 @@
-import { FC, memo } from 'react';
+import { FC, memo, useEffect } from 'react';
 
 import classes from './App.module.scss';
+import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
-import { FigmaToCodeHome2 } from './components-old/FigmaToCodeHome/FigmaToCodeHome';
+import { Layout } from './components-old/Layout/Layout';
 import { track } from './features/1-import-sb/detail/analytics';
+import { getTokens } from './features/auth/auth-service';
 
 const openPluginTime = performance.now();
 
@@ -14,9 +16,21 @@ window.addEventListener('unload', function () {
 });
 
 export const App: FC = memo(function App() {
+  useEffect(() => {
+    getTokens()
+      .then(() => {
+        track('open-plugin');
+        // setError(undefined);
+      })
+      .catch(err => {
+        handleError(err);
+        // setError(err?.message || 'Unknown error');
+      });
+  }, []);
+
   return (
     <div className={classes.root}>
-      <FigmaToCodeHome2 />
+      <Layout />
     </div>
   );
   // return (

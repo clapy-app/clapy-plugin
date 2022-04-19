@@ -1,0 +1,17 @@
+.root {
+  height: 212px;
+  align-self: stretch;
+  flex-direction: row;
+  place-content: center;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+}
+.image2 {
+  width: 250px;
+  height: 180px;
+  /* background-image: url('assets/image2.jpeg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain; */
+}

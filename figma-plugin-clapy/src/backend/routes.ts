@@ -5,7 +5,8 @@ import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-va
 import { runGrid } from './routes/2-update-canvas/grid-utils';
 import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
-import { serializeSelectedNode } from './routes/5-export-code/1-serialize-node';
+import { selectionPreview } from './routes/5-export-code/1-selection-preview';
+import { serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 
 export const routes = {
@@ -37,6 +38,7 @@ export const routes = {
 
 export const subscriptions = {
   selectedSbComp: selectedSbComp,
+  selectionPreview: selectionPreview,
 };
 
 // Use Routes from appModels.ts instead, which is clearly made to be shared between the front and the back.

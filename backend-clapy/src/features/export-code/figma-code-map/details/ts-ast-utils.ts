@@ -141,6 +141,10 @@ export function mkTargetBlankAttr() {
   return factory.createJsxAttribute(factory.createIdentifier('target'), factory.createStringLiteral('_blank'));
 }
 
+export function mkNoReferrerAttr() {
+  return factory.createJsxAttribute(factory.createIdentifier('rel'), factory.createStringLiteral('noreferrer'));
+}
+
 // If useful. Keep a couple of weeks and remove later.
 // export function mkImg(srcVarName: string, extraAttributes: ts.JsxAttribute[]) {
 //   return factory.createJsxSelfClosingElement(

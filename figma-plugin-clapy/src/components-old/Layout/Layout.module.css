@@ -1,0 +1,14 @@
+.root {
+  flex: 1;
+  background-color: #fff;
+}
+
+.content {
+  flex: 1;
+  align-self: stretch;
+  place-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 24px;
+  overflow: hidden;
+}
