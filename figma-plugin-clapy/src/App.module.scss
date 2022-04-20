@@ -6,6 +6,16 @@
   background-color: #e5e5e5;
 }
 
+.toasters {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  align-items: center;
+  transform: translateX(-50%);
+  gap: 8px;
+  pointer-events: none;
+}
+
 // .container {
 //   display: flex;
 //   flex-direction: column;

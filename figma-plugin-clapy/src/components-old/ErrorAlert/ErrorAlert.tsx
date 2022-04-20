@@ -1,19 +1,38 @@
+import { FC, memo } from 'react';
+
+import { MailIcon } from './_ButtonBase/MailIcon';
+import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 import { BadgeGroup } from './BadgeGroup/BadgeGroup';
 import { Button } from './Button/Button';
-import { Button_2 } from './Button_2/Button_2';
 import classes from './ErrorAlert.module.css';
 
-export function ErrorAlert_2() {
+interface Props {}
+
+export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
+  const { children } = props;
   return (
-    <div className={classes.root}>
-      <div className={classes.content}>
-        <BadgeGroup />
-        <div className={classes.supportingText}>Error: &#123;name_of_error&#125;</div>
-      </div>
-      <div className={classes.actions}>
-        <Button />
-        <Button_2 />
-      </div>
+    <div className={classes.content}>
+      <BadgeGroup />
+      <div className={classes.supportingText}>{children}</div>
     </div>
   );
+});
+
+interface Props2 {
+  closeToast: () => () => void;
+  emailLink: string;
 }
+
+export const ErrorAlertButtons: FC<Props2> = memo(function ErrorAlertButtons(props) {
+  const { closeToast, emailLink } = props;
+  return (
+    <div className={classes.actions}>
+      <Button icon={<MailIcon className={classes.icon} />} href={emailLink}>
+        Report bug
+      </Button>
+      <Button icon={<SlashIcon className={classes.icon} />} onClick={() => closeToast()}>
+        Close
+      </Button>
+    </div>
+  );
+});
