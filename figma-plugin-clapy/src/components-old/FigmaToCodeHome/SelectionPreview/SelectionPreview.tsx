@@ -7,7 +7,7 @@ import classes from './SelectionPreview.module.css';
 
 interface Props {
   state: MyStates;
-  selectionPreview: string | undefined;
+  selectionPreview: string | false | undefined;
 }
 
 const defaultOptions: Options = {
@@ -37,8 +37,9 @@ export const SelectionPreview: FC<Props> = memo(function SelectionPreview(props)
           before generating its code
         </div>
       )}
+      {state === 'selectionko' && <>Preview unavailable for this selection</>}
       {(state === 'selection' || state === 'generated') && (
-        <img src={selectionPreview} alt='' className={classes.previewPlaceholderImage} />
+        <img src={selectionPreview || undefined} alt='' className={classes.previewPlaceholderImage} />
       )}
     </div>
   );

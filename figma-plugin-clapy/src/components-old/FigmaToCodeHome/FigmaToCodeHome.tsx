@@ -21,10 +21,10 @@ import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;
 
-export type MyStates = 'loading' | 'noselection' | 'selection' | 'generated';
+export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
 
 interface Props {
-  selectionPreview: string | undefined;
+  selectionPreview: string | false | undefined;
 }
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
@@ -38,6 +38,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'generated'
     : selectionPreview
     ? 'selection'
+    : selectionPreview === false
+    ? 'selectionko'
     : 'noselection';
 
   const generateCode = useCallbackAsync2(async () => {
@@ -117,7 +119,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             you need to code
           </>
         )}
-        {state === 'selection' && <>Ready to code</>}
+        {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}
       </div>

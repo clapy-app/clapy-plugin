@@ -23,10 +23,12 @@ body > div * {
   border: none;
   flex-shrink: 0;
   text-decoration: none;
+  font-family: Nunito Sans, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 
 body button:not(:disabled) {
   cursor: pointer;
+  user-select: none;
 }
 
 body label {

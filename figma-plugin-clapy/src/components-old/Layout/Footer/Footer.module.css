@@ -6,9 +6,7 @@
   align-items: center;
   gap: 10px;
   padding: 0 12px;
-  background-image: linear-gradient(139.7deg, #1e51b2 0%, #0d347c 100%);
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #00359e;
   overflow: hidden;
 }
 
