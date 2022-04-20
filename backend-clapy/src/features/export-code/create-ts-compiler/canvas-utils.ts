@@ -30,7 +30,7 @@ export type LayoutNode =
   | EllipseNode
   | PolygonNode
   | StarNode
-  | VectorNode2
+  | VectorNodeDerived
   | TextNode2
   | BooleanOperationNode
   | StampNode
@@ -72,6 +72,7 @@ export type BaseNode2 = ExtendNodeType<BaseNode>;
 export type PageNode2 = ExtendNodeType<PageNode>;
 export type SceneNode2 = ExtendNodeType<SceneNode>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
+export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
 export type TextNode2 = ExtendNodeType<TextNode, { _textSegments?: StyledTextSegment[] }>;
 export type FrameNode2 = ExtendNodeType<FrameNode>;
 export type ComponentNode2 = ExtendNodeType<ComponentNode>;
@@ -79,6 +80,7 @@ export type InstanceNode2 = ExtendNodeType<InstanceNode>;
 export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode>;
 export type LineNode2 = ExtendNodeType<LineNode>;
+export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode>;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
@@ -88,8 +90,9 @@ export function isLayout(node: BaseNode2 | SceneNode2 | null | undefined): node 
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode2 {
-  return node?.type === 'GROUP';
+export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode2 | BooleanOperationNode2 {
+  return node?.type === 'GROUP' || node?.type === 'BOOLEAN_OPERATION';
+  // The added BooleanOperationNode is to pay attention to the typing. But anyway, they are likely to be in a SVG (see VectorNodeDerived).
 }
 
 export function isSlice(node: BaseNode2 | SceneNode2 | Nil): node is SliceNode {
@@ -116,7 +119,8 @@ export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode2 {
+export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNodeDerived {
+  // Patch because BooleanOp are very likely to be converted into vectors. Vectors can be from BooleanOp, so we should ensure we only use available properties, or we need to be more specific.
   return node?.type === 'VECTOR';
 }
 
@@ -124,7 +128,7 @@ export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode {
+export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode2 {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
@@ -165,6 +169,10 @@ export function isBlendMixin(node: BaseNode2 | BlendMixin | Nil): node is BlendM
   return !!(node as BlendMixin)?.blendMode;
 }
 
+export function isConstraintMixin(node: BaseNode2 | ConstraintMixin | Nil): node is ConstraintMixin {
+  return !!(node as ConstraintMixin)?.constraints;
+}
+
 export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSegment | Nil): node is StyledTextSegment {
   const sts = node as StyledTextSegment;
   return sts.characters != null && sts.start != null && sts.end != null;
@@ -178,13 +186,13 @@ export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode
 }
 
 // GroupNode doesn't have auto-layout
-export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | LineNode2;
+export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | BooleanOperationNode2 | LineNode2;
 
 export function isBlockNode(node: BaseNode2 | SceneNode2 | Nil): node is BlockNode {
-  return isFlexNode(node) || isRectangle(node) || isGroup(node) || isLine(node);
+  return isFlexNode(node) || isRectangle(node) || isGroup(node) || isBooleanOperation(node) || isLine(node);
 }
 
-export type ValidNode = BlockNode | TextNode2 | VectorNode2;
+export type ValidNode = BlockNode | TextNode2 | VectorNodeDerived;
 
 export function isValidNode(node: BaseNode2 | SceneNode2 | Nil): node is ValidNode {
   return isBlockNode(node) || isText(node) || isVector(node);

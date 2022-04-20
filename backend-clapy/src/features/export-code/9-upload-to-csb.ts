@@ -42,7 +42,10 @@ export async function writeToDisk(files: CsbDict, componentContext: ComponentCon
 
       const files = [`${backendDir}/atest-gen/${path}`];
       if (isClapyFile && path.startsWith(srcCompPrefix)) {
-        files.push(`${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`);
+        const file = `${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`;
+        const dir = resolve(dirname(file));
+        await mkdir(dir, { recursive: true });
+        files.push(file);
       }
 
       await Promise.all(

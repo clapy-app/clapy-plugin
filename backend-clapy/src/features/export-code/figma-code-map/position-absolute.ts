@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
-import { isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
 function applyPositionRelative(styles: Dict<DeclarationPlain>) {
@@ -18,6 +18,7 @@ export function positionAbsoluteFigmaToCode(
 ) {
   const isFlex = isFlexNode(node);
   const isGrp = isGroup(node);
+  const nodeHasConstraints = isConstraintMixin(node);
 
   if (isFlex && node.layoutMode === 'NONE') {
     applyPositionRelative(styles);
@@ -40,9 +41,11 @@ export function positionAbsoluteFigmaToCode(
   };
   if (parentIsAbsolute) {
     addStyle(styles, 'position', 'absolute');
-    const { horizontal, vertical } = parentIsGroup
-      ? ({ horizontal: 'SCALE', vertical: 'SCALE' } as Constraints)
-      : node.constraints;
+    const { horizontal, vertical } =
+      // The second part, !nodeHasConstraints, should be impossible, but let's add it for type checking and just in case.
+      parentIsGroup || !nodeHasConstraints
+        ? ({ horizontal: 'SCALE', vertical: 'SCALE' } as Constraints)
+        : node.constraints;
     // STRETCH and SCALE are only applicable with fixed size (disabled on the UI with hug contents)
 
     // When an element is absolutely positioned in a group (itself within an autolayout frame), we apply the SCALE mode relative to the group. Since x/y are relative to the groupe parent, we adjust x/y to ensure the scale works well.

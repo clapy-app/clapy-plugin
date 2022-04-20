@@ -1,8 +1,8 @@
-import { VectorNode2 } from '../../create-ts-compiler/canvas-utils';
+import { VectorNodeDerived } from '../../create-ts-compiler/canvas-utils';
 
 const svgWidthHeightRegex = /^<svg width="\d+" height="\d+"/;
 
-export function readSvg(node: VectorNode2) {
+export function readSvg(node: VectorNodeDerived) {
   // Remove width and height from SVG. Let the CSS define it.
   // Useless when using SVGR to create a React component, but useful for masking since we don't use React SVG for masking.
   let svg = node._svg?.replace(svgWidthHeightRegex, '<svg');
@@ -17,7 +17,7 @@ export function readSvg(node: VectorNode2) {
 
 const viewBoxRegex2 = /(<svg [^>]*?viewBox=["'])(-?[\d\.]+)[, ]+(-?[\d\.]+)[, ]([\d\.]+)[, ]([\d\.]+)(["'])/;
 
-function patchSvgViewBox(svg: string | undefined, node: VectorNode2) {
+function patchSvgViewBox(svg: string | undefined, node: VectorNodeDerived) {
   if (!svg) return svg;
   return svg.replace(
     viewBoxRegex2,
@@ -48,6 +48,8 @@ const htmlEntitiesMap = {
   '>': '&gt;',
   "'": '&#39;',
   '"': '&quot;',
+  '{': '&#123;',
+  '}': '&#125;',
 };
 type EntitiesToEscape = keyof typeof htmlEntitiesMap;
 const entities = Object.keys(htmlEntitiesMap) as Array<EntitiesToEscape>;

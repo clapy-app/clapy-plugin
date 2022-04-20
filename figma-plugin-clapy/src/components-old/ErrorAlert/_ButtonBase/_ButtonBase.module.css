@@ -1,0 +1,19 @@
+.root {
+  flex-direction: row;
+  place-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.mail {
+  width: 20px;
+  height: 20px;
+}
+.text {
+  color: #b42318;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+}

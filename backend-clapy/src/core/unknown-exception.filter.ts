@@ -20,11 +20,11 @@ export function handleException(exception: any, response: any = null): any {
   const status =
     exception instanceof HttpException
       ? exception.getStatus()
-      : resp?.status ||
-        exception?.code ||
-        exception?.statusCode ||
-        error.statusCode ||
-        HttpStatus.INTERNAL_SERVER_ERROR;
+      : toNum(resp?.status) ||
+      toNum(exception?.code) ||
+      toNum(exception?.statusCode) ||
+      toNum(error.statusCode) ||
+      toNum(HttpStatus.INTERNAL_SERVER_ERROR) || 500;
 
   let errorMessage = cleanErrorMessage(error, response, exception);
   if (error?.key === 'ELEMENT_NOT_FOUND') {
@@ -67,15 +67,29 @@ export class UnknownExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
-    const request = ctx.getRequest();
+    try {
+      const request = ctx.getRequest();
 
-    const { error, errors, status } = handleException(exception, response);
+      const { error, errors, status } = handleException(exception, response);
 
-    response.status(status).json({
-      statusCode: status,
-      path: request.url,
-      error: error?.message || error,
-      errors,
-    });
+      response.status(status).json({
+        statusCode: status,
+        path: request.url,
+        error: error?.message || error,
+        errors,
+      });
+    } catch (error) {
+      console.error('Error while trying to send an error response. There is something wrong out there.');
+      console.error(error);
+      response.status(500).json({
+        success: false,
+      });
+    }
   }
+}
+
+function toNum(value: any) {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return Number(value);
+  return undefined;
 }

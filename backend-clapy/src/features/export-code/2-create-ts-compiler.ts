@@ -19,72 +19,68 @@ const appCssPath = 'src/App.module.css';
 const indexHtmlPath = 'public/index.html';
 
 export async function exportCode({ images, root, parent, extraConfig }: ExportCodePayload, uploadToCsb = true) {
-  try {
-    perfMeasure('a');
-    // Initialize the project template with base files
-    const filesCsb = await readReactTemplateFiles();
-    const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
-    const project = await createProjectFromTsConfig(tsConfig);
-    const [files, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(rest);
-    const cssFiles: CodeDict = { [appCssPath]: appCss };
-    resources['tsconfig.json'] = tsConfig;
-    addFilesToProject(project, files);
-    perfMeasure('b');
+  perfMeasure('a');
+  // Initialize the project template with base files
+  const filesCsb = await readReactTemplateFiles();
+  const { 'tsconfig.json': tsConfig, ...rest } = filesCsb;
+  const project = await createProjectFromTsConfig(tsConfig);
+  const [files, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(rest);
+  const cssFiles: CodeDict = { [appCssPath]: appCss };
+  resources['tsconfig.json'] = tsConfig;
+  addFilesToProject(project, files);
+  perfMeasure('b');
 
-    // Most context elements here should be per component (but not compNamesAlreadyUsed).
-    // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
-    const projectContext: ProjectContext = {
-      compNamesAlreadyUsed: new Set(),
-      assetsAlreadyUsed: new Set(),
-      fontWeightUsed: new Map(),
-      project,
-      resources,
-      cssFiles,
-      images,
-    };
+  // Most context elements here should be per component (but not compNamesAlreadyUsed).
+  // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
+  const projectContext: ProjectContext = {
+    compNamesAlreadyUsed: new Set(),
+    assetsAlreadyUsed: new Set(),
+    fontWeightUsed: new Map(),
+    project,
+    resources,
+    cssFiles,
+    images,
+  };
 
-    const appFile = project.getSourceFileOrThrow('src/App.tsx');
-    const fakeParentComponentContext = {
-      projectContext,
-      file: appFile,
-      pageName: undefined,
-      compName: 'App',
-      inInteractiveElement: false,
-    } as ComponentContext;
-    perfMeasure('c');
-    const componentContext = await genComponent(fakeParentComponentContext, root, parent);
-    perfMeasure('d');
+  const appFile = project.getSourceFileOrThrow('src/App.tsx');
+  const fakeParentComponentContext = {
+    projectContext,
+    file: appFile,
+    pageName: undefined,
+    compName: 'App',
+    inInteractiveElement: false,
+  } as ComponentContext;
+  perfMeasure('c');
+  const componentContext = await genComponent(fakeParentComponentContext, root, parent);
+  perfMeasure('d');
 
-    addCompToAppRoot(componentContext, parent, appFile);
-    perfMeasure('e');
+  addCompToAppRoot(componentContext, parent, appFile);
+  perfMeasure('e');
 
-    const tsFiles = await diagnoseFormatTsFiles(project); // Takes time with many files
-    perfMeasure('f');
-    await prepareCssFiles(cssFiles);
-    perfMeasure('g');
-    // prepareResources(resources);
+  const tsFiles = await diagnoseFormatTsFiles(project); // Takes time with many files
+  perfMeasure('f');
+  await prepareCssFiles(cssFiles);
+  perfMeasure('g');
+  // prepareResources(resources);
 
-    addFontsToIndexHtml(projectContext);
-    perfMeasure('h');
+  addFontsToIndexHtml(projectContext);
+  perfMeasure('h');
 
-    const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
-    perfMeasure('i');
-    if (env.isDev) {
-      // Useful for the dev in watch mode. Uncomment when needed.
-      // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-      // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
-      //
-      // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
-      perfMeasure('j');
-      await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
-      perfMeasure('k');
-    }
-    if (!env.isDev || uploadToCsb) {
-      const csbResponse = await uploadToCSB(csbFiles);
-      return csbResponse;
-    }
-  } catch (error: any) {
-    console.error(error.stack);
+  const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
+  perfMeasure('i');
+  if (env.isDev) {
+    // Useful for the dev in watch mode. Uncomment when needed.
+    // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
+    // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+    //
+    // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
+    perfMeasure('j');
+    await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
+    perfMeasure('k');
+  }
+  if (!env.isDev || uploadToCsb) {
+    const csbResponse = await uploadToCSB(csbFiles);
+    return csbResponse;
   }
 }
 

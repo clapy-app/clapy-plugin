@@ -7,6 +7,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContextWithBorders } from '../code.model';
 import {
   FlexNode,
+  isConstraintMixin,
   isFlexNode,
   isGroup,
   isLayout,
@@ -199,6 +200,7 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
   const nodeIsGroup = isGroup(node);
+  const nodeHasConstraints = isConstraintMixin(node);
 
   const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
@@ -238,10 +240,12 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const isWidthPositionAbsoluteAutoSize =
     !nodeIsGroup &&
     parentIsAbsolute &&
+    nodeHasConstraints &&
     (node.constraints.horizontal === 'STRETCH' || node.constraints.horizontal === 'SCALE');
   const isHeightPositionAbsoluteAutoSize =
     !nodeIsGroup &&
     parentIsAbsolute &&
+    nodeHasConstraints &&
     (node.constraints.vertical === 'STRETCH' || node.constraints.vertical === 'SCALE');
 
   const fixedWidth = !isWidthPositionAbsoluteAutoSize && !widthFillContainer && !widthHugContents;
