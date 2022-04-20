@@ -5,11 +5,9 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  position: absolute;
-  left: 9px;
-  top: 12px;
   border-radius: 8px;
   background-color: #fffbfa;
+  pointer-events: auto;
 }
 .content {
   z-index: 0;
@@ -30,4 +28,8 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 12px;
+}
+.icon {
+  width: 20px;
+  height: 20px;
 }

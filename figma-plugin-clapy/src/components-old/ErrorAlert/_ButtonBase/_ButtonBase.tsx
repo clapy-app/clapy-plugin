@@ -1,11 +1,17 @@
-import classes from './_ButtonBase.module.css';
-import { MailIcon } from './MailIcon';
+import { FC, memo } from 'react';
 
-export function _ButtonBase() {
+import classes from './_ButtonBase.module.css';
+
+interface Props {
+  icon: React.ReactElement;
+}
+
+export const _ButtonBase: FC<Props> = memo(function _ButtonBase(props) {
+  const { icon, children } = props;
   return (
     <div className={classes.root}>
-      <MailIcon className={classes.mail} />
-      <div className={classes.text}>Report bug</div>
+      {icon}
+      <div className={classes.text}>{children}</div>
     </div>
   );
-}
+});

@@ -1,8 +1,11 @@
 import { FC, memo, useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import classes from './App.module.scss';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
+import alertClasses from './components-old/ErrorAlert/ErrorAlert.module.css';
 import { Layout } from './components-old/Layout/Layout';
 import { track } from './features/1-import-sb/detail/analytics';
 import { getTokens } from './features/auth/auth-service';
@@ -28,9 +31,21 @@ export const App: FC = memo(function App() {
       });
   }, []);
 
+  // We can import 'react-toastify/dist/ReactToastify.minimal.css'
+  // instead, but we would need to re-add animations & co to make it work.
   return (
     <div className={classes.root}>
       <Layout />
+      <ToastContainer
+        position='top-center'
+        autoClose={false}
+        hideProgressBar={true}
+        newestOnTop={true}
+        closeOnClick={false}
+        draggable={false}
+        className={classes.toasters}
+        toastClassName={alertClasses.root}
+      />
     </div>
   );
   // return (
