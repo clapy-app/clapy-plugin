@@ -58,6 +58,7 @@ export function genComponentImportName(context: NodeContext) {
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
   const sanitize = pascalCase ? pascalize : camelize;
   let name = sanitize(baseName);
+  if (!name) name = 'unnamed';
   let i = 1;
   while (usageCache.has(name)) {
     ++i;

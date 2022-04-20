@@ -17,7 +17,7 @@ export function CodeToFigma() {
             We are improving this feature.
             <br />
           </span>
-          <a className={classes.label_2} href='https://discord.gg/aQs6nekRZJ' target='_blank' rel='noreferrer'>
+          <a className={classes.label_2} href='https://bit.ly/clapy-ds-plugin' target='_blank' rel='noreferrer'>
             Visit our Discord
           </a>
           <span className={classes.label_3}>

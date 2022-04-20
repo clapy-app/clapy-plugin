@@ -19,13 +19,13 @@ export type MyStates = 'loading' | 'noselection' | 'selection' | 'generated';
 
 export const Layout: FC = memo(function Layout() {
   const [activeTab, setActiveTab] = useState(0);
-  const [selectionPreview, setSelectionPreview] = useState<string | undefined>();
+  const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   const isSignedIn = useSelector(selectSignedIn);
 
   // Show selection
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
-      setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : undefined);
+      setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
     });
     return dispose;
   }, []);

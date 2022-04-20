@@ -1,7 +1,8 @@
 import { NextFn } from '../../../common/app-models';
+import { isBlendMixin } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 
-export function selectionPreview(next: NextFn<string | undefined>) {
+export function selectionPreview(next: NextFn<string | undefined | false>) {
   const sendSelectionPreview = async () => next(await generatePreview());
   figma.on('selectionchange', sendSelectionPreview);
   // Initial emit, for dev, when the figma plugin is open after the webapp.
@@ -14,6 +15,9 @@ export async function generatePreview() {
     return undefined;
   }
   const selection = selections[0];
+  if (isBlendMixin(selection) && selection.isMask) {
+    return false;
+  }
   try {
     const preview = figma.base64Encode(
       await selection.exportAsync({
@@ -27,5 +31,6 @@ export async function generatePreview() {
     return preview;
   } catch (error) {
     // Preview impossible, ignore it.
+    return false;
   }
 }

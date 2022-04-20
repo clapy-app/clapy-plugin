@@ -5,7 +5,7 @@ export function MadeWithClapy() {
   return (
     <a
       className={classes.root}
-      href={'https://clapy.co/beta?utm_source=footer&utm_medium=button&utm_campaign=referral'}
+      href={'https://clapy.co?utm_source=plugin&utm_medium=button&utm_campaign=referral'}
       target='_blank'
       rel='noreferrer'
     >

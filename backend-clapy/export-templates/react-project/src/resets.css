@@ -27,6 +27,7 @@ body > div * {
 
 body button:not(:disabled) {
   cursor: pointer;
+  user-select: none;
 }
 
 body label {
