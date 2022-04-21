@@ -5,15 +5,16 @@ import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf } from '../../../common/general-utils';
 import {
-  baseBlacklist,
   ExportImageEntry,
   ExportImagesFigma,
+  extractionBlacklist,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import {
   isBlendMixin,
   isChildrenMixin,
+  isComponentSet,
   isGroup,
   isInstance,
   isLayout,
@@ -47,8 +48,8 @@ const rangeProps: RangeProp[] = [
   'textStyleId',
 ];
 /* as Writeable<typeof rangeProps> */
-const blacklist = new Set<string>(baseBlacklist);
-const textBlacklist = new Set<string>([...baseBlacklist, ...rangeProps, 'characters']);
+const blacklist = new Set<string>(extractionBlacklist);
+const textBlacklist = new Set<string>([...extractionBlacklist, ...rangeProps, 'characters']);
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -59,8 +60,8 @@ export interface SerializeContext {
 
 interface Options {
   skipChildren: boolean;
-  skipParent: boolean;
   skipInstance: boolean;
+  skipParent: boolean;
 }
 
 // Let's keep it a week or two to ensure we don't need it. Then remove the flag and dead code if we validate the rotation workaround is not required anymore.
@@ -79,12 +80,20 @@ const useCancelRotationWorkaround = false;
  * @param node
  * @param options
  */
-export async function nodeToObject<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
+export async function nodeToObject<T extends SceneNode>(
+  node: T,
+  context: SerializeContext,
+  options: Partial<Options> = {},
+) {
+  const { skipChildren = false, skipInstance = true, skipParent = true } = options;
+  return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
+}
+async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
   try {
     if (!isPage(node) && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
     }
-    const { skipChildren = false, skipParent = true, skipInstance = true } = options;
+    const { skipChildren, skipInstance, skipParent } = options;
     const nodeIsShape = isShapeExceptDivable(node);
     let exportAsSvg = nodeIsShape;
     let obj: any;
@@ -259,12 +268,20 @@ export async function nodeToObject<T extends SceneNode>(node: T, context: Serial
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
       obj.children = (
         await Promise.all(
-          node.children.filter(child => child.visible).map((child: SceneNode) => nodeToObject(child, context, options)),
+          node.children
+            .filter(child => child.visible)
+            .map((child: SceneNode) => nodeToObjectRec(child, context, options)),
         )
       ).filter(child => !!child);
     }
     if (isInstance(node) && node.mainComponent && !skipInstance) {
-      obj.mainComponent = await nodeToObject(node.mainComponent, context, options);
+      const { name, type } = node.mainComponent;
+      // Name probablement inutile ici. Même le type, pas sûr qu'il serve. Rien d'autre que le nom du parent n'est vraiment utile pour l'instant. À revoir plus tard.
+      obj.mainComponent = { name, type };
+      if (isComponentSet(node.mainComponent.parent)) {
+        const { name, type } = node.mainComponent.parent;
+        obj.mainComponent.parent = { name, type };
+      }
     }
     return obj as SceneNodeNoMethod;
   } catch (error: any) {

@@ -87,7 +87,10 @@ async function main() {
   perfTotal();
 }
 
-main().catch();
+main().catch(err => {
+  console.error('Error caught in main2.ts, normally sent to the client.');
+  console.error(err);
+});
 
 waitInfinite();
 

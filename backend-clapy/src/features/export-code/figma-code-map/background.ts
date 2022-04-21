@@ -3,26 +3,20 @@ import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContextWithBorders } from '../code.model';
+import { NodeContext } from '../code.model';
 import { writeAsset } from '../create-ts-compiler/3-create-component';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
 import { addOpacity } from './opacity';
 
-export function backgroundFigmaToCode(
-  context: NodeContextWithBorders,
-  node: ValidNode,
-  styles: Dict<DeclarationPlain>,
-) {
+export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
   if (isText(node) || isVector(node) || isGroup(node)) return;
 
   const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
   if (visibleFills.length) {
-    const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
-    const width = node.width - borderRightWidth - borderLeftWidth;
-    const height = node.height - borderTopWidth - borderBottomWidth;
+    const { width, height } = node;
     const { images } = context.componentContext.projectContext;
     const bgColors: string[] = [];
     const bgImages: string[] = [];

@@ -1,7 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContextWithBorders } from '../code.model';
+import { NodeContext } from '../code.model';
 import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 
@@ -11,11 +11,7 @@ function applyPositionRelative(styles: Dict<DeclarationPlain>) {
   }
 }
 
-export function positionAbsoluteFigmaToCode(
-  context: NodeContextWithBorders,
-  node: ValidNode,
-  styles: Dict<DeclarationPlain>,
-) {
+export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const isGrp = isGroup(node);
   const nodeHasConstraints = isConstraintMixin(node);
@@ -33,12 +29,6 @@ export function positionAbsoluteFigmaToCode(
   const { parentNode, parentContext } = context;
   const parentIsGroup = isGroup(parentNode);
   const parentIsAbsolute = parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE');
-  const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = parentContext?.borderWidths || {
-    borderTopWidth: 0,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-    borderLeftWidth: 0,
-  };
   if (parentIsAbsolute) {
     addStyle(styles, 'position', 'absolute');
     const { horizontal, vertical } =
@@ -50,10 +40,10 @@ export function positionAbsoluteFigmaToCode(
 
     // When an element is absolutely positioned in a group (itself within an autolayout frame), we apply the SCALE mode relative to the group. Since x/y are relative to the groupe parent, we adjust x/y to ensure the scale works well.
     const nodeX = parentIsGroup ? node.x - parentNode.x : node.x;
-    const left = nodeX - borderLeftWidth;
+    const left = nodeX;
     // Don't subtract borderLeftWidth, it's already included in nodeX.
-    const right = parentNode.width - nodeX - node.width - borderRightWidth;
-    const parentWidth = parentNode.width - borderLeftWidth - borderRightWidth;
+    const right = parentNode.width - nodeX - node.width;
+    const parentWidth = parentNode.width;
 
     let translateX = false;
     if (horizontal === 'MIN') {
@@ -72,10 +62,10 @@ export function positionAbsoluteFigmaToCode(
     }
 
     const nodeY = parentIsGroup ? node.y - parentNode.y : node.y;
-    let top = nodeY - borderTopWidth;
+    let top = nodeY;
     // Don't subtract borderTopWidth, it's already included in nodeY.
-    const bottom = parentNode.height - nodeY - node.height - borderBottomWidth;
-    const parentHeight = parentNode.height - borderTopWidth - borderBottomWidth;
+    const bottom = parentNode.height - nodeY - node.height;
+    const parentHeight = parentNode.height;
     let translateY = false;
 
     if (isLine(node)) {

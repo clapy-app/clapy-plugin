@@ -8,12 +8,14 @@ import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { getPrettierConfig } from './8-diagnose-format-ts-files';
-import { JsxOneOrMore, NodeContext, NodeContextOptionalBorders, NodeContextWithBorders } from './code.model';
+import { JsxOneOrMore, NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/3-create-component';
 import {
+  BlockNode,
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
+  InstanceNode2,
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
@@ -27,6 +29,7 @@ import {
   isVector,
   Masker,
   SceneNode2,
+  ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { stylesToList } from './css-gen/css-type-utils';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
@@ -40,22 +43,40 @@ import {
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
+import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export async function figmaToAstRec(context: NodeContext | NodeContextWithBorders, node: SceneNode2, isRoot?: boolean) {
+export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
   try {
     if (!node.visible) {
       return;
     }
 
-    // If component or instance, generate the code in a separate component file and reference it here.
-    if (isComponent(node) || isInstance(node)) {
-      const node2 = { ...node, type: 'FRAME' as const };
-      const componentContext = await genComponent(context.componentContext, node2, context.parentNode);
-      return mkComponentUsage(componentContext.compName);
-    }
+    const { parentNode, componentContext } = context;
 
     const styles: Dict<DeclarationPlain> = {};
+
+    const muiConfig = checkAndProcessMuiComponent(context, node);
+    if (muiConfig) {
+      context.outerLayoutOnly = true;
+      const node2 = node as InstanceNode2;
+      addMuiImport(componentContext, muiConfig);
+
+      // Add tag styles
+      mapCommonStyles(context, node2, styles);
+      const attributes = addNodeStyles(context, node2, styles, isRoot);
+
+      return mkMuiComponentAst(muiConfig, node2, attributes);
+    }
+
+    // If component or instance, generate the code in a separate component file and reference it here.
+    if (isComponent(node) || isInstance(node)) {
+      // Change to frame to avoid infinite loops: don't re-extract the component.
+      // Components and instances are actually frames, so there shouldn't be any impact.
+      const node2 = { ...node, type: 'FRAME' as const };
+      const genComponentContext = await genComponent(componentContext, node2, context.parentNode);
+      return mkComponentUsage(genComponentContext.compName);
+    }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
     if (newNode) node = newNode;
@@ -64,8 +85,6 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
       warnNode(node, 'TODO Unsupported node');
       return;
     }
-
-    const { parentNode, parentStyles, parentContext } = context;
     const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
     // With groups, there are 2 special cases:
     // - The parent is a frame, not auto-layout
@@ -112,7 +131,7 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
       }
       return ast;
     } else if (isVector(node)) {
-      const { projectContext, compName } = context.componentContext;
+      const { projectContext } = componentContext;
       let svgContent = readSvg(node);
       if (!svgContent) {
         warnNode(node, 'BUG No SVG content, skipping.');
@@ -138,51 +157,21 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
       );
 
       // Add SVG as React component. It's the preferred solution over img pointing to SVG file because overflow: visible works as direct SVG and doesn't through img (if the SVG paints content outside the viewbox, which works on Figma).
-      projectContext.resources[`${context.componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
+      projectContext.resources[`${componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
 
       // Add import in file
-      context.componentContext.file.addImportDeclaration({
+      componentContext.file.addImportDeclaration({
         moduleSpecifier: `./${svgPathVarName}`,
         namedImports: [svgPathVarName],
       });
 
-      // Add styles for this node
-      context = mapTagStyles(context, node, styles);
-      const className = genClassName(context, node, isRoot);
-      const styleDeclarations = stylesToList(styles);
-      let attributes: ts.JsxAttribute[] = [];
-      if (styleDeclarations.length) {
-        addCssRule(context, className, styleDeclarations);
-        attributes.push(mkClassAttr(className));
-      }
+      const attributes = addNodeStyles(context, node, styles, isRoot);
 
       // Generate AST
       const ast = mkComponentUsage(svgPathVarName, attributes);
       return ast;
     } else if (isBlockNode(node)) {
-      // Add tag styles
-      const context2 = mapTagStyles(context, node, styles);
-
-      const className = genClassName(context2, node, isRoot);
-
-      // the CSS rule is created before checking the children so that it appears first in the CSS file.
-      // After generating the children, we can add the final list of rules or remove it if no rule.
-      const cssRule = addCssRule(context2, className);
-
-      const children: ts.JsxChild[] = [];
-      if (isChildrenMixin(node)) {
-        await recurseOnChildren(context2, node, children, styles);
-      }
-
-      const styleDeclarations = stylesToList(styles);
-      let attributes: ts.JsxAttribute[] = [];
-      if (styleDeclarations.length) {
-        cssRule.block.children.push(...styleDeclarations);
-        attributes.push(mkClassAttr(className));
-      } else {
-        removeCssRule(context, cssRule, node);
-      }
-
+      const [context2, attributes, children] = await generateBlockAst(context, node, styles, isRoot);
       const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
       return tsx;
     }
@@ -197,8 +186,52 @@ export async function figmaToAstRec(context: NodeContext | NodeContextWithBorder
   }
 }
 
+function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
+  mapTagStyles(context, node, styles);
+  const className = genClassName(context, node, isRoot);
+  const styleDeclarations = stylesToList(styles);
+  let attributes: ts.JsxAttribute[] = [];
+  if (styleDeclarations.length) {
+    addCssRule(context, className, styleDeclarations);
+    attributes.push(mkClassAttr(className));
+  }
+  return attributes;
+}
+
+async function generateBlockAst(
+  context: NodeContext,
+  node: BlockNode,
+  styles: Dict<DeclarationPlain>,
+  isRoot?: boolean,
+) {
+  // Add tag styles
+  mapTagStyles(context, node, styles);
+
+  const className = genClassName(context, node, isRoot);
+
+  // the CSS rule is created before checking the children so that it appears first in the CSS file.
+  // After generating the children, we can add the final list of rules or remove it if no rule.
+  const cssRule = addCssRule(context, className);
+
+  const children: ts.JsxChild[] = [];
+  if (isChildrenMixin(node)) {
+    await recurseOnChildren(context, node, children, styles);
+  }
+
+  const styleDeclarations = stylesToList(styles);
+  let attributes: ts.JsxAttribute[] = [];
+  if (styleDeclarations.length) {
+    cssRule.block.children.push(...styleDeclarations);
+    attributes.push(mkClassAttr(className));
+  } else {
+    removeCssRule(context, cssRule, node);
+  }
+
+  return [context, attributes, children] as const;
+}
+
 async function recurseOnChildren(
-  context: NodeContextOptionalBorders,
+  context: NodeContext,
   node: SceneNode2 & ChildrenMixin2,
   children: ts.JsxChild[],
   styles: Dict<DeclarationPlain>,
@@ -239,13 +272,13 @@ async function recurseOnChildren(
     }
   }
 
-  const { parentNode, parentStyles, parentContext } = context;
+  const { parentNode, parentStyles, parentContext, componentContext } = context;
   for (const child of node.children) {
     if (child.skip) {
       continue;
     }
     const contextForChildren: NodeContext = {
-      componentContext: context.componentContext,
+      componentContext,
       tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
       nodeNameLower: child.name.toLowerCase(),
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
