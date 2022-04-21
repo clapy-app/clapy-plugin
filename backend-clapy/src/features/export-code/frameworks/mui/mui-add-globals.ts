@@ -75,3 +75,37 @@ function mkBaselineTag() {
     factory.createJsxAttributes([]),
   );
 }
+
+// Component overrides in the theme, examples from RTG:
+// const MuiAppBar = {
+//   defaultProps: {
+//     position: 'sticky',
+//     variant: 'outlined',
+//     elevation: 0,
+//   },
+//   styleOverrides: {
+//     zIndex: 1300,
+//     colorPrimary: {
+//       backgroundColor: '#fff',
+//     },
+//   },
+// };
+// export default MuiAppBar;
+
+// And:
+// defaultProps: {
+//   elevation: 0,
+//   PaperProps: {
+//     sx: {
+//       border: '1px solid grey',
+//       borderRadius: 0,
+//       p: 0,
+//       '.MuiMenu-list': {
+//         p: 0,
+//       },
+//     },
+//   },
+// },
+
+// CSS styles (some or all?) could be written the MUI style:
+// <Button variant="contained" sx={{height: 40}} />

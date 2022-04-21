@@ -66,7 +66,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       mapCommonStyles(context, node2, styles);
       const attributes = addNodeStyles(context, node2, styles, isRoot);
 
-      return mkMuiComponentAst(muiConfig, node2, attributes);
+      return mkMuiComponentAst(context, muiConfig, node2, attributes);
     }
 
     // If component or instance, generate the code in a separate component file and reference it here.

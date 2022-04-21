@@ -68,7 +68,14 @@ const textAlignVerticalToJustifyContent: {
   [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['justify-content']>;
 } = {
   CENTER: 'center',
-  BOTTOM: 'end',
+  BOTTOM: 'flex-end',
+};
+
+const textAlignVerticalToAlignItems: {
+  [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['align-items']>;
+} = {
+  CENTER: 'center',
+  BOTTOM: 'flex-end',
 };
 
 export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -83,6 +90,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
   } = applyWidth(context, node, styles);
+
+  const defaultIsVertical = defaultNode.layoutMode === 'VERTICAL';
 
   // Flex: 1 if it's a figma rule or it's a top-level component
   if (
@@ -115,16 +124,20 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       // }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
-      addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
+      if (defaultIsVertical) {
+        addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
+      } else {
+        addStyle(styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
+      }
     }
   }
 
   if (!outerLayoutOnly && isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === (defaultNode.layoutMode === 'VERTICAL' ? 'HORIZONTAL' : 'VERTICAL')) {
-      // column is used as default in index.css reset. We can omit it.
-      addStyle(styles, 'flex-direction', defaultNode.layoutMode === 'VERTICAL' ? 'row' : 'column');
+    if (node.layoutMode === (defaultIsVertical ? 'HORIZONTAL' : 'VERTICAL')) {
+      // row is used as default in index.css reset. We can omit it.
+      addStyle(styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);

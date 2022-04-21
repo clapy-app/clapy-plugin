@@ -33,16 +33,6 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
       const { color, opacity } = stroke;
       const { strokeAlign, strokeWeight } = node;
-      if (strokeAlign !== 'INSIDE') {
-        warnNode(
-          node,
-          `TODO unsupported strokeAlign ${strokeAlign}, it is treated as INSIDE. Do we want to support it? Should we outline instead?`,
-        );
-        // `outline` can make the trick. E.g. for 10px width and "CENTER":
-        // outline: 10px solid #4D1919;
-        // outline-offset: -5px;
-        // https://css-playground.com/view/68/css-outline-playground
-      }
       let borderWidth = strokeWeight;
       const hex = figmaColorToCssHex(color, opacity);
       if (isLine(node)) {
