@@ -44,7 +44,7 @@
     "axios": "^0.26.1",
     "body-parser": "^1.20.0",
     "css-tree": "^2.1.0",
-    "express-jwt": "^6.1.1",
+    "express-jwt": "6.1.2",
     "express-rate-limit": "^6.3.0",
     "express-sanitizer": "^1.0.6",
     "graphql": "^16.3.0",
