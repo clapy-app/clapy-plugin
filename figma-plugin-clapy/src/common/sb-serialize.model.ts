@@ -249,7 +249,7 @@ export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>
 export type TextNodeNoMethod = OmitMethods<TextNode>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
 
-export const baseBlacklist = [
+export const extractionBlacklist = [
   'parent',
   'children',
   'removed',
@@ -274,7 +274,7 @@ export const baseBlacklist = [
   'exportSettings',
 ] as const;
 
-export type FrameNodeBlackList = typeof baseBlacklist[number];
+export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent'>;
 
 export interface CSBResponse {
   sandbox_id: string;

@@ -3,6 +3,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import type { ProjectComponent, ProjectFile, ProjectFilesWithComp } from './file.model';
 
 export const reactTemplateDir = `${exportTemplatesDir}/react-project`;
+export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
 export const componentTemplatePathTsx = `${exportTemplatesDir}/react-comp/CompTemplate.tsx`;
 export const componentTemplatePathCss = `${exportTemplatesDir}/react-comp/CompTemplate.module.css`;

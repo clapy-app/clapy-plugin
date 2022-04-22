@@ -2,7 +2,7 @@ import jwtDecode from 'jwt-decode';
 
 import { handleError } from '../../common/error-utils';
 import { openWindowStep1, openWindowStep2 } from '../../common/front-utils';
-import { wait } from '../../common/general-utils';
+import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { dispatchOther } from '../../core/redux/redux.utils';
@@ -24,7 +24,7 @@ let _tokenType: string | null = null;
 
 // Exported methods
 
-export async function login() {
+export const login = toConcurrencySafeAsyncFn(async () => {
   try {
     const authWindow = openWindowStep1();
 
@@ -50,12 +50,11 @@ export async function login() {
     handleError(err);
     dispatchOther(setAuthError(err));
   }
-}
+});
 
 const interactiveSignInMsg = 'Interactive sign in required';
 
-// TODO if getTokens and refreshTokens have concurrent calls, they should run only once and return the same promise.
-export async function getTokens() {
+export const getTokens = toConcurrencySafeAsyncFn(async () => {
   try {
     if (!_accessToken) {
       const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
@@ -75,9 +74,9 @@ export async function getTokens() {
       throw error;
     }
   }
-}
+});
 
-export async function refreshTokens() {
+export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
   let refreshToken: string | null = await fetchPlugin('getRefreshToken');
   if (Array.isArray(refreshToken) && !refreshToken.length) {
     console.warn('The refresh token is an empty array! This is not expected, resetting to null.');
@@ -93,7 +92,7 @@ export async function refreshTokens() {
   }
   // Otherwise, it fails here. A manual login is required.
   throw new Error(interactiveSignInMsg);
-}
+});
 
 export function logout(mustReauth?: boolean) {
   setAccessToken(null);

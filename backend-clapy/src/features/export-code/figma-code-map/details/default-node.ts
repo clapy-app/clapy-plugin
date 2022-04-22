@@ -44,7 +44,7 @@ export const defaultNode: FrameNodeNoMethod = {
   gridStyleId: '',
   clipsContent: false,
   constraints: { horizontal: 'MIN', vertical: 'MIN' },
-  layoutMode: 'VERTICAL',
+  layoutMode: 'HORIZONTAL',
   counterAxisSizingMode: 'FIXED',
   itemSpacing: 0,
   overflowDirection: 'NONE',

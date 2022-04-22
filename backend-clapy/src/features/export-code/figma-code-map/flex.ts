@@ -4,7 +4,7 @@ import { PropertiesHyphen } from 'csstype';
 import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContextWithBorders } from '../code.model';
+import { NodeContext } from '../code.model';
 import {
   FlexNode,
   isConstraintMixin,
@@ -68,13 +68,20 @@ const textAlignVerticalToJustifyContent: {
   [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['justify-content']>;
 } = {
   CENTER: 'center',
-  BOTTOM: 'end',
+  BOTTOM: 'flex-end',
 };
 
-export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode, styles: Dict<DeclarationPlain>) {
+const textAlignVerticalToAlignItems: {
+  [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['align-items']>;
+} = {
+  CENTER: 'center',
+  BOTTOM: 'flex-end',
+};
+
+export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
 
-  const { parentStyles } = context;
+  const { parentStyles, outerLayoutOnly } = context;
   const {
     fixedWidth,
     widthFillContainer,
@@ -84,8 +91,14 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
     nodeCounterAxisHugContents,
   } = applyWidth(context, node, styles);
 
+  const defaultIsVertical = defaultNode.layoutMode === 'VERTICAL';
+
   // Flex: 1 if it's a figma rule or it's a top-level component
-  if (!isLine(node) && (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents))) {
+  if (
+    !outerLayoutOnly &&
+    !isLine(node) &&
+    (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents))
+  ) {
     addStyle(styles, 'flex', 1);
   }
 
@@ -102,7 +115,7 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
   }
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
-  if (isText(node)) {
+  if (!outerLayoutOnly && isText(node)) {
     if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
       addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
@@ -111,16 +124,20 @@ export function flexFigmaToCode(context: NodeContextWithBorders, node: ValidNode
       // }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
-      addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
+      if (defaultIsVertical) {
+        addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
+      } else {
+        addStyle(styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
+      }
     }
   }
 
-  if (isFlex) {
+  if (!outerLayoutOnly && isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === (defaultNode.layoutMode === 'VERTICAL' ? 'HORIZONTAL' : 'VERTICAL')) {
-      // column is used as default in index.css reset. We can omit it.
-      addStyle(styles, 'flex-direction', defaultNode.layoutMode === 'VERTICAL' ? 'row' : 'column');
+    if (node.layoutMode === (defaultIsVertical ? 'HORIZONTAL' : 'VERTICAL')) {
+      // row is used as default in index.css reset. We can omit it.
+      addStyle(styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
@@ -167,16 +184,15 @@ function checkChildrenLayout(node: FlexNode) {
   return [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch];
 }
 
-function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: Dict<DeclarationPlain>) {
+function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<DeclarationPlain>) {
   let { paddingTop, paddingRight, paddingBottom, paddingLeft } = node;
 
   // Withdraw borders from padding because, on Figma, borders are on top of the padding (overlap).
   // But in CSS, borders are added to the padding (no overlap).
-  const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
-  paddingTop = Math.max(paddingTop - borderTopWidth, 0);
-  paddingRight = Math.max(paddingRight - borderRightWidth, 0);
-  paddingBottom = Math.max(paddingBottom - borderBottomWidth, 0);
-  paddingLeft = Math.max(paddingLeft - borderLeftWidth, 0);
+  paddingTop = Math.max(paddingTop, 0);
+  paddingRight = Math.max(paddingRight, 0);
+  paddingBottom = Math.max(paddingBottom, 0);
+  paddingLeft = Math.max(paddingLeft, 0);
 
   if (paddingTop || paddingRight || paddingBottom || paddingLeft) {
     if (paddingBottom === paddingLeft && paddingBottom === paddingTop && paddingBottom === paddingRight) {
@@ -196,13 +212,12 @@ function applyPadding(context: NodeContextWithBorders, node: FlexNode, styles: D
   }
 }
 
-function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Dict<DeclarationPlain>) {
+function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
   const nodeIsText = isText(node);
   const nodeIsGroup = isGroup(node);
   const nodeHasConstraints = isConstraintMixin(node);
 
-  const { borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth } = context.borderWidths;
   const parent = context.parentNode;
   const parentIsFlex = !parent || isFlexNode(parent);
   const parentIsAbsolute = isGroup(parent) || (isFlexNode(parent) && parent?.layoutMode === 'NONE');
@@ -251,10 +266,10 @@ function applyWidth(context: NodeContextWithBorders, node: ValidNode, styles: Di
   const fixedWidth = !isWidthPositionAbsoluteAutoSize && !widthFillContainer && !widthHugContents;
   const fixedHeight = !isHeightPositionAbsoluteAutoSize && !heightFillContainer && !heightHugContents;
 
-  const shiftTop = isFlex ? Math.max(node.paddingTop, borderTopWidth) : 0;
-  const shiftRight = isFlex ? Math.max(node.paddingRight, borderRightWidth) : 0;
-  const shiftBottom = isFlex ? Math.max(node.paddingBottom, borderBottomWidth) : 0;
-  const shiftLeft = isFlex ? Math.max(node.paddingLeft, borderLeftWidth) : 0;
+  const shiftTop = isFlex ? node.paddingTop : 0;
+  const shiftRight = isFlex ? node.paddingRight : 0;
+  const shiftBottom = isFlex ? node.paddingBottom : 0;
+  const shiftLeft = isFlex ? node.paddingLeft : 0;
 
   let width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
   let height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;

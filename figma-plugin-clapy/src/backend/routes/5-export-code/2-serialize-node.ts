@@ -16,11 +16,17 @@ export function serializeSelectedNode() {
     isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
   };
 
+  const enableMUIFramework = true;
+  // Later, once variants are handled, we will use instances as well, but differently?
+  const skipInstance = !enableMUIFramework;
+
   return Promise.all([
     node.parent
-      ? nodeToObject(node.parent as SceneNode, context, { skipChildren: true, skipInstance: true, skipParent: true })
+      ? nodeToObject(node.parent as SceneNode, context, {
+          skipChildren: true,
+        })
       : null,
-    nodeToObject(node, context, { skipChildren: false, skipInstance: true, skipParent: true }),
+    nodeToObject(node, context, { skipChildren: false, skipInstance }),
     images,
     extraConfig,
   ]);

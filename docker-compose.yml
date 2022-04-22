@@ -17,6 +17,10 @@ x-backend:
     ISDOCKER: 'true'
     REACT_APP_HASURA_HOSTNAME: hasura
     REACT_APP_HASURA_PORT: ${HASURA_DOCKER_PORT}
+    POSTGRES_HOST: db
+    POSTGRES_PORT_CONSUMER: ${POSTGRES_PORT_CONTAINER}
+  depends_on:
+    - "db"
   ports:
     - '4141:4141'
     - '9229:9229'
@@ -38,7 +42,7 @@ services:
     container_name: clapy_db
     env_file: .env
     ports:
-      - '5439:5432'
+      - '${POSTGRES_PORT_CONSUMER}:${POSTGRES_PORT_CONTAINER}'
 
   hasura:
     # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
@@ -54,9 +58,9 @@ services:
       - ./db/hasura/migrations:/hasura-migrations
     env_file: .env
     environment:
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-      # HASURA_GRAPHQL_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-      PG_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"
+      # HASURA_GRAPHQL_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"
+      PG_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
       ## enable debugging mode. It is recommended to disable this in production
       HASURA_GRAPHQL_DEV_MODE: "true"
@@ -74,8 +78,9 @@ services:
     <<: *backend
     container_name: dev
     command: yarn start:docker:debug:main2
+
   # pgadmin:
-  #   image: dpage/pgadmin4:5.1
+  #   image: dpage/pgadmin4:latest
   #   container_name: clapy_pgadmin
   #   env_file: .env
   #   depends_on:

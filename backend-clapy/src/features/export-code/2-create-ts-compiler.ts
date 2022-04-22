@@ -14,6 +14,8 @@ import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { mkComponentUsage } from './figma-code-map/details/ts-ast-utils';
+import { addMUIFonts, addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
+import { addMUIPackages } from './frameworks/mui/mui-add-packages';
 
 const appCssPath = 'src/App.module.css';
 const indexHtmlPath = 'public/index.html';
@@ -40,6 +42,8 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
     resources,
     cssFiles,
     images,
+    // TODO hardcoded for now, detection TBD (option in the UI?)
+    enableMUIFramework: true,
   };
 
   const appFile = project.getSourceFileOrThrow('src/App.tsx');
@@ -65,6 +69,8 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
 
   addFontsToIndexHtml(projectContext);
   perfMeasure('h');
+
+  addPackages(projectContext);
 
   const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
   perfMeasure('i');
@@ -97,6 +103,8 @@ function addCompToAppRoot(componentContext: ComponentContext, parentNode: Parent
     cssFiles[appCssPath] = updatedAppCss;
   }
 
+  addMUIProvidersImports(componentContext, appFile);
+
   // Insert the root component into App.tsx
   const { jsx } = getFirstExportedComponentsInFileOrThrow(appFile);
   jsx.transform(traversal => {
@@ -106,7 +114,9 @@ function addCompToAppRoot(componentContext: ComponentContext, parentNode: Parent
     }
     const { openingElement, closingElement } = node;
     const { factory } = ts;
-    return factory.createJsxElement(openingElement, [mkComponentUsage(compName)], closingElement);
+    let rootJsx: ts.JsxChild = factory.createJsxElement(openingElement, [mkComponentUsage(compName)], closingElement);
+    rootJsx = addMUIProviders(componentContext, rootJsx);
+    return rootJsx;
   });
 }
 
@@ -116,6 +126,7 @@ function isJsxElement(node: ts.Node): node is ts.JsxElement {
 
 function addFontsToIndexHtml(projectContext: ProjectContext) {
   const { fontWeightUsed, resources } = projectContext;
+  addMUIFonts(projectContext);
   if (fontWeightUsed.size) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())
       .map(([familyName, weightSet]) => {
@@ -134,4 +145,8 @@ function addFontsToIndexHtml(projectContext: ProjectContext) {
       `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap" rel="stylesheet">\n</head>`,
     );
   }
+}
+
+function addPackages(projectContext: ProjectContext) {
+  addMUIPackages(projectContext);
 }

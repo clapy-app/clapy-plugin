@@ -82,7 +82,7 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
 /**
  * Return the Set found in the map at the given key. If there is no set for this key, it is created, added to the map and returned.
  */
-function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, key: MapKey) {
+export function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, key: MapKey) {
   let set = map.get(key);
   if (!set) {
     set = new Set();

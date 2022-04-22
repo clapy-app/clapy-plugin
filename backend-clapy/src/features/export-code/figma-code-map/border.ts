@@ -1,16 +1,12 @@
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext, NodeContextWithBorders } from '../code.model';
+import { NodeContext } from '../code.model';
 import { isGroup, isLine, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
-export function borderFigmaToCode(
-  context: NodeContext,
-  node: ValidNode,
-  styles: Dict<DeclarationPlain>,
-): NodeContextWithBorders {
+export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): NodeContext {
   if (isVector(node) || isGroup(node)) {
     // Ignore borders for Vectors. They are already included in the SVG.
     return contextNoBorder(context);
@@ -37,16 +33,6 @@ export function borderFigmaToCode(
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
       const { color, opacity } = stroke;
       const { strokeAlign, strokeWeight } = node;
-      if (strokeAlign !== 'INSIDE') {
-        warnNode(
-          node,
-          `TODO unsupported strokeAlign ${strokeAlign}, it is treated as INSIDE. Do we want to support it? Should we outline instead?`,
-        );
-        // `outline` can make the trick. E.g. for 10px width and "CENTER":
-        // outline: 10px solid #4D1919;
-        // outline-offset: -5px;
-        // https://css-playground.com/view/68/css-outline-playground
-      }
       let borderWidth = strokeWeight;
       const hex = figmaColorToCssHex(color, opacity);
       if (isLine(node)) {
@@ -72,18 +58,6 @@ export function borderFigmaToCode(
           addStyle(styles, 'outline-offset', [-borderWidth / 2, 'px']);
         }
       }
-      // TODO Let's just disable borders until we are sure it's not required anymore.
-      // After 2-3 weeks, we can remove all usages of context.borderWidths.
-      borderWidth = 0;
-      return {
-        ...context,
-        borderWidths: {
-          borderTopWidth: borderWidth,
-          borderRightWidth: borderWidth,
-          borderBottomWidth: borderWidth,
-          borderLeftWidth: borderWidth,
-        },
-      };
     } else {
       warnNode(node, 'TODO Unsupported non solid border');
     }

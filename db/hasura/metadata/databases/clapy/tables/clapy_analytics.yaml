@@ -1,0 +1,14 @@
+table:
+  schema: clapy
+  name: analytics
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - action
+        - auth0_id
+        - details
+        - figma_id
+        - status
+      backend_only: false

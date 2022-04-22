@@ -45,21 +45,31 @@ export function mapCommonStyles(context: NodeContext, node: ValidNode, styles: D
 }
 
 export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  const context2 = borderFigmaToCode(context, node, styles);
+  mapTagLayoutStyles(context, node, styles);
+  if (!context.outerLayoutOnly) {
+    mapTagUIStyles(context, node, styles);
+  }
+}
+
+// Styles applying "outside" the component and/or impacting the component independently of how the component is designed
+function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   zindexFigmaToCode(context2, node, styles);
   flexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);
-  borderRadiusFigmaToCode(context2, node, styles);
-  backgroundFigmaToCode(context2, node, styles);
-  cursorFigmaToCode(context2, node, styles);
-  overflowFigmaToCode(context2, node, styles);
-  borderBoxFigmaToCode(context2, node, styles);
-  effectsFigmaToCode(context2, node, styles);
-  maskFigmaToCode(context2, node, styles);
-  textNodePatchesFigmaToCode(context2, node, styles);
-  return context2;
-  // scaleFactor
-  // reactions => hover, must make the diff with target node (check the type?)
+}
+
+// Styles that are the responsibility of the component, typically the look and feel.
+function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  borderFigmaToCode(context, node, styles);
+  borderRadiusFigmaToCode(context, node, styles);
+  backgroundFigmaToCode(context, node, styles);
+  cursorFigmaToCode(context, node, styles);
+  overflowFigmaToCode(context, node, styles);
+  borderBoxFigmaToCode(context, node, styles);
+  effectsFigmaToCode(context, node, styles);
+  maskFigmaToCode(context, node, styles);
+  textNodePatchesFigmaToCode(context, node, styles);
+  return context;
 }
 
 function mapTextFragmentStyles(

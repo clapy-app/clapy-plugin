@@ -20,6 +20,7 @@ export interface ProjectContext {
   readonly resources: CodeDict;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
+  readonly enableMUIFramework: boolean;
 }
 
 export interface ComponentContext {
@@ -46,8 +47,9 @@ export interface NodeContext {
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
   parentNode: ParentNode | null;
-  parentContext: NodeContextOptionalBorders | null;
+  parentContext: NodeContext | null;
   isPageLevel?: boolean;
+  outerLayoutOnly?: boolean;
 }
 
 export interface BorderWidths {
@@ -56,11 +58,3 @@ export interface BorderWidths {
   borderTopWidth: number;
   borderRightWidth: number;
 }
-
-export interface NodeContextWithBorders extends NodeContext {
-  borderWidths: BorderWidths;
-}
-
-type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
-
-export type NodeContextOptionalBorders = Optional<NodeContextWithBorders, 'borderWidths'>;

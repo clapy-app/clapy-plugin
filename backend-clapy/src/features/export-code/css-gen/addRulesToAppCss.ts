@@ -1,7 +1,7 @@
 import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContextWithBorders, ParentNode } from '../code.model';
+import { NodeContext, ParentNode } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { positionAbsoluteFigmaToCode } from '../figma-code-map/position-absolute';
@@ -15,7 +15,7 @@ export function addRulesToAppCss(appCss: string, parentNode: ParentNode) {
     return;
   }
   const styles: Dict<DeclarationPlain> = {};
-  const context = {} as NodeContextWithBorders;
+  const context = {} as NodeContext;
   positionAbsoluteFigmaToCode(context, parentNode, styles);
 
   const node = csstree.parse(appCss);

@@ -1,12 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request, Response } from 'express';
-import jwt from 'express-jwt';
+import { expressjwt } from 'express-jwt';
 import jwks from 'jwks-rsa';
 
 import { env } from '../env-and-config/env';
 
-const jwtCheck = jwt({
+const jwtCheck = expressjwt({
   secret: jwks.expressJwtSecret({
     cache: true,
     rateLimit: true,
