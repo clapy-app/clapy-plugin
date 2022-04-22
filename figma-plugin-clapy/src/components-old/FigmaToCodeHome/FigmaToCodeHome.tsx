@@ -1,13 +1,11 @@
 import { FC, memo, useCallback, useState } from 'react';
-import { toast } from 'react-toastify';
 import { handleError } from '../../common/error-utils';
-import { useCallbackAsync2 } from '../../common/front-utils';
+import { toastError, useCallbackAsync2 } from '../../common/front-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
 import { env } from '../../environment/env';
 import { uploadAssetFromUintArrayRaw } from '../../features/2-export-code/cloudinary';
-import { ErrorAlert2, ErrorAlertButtons } from '../ErrorAlert/ErrorAlert';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { Button } from './Button/Button';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
@@ -140,29 +138,3 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     </>
   );
 });
-
-function toastError(error: any) {
-  // Last unused piece from ErrorComp:
-  // if (!error) return null;
-  // if (error === 'Interrupted') {
-  //   return (
-  //     <div>
-  //       <em>{error}</em>
-  //     </div>
-  //   );
-  // }
-
-  let errorStr = error ? error?.stack || JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'Unknown error';
-  if (error?.nodeName) {
-    errorStr = `${error.nodeName}\n${errorStr}`;
-  }
-  // Mail link generated with https://mailtolink.me/
-  const emailLink =
-    `mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy.%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0AThe%20error%3A%0D%0A%0D%0A${encodeURIComponent(
-      errorStr,
-    )}`.substring(0, 1800);
-  const errorMsgDisplayed = `Error: ${error?.message || errorStr}`;
-  toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
-    closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
-  });
-}
