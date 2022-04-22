@@ -87,3 +87,14 @@ services:
   #     - "db"
   #   ports:
   #     - "5409:80"
+
+  # proxy-cloud-sql:
+  #   image: gcr.io/cloudsql-docker/gce-proxy:1.16
+  #   ports:
+  #     - 127.0.0.1:3307:5432
+  #   volumes:
+  #     - ./em-db/credentials/proxy-cloud-sql-service-account-staging.json:/config:cached
+  #   command: /cloud_sql_proxy -instances=em-database-311306:europe-west1:em-db-staging=tcp:0.0.0.0:5432 -credential_file=/config
+  #   networks:
+  #     - default
+  #     - shared_datalab

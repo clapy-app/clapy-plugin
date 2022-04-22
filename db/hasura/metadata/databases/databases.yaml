@@ -1,4 +1,4 @@
-- name: clapy
+- name: Clapy DB
   kind: postgres
   configuration:
     connection_info:
@@ -9,4 +9,4 @@
       pool_settings:
         connection_lifetime: 600
         retries: 1000
-  tables: "!include clapy/tables/tables.yaml"
+  tables: "!include Clapy DB/tables/tables.yaml"

@@ -34,7 +34,7 @@
     "migrate:prod1": "yarn hasura:server metadata apply --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
     "migrate:prod2": "yarn hasura:server migrate apply --all-databases --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
     "migrate:prod3": "yarn hasura:server metadata reload --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
-    "hasura:squash": "yarn hasura migrate squash --database-name \"clapy\"",
+    "hasura:squash": "yarn hasura migrate squash --database-name \"Clapy DB\"",
     "hasura": "hasura --project db/hasura --envfile ../../.env --skip-update-check",
     "hasura:server": "hasura --project db/hasura --skip-update-check",
     "gentypes": "cd backend-clapy && yarn gentypes",
