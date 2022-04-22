@@ -57,12 +57,20 @@ const textAlignHorizontalToCssTextAlign: {
   RIGHT: 'end',
   JUSTIFIED: 'justify',
 };
-// const textAlignHorizontalToAlignItems: {
-//   [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT' | 'JUSTIFIED'>]: NonNullable<PropertiesHyphen['align-items']>;
-// } = {
-//   CENTER: 'center',
-//   RIGHT: 'end',
-// };
+const textAlignHorizontalToAlignItems: {
+  [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT' | 'JUSTIFIED'>]: NonNullable<PropertiesHyphen['align-items']>;
+} = {
+  CENTER: 'center',
+  RIGHT: 'end',
+};
+const textAlignHorizontalToJustifyContent: {
+  [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT' | 'JUSTIFIED'>]: NonNullable<
+    PropertiesHyphen['justify-content']
+  >;
+} = {
+  CENTER: 'center',
+  RIGHT: 'flex-end',
+};
 const textAlignVerticalToJustifyContent: {
   [K in Exclude<TextNode['textAlignVertical'], 'TOP'>]: NonNullable<PropertiesHyphen['justify-content']>;
 } = {
@@ -118,9 +126,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
       addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
-      // if (node.textAlignHorizontal !== 'JUSTIFIED') {
-      //   addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
-      // }
+      if (node.textAlignHorizontal !== 'JUSTIFIED') {
+        if (defaultIsVertical) {
+          addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
+        } else {
+          addStyle(styles, 'justify-content', textAlignHorizontalToJustifyContent[node.textAlignHorizontal]);
+        }
+      }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
       if (defaultIsVertical) {

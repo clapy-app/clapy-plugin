@@ -211,7 +211,8 @@ async function fetchAuthorizationCode(readToken: string) {
 }
 
 async function waitForAuthorizationCode(readToken: string, authWindow: Window | null) {
-  while (!authWindow || !authWindow.closed) {
+  let attempsAfterClose = 1;
+  while (!authWindow || !authWindow.closed || attempsAfterClose-- > 0) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       return authoCode;

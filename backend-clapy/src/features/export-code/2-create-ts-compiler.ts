@@ -42,7 +42,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
     cssFiles,
     images,
     // TODO hardcoded for now, detection TBD (option in the UI?)
-    enableMUIFramework: true,
+    enableMUIFramework: false,
   };
 
   const appFile = project.getSourceFileOrThrow('src/App.tsx');

@@ -29,7 +29,7 @@ export const _ButtonBase: FC<Props> = memo(function _ButtonBase(props) {
     >
       {loading && (
         <div className={classes.loading}>
-          <Lottie options={defaultOptions} height={60} width={28} />
+          <Lottie options={defaultOptions} height={60} width={28} isClickToPauseDisabled={true} />
         </div>
       )}
       {!loading && <div className={classes.label}>{children}</div>}
