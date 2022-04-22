@@ -18,7 +18,14 @@ import { SbSerializeController } from './features/sb-serialize-preview/sb-serial
     HttpModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: `postgres://${env.dbUser}:${env.dbPassword}@${env.dbHost}:${env.dbPort}/${env.dbName}`,
+      // url: `postgres://${env.dbUser}:${env.dbPassword}@${env.dbHost}:${env.dbPort}/${env.dbName}`,
+      // If UNIX socket:
+      // postgres://analytics:pwwwwwd@/clapy?host=/cloudsql/clapy-production:europe-west1:clapy
+      host: env.dbHost,
+      port: parseInt(env.dbPort || '5432'),
+      database: env.dbName,
+      username: env.dbUser,
+      password: env.dbPassword,
       synchronize: false /* env.isDev */, // Let hasura handle the migrations
       autoLoadEntities: true,
       retryAttempts: Number.MAX_SAFE_INTEGER,
