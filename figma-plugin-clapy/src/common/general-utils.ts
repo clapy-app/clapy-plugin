@@ -56,3 +56,24 @@ export function round(num: number, precision = 4) {
 export function isArrayOf<T>(node: any): node is T[] {
   return Array.isArray(node);
 }
+
+/**
+ * Ensure the provided function is only called once at a time. A concurrent call gets the promise of the previous
+ * call that is not resolved/rejected yet. Once resolved/rejected, subsequent calls will call the provided function
+ * and generate a new promise.
+ */
+export function toConcurrencySafeAsyncFn<T extends (...args: any[]) => Promise<any>>(fn: T): T {
+  let _getTokenPromise: Promise<any> | undefined = undefined;
+  return (async (...args: any[]) => {
+    if (_getTokenPromise) {
+      return _getTokenPromise;
+    }
+    try {
+      _getTokenPromise = fn(...args);
+      const token = await _getTokenPromise;
+      return token;
+    } finally {
+      _getTokenPromise = undefined;
+    }
+  }) as T;
+}

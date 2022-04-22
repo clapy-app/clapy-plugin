@@ -1,3 +1,10 @@
+export async function readCache() {
+  return figma.clientStorage.getAsync('foo');
+}
+export async function writeCache(value: number) {
+  return figma.clientStorage.setAsync('foo', value);
+}
+
 export async function getCachedToken() {
   const [accessToken, tokenType]: [string | null, string | null] = await Promise.all([
     figma.clientStorage.getAsync('accessToken'),

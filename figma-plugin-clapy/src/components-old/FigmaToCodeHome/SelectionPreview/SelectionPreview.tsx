@@ -13,7 +13,7 @@ interface Props {
 
 function lottieOptions(animationData: any) {
   const defaultOptions: Options = {
-    loop: true,
+    loop: false,
     autoplay: true,
     animationData: animationData,
     rendererSettings: {

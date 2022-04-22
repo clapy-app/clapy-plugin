@@ -7,7 +7,14 @@ import { updateVariantsFromFilters } from './routes/3-properties/1-update-varian
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
 import { selectionPreview } from './routes/5-export-code/1-selection-preview';
 import { serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
-import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
+import {
+  clearCachedTokens,
+  getCachedToken,
+  getRefreshToken,
+  readCache,
+  setCachedToken,
+  writeCache,
+} from './routes/getCachedToken';
 
 export const routes = {
   // Auth routes
@@ -34,6 +41,9 @@ export const routes = {
   runGrid: runGrid,
 
   serializeSelectedNode: serializeSelectedNode,
+
+  readCache: readCache,
+  writeCache: writeCache,
 };
 
 export const subscriptions = {
