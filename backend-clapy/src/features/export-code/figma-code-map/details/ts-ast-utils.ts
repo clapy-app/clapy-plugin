@@ -1,6 +1,5 @@
 import { DeclarationPlain, RulePlain } from 'css-tree';
 import { ts } from 'ts-morph';
-
 import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../../code.model';
 import {

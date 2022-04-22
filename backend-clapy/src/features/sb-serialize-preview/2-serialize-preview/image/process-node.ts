@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 import { NodeParseContext } from '../../2-serialize-preview';
 import { CNode, isCElementNode, isCPseudoElementNode } from '../../sb-serialize.model';
 

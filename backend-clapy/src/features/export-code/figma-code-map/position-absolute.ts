@@ -1,5 +1,4 @@
 import { DeclarationPlain } from 'css-tree';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';

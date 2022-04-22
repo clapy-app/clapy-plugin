@@ -2,7 +2,6 @@
 // import { parse } from 'css-tree';
 import { readFile } from 'fs/promises';
 import { Project, SourceFile } from 'ts-morph';
-
 import { NodeContext } from '../code.model';
 import { genUniqueName } from '../figma-code-map/details/ts-ast-utils';
 import { BaseNode2 } from './canvas-utils';

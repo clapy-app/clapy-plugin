@@ -1,5 +1,4 @@
 import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, ParentNode } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';

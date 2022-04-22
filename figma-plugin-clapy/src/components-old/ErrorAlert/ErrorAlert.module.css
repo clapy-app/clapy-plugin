@@ -1,7 +1,6 @@
 .root {
   outline: solid 1px #fda29b;
   outline-offset: -1px;
-  width: 312px;
   align-items: flex-start;
   gap: 12px;
   padding: 16px;

@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
-
 import classes from './_ButtonBase.module.css';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {

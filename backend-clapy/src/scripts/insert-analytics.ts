@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { readFile } from 'fs/promises';
-
 import '../env-and-config/env';
 import { backendDir } from '../root';
 

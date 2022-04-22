@@ -1,15 +1,17 @@
 import { FC, memo } from 'react';
-
-import { MailIcon } from './_ButtonBase/MailIcon';
-import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 import { BadgeGroup } from './BadgeGroup/BadgeGroup';
 import { Button } from './Button/Button';
 import classes from './ErrorAlert.module.css';
+import { MailIcon } from './_ButtonBase/MailIcon';
+import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 
 interface Props {}
 
 export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
-  const { children } = props;
+  let { children } = props;
+  if (typeof children === 'string' && children.length > 150) {
+    children = `${children.substring(0, 150)}...`;
+  }
   return (
     <div className={classes.content}>
       <BadgeGroup />

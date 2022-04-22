@@ -1,5 +1,4 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
-
 import { SbAnySelection } from '../../common/app-models';
 import { Args } from '../../common/sb-serialize.model';
 import { propArrayToMap } from '../../common/storybook-utils';

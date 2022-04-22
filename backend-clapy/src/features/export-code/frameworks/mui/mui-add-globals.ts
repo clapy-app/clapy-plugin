@@ -1,5 +1,4 @@
 import { SourceFile, ts, VariableDeclarationKind } from 'ts-morph';
-
 import { ComponentContext, ProjectContext } from '../../code.model';
 import { getSetInMap } from '../../figma-code-map/font';
 
@@ -25,7 +24,7 @@ export function addMUIProvidersImports(context: ComponentContext, appFile: Sourc
       namedImports,
     });
 
-    appFile.insertVariableStatement(0, {
+    appFile.insertVariableStatement(appFile.getChildCount() - 1, {
       declarationKind: VariableDeclarationKind.Const,
       declarations: [
         {

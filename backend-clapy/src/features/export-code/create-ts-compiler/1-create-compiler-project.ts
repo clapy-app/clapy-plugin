@@ -8,7 +8,6 @@ import {
   Project,
   QuoteKind,
 } from 'ts-morph';
-
 import { flags } from '../../../env-and-config/app-config';
 import { env } from '../../../env-and-config/env';
 import { exportTemplatesDir } from '../../../root';

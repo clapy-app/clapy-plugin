@@ -1,5 +1,4 @@
 import { Expression, FunctionDeclaration, JsxChild, Node, Project, SourceFile, SourceFileStructure } from 'ts-morph';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 
 export type ProjectFiles = Dict<ProjectFile>;

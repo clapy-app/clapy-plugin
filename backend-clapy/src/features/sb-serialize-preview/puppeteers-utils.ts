@@ -6,7 +6,6 @@ import puppeteer, {
   SerializableOrJSHandle,
   UnwrapPromiseLike,
 } from 'puppeteer';
-
 import { env } from '../../env-and-config/env';
 
 // Could improve typing of ...args to match the real arguments of inBrowserFunction.

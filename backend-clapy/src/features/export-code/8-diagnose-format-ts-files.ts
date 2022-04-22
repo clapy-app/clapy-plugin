@@ -1,11 +1,10 @@
-import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import prettierFormatPlugin from 'prettier-plugin-organize-imports';
 import parserCss from 'prettier/parser-postcss';
 import parserTypeScript from 'prettier/parser-typescript';
 import prettier from 'prettier/standalone';
 import { Project } from 'ts-morph';
-
 import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { backendDir } from '../../root';

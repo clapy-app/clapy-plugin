@@ -10,8 +10,6 @@ import {
   useState,
 } from 'react';
 import { useSelector } from 'react-redux';
-
-import { ExportCode } from '../2-export-code/4-ExportCode';
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
@@ -22,6 +20,7 @@ import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components-old/Button';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
+import { ExportCode } from '../2-export-code/4-ExportCode';
 import { getTokens, login } from '../auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';

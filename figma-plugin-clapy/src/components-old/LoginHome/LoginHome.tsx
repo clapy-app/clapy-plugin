@@ -1,6 +1,5 @@
 import { FC, memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-
 import { handleError } from '../../common/error-utils';
 import { login } from '../../features/auth/auth-service';
 import { selectAuthLoading } from '../../features/auth/auth-slice';

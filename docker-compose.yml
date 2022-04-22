@@ -88,6 +88,7 @@ services:
   #   ports:
   #     - "5409:80"
 
+  ### Check tutorial for setup: https://cloud.google.com/sql/docs/postgres/connect-admin-ip?hl=fr
   # proxy-cloud-sql:
   #   image: gcr.io/cloudsql-docker/gce-proxy:1.16
   #   ports:

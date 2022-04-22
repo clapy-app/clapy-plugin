@@ -1,6 +1,4 @@
 import { Property } from 'csstype';
-
-import { RenderContext } from '../1-import-stories/import-model';
 import { Nil } from '../../../common/app-models';
 import { entries } from '../../../common/general-utils';
 import {
@@ -14,6 +12,7 @@ import {
   MyStyles,
 } from '../../../common/sb-serialize.model';
 import { isGroup, isText } from '../../common/node-type-utils';
+import { RenderContext } from '../1-import-stories/import-model';
 import { cssToFontStyle } from './fonts';
 import {
   appendBackgroundColor,

@@ -8,7 +8,6 @@ import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { join } from 'path';
-
 import { AppModule } from './app.module';
 import { CsrfGuard } from './auth/csrf.guard';
 import { UnknownExceptionFilter } from './core/unknown-exception.filter';
