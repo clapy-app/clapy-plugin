@@ -1,6 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import { handleError } from '../../common/error-utils';
-import { openWindowStep1, openWindowStep2 } from '../../common/front-utils';
+import { openWindowStep1, openWindowStep2, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin, isFigmaPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
@@ -23,19 +23,25 @@ let _tokenType: string | null = null;
 
 // Exported methods
 
-export const login = toConcurrencySafeAsyncFn(async () => {
+export const signup = toConcurrencySafeAsyncFn(async () => {
+  return login(true);
+});
+
+export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
+  let readToken: string | undefined = undefined,
+    writeToken: string | undefined = undefined;
   try {
-    const authWindow = openWindowStep1();
+    let authWindow = openWindowStep1();
 
     dispatchOther(startLoadingAuth());
 
     const verifier = createVerifier();
     const challenge = createChallenge(verifier);
 
-    const { readToken, writeToken } = await fetchReadWriteKeys();
-    const authUrl = getAuthenticationURL(writeToken, challenge);
-    openWindowStep2(authWindow, authUrl);
-    const authoCode = await waitForAuthorizationCode(readToken);
+    ({ readToken, writeToken } = await fetchReadWriteKeys());
+    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp);
+    authWindow = openWindowStep2(authWindow, authUrl);
+    const authoCode = await waitForAuthorizationCode(readToken, authWindow);
     const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
@@ -46,8 +52,12 @@ export const login = toConcurrencySafeAsyncFn(async () => {
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
   } catch (err) {
+    if (readToken) {
+      deleteReadToken(readToken);
+    }
     handleError(err);
     dispatchOther(setAuthError(err));
+    toastError(err);
   }
 });
 
@@ -140,8 +150,8 @@ interface ExchangeTokenResponse {
   token_type: string; // "Bearer"
 }
 
-function getAuthenticationURL(state: string, challenge: string) {
-  const data = {
+function getAuthenticationURL(state: string, challenge: string, isSignUp: boolean | undefined) {
+  const data: any = {
     audience: env.auth0Audience,
     // Add openid to get an ID token along with the access token
     // scope: 'openid profile offline_access',
@@ -153,6 +163,10 @@ function getAuthenticationURL(state: string, challenge: string) {
     code_challenge_method: 'S256',
     code_challenge: challenge,
   };
+  if (isSignUp) {
+    data.prompt = 'login';
+    data.screen_hint = 'signup';
+  }
   return mkUrl(`https://${auth0Domain}/authorize`, data);
 }
 
@@ -196,14 +210,15 @@ async function fetchAuthorizationCode(readToken: string) {
   return data?.code;
 }
 
-async function waitForAuthorizationCode(readToken: string) {
-  while (true) {
+async function waitForAuthorizationCode(readToken: string, authWindow: Window | null) {
+  while (!authWindow || !authWindow.closed) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       return authoCode;
     }
     await wait(500);
   }
+  throw new Error('cancelled');
 }
 
 async function deleteReadToken(readToken: string) {

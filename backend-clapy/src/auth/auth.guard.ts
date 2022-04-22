@@ -5,6 +5,9 @@ import expressjwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 import { env } from '../env-and-config/env';
 
+// express-jwt is stuck at version 6.1.2 for now. 7.4.3 is not working with jwks secret.
+// See https://github.com/auth0/express-jwt/issues/282
+
 const jwtCheck = expressjwt({
   secret: jwks.expressJwtSecret({
     cache: true,

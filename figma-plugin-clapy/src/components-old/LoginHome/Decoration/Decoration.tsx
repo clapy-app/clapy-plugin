@@ -13,10 +13,8 @@ const defaultOptions: Options = {
 
 export function Decoration() {
   return (
-    <div>
-      <div className={classes.frame631}>
-        <Lottie options={defaultOptions} height={160} width={160} />
-      </div>
+    <div className={classes.frame631}>
+      <Lottie options={defaultOptions} height={144} width={144} />
     </div>
   );
 }

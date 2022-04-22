@@ -15,18 +15,24 @@ const defaultOptions: Options = {
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   disabled?: boolean;
   loading?: boolean;
+  variant?: 'text';
+  size?: 'medium';
 };
 
 export const _ButtonBase: FC<Props> = memo(function _ButtonBase(props) {
-  const { disabled, loading, children } = props;
+  const { disabled, loading, variant, size, children } = props;
   return (
-    <div className={`${classes.root} ${disabled ? classes.disabled : ''}`}>
+    <div
+      className={`${classes.root} ${disabled ? classes.disabled : ''} ${variant === 'text' ? classes.text : ''} ${
+        size === 'medium' ? classes.medium : ''
+      }`}
+    >
       {loading && (
         <div className={classes.loading}>
           <Lottie options={defaultOptions} height={60} width={28} />
         </div>
       )}
-      {!loading && <div className={classes.text}>{children}</div>}
+      {!loading && <div className={classes.label}>{children}</div>}
     </div>
   );
 });

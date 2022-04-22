@@ -9,6 +9,8 @@ import classes from './Button.module.css';
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   disabled?: boolean;
   loading?: boolean;
+  variant?: 'text';
+  size?: 'medium';
 };
 
 export const Button: FC<Props> = memo(function Button(props) {
