@@ -1,6 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { AnyAction } from 'redux';
-
 import { RootState } from './store';
 
 // The store resides in a separate file with nothing else to help prevent circular dependencies.

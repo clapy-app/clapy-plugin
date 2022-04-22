@@ -1,6 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import {
   CssOperators,

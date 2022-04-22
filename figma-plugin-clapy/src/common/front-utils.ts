@@ -1,5 +1,4 @@
 import { DependencyList, useCallback } from 'react';
-
 import { handleError } from './error-utils';
 import { isFigmaPlugin } from './plugin-utils';
 

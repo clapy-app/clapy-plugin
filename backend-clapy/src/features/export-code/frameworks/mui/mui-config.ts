@@ -1,5 +1,4 @@
 import { ts } from 'ts-morph';
-
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../../code.model';
 import { InstanceNode2 } from '../../create-ts-compiler/canvas-utils';

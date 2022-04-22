@@ -4,7 +4,6 @@ import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
-
 import { env } from '../../env-and-config/env';
 import { backendDir, dockerPluginCompDir } from '../../root';
 import { CSBResponse } from '../sb-serialize-preview/sb-serialize.model';
@@ -33,7 +32,9 @@ export async function writeToDisk(files: CsbDict, componentContext: ComponentCon
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
       if (!content) {
-        console.warn('BUG No content at path', path);
+        if (!path.endsWith('css')) {
+          console.warn('BUG No content at path', path);
+        }
         if (isBinary) {
           console.warn('(is binary)');
         }

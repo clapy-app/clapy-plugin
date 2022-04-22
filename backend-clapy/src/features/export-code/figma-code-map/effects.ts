@@ -1,5 +1,4 @@
 import { DeclarationPlain } from 'css-tree';
-
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';

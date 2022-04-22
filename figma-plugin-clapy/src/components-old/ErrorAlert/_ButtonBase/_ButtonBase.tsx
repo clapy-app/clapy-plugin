@@ -1,5 +1,4 @@
 import { FC, memo } from 'react';
-
 import classes from './_ButtonBase.module.css';
 
 interface Props {

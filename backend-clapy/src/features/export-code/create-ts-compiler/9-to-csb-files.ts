@@ -7,7 +7,9 @@ export function toCSBFiles(...files: CodeDict[]) {
       csbFiles[path] = { content };
 
       if (!content) {
-        console.warn('No content at', path);
+        if (!path.endsWith('css')) {
+          console.warn('No content at', path);
+        }
       } else if (content.startsWith('https://')) {
         csbFiles[path].isBinary = true;
       }

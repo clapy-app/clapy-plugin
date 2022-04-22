@@ -1,5 +1,4 @@
 import { ExportedDeclarations, Expression, Node, ScriptTarget, SourceFile, Symbol, ts } from 'ts-morph';
-
 import { JsxNode, ProjectComponent } from './file.model';
 
 export function getLastReturnedExpression() {}

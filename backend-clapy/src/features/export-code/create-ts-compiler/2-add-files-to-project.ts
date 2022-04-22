@@ -1,5 +1,4 @@
 import { Project } from 'ts-morph';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { tsConfigFilePath } from './1-create-compiler-project';
 

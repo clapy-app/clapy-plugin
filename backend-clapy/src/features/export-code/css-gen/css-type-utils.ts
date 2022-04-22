@@ -1,5 +1,4 @@
 import { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
-
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { csstree } from '../create-ts-compiler/csstree';
 

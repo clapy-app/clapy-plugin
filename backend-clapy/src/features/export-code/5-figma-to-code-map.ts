@@ -1,6 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
 import { ts } from 'ts-morph';
-
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { TextNode2, ValidNode } from './create-ts-compiler/canvas-utils';

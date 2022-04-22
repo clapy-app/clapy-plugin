@@ -1,6 +1,5 @@
 import { relative } from 'path';
 import { ts } from 'ts-morph';
-
 import { figmaToAstRec } from './4-gen-node';
 import { CodeDict, ComponentContext, NodeContext, ParentNode } from './code.model';
 import { createComponent } from './create-ts-compiler/3-create-component';

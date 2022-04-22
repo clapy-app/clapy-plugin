@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
-
 import { _ButtonBase_3 } from '../_ButtonBase_3/_ButtonBase_3';
 import classes from './BackToCodeGen.module.css';
 

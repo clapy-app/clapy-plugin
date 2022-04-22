@@ -1,5 +1,4 @@
 import { FC, memo, MouseEvent, useCallback } from 'react';
-
 import { logout } from '../../../features/auth/auth-service';
 import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
 import classes from './Header.module.css';
