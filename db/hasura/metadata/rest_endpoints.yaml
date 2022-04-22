@@ -4,6 +4,6 @@
       query_name: insert_clapy_analytics
   url: insert_clapy_analytics
   methods:
-  - POST
+    - POST
   name: insert_clapy_analytics
   comment: null

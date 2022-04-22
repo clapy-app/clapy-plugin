@@ -21,10 +21,11 @@ export function handleException(exception: any, response: any = null): any {
     exception instanceof HttpException
       ? exception.getStatus()
       : toNum(resp?.status) ||
-      toNum(exception?.code) ||
-      toNum(exception?.statusCode) ||
-      toNum(error.statusCode) ||
-      toNum(HttpStatus.INTERNAL_SERVER_ERROR) || 500;
+        toNum(exception?.code) ||
+        toNum(exception?.statusCode) ||
+        toNum(error.statusCode) ||
+        toNum(HttpStatus.INTERNAL_SERVER_ERROR) ||
+        500;
 
   let errorMessage = cleanErrorMessage(error, response, exception);
   if (error?.key === 'ELEMENT_NOT_FOUND') {

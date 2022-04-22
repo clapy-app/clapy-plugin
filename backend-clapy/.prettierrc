@@ -13,6 +13,7 @@
   "semi": true,
   "printWidth": 120,
   "importOrder": ["^[./]"],
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
   "importOrderCaseInsensitive": true

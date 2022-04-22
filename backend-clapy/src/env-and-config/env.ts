@@ -58,10 +58,16 @@ export const env = {
   // Hasura
   hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET as string,
   hasuraHttp,
+  // Database
+  dbHost: process.env.POSTGRES_HOST as string,
+  dbPort: process.env.POSTGRES_PORT_CONSUMER as string,
+  dbName: process.env.POSTGRES_DB as string /* 'clapy' */,
+  dbUser: process.env.POSTGRES_USER as string,
+  dbPassword: process.env.POSTGRES_PASSWORD as string,
 };
 
 // variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.
-const criticalVariables: Array<keyof typeof env> = [];
+const criticalVariables: Array<keyof typeof env> = ['dbHost', 'dbPort', 'dbName', 'dbUser', 'dbPassword'];
 if (isDev) {
   criticalVariables.push('hasuraAdminSecret');
 }
