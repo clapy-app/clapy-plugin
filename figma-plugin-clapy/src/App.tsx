@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import classes from './App.module.scss';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
-import { fetchPlugin } from './common/plugin-utils';
 import alertClasses from './components-old/ErrorAlert/ErrorAlert.module.css';
 import { Layout } from './components-old/Layout/Layout';
 import { track } from './features/1-import-sb/detail/analytics';
@@ -18,8 +17,6 @@ window.addEventListener('unload', function () {
   const durationInS = getDuration(openPluginTime, performance.now());
   track('close-plugin', undefined, { durationInS });
 });
-
-let counter = 0;
 
 export const App: FC = memo(function App() {
   useEffect(() => {
@@ -38,30 +35,6 @@ export const App: FC = memo(function App() {
   // instead, but we would need to re-add animations & co to make it work.
   return (
     <div className={classes.root}>
-      <div style={{ flexDirection: 'row' }}>
-        <button
-          style={{ backgroundColor: 'lightseagreen', padding: '20px' }}
-          onClick={() => {
-            (async () => {
-              let value: number | null = await fetchPlugin('readCache');
-              console.log(value);
-            })();
-          }}
-        >
-          Get
-        </button>
-        <button
-          style={{ backgroundColor: 'lightskyblue', padding: '20px' }}
-          onClick={() => {
-            (async () => {
-              await fetchPlugin('writeCache', ++counter);
-              console.log('write', counter);
-            })();
-          }}
-        >
-          Set
-        </button>
-      </div>
       <Layout />
       <ToastContainer
         position='top-center'
