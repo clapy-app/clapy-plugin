@@ -2,3 +2,5 @@ node_modules
 
 # Env
 /.env
+/credentials/*
+!/credentials/.gitkeep
