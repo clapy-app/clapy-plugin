@@ -1,10 +1,12 @@
 import { FC, memo, useCallback, useState } from 'react';
 import { handleError } from '../../common/error-utils';
 import { toastError, useCallbackAsync2 } from '../../common/front-utils';
+import { getDuration } from '../../common/general-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
 import { env } from '../../environment/env';
+import { track } from '../../features/1-import-sb/detail/analytics';
 import { uploadAssetFromUintArrayRaw } from '../../features/2-export-code/cloudinary';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { Button } from './Button/Button';
@@ -40,9 +42,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     : 'noselection';
 
   const generateCode = useCallbackAsync2(async () => {
+    const timer = performance.now();
     try {
       setIsLoading(true);
       setSandboxId('loading');
+      track('gen-code', 'start');
 
       // Extract the Figma configuration
       const [parent, root, imagesExtracted, extraConfig] = await fetchPlugin('serializeSelectedNode');
@@ -79,19 +83,25 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       }
       if (!env.isDev || sendToApi) {
         const { data } = await apiPost<CSBResponse>('code/export', nodes);
+        const durationInS = getDuration(timer, performance.now());
         if (data) {
           if (env.isDev) {
             console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`);
           }
           // window.open(url, '_blank', 'noopener');
           setSandboxId(data.sandbox_id);
+          track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
           return;
+        } else {
+          track('gen-code', 'completed-no-data', { durationInS });
         }
       }
 
       setSandboxId(undefined);
     } catch (error: any) {
       handleError(error);
+      const durationInS = getDuration(timer, performance.now());
+      track('gen-code', 'error', { error: error?.message, durationInS });
       if (error?.message === 'NODE_NOT_VISIBLE') {
         error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
       }

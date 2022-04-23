@@ -26,8 +26,10 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
   }
 
   const { parentNode, parentContext } = context;
+  const isTopLevel = !parentContext;
   const parentIsGroup = isGroup(parentNode);
-  const parentIsAbsolute = parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE');
+  const parentIsAbsolute =
+    !isTopLevel && (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
   if (parentIsAbsolute) {
     addStyle(styles, 'position', 'absolute');
     const { horizontal, vertical } =

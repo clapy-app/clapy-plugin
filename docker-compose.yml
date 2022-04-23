@@ -79,23 +79,20 @@ services:
     container_name: dev
     command: yarn start:docker:debug:main2
 
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: clapy_pgadmin
-  #   env_file: .env
-  #   depends_on:
-  #     - "db"
-  #   ports:
-  #     - "5409:80"
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: clapy_pgadmin
+    env_file: .env
+    depends_on:
+      - "db"
+    ports:
+      - "5409:80"
 
   ### Check tutorial for setup: https://cloud.google.com/sql/docs/postgres/connect-admin-ip?hl=fr
   # proxy-cloud-sql:
-  #   image: gcr.io/cloudsql-docker/gce-proxy:1.16
+  #   image: gcr.io/cloudsql-docker/gce-proxy:latest
   #   ports:
   #     - 127.0.0.1:3307:5432
   #   volumes:
-  #     - ./em-db/credentials/proxy-cloud-sql-service-account-staging.json:/config:cached
-  #   command: /cloud_sql_proxy -instances=em-database-311306:europe-west1:em-db-staging=tcp:0.0.0.0:5432 -credential_file=/config
-  #   networks:
-  #     - default
-  #     - shared_datalab
+  #     - ./credentials/cloud-sql-proxy-service-account-key.json:/config:cached
+  #   command: /cloud_sql_proxy -instances=clapy-production:europe-west1:clapy=tcp:0.0.0.0:5432 -credential_file=/config
