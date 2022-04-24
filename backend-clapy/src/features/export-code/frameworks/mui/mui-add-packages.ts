@@ -1,6 +1,6 @@
 import { env } from '../../../../env-and-config/env';
 import { ProjectContext } from '../../code.model';
-import { frameworksTemplateDir } from '../../create-ts-compiler/load-file.utils';
+import { frameworksTemplateDir } from '../../create-ts-compiler/load-file-utils-and-paths';
 
 export function addMUIPackages(projectContext: ProjectContext) {
   const { enableMUIFramework, resources } = projectContext;

@@ -1,9 +1,8 @@
 import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext, ParentNode } from '../code.model';
+import { ParentNode } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
-import { positionAbsoluteFigmaToCode } from '../figma-code-map/position-absolute';
 import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet, stylesToList } from './css-type-utils';
 
 export function addRulesToAppCss(appCss: string, parentNode: ParentNode) {
@@ -14,8 +13,11 @@ export function addRulesToAppCss(appCss: string, parentNode: ParentNode) {
     return;
   }
   const styles: Dict<DeclarationPlain> = {};
-  const context = {} as NodeContext;
-  positionAbsoluteFigmaToCode(context, parentNode, styles);
+
+  // Let's wait a bit until we're sure we don't want position absolute here
+  // positionAbsoluteFigmaToCode(context, parentNode, styles);
+
+  // TODO skip if styles is not filled? Always skip now? We don't apply flex?
 
   const node = csstree.parse(appCss);
   if (!isStyleSheet(node)) {

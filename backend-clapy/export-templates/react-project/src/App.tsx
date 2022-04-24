@@ -1,6 +1,6 @@
 import classes from './App.module.css';
 
-export default function App() {
+export function App() {
   return (
     <div className={classes.root}>
       <h1>Hello CodeSandbox</h1>

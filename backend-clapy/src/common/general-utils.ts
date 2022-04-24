@@ -29,7 +29,7 @@ export function isNonEmptyObject<T>(obj: T | Nil): obj is T {
   return !!obj && typeof obj === 'object' && !isEmptyObject(obj);
 }
 
-function isEmptyObject(obj: any) {
+export function isEmptyObject(obj: any) {
   for (var prop in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, prop)) {
       return false;

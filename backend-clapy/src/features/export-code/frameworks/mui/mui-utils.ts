@@ -2,6 +2,7 @@ import { ts } from 'ts-morph';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { ComponentContext, NodeContext } from '../../code.model';
 import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { muiComponents } from './components/button';
 import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
 
@@ -29,10 +30,7 @@ export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNod
 }
 
 export function addMuiImport(context: ComponentContext, config: MUIConfig) {
-  context.file.addImportDeclaration({
-    moduleSpecifier: config.moduleSpecifier,
-    namedImports: [config.name],
-  });
+  context.imports.push(mkNamedImportsDeclaration([config.name], config.moduleSpecifier));
 }
 
 export function mkMuiComponentAst(

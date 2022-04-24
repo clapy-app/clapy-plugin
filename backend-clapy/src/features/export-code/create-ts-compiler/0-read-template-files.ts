@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { CodeDict, CsbDict } from '../code.model';
-import { reactTemplateDir } from './load-file.utils';
+import { reactTemplateDir } from './load-file-utils-and-paths';
 
 const ignoredFilesAndDir = new Set(['node_modules', 'yarn.lock', 'favicon.ico']);
 

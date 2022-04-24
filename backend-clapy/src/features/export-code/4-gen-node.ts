@@ -8,7 +8,7 @@ import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
 import { getPrettierConfig } from './8-diagnose-format-ts-files';
 import { JsxOneOrMore, NodeContext } from './code.model';
-import { writeAsset } from './create-ts-compiler/3-create-component';
+import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   BlockNode,
   ChildrenMixin2,
@@ -38,6 +38,7 @@ import {
   genComponentImportName,
   mkClassAttr,
   mkComponentUsage,
+  mkNamedImportsDeclaration,
   mkTag,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
@@ -159,10 +160,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       projectContext.resources[`${componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
 
       // Add import in file
-      componentContext.file.addImportDeclaration({
-        moduleSpecifier: `./${svgPathVarName}`,
-        namedImports: [svgPathVarName],
-      });
+      componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
 
       const attributes = addNodeStyles(context, node, styles, isRoot);
 

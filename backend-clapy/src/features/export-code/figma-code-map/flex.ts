@@ -104,7 +104,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   if (
     !outerLayoutOnly &&
     !isLine(node) &&
-    (node.layoutGrow === 1 || (context.isPageLevel && !nodePrimaryAxisHugContents))
+    (node.layoutGrow === 1 || (context.isRootNode && !nodePrimaryAxisHugContents))
   ) {
     addStyle(styles, 'flex', 1);
   }
@@ -258,10 +258,10 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
   const widthFillContainer =
     (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) ||
-    (context.isPageLevel && !widthHugContents);
+    (context.isRootNode && !widthHugContents);
   const heightFillContainer =
     (isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer) ||
-    (context.isPageLevel && !heightHugContents);
+    (context.isRootNode && !heightHugContents);
 
   const isWidthPositionAbsoluteAutoSize =
     !nodeIsGroup &&

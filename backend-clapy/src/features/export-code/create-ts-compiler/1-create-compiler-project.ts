@@ -12,7 +12,7 @@ import { flags } from '../../../env-and-config/app-config';
 import { env } from '../../../env-and-config/env';
 import { exportTemplatesDir } from '../../../root';
 import { CodeDict } from '../code.model';
-import { reactRootInMemory } from './load-file.utils';
+import { reactRootInMemory } from './load-file-utils-and-paths';
 
 const nodeModulesTemplatePath = `${exportTemplatesDir}/node_modules`;
 
@@ -20,6 +20,7 @@ export const tsConfigFilePath = `${reactRootInMemory}/tsconfig.json`;
 
 const NO_INPUT_FILE_ERROR = 18003;
 
+// Unused for now, but it contains useful ts config and react typings addition in case we need to diagnose the TS project.
 export async function createProjectFromTsConfig(tsConfig: string) {
   const fileSystem = new InMemoryFileSystemHost();
   fileSystem.writeFileSync(tsConfigFilePath, tsConfig);
@@ -70,16 +71,16 @@ export async function createProjectFromTsConfig(tsConfig: string) {
 }
 
 export function separateTsAndResources(files: CodeDict) {
-  const filesForCompiler: CodeDict = {};
+  const tsFiles: CodeDict = {};
   const resources: CodeDict = {};
   for (const [path, content] of Object.entries(files)) {
     // All supported extensions:
     // '.ts', '.tsx', '.d.ts', '.js', '.jsx', '.cts', '.d.cts', '.cjs', '.mts', '.d.mts', '.mjs'
     if (path.endsWith('.tsx') || path.endsWith('.ts') || path.endsWith('.jsx') || path.endsWith('.js')) {
-      filesForCompiler[path] = content;
+      tsFiles[path] = content;
     } else {
       resources[path] = content;
     }
   }
-  return [filesForCompiler, resources];
+  return [tsFiles, resources];
 }
