@@ -17,10 +17,10 @@ export interface ProjectContext {
   readonly fontWeightUsed: Map<string, Set<number>>;
   readonly resources: CodeDict;
   readonly tsFiles: CodeDict;
+  readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
   readonly enableMUIFramework: boolean;
-  // readonly components: Array<ComponentContext>;
 }
 
 export interface ComponentContext {

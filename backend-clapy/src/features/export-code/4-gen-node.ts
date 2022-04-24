@@ -1,4 +1,3 @@
-import { transform } from '@svgr/core';
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 import { env } from '../../env-and-config/env';
@@ -6,7 +5,6 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
-import { getPrettierConfig } from './8-diagnose-format-ts-files';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
@@ -140,25 +138,11 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
       const svgPathVarName = genComponentImportName(context);
 
-      // TODO to extract and run separately to better see the impact in execution time?
-      const svgTsCode = await transform(
+      // Save SVG to convert to React component later, so that we isolate the execution time, which is significant (second most expensive after Prettier formatting).
+      projectContext.svgToWrite[`${componentContext.compDir}/${svgPathVarName}.tsx`] = {
+        svgPathVarName,
         svgContent,
-        {
-          typescript: true,
-          exportType: 'named',
-          namedExport: svgPathVarName,
-          jsxRuntime: 'automatic',
-          dimensions: false,
-          memo: true,
-          // svgo could be useful to optimise the SVGs. To try later.
-          plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx'],
-          prettierConfig: await getPrettierConfig(),
-        },
-        { componentName: svgPathVarName },
-      );
-
-      // Add SVG as React component. It's the preferred solution over img pointing to SVG file because overflow: visible works as direct SVG and doesn't through img (if the SVG paints content outside the viewbox, which works on Figma).
-      projectContext.tsFiles[`${componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
+      };
 
       // Add import in file
       componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));

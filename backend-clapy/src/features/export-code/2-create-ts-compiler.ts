@@ -3,6 +3,7 @@ import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent, printFileInProject } from './3-gen-component';
+import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ComponentContext, ParentNode, ProjectContext } from './code.model';
@@ -31,12 +32,12 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
   const projectContext: ProjectContext = {
-    // components: [],
     compNamesAlreadyUsed: new Set(),
     assetsAlreadyUsed: new Set(),
     fontWeightUsed: new Map(),
     resources,
     tsFiles,
+    svgToWrite: {},
     cssFiles,
     images,
     // TODO hardcoded for now, detection TBD (option in the UI?)
@@ -59,9 +60,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   addCompToAppRoot(lightAppComponentContext, componentContext, parent);
   perfMeasure('e');
 
-  // for (const compContext of projectContext.components) {
-  //   printFileInProject(compContext);
-  // }
+  writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
   const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
@@ -120,7 +119,6 @@ function addCompToAppRoot(
 
   statements.push(mkCompFunction(compName, mkAppCompJsx(childCompContext.compName)));
 
-  // components.push(appCompContext);
   printFileInProject(appCompContext);
 }
 

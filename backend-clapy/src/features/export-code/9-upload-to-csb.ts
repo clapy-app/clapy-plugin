@@ -4,6 +4,7 @@ import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
+import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { backendDir, dockerPluginCompDir } from '../../root';
 import { CSBResponse } from '../sb-serialize-preview/sb-serialize.model';
@@ -42,7 +43,7 @@ export async function writeToDisk(files: CsbDict, componentContext: ComponentCon
       }
 
       const files = [`${backendDir}/atest-gen/${path}`];
-      if (isClapyFile && path.startsWith(srcCompPrefix)) {
+      if (flags.writeClapyFiles && isClapyFile && path.startsWith(srcCompPrefix)) {
         const file = `${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`;
         const dir = resolve(dirname(file));
         await mkdir(dir, { recursive: true });
@@ -74,7 +75,7 @@ export async function writeToDisk(files: CsbDict, componentContext: ComponentCon
     // public
     `${backendDir}/atest-gen/public`,
   ];
-  if (isClapyFile) {
+  if (flags.writeClapyFiles && isClapyFile) {
     // clapy plugin
     dirsToClean.push(`${dockerPluginCompDir}/${compName}`);
   }

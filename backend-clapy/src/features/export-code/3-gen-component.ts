@@ -63,7 +63,6 @@ export async function genComponent(
   // TODO a bit weird to have it here, it's a side-effect we may not understand from outside this function ("auto-magic" import). To move out of this function?
   callerImports.push(mkNamedImportsDeclaration([compName], moduleSpecifier));
 
-  // components.push(componentContext);
   printFileInProject(componentContext);
 
   return componentContext;
