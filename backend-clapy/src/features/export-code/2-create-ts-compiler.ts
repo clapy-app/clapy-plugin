@@ -1,4 +1,4 @@
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
@@ -7,8 +7,8 @@ import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-f
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ComponentContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
-import { separateTsAndResources } from './create-ts-compiler/1-create-compiler-project';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
+import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { mkCompFunction, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';

@@ -1,4 +1,4 @@
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { ComponentContext, NodeContext } from '../../code.model';
 import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';

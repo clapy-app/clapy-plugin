@@ -1,5 +1,5 @@
 import { relative } from 'path';
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { isNonEmptyObject } from '../../common/general-utils';
 import { figmaToAstRec } from './4-gen-node';
 import { ComponentContext, NodeContext, ParentNode } from './code.model';

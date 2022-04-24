@@ -1,4 +1,4 @@
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { ComponentContext, ProjectContext } from '../../code.model';
 import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { getSetInMap } from '../../figma-code-map/font';

@@ -1,5 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
