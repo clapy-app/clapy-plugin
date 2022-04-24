@@ -1,5 +1,4 @@
 import { readFile } from 'fs/promises';
-import { resolve } from 'path';
 import prettierFormatPlugin from 'prettier-plugin-organize-imports';
 import parserCss from 'prettier/parser-postcss';
 import parserTypeScript from 'prettier/parser-typescript';
@@ -60,7 +59,7 @@ export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
         content = prettier
           .format(content, {
             ...(await getPrettierConfig()),
-            pluginSearchDirs: [resolve(`${backendDir}/node_modules`)],
+            // pluginSearchDirs: [resolve(`${backendDir}/node_modules`)],
             // Beware: prettier plugins need to be declared here (couldn't make them work with auto-detection from node_modules), but svgo (used to generate SVG and format their code with Prettier) auto-loads Prettier plugins from node_modules. 2 different behaviors.
             plugins: [parserTypeScript, prettierFormatPlugin],
             filepath: path,

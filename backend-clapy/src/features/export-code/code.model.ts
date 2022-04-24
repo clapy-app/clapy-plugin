@@ -20,7 +20,7 @@ export interface ProjectContext {
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
   readonly enableMUIFramework: boolean;
-  readonly components: Array<ComponentContext>;
+  // readonly components: Array<ComponentContext>;
 }
 
 export interface ComponentContext {

@@ -31,7 +31,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
   const projectContext: ProjectContext = {
-    components: [],
+    // components: [],
     compNamesAlreadyUsed: new Set(),
     assetsAlreadyUsed: new Set(),
     fontWeightUsed: new Map(),
@@ -59,9 +59,9 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   addCompToAppRoot(lightAppComponentContext, componentContext, parent);
   perfMeasure('e');
 
-  for (const compContext of projectContext.components) {
-    printFileInProject(compContext);
-  }
+  // for (const compContext of projectContext.components) {
+  //   printFileInProject(compContext);
+  // }
   perfMeasure('f');
 
   const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
@@ -99,7 +99,7 @@ function addCompToAppRoot(
 ) {
   const {
     compName,
-    projectContext: { cssFiles, components },
+    projectContext: { cssFiles },
     imports,
     statements,
   } = appCompContext;
@@ -120,7 +120,8 @@ function addCompToAppRoot(
 
   statements.push(mkCompFunction(compName, mkAppCompJsx(childCompContext.compName)));
 
-  components.push(appCompContext);
+  // components.push(appCompContext);
+  printFileInProject(appCompContext);
 }
 
 function mkAppCompJsx(childComponentName: string) {

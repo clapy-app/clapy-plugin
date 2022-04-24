@@ -21,7 +21,7 @@ export async function genComponent(
   isRootComponent = false,
 ) {
   const { projectContext, compDir: callerCompDir, imports: callerImports } = parentCompContext;
-  const { cssFiles, components } = projectContext;
+  const { cssFiles } = projectContext;
 
   const pageName = parentCompContext.pageName;
   const compName = genUniqueName(projectContext.compNamesAlreadyUsed, node.name, true);
@@ -63,7 +63,8 @@ export async function genComponent(
   // TODO a bit weird to have it here, it's a side-effect we may not understand from outside this function ("auto-magic" import). To move out of this function?
   callerImports.push(mkNamedImportsDeclaration([compName], moduleSpecifier));
 
-  components.push(componentContext);
+  // components.push(componentContext);
+  printFileInProject(componentContext);
 
   return componentContext;
 }
