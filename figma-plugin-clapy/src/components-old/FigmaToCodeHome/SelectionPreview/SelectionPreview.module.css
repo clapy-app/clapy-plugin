@@ -21,10 +21,6 @@
   max-width: 100%;
   flex: 1;
   align-self: stretch;
-  /* background-image: url('./previewPlaceholder.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain; */
 }
 
 .rootLoading {
@@ -33,12 +29,4 @@
   flex-direction: row;
   padding: 16px;
   border-radius: 12px;
-}
-.loadingGif {
-  flex: 1;
-  align-self: stretch;
-  background-image: url('./loadingGif.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
