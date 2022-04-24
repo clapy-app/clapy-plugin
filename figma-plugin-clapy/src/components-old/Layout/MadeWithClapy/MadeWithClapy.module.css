@@ -2,6 +2,15 @@
   flex-direction: row;
   border-radius: 6.5882px;
 }
+.root:focus {
+  background-color: #ffffff11;
+}
+.root:hover {
+  background-color: #ffffff22;
+}
+.root:active {
+  background-color: #ffffff33;
+}
 ._ButtonBase {
   outline: solid 0.8235px #fff;
   outline-offset: -0.8235px;
