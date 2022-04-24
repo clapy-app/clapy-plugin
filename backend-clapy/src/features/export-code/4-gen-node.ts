@@ -140,6 +140,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
       const svgPathVarName = genComponentImportName(context);
 
+      // TODO to extract and run separately to better see the impact in execution time?
       const svgTsCode = await transform(
         svgContent,
         {
@@ -150,14 +151,14 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
           dimensions: false,
           memo: true,
           // svgo could be useful to optimise the SVGs. To try later.
-          plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx', '@svgr/plugin-prettier'],
+          plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx'],
           prettierConfig: await getPrettierConfig(),
         },
         { componentName: svgPathVarName },
       );
 
       // Add SVG as React component. It's the preferred solution over img pointing to SVG file because overflow: visible works as direct SVG and doesn't through img (if the SVG paints content outside the viewbox, which works on Figma).
-      projectContext.resources[`${componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
+      projectContext.tsFiles[`${componentContext.compDir}/${svgPathVarName}.tsx`] = svgTsCode;
 
       // Add import in file
       componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));

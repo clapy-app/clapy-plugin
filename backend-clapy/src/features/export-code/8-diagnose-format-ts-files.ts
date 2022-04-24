@@ -1,5 +1,5 @@
+import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
-import prettierFormatPlugin from 'prettier-plugin-organize-imports';
 import parserCss from 'prettier/parser-postcss';
 import parserTypeScript from 'prettier/parser-typescript';
 import prettier from 'prettier/standalone';
@@ -11,7 +11,11 @@ let _prettierConfig: any;
 
 export async function getPrettierConfig() {
   if (!_prettierConfig) {
-    _prettierConfig = JSON.parse(await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }));
+    const { importOrderParserPlugins, ...conf } = JSON.parse(
+      await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }),
+    );
+    // importOrderParserPlugins is not supported here (I don't know why), and anyway it's useless, it's to support annotations. Useful for the webservice source code.
+    _prettierConfig = conf;
   }
   return _prettierConfig;
 }
@@ -56,17 +60,13 @@ export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
       //
       // Prettier
       try {
-        content = prettier
-          .format(content, {
-            ...(await getPrettierConfig()),
-            // pluginSearchDirs: [resolve(`${backendDir}/node_modules`)],
-            // Beware: prettier plugins need to be declared here (couldn't make them work with auto-detection from node_modules), but svgo (used to generate SVG and format their code with Prettier) auto-loads Prettier plugins from node_modules. 2 different behaviors.
-            plugins: [parserTypeScript, prettierFormatPlugin],
-            filepath: path,
-          })
-          // Patch because I haven't found obvious way with Prettier to insert a line break after the imports.
-          // There is another plugin to format imports, but it's harder to make it work with both the generated code and this project (source) because of the parser required to work with annotations + the fact that it doesn't delete unused imports on its own. (but it's possible if we need to get back to it.)
-          .replace(newlineAfterImportRegex, '$1\n\n');
+        content = prettier.format(content, {
+          ...(await getPrettierConfig()),
+          // pluginSearchDirs: [resolve(`${backendDir}/node_modules`)],
+          // Beware: prettier plugins need to be declared here (couldn't make them work with auto-detection from node_modules), but svgo (used to generate SVG and format their code with Prettier) auto-loads Prettier plugins from node_modules. 2 different behaviors.
+          plugins: [parserTypeScript, prettierFormatPlugin],
+          filepath: path,
+        });
       } catch (error) {
         console.warn(`Error while formatting with prettier the file ${path}. Formatting is skipped.`);
         console.warn(error);
