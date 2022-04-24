@@ -3,7 +3,7 @@ import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { writeAsset } from '../create-ts-compiler/3-create-component';
+import { writeAsset } from '../create-ts-compiler/2-write-asset';
 import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';

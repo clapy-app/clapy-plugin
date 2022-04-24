@@ -1,5 +1,6 @@
-import { SourceFile, ts, VariableDeclarationKind } from 'ts-morph';
+import ts from 'typescript';
 import { ComponentContext, ProjectContext } from '../../code.model';
+import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { getSetInMap } from '../../figma-code-map/font';
 
 const { factory } = ts;
@@ -13,26 +14,35 @@ export function addMUIFonts(context: ProjectContext) {
   }
 }
 
-export function addMUIProvidersImports(context: ComponentContext, appFile: SourceFile) {
-  if (context.projectContext.enableMUIFramework) {
+function mkThemeVarCreation() {
+  return factory.createVariableStatement(
+    undefined,
+    factory.createVariableDeclarationList(
+      [
+        factory.createVariableDeclaration(
+          factory.createIdentifier('theme'),
+          undefined,
+          undefined,
+          factory.createCallExpression(factory.createIdentifier('createTheme'), undefined, [
+            factory.createObjectLiteralExpression([], false),
+          ]),
+        ),
+      ],
+      ts.NodeFlags.Const,
+    ),
+  );
+}
+
+export function addMUIProvidersImports(lightAppComponentContext: ComponentContext) {
+  if (lightAppComponentContext.projectContext.enableMUIFramework) {
+    const { imports, statements } = lightAppComponentContext;
     const namedImports = ['createTheme', 'ThemeProvider'];
     if (addBaseline) {
       namedImports.push('CssBaseline');
     }
-    appFile.addImportDeclaration({
-      moduleSpecifier: '@mui/material',
-      namedImports,
-    });
+    imports.push(mkNamedImportsDeclaration(namedImports, '@mui/material'));
 
-    appFile.insertVariableStatement(appFile.getChildCount() - 1, {
-      declarationKind: VariableDeclarationKind.Const,
-      declarations: [
-        {
-          name: 'theme',
-          initializer: 'createTheme({})',
-        },
-      ],
-    });
+    statements.push(mkThemeVarCreation());
   }
 }
 

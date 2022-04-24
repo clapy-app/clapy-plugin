@@ -1,6 +1,7 @@
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { NodeContext } from '../../../code.model';
 import { FrameNode2, InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
+import { mkDefaultImportDeclaration } from '../../../figma-code-map/details/ts-ast-utils';
 import { makeMuiConfigs, VariantProps } from '../mui-config';
 
 const { factory } = ts;
@@ -21,10 +22,7 @@ function iconValueFactory(figmaVal: string, node: InstanceNode2, context: NodeCo
     iconName = iconName.slice(0, -6);
   }
   const iconVarName = `${iconName}Icon`;
-  context.componentContext.file.addImportDeclaration({
-    moduleSpecifier: `@mui/icons-material/${iconName}`,
-    defaultImport: iconVarName,
-  });
+  context.componentContext.imports.push(mkDefaultImportDeclaration(iconVarName, `@mui/icons-material/${iconName}`));
   return factory.createJsxSelfClosingElement(
     factory.createIdentifier(iconVarName),
     undefined,

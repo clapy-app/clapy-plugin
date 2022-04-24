@@ -1,7 +1,9 @@
 import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import { NodeContext, ProjectContext } from '../code.model';
+import { indexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
 import { addStyle } from '../css-gen/css-factories-high';
+import { addMUIFonts } from '../frameworks/mui/mui-add-globals';
 import { parseFontStyle, replaceFontWeightWithLabel } from './details/fonts-utils';
 
 export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
@@ -88,4 +90,27 @@ export function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, k
     map.set(key, set);
   }
   return set;
+}
+
+export function addFontsToIndexHtml(projectContext: ProjectContext) {
+  const { fontWeightUsed, resources } = projectContext;
+  addMUIFonts(projectContext);
+  if (fontWeightUsed.size) {
+    const familyUrlFragment = Array.from(fontWeightUsed.entries())
+      .map(([familyName, weightSet]) => {
+        let weightFragment;
+        const weightValues = Array.from(weightSet);
+        if (!weightSet.size || (weightSet.size === 1 && weightValues[0] === 400)) {
+          weightFragment = '';
+        } else {
+          weightFragment = `:wght@${weightValues.sort().join(';')}`;
+        }
+        return `family=${encodeURIComponent(familyName)}${weightFragment}`;
+      })
+      .join('&');
+    resources[indexHtmlPath] = resources[indexHtmlPath].replace(
+      '</head>',
+      `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap" rel="stylesheet">\n</head>`,
+    );
+  }
 }

@@ -9,4 +9,10 @@ export const flags = {
   // if changed to true, should update reset in resets.css.
   useCssBoxSizingBorderBox: true,
   useFilterDropShadow: true,
+  writeClapyFiles: false,
 };
+
+// What takes time:
+// 1) formatting with prettier (TS + CSS) - by far
+// 2) generating the SVG React component
+// 3) (dev only) write on disk

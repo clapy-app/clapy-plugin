@@ -31,7 +31,12 @@ export function isDeclaration(node: CssNode): node is Declaration {
 
 // More specific utilities
 
-export function getRuleFirstSelector(node: Rule) {
+export function isRootRule(node: Rule) {
+  const selector = getRuleFirstSelector(node);
+  return csstree.generate(selector) === '.root';
+}
+
+function getRuleFirstSelector(node: Rule) {
   if (!isSelectorList(node.prelude)) {
     throw new Error(`rule prelude is not a SelectorList: ${JSON.stringify(node.prelude)}`);
   }
@@ -43,11 +48,6 @@ export function getRuleFirstSelector(node: Rule) {
     throw new Error(`rule first SelectorList child is not a Selector: ${JSON.stringify(node.prelude)}`);
   }
   return firstSelector;
-}
-
-export function isRootRule(node: Rule) {
-  const selector = getRuleFirstSelector(node);
-  return csstree.generate(selector) === '.root';
 }
 
 export function stylesToList(styles: Dict<DeclarationPlain>): DeclarationPlain[] {

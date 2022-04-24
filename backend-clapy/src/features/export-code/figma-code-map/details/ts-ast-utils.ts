@@ -1,7 +1,7 @@
 import { DeclarationPlain, RulePlain } from 'css-tree';
-import { ts } from 'ts-morph';
+import ts from 'typescript';
 import { SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../../code.model';
+import { JsxOneOrMore, NodeContext } from '../../code.model';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -98,6 +98,61 @@ function removeAccents(value: string) {
 
 function prefixIfNumber(varName: string) {
   return varName.match(/^\d/) ? `_${varName}` : varName;
+}
+
+// AST generation functions
+
+export function mkDefaultImportDeclaration(importClauseName: string, moduleSpecifier: string) {
+  return factory.createImportDeclaration(
+    undefined,
+    undefined,
+    factory.createImportClause(false, factory.createIdentifier(importClauseName), undefined),
+    factory.createStringLiteral(moduleSpecifier),
+    undefined,
+  );
+}
+
+export function mkNamedImportsDeclaration(importSpecifierNames: string[], moduleSpecifier: string) {
+  return factory.createImportDeclaration(
+    undefined,
+    undefined,
+    factory.createImportClause(
+      false,
+      undefined,
+      factory.createNamedImports(
+        importSpecifierNames.map(name =>
+          factory.createImportSpecifier(false, undefined, factory.createIdentifier(name)),
+        ),
+      ),
+    ),
+    factory.createStringLiteral(moduleSpecifier),
+    undefined,
+  );
+}
+
+export function mkCompFunction(fnName: string, tsx: JsxOneOrMore | undefined) {
+  let returnedExpression: ts.Expression | undefined = undefined;
+  if (tsx) {
+    if (Array.isArray(tsx)) {
+      returnedExpression = mkFragment(tsx);
+    } else if (ts.isJsxText(tsx)) {
+      returnedExpression = mkFragment([tsx]);
+    } else {
+      returnedExpression = tsx;
+    }
+  } else {
+    returnedExpression = ts.factory.createNull();
+  }
+  return factory.createFunctionDeclaration(
+    undefined,
+    [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+    undefined,
+    factory.createIdentifier(fnName),
+    undefined,
+    [],
+    undefined,
+    factory.createBlock([factory.createReturnStatement(returnedExpression)], true),
+  );
 }
 
 export function mkFragment(children: ts.JsxChild[]) {

@@ -1,5 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
-import { Project, SourceFile, ts } from 'ts-morph';
+import ts from 'typescript';
 import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
@@ -15,8 +15,9 @@ export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
   readonly fontWeightUsed: Map<string, Set<number>>;
-  readonly project: Project;
   readonly resources: CodeDict;
+  readonly tsFiles: CodeDict;
+  readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
   readonly enableMUIFramework: boolean;
@@ -24,7 +25,8 @@ export interface ProjectContext {
 
 export interface ComponentContext {
   readonly projectContext: ProjectContext;
-  readonly file: SourceFile;
+  readonly imports: ts.ImportDeclaration[];
+  readonly statements: ts.Statement[];
   readonly pageName: string | undefined;
   readonly compDir: string;
   readonly compName: string;
@@ -35,6 +37,7 @@ export interface ComponentContext {
   // Cannot really guess at project level, because components can have multiple usages.
   // Let's follow it up at component level, and review with future use cases.
   readonly inInteractiveElement?: boolean;
+  readonly isRootComponent?: boolean;
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
@@ -45,9 +48,9 @@ export interface NodeContext {
   nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
-  parentNode: ParentNode | null;
+  parentNode: ParentNode;
   parentContext: NodeContext | null;
-  isPageLevel?: boolean;
+  isRootNode?: boolean;
   outerLayoutOnly?: boolean;
 }
 

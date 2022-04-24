@@ -1,26 +1,36 @@
 import { relative } from 'path';
-import { ts } from 'ts-morph';
+import ts from 'typescript';
+import { isNonEmptyObject } from '../../common/general-utils';
 import { figmaToAstRec } from './4-gen-node';
-import { CodeDict, ComponentContext, NodeContext, ParentNode } from './code.model';
-import { createComponent } from './create-ts-compiler/3-create-component';
-import { isPage, SceneNode2 } from './create-ts-compiler/canvas-utils';
-import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
+import { ComponentContext, NodeContext, ParentNode } from './code.model';
+import { SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
-import { genUniqueName, mkFragment } from './figma-code-map/details/ts-ast-utils';
+import {
+  genUniqueName,
+  mkCompFunction,
+  mkDefaultImportDeclaration,
+  mkNamedImportsDeclaration,
+} from './figma-code-map/details/ts-ast-utils';
 
-export async function genComponent(parentCompContext: ComponentContext, node: SceneNode2, parent: ParentNode | null) {
-  const { projectContext, file: callerFile } = parentCompContext;
-  const { project, cssFiles } = projectContext;
+const { factory } = ts;
+
+export async function genComponent(
+  parentCompContext: ComponentContext,
+  node: SceneNode2,
+  parent: ParentNode,
+  isRootComponent = false,
+) {
+  const { projectContext, compDir: callerCompDir, imports: callerImports } = parentCompContext;
+  const { cssFiles } = projectContext;
 
   const pageName = parentCompContext.pageName;
   const compName = genUniqueName(projectContext.compNamesAlreadyUsed, node.name, true);
   const compDir = pageName ? `src/components/${pageName}/${compName}` : `src/components/${compName}`;
 
-  const file = await createComponent(project, compDir, compName);
-
   const componentContext: ComponentContext = {
     projectContext,
-    file,
+    imports: [],
+    statements: [],
     pageName: pageName || compName,
     compDir,
     compName,
@@ -28,52 +38,56 @@ export async function genComponent(parentCompContext: ComponentContext, node: Sc
     importNamesAlreadyUsed: new Set(),
     cssRules: [],
     inInteractiveElement: parentCompContext?.inInteractiveElement || false,
+    isRootComponent,
   };
 
-  await addComponentToProject(componentContext, node, parent, cssFiles);
+  const { imports, statements } = componentContext;
 
-  let moduleSpecifier = `${relative(callerFile.getDirectoryPath(), file.getDirectoryPath())}/${compName}`;
+  const [tsx, css] = await figmaToAstRootNode(componentContext, node, parent);
+
+  statements.push(mkCompFunction(compName, tsx));
+
+  if (isNonEmptyObject(css)) {
+    cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
+    imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
+  }
+
+  let moduleSpecifier = `${relative(callerCompDir, compDir)}/${compName}`;
   if (moduleSpecifier.startsWith('/')) {
     moduleSpecifier = `.${moduleSpecifier}`;
   } else if (!moduleSpecifier.startsWith('.')) {
     moduleSpecifier = `./${moduleSpecifier}`;
   }
 
-  // Then update the file consuming the component
-  callerFile.addImportDeclaration({
-    moduleSpecifier,
-    namedImports: [compName],
-  });
+  // Then update the file consuming the component.
+  // TODO a bit weird to have it here, it's a side-effect we may not understand from outside this function ("auto-magic" import). To move out of this function?
+  callerImports.push(mkNamedImportsDeclaration([compName], moduleSpecifier));
+
+  printFileInProject(componentContext);
 
   return componentContext;
 }
 
-export async function addComponentToProject(
-  componentContext: ComponentContext,
-  root: SceneNode2,
-  parent: ParentNode | null,
-  cssFiles: CodeDict,
-) {
-  const { file, compDir: dirPath, compName } = componentContext;
+export function printFileInProject(componentContext: ComponentContext) {
+  const { projectContext, compDir, compName } = componentContext;
 
-  // Get the returned expression that we want to replace
-  const { returnedExpression, compDeclaration } = getFirstExportedComponentsInFileOrThrow(file);
-  compDeclaration.getNameNodeOrThrow().replaceWithText(compName);
-
-  const [tsx, css] = await figmaToAstRootNode(componentContext, root, parent);
-
-  // Replace the returned expression with the newly generated code
-  returnedExpression.transform((/* traversal */) => {
-    // traversal.currentNode
-    // traversal.visitChildren()
-    return (Array.isArray(tsx) ? mkFragment(tsx) : tsx) || ts.factory.createNull();
+  const path = `${compDir}/${compName}.tsx`;
+  const resultFile = factory.createSourceFile(
+    [...componentContext.imports, ...componentContext.statements],
+    factory.createToken(ts.SyntaxKind.EndOfFileToken),
+    ts.NodeFlags.None,
+  );
+  const printer = ts.createPrinter({
+    newLine: ts.NewLineKind.LineFeed,
+    removeComments: false,
+    omitTrailingSemicolon: false,
   });
 
-  // Add CSS file.
-  cssFiles[`${dirPath}/${compName}.module.css`] = cssAstToString(css);
+  const result = printer.printFile(resultFile);
+  projectContext.tsFiles[path] = result;
 }
 
-async function figmaToAstRootNode(componentContext: ComponentContext, root: SceneNode2, parent: ParentNode | null) {
+async function figmaToAstRootNode(componentContext: ComponentContext, root: SceneNode2, parent: ParentNode) {
   const nodeContext: NodeContext = {
     componentContext,
     tagName: 'div', // Default value
@@ -81,7 +95,7 @@ async function figmaToAstRootNode(componentContext: ComponentContext, root: Scen
     parentNode: parent,
     parentStyles: null,
     parentContext: null,
-    isPageLevel: isPage(parent),
+    isRootNode: componentContext.isRootComponent,
   };
   const tsx = await figmaToAstRec(nodeContext, root, true);
   const cssAst = mkStylesheetCss(componentContext.cssRules);
