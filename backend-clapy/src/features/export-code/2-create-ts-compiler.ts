@@ -13,11 +13,13 @@ import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { getFirstExportedComponentsInFileOrThrow } from './create-ts-compiler/parsing.utils';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { mkComponentUsage } from './figma-code-map/details/ts-ast-utils';
-import { addMUIFonts, addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
+import { addFontsToIndexHtml } from './figma-code-map/font';
+import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
 
+const { factory } = ts;
+
 const appCssPath = 'src/App.module.css';
-const indexHtmlPath = 'public/index.html';
 
 export async function exportCode({ images, root, parent, extraConfig }: ExportCodePayload, uploadToCsb = true) {
   perfMeasure('a');
@@ -112,7 +114,6 @@ function addCompToAppRoot(componentContext: ComponentContext, parentNode: Parent
       throw new Error(`jsx first tag is not a JsxElement in App.tsx, bug.`);
     }
     const { openingElement, closingElement } = node;
-    const { factory } = ts;
     let rootJsx: ts.JsxChild = factory.createJsxElement(openingElement, [mkComponentUsage(compName)], closingElement);
     rootJsx = addMUIProviders(componentContext, rootJsx);
     return rootJsx;
@@ -121,29 +122,6 @@ function addCompToAppRoot(componentContext: ComponentContext, parentNode: Parent
 
 function isJsxElement(node: ts.Node): node is ts.JsxElement {
   return node.kind === ts.SyntaxKind.JsxElement;
-}
-
-function addFontsToIndexHtml(projectContext: ProjectContext) {
-  const { fontWeightUsed, resources } = projectContext;
-  addMUIFonts(projectContext);
-  if (fontWeightUsed.size) {
-    const familyUrlFragment = Array.from(fontWeightUsed.entries())
-      .map(([familyName, weightSet]) => {
-        let weightFragment;
-        const weightValues = Array.from(weightSet);
-        if (!weightSet.size || (weightSet.size === 1 && weightValues[0] === 400)) {
-          weightFragment = '';
-        } else {
-          weightFragment = `:wght@${weightValues.sort().join(';')}`;
-        }
-        return `family=${encodeURIComponent(familyName)}${weightFragment}`;
-      })
-      .join('&');
-    resources[indexHtmlPath] = resources[indexHtmlPath].replace(
-      '</head>',
-      `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap" rel="stylesheet">\n</head>`,
-    );
-  }
 }
 
 function addPackages(projectContext: ProjectContext) {
