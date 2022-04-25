@@ -176,7 +176,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       addStyle(styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
-    if (node.itemSpacing && node.children.length >= 2) {
+    if (node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
       addStyle(styles, 'gap', [node.itemSpacing, 'px']);
     }
 
@@ -295,6 +295,8 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   let width = flags.useCssBoxSizingBorderBox ? node.width : node.width - shiftRight - shiftLeft;
   let height = flags.useCssBoxSizingBorderBox ? node.height : node.height - shiftTop - shiftBottom;
 
+  const isSeparatorOrWorkaround = width <= 1 || height <= 1;
+
   const parentHasHorizontalScroll =
     parent && parentIsFlex && (parent.overflowDirection === 'HORIZONTAL' || parent.overflowDirection === 'BOTH');
   const parentHasVerticalScroll =
@@ -307,7 +309,11 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   // To adapt with more use cases identified.
 
   // const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
-  const shouldApplyMaxHeight = parentRequireMaxSize; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
+  const shouldApplyMaxWidth = isSeparatorOrWorkaround;
+  const shouldApplyMaxHeight =
+    (fixedHeight && parentRequireMaxSize) ||
+    isSeparatorOrWorkaround; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
+
   if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
@@ -315,9 +321,9 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       width = node.strokeWeight;
     }
     addStyle(styles, 'width', [width, 'px']);
-    // if (shouldApplyMaxWidth) {
-    //   addStyle(styles, 'max-width', [100, '%']);
-    // }
+  }
+  if (shouldApplyMaxWidth) {
+    addStyle(styles, 'max-width', [100, '%']);
   }
   if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
@@ -325,9 +331,9 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       height = node.strokeWeight;
     }
     addStyle(styles, 'height', [height, 'px']);
-    if (shouldApplyMaxHeight) {
-      addStyle(styles, 'max-height', [100, '%']);
-    }
+  }
+  if (shouldApplyMaxHeight) {
+    addStyle(styles, 'max-height', [100, '%']);
   }
   const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {
