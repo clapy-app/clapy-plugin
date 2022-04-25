@@ -97,22 +97,31 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     heightFillContainer,
     nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
+    parentAndNodeHaveSameDirection,
   } = applyWidth(context, node, styles);
 
   const defaultIsVertical = defaultNode.layoutMode === 'VERTICAL';
+
+  const parentPrimaryAxisHugContents = parentAndNodeHaveSameDirection
+    ? nodePrimaryAxisHugContents
+    : nodeCounterAxisHugContents;
 
   // Flex: 1 if it's a figma rule or it's a top-level component
   if (
     !outerLayoutOnly &&
     !isLine(node) &&
-    (node.layoutGrow === 1 || (context.isRootNode && !nodePrimaryAxisHugContents))
+    (node.layoutGrow === 1 || (context.isRootNode && !parentPrimaryAxisHugContents))
   ) {
     addStyle(styles, 'flex', 1);
   }
 
+  const parentCounterAxisHugContents = parentAndNodeHaveSameDirection
+    ? nodeCounterAxisHugContents
+    : nodePrimaryAxisHugContents;
+
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  if (node.layoutAlign === 'STRETCH') {
+  if (node.layoutAlign === 'STRETCH' || (context.isRootNode && !parentCounterAxisHugContents)) {
     addStyle(styles, 'align-self', 'stretch');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
@@ -320,6 +329,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       addStyle(styles, 'max-height', [100, '%']);
     }
   }
+  const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {
     fixedWidth,
     widthFillContainer,
@@ -327,6 +337,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     heightFillContainer,
     nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
+    parentAndNodeHaveSameDirection,
   };
 }
 
