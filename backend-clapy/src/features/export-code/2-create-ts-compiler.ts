@@ -61,7 +61,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   addCompToAppRoot(lightAppComponentContext, componentContext, parent);
   perfMeasure('e');
 
-  writeSVGReactComponents(projectContext);
+  await writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
   const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
