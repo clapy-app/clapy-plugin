@@ -4,6 +4,7 @@ import ts from 'typescript';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { TextNode2, ValidNode } from './create-ts-compiler/canvas-utils';
+import { addStyle } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
 import { borderFigmaToCode } from './figma-code-map/border';
@@ -172,6 +173,8 @@ export function mapTextStyles(
         'font-size': firstChildStylesRef.styles['font-size'],
         'font-family': firstChildStylesRef.styles['font-family'],
       };
+      // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
+      addStyle(wrapperStyles, 'flex-shrink', 1);
       const className = genClassName(context, undefined, undefined, 'labelWrapper');
       addCssRule(context, className, stylesToList(wrapperStyles));
       classAttr = mkClassAttr(className);
