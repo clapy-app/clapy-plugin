@@ -212,15 +212,13 @@ async function fetchAuthorizationCode(readToken: string) {
 }
 
 async function waitForAuthorizationCode(readToken: string, authWindow: Window | null) {
-  let attempsAfterClose = 1;
-  while (!authWindow || !authWindow.closed || attempsAfterClose-- > 0) {
+  while (true) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       return authoCode;
     }
     await wait(500);
   }
-  throw new Error('cancelled');
 }
 
 async function deleteReadToken(readToken: string) {
