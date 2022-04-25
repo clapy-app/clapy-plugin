@@ -4,9 +4,6 @@ import { CodeDict } from '../code.model';
 export const reactTemplateDir = `${exportTemplatesDir}/react-project`;
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
-export const componentTemplatePathTsx = `${exportTemplatesDir}/react-comp/CompTemplate.tsx`;
-export const componentTemplatePathCss = `${exportTemplatesDir}/react-comp/CompTemplate.module.css`;
-
 export const indexHtmlPath = 'public/index.html';
 
 // Both variables must be consistent.

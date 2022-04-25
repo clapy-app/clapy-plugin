@@ -48,7 +48,7 @@ export async function genComponent(
 
   statements.push(mkCompFunction(compName, tsx));
 
-  if (isNonEmptyObject(css)) {
+  if (isNonEmptyObject(css.children)) {
     cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
     imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
   }
