@@ -123,10 +123,11 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
     for (const [name, prop] of props) {
       if (prop.get && !bl.has(name)) {
         try {
-          if (typeof obj[name] === 'symbol') {
+          const val = prop.get.call(node);
+          if (typeof val === 'symbol') {
             obj[name] = 'Mixed';
           } else {
-            obj[name] = prop.get.call(node);
+            obj[name] = val;
           }
         } catch (err) {
           obj[name] = undefined;
@@ -283,6 +284,12 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
         obj.mainComponent.parent = { name, type };
       }
     }
+    // If we need to debug symbols:
+    // for (const [key, val] of Object.entries(obj)) {
+    //   if (typeof val === 'symbol') {
+    //     throw new Error(`Symbol found, key ${key}, val ${String(val)}`);
+    //   }
+    // }
     return obj as SceneNodeNoMethod;
   } catch (error: any) {
     if (typeof error === 'string') {

@@ -6,5 +6,5 @@ import { ValidNode } from '../create-ts-compiler/canvas-utils';
 
 export function guessScroll(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const name = context.nodeNameLower;
-  return name.includes('scroll') ? { x: true, y: true } : { x: false, y: false };
+  return name.includes('scroll') ? { x: true, y: true } : { x: false, y: context.isRootNode };
 }
