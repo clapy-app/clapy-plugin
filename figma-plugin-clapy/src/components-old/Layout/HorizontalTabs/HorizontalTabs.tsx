@@ -1,4 +1,5 @@
 import { FC, memo, MouseEvent, useCallback, useRef } from 'react';
+
 import { _TabButtonBase } from '../_TabButtonBase/_TabButtonBase';
 import classes from './HorizontalTabs.module.css';
 

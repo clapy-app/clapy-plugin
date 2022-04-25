@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
+
 import classes from './_TabButtonBase.module.css';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {

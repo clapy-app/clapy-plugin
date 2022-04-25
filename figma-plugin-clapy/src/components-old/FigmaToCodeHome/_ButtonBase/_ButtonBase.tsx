@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
 import Lottie, { Options } from 'react-lottie';
+
 import animationData from '../../../lotties/loading.json';
 import classes from './_ButtonBase.module.css';
 

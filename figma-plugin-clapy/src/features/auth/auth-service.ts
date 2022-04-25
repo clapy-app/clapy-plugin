@@ -1,4 +1,5 @@
 import jwtDecode from 'jwt-decode';
+
 import { handleError } from '../../common/error-utils';
 import { openWindowStep1, openWindowStep2, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';

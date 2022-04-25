@@ -1,4 +1,5 @@
 import ts from 'typescript';
+
 import { NodeContext } from '../../../code.model';
 import { FrameNode2, InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
 import { mkDefaultImportDeclaration } from '../../../figma-code-map/details/ts-ast-utils';

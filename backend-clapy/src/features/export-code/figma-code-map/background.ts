@@ -1,6 +1,7 @@
 import { extractLinearGradientParamsFromTransform, extractRadialOrDiamondGradientParams } from '@figma-plugin/helpers';
 import { DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
+
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { writeAsset } from '../create-ts-compiler/2-write-asset';

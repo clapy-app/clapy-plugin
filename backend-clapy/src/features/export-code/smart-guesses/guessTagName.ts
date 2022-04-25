@@ -1,5 +1,6 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
+
 import { Dict, FrameNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isFlexNode, isText, SceneNode2 } from '../create-ts-compiler/canvas-utils';

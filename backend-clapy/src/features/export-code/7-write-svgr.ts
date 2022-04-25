@@ -1,4 +1,5 @@
 import { transform } from '@svgr/core';
+
 import { ProjectContext } from './code.model';
 
 export async function writeSVGReactComponents(projectContext: ProjectContext) {

@@ -1,4 +1,5 @@
 import { FC, memo, useEffect, useRef, useState } from 'react';
+
 import { SelectedTextNode } from '../common/text-node-models';
 
 interface Prop {

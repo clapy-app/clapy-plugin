@@ -1,5 +1,6 @@
 import { CssNodePlain, DeclarationPlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
+
 import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';

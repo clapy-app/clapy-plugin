@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 // import ReactDOM from 'react-dom/client';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+
 import { App } from './App';
 import { PreviewMode } from './core/dev-preview-mode/PreviewMode';
 import { store } from './core/redux/store';

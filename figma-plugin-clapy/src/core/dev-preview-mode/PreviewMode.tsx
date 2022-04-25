@@ -1,4 +1,5 @@
 import { FC, memo, MutableRefObject, useEffect, useRef, useState } from 'react';
+
 import styles from './PreviewMode.module.css';
 
 type WSRef = MutableRefObject<WebSocket | undefined>;

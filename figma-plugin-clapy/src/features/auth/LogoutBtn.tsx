@@ -1,5 +1,6 @@
 import { FC, memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+
 import { logout } from './auth-service';
 import { selectAuthLoading, selectSignedIn } from './auth-slice';
 import classes from './LogoutBtn.module.scss';
