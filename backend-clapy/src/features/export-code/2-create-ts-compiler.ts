@@ -1,4 +1,5 @@
 import ts from 'typescript';
+
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
@@ -60,7 +61,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
   addCompToAppRoot(lightAppComponentContext, componentContext, parent);
   perfMeasure('e');
 
-  writeSVGReactComponents(projectContext);
+  await writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
   const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files

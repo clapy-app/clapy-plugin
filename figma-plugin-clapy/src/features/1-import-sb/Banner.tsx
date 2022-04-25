@@ -1,4 +1,5 @@
 import { FC, memo } from 'react';
+
 import classes from './Banner.module.scss';
 import image from './detail/discord-banner-black.jpg';
 

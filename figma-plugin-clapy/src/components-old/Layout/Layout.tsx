@@ -1,5 +1,6 @@
 import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { subscribePlugin } from '../../common/plugin-utils';
 import { selectSignedIn } from '../../features/auth/auth-slice';
 import { CodeToFigma } from '../CodeToFigma/CodeToFigma';

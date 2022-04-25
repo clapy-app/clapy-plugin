@@ -1,9 +1,10 @@
 import { FC, memo } from 'react';
+
+import { MailIcon } from './_ButtonBase/MailIcon';
+import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 import { BadgeGroup } from './BadgeGroup/BadgeGroup';
 import { Button } from './Button/Button';
 import classes from './ErrorAlert.module.css';
-import { MailIcon } from './_ButtonBase/MailIcon';
-import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 
 interface Props {}
 

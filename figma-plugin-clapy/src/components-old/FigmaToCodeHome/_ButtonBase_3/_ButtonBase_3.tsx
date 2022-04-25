@@ -1,5 +1,5 @@
-import { ArrowLeftIcon } from './ArrowLeftIcon';
 import classes from './_ButtonBase_3.module.css';
+import { ArrowLeftIcon } from './ArrowLeftIcon';
 
 export function _ButtonBase_3() {
   return (

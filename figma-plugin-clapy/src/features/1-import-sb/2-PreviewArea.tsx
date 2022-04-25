@@ -1,5 +1,6 @@
 import { FC, memo, MouseEventHandler, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { handleError } from '../../common/error-utils';
 import classes from './1-ImportSb.module.scss';
 import { VariantsProps } from './3-VariantsProps';

@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+
 import { Query_Root, Subscription_Root } from '../../../generated/schema';
 
 // Model

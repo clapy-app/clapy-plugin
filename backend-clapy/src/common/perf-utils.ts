@@ -1,4 +1,5 @@
 import { performance } from 'perf_hooks';
+
 import { flags } from '../env-and-config/app-config';
 
 export interface PerfContext {

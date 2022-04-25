@@ -1,5 +1,6 @@
 import { AnyAction } from '@reduxjs/toolkit';
 import type { Selector } from 'reselect';
+
 import { RootState } from './store';
 import { getStore } from './storeIsolated';
 
