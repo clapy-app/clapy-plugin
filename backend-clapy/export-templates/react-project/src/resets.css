@@ -22,6 +22,7 @@ body > div * {
   border: none;
   flex-shrink: 0;
   text-decoration: none;
+  min-width: 0;
 }
 
 body button:not(:disabled) {
