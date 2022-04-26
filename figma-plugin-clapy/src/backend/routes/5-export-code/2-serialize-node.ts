@@ -2,7 +2,7 @@ import { ExportImagesFigma } from '../../../common/sb-serialize.model';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { nodeToObject, SerializeContext } from './nodeToObject';
 
-export function serializeSelectedNode() {
+export async function serializeSelectedNode() {
   const selection = getFigmaSelection();
   if (selection?.length !== 1) {
     throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
@@ -11,7 +11,14 @@ export function serializeSelectedNode() {
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
   const images: ExportImagesFigma = {};
-  const context: SerializeContext = { images };
+  const context: SerializeContext = {
+    images,
+    textStyles: {},
+    fillStyles: {},
+    effectStyles: {},
+    strokeStyles: {},
+    gridStyles: {},
+  };
   const extraConfig = {
     isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
   };
@@ -19,17 +26,18 @@ export function serializeSelectedNode() {
   const enableMUIFramework = true;
   // Later, once variants are handled, we will use instances as well, but differently?
   const skipInstance = !enableMUIFramework;
-
-  return Promise.all([
+  const [parentConf, nodesConf] = await Promise.all([
     node.parent
       ? nodeToObject(node.parent as SceneNode, context, {
           skipChildren: true,
         })
       : null,
     nodeToObject(node, context, { skipChildren: false, skipInstance }),
-    images,
-    extraConfig,
   ]);
+  const { textStyles, fillStyles, effectStyles, strokeStyles, gridStyles } = context;
+  const styles = { textStyles, fillStyles, effectStyles, strokeStyles, gridStyles };
+
+  return [parentConf, nodesConf, images, styles, extraConfig] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.
@@ -65,3 +73,21 @@ export function serializeSelectedNode() {
 //   }
 //   return CryptoJS.lib.WordArray.create(a, i8a.length);
 // }
+
+// (async function () {
+//   const textNodeId = 'I2:220;36:197';
+//   const node = figma.getNodeById(textNodeId);
+//   if (isText(node) && typeof node.fillStyleId === 'string') {
+//     console.log(figma.getStyleById(node.fillStyleId));
+
+//     // const styleKey = '4ca80dd1008a54f04f9b20a14109e02e6c1aac5a';
+//     // const style = await figma.importStyleByKeyAsync(styleKey);
+//     // console.log('style 2 :');
+//     // console.log(style);
+//   } else {
+//     console.log('Not a text node');
+//   }
+// })().catch(err => console.error(err));
+
+// figma.getStyleById
+// figma.importStyleByKeyAsync

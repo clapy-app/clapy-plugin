@@ -10,6 +10,9 @@ if (!isDev && !isStaging && !isProd) {
   throw new Error(`Invalid environment found: ${appEnv}`);
 }
 
+const isBack = typeof window === 'undefined';
+export const isFigmaPlugin = !isBack && window.location.origin === 'null';
+
 // Add here non-confidential environment-based configurations (e.g. domains, base URLs)
 const dev = {
   apiBaseUrl: 'http://localhost:4141',
@@ -45,6 +48,7 @@ export const env = {
   isStaging,
   isProd,
   isJest: typeof process !== 'undefined' && process.env.JEST_WORKER_ID !== undefined,
+  isFigmaPlugin,
   nodeEnv,
   isNodeProduction,
   auth0Audience: 'clapy',
@@ -57,7 +61,7 @@ export const env = {
 };
 
 if (!isProd) {
-  console.log('Environment:', env);
+  console.log(`Environment (${isBack ? 'plugin back' : isFigmaPlugin ? 'plugin UI' : 'browser'}):`, env);
 }
 
 const requiredObj = { auth0Domain, auth0ClientId };

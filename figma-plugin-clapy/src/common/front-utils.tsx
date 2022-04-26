@@ -2,8 +2,8 @@ import { DependencyList, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { ErrorAlert2, ErrorAlertButtons } from '../components-old/ErrorAlert/ErrorAlert';
+import { isFigmaPlugin } from '../environment/env';
 import { handleError } from './error-utils';
-import { isFigmaPlugin } from './plugin-utils';
 
 /** Same as useCallback, but accepting async functions. @see useCallback */
 export function useCallbackAsync<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T {

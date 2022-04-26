@@ -19,7 +19,7 @@ import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
-const sendToApi = true;
+const sendToApi = false;
 
 export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
 
@@ -50,9 +50,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       track('gen-code', 'start');
 
       // Extract the Figma configuration
-      const [parent, root, imagesExtracted, extraConfig] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, imagesExtracted, styles, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images, extraConfig };
+      const nodes = { parent, root, images, styles, extraConfig };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
