@@ -1,7 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
-import { Dict, ExportImageMap2 } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
@@ -21,6 +21,7 @@ export interface ProjectContext {
   readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
   readonly cssFiles: CodeDict;
   readonly images: ExportImageMap2;
+  readonly styles: FigmaStyles;
   readonly enableMUIFramework: boolean;
 }
 

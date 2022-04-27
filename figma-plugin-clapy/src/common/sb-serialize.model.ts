@@ -242,7 +242,16 @@ export interface ExportCodePayload {
   parent: FrameNode | ComponentNode | InstanceNode | PageNode;
   root: SceneNodeNoMethod;
   images: ExportImageMap2;
+  styles: FigmaStyles;
   extraConfig: { isClapyFile: boolean };
+}
+
+export interface FigmaStyles {
+  textStyles: Dict<TextStyle>;
+  fillStyles: Dict<PaintStyle>;
+  strokeStyles: Dict<PaintStyle>;
+  effectStyles: Dict<EffectStyle>;
+  gridStyles: Dict<GridStyle>;
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;

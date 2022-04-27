@@ -15,8 +15,8 @@ export async function serializeSelectedNode() {
     images,
     textStyles: {},
     fillStyles: {},
-    effectStyles: {},
     strokeStyles: {},
+    effectStyles: {},
     gridStyles: {},
   };
   const extraConfig = {
@@ -34,8 +34,8 @@ export async function serializeSelectedNode() {
       : null,
     nodeToObject(node, context, { skipChildren: false, skipInstance }),
   ]);
-  const { textStyles, fillStyles, effectStyles, strokeStyles, gridStyles } = context;
-  const styles = { textStyles, fillStyles, effectStyles, strokeStyles, gridStyles };
+  const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+  const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
   return [parentConf, nodesConf, images, styles, extraConfig] as const;
 }

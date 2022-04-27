@@ -19,7 +19,7 @@ import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
-const sendToApi = false;
+const sendToApi = true;
 
 export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
 

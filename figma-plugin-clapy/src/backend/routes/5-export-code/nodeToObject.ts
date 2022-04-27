@@ -61,8 +61,8 @@ export interface SerializeContext {
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
   fillStyles: Dict<PaintStyle>;
-  effectStyles: Dict<EffectStyle>;
   strokeStyles: Dict<PaintStyle>;
+  effectStyles: Dict<EffectStyle>;
   gridStyles: Dict<GridStyle>;
   // VectorRegion fillStyleId
 }
@@ -109,7 +109,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
     if (!context.isInInstance && isInstance(node)) {
       context = { ...context, isInInstance: true };
     }
-    const { isInInstance, textStyles, fillStyles, effectStyles, strokeStyles, gridStyles } = context;
+    const { isInInstance, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
     if (!exportAsSvg && containsShapesOnly(node)) {
       exportAsSvg = true;
     }
