@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { NodeContext } from '../../../code.model';
 import { FrameNode2, InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
 import { mkDefaultImportDeclaration } from '../../../figma-code-map/details/ts-ast-utils';
-import { makeMuiConfigs, VariantProps } from '../mui-config';
+import { VariantProps } from '../mui-config';
 
 const { factory } = ts;
 
@@ -70,26 +70,25 @@ const buttonPropsMapping: VariantProps = {
   // 'Dark Mode': {},
 };
 
-export const muiComponents = makeMuiConfigs({
-  'Button/Contained': {
-    name: 'Button',
-    moduleSpecifier: '@mui/material',
-    defaultProps: { variant: 'contained' },
-    variantPropsMapping: buttonPropsMapping,
-    extractChildren: (node: InstanceNode2) => {
-      const unstyledButton = node.children[0] as InstanceNode2 | undefined;
-      let textNode = unstyledButton?.children[0] as TextNode2 | FrameNode2 | undefined;
-      // If has an icon, there is a content wrapper.
-      if (!isText(textNode)) {
-        let maskedIconOrText = textNode?.children[0] as TextNode2 | FrameNode2 | undefined;
-        // If the icon is at the first position, the text is at the second.
-        if (!isText(maskedIconOrText)) {
-          textNode = textNode?.children[1] as TextNode2 | undefined;
-        } else {
-          textNode = maskedIconOrText;
-        }
+export const figmaNameMUIButton = 'Button/Contained';
+export const muiConfigButton = {
+  name: 'Button',
+  moduleSpecifier: '@mui/material',
+  variantPropsMapping: buttonPropsMapping,
+  defaultProps: { variant: 'contained' },
+  extractChildren: (node: InstanceNode2) => {
+    const unstyledButton = node.children[0] as InstanceNode2 | undefined;
+    let textNode = unstyledButton?.children[0] as TextNode2 | FrameNode2 | undefined;
+    // If has an icon, there is a content wrapper.
+    if (!isText(textNode)) {
+      let maskedIconOrText = textNode?.children[0] as TextNode2 | FrameNode2 | undefined;
+      // If the icon is at the first position, the text is at the second.
+      if (!isText(maskedIconOrText)) {
+        textNode = textNode?.children[1] as TextNode2 | undefined;
+      } else {
+        textNode = maskedIconOrText;
       }
-      return textNode?._textSegments?.map(segment => segment.characters).join('');
-    },
+    }
+    return textNode?._textSegments?.map(segment => segment.characters).join('');
   },
-});
+};

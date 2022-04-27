@@ -33,7 +33,8 @@ export interface ComponentContext {
   readonly compDir: string;
   readonly compName: string;
   readonly classNamesAlreadyUsed: Set<string>;
-  readonly importNamesAlreadyUsed: Set<string>;
+  readonly subComponentNamesAlreadyUsed: Set<string>;
+  readonly importsAlreadyAdded: Map<string, string>;
   readonly cssRules: CssRootNode[];
   // E.g. button, a... https://stackoverflow.com/a/39386695/4053349
   // Cannot really guess at project level, because components can have multiple usages.

@@ -7,7 +7,7 @@ import { figmaTypoToJss } from '../../figma-code-map/font';
 
 const { factory } = ts;
 
-const typoMappingConfig: Dict<Dict<TypographyVariant>> = {
+export const typoMappingConfig: Dict<Dict<TypographyVariant>> = {
   Typography: {
     H1: 'h1',
     H2: 'h2',

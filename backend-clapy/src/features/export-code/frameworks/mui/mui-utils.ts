@@ -3,8 +3,8 @@ import ts from 'typescript';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { ComponentContext, NodeContext } from '../../code.model';
 import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
-import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
-import { muiComponents } from './components/button';
+import { genUniqueName, mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
+import { muiComponents } from './mui-all-components';
 import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
 
 const { factory } = ts;
@@ -31,7 +31,17 @@ export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNod
 }
 
 export function addMuiImport(context: ComponentContext, config: MUIConfig) {
-  context.imports.push(mkNamedImportsDeclaration([config.name], config.moduleSpecifier));
+  const { imports, subComponentNamesAlreadyUsed, importsAlreadyAdded } = context;
+  const importHashKey = `${config.name}__${config.moduleSpecifier}`;
+  if (!importsAlreadyAdded.has(importHashKey)) {
+    // Rename import name if already in scope
+    const name = genUniqueName(subComponentNamesAlreadyUsed, config.name, true);
+    imports.push(
+      mkNamedImportsDeclaration([name === config.name ? name : [config.name, name]], config.moduleSpecifier),
+    );
+    config.name = name;
+    importsAlreadyAdded.set(importHashKey, name);
+  }
 }
 
 export function mkMuiComponentAst(
@@ -79,7 +89,7 @@ function _mkMuiComponent(
       ]),
     ),
     children ? [factory.createJsxText(children, false)] : [],
-    factory.createJsxClosingElement(factory.createIdentifier('Button')),
+    factory.createJsxClosingElement(factory.createIdentifier(name)),
   );
 }
 

@@ -52,7 +52,7 @@ export function genComponentImportName(context: NodeContext) {
   if (baseName !== 'icon') {
     baseName = `${baseName}Icon`;
   }
-  return genUniqueName(context.componentContext.importNamesAlreadyUsed, baseName, true);
+  return genUniqueName(context.componentContext.subComponentNamesAlreadyUsed, baseName, true);
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
@@ -62,7 +62,7 @@ export function genUniqueName(usageCache: Set<string>, baseName: string, pascalC
   let i = 1;
   while (usageCache.has(name)) {
     ++i;
-    name = `${sanitize(baseName)}_${i}`;
+    name = `${sanitize(baseName)}${i}`;
   }
   usageCache.add(name);
   return name;
@@ -113,7 +113,10 @@ export function mkDefaultImportDeclaration(importClauseName: string, moduleSpeci
   );
 }
 
-export function mkNamedImportsDeclaration(importSpecifierNames: string[], moduleSpecifier: string) {
+export function mkNamedImportsDeclaration(
+  importSpecifierNames: (string | [string, string])[],
+  moduleSpecifier: string,
+) {
   return factory.createImportDeclaration(
     undefined,
     undefined,
@@ -122,7 +125,13 @@ export function mkNamedImportsDeclaration(importSpecifierNames: string[], module
       undefined,
       factory.createNamedImports(
         importSpecifierNames.map(name =>
-          factory.createImportSpecifier(false, undefined, factory.createIdentifier(name)),
+          typeof name === 'string'
+            ? factory.createImportSpecifier(false, undefined, factory.createIdentifier(name))
+            : factory.createImportSpecifier(
+                false,
+                factory.createIdentifier(name[0]),
+                factory.createIdentifier(name[1]),
+              ),
         ),
       ),
     ),
