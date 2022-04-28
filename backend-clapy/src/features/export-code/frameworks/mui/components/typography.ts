@@ -7,7 +7,7 @@ import { typoMappingConfig } from '../mui-theme-typography';
 
 const { factory } = ts;
 
-const typographyPropsMapping: VariantProps = {
+const variantPropsMapping: VariantProps = {
   Variant: {
     name: 'variant',
     valuesMap: typoMappingConfig.Typography,
@@ -19,7 +19,7 @@ export const figmaNameMUITypography = 'Typography';
 export const muiConfigTypography: MUIConfig = {
   name: 'Typography',
   moduleSpecifier: '@mui/material',
-  variantPropsMapping: typographyPropsMapping,
+  variantPropsMapping,
   extractChildren: (node: InstanceNode2) => {
     const textNode = node.children[0] as TextNode2 | undefined;
     if (!isText(textNode)) {

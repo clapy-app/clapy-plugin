@@ -36,7 +36,7 @@ export interface MUIConfig {
   moduleSpecifier: string;
   variantPropsMapping: VariantProps;
   defaultProps?: any;
-  extractChildren?: (node: InstanceNode2, config?: MUIConfig) => string | undefined;
+  extractChildren?: (node: InstanceNode2, context: NodeContext, config?: MUIConfig) => ValidAstPropValue | undefined;
 }
 
 export function makeMuiConfigs<Config extends MUIConfigs>(config: Config): Config {

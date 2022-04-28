@@ -3,7 +3,11 @@ import ts from 'typescript';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { ComponentContext, NodeContext } from '../../code.model';
 import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
-import { genUniqueName, mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
+import {
+  genUniqueName,
+  mkDefaultImportDeclaration,
+  mkNamedImportsDeclaration,
+} from '../../figma-code-map/details/ts-ast-utils';
 import { muiComponents } from './mui-all-components';
 import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
 
@@ -39,9 +43,17 @@ export function addMuiImport(context: ComponentContext, config: MUIConfig) {
     imports.push(
       mkNamedImportsDeclaration([name === config.name ? name : [config.name, name]], config.moduleSpecifier),
     );
-    config.name = name;
+    if (name !== config.name) {
+      config = { ...config, name };
+    }
     importsAlreadyAdded.set(importHashKey, name);
+  } else {
+    const name = importsAlreadyAdded.get(importHashKey);
+    if (name && name !== config.name) {
+      config = { ...config, name };
+    }
   }
+  return config;
 }
 
 export function mkMuiComponentAst(
@@ -50,7 +62,7 @@ export function mkMuiComponentAst(
   node: InstanceNode2,
   attributes: ts.JsxAttribute[],
 ) {
-  const children = config.extractChildren?.(node, config);
+  const children = config.extractChildren?.(node, context, config);
   return _mkMuiComponent(
     config.name,
     { ...config.defaultProps, ...mapProps(context, node, config) },
@@ -66,9 +78,6 @@ function _mkMuiComponent(
   children?: ValidAstPropValue,
 ) {
   children = children || props.children;
-  if (children && typeof children !== 'string') {
-    throw new Error(`Unsupported children type, only strings are supported: ${JSON.stringify(children)}`);
-  }
   return factory.createJsxElement(
     factory.createJsxOpeningElement(
       factory.createIdentifier(name),
@@ -88,7 +97,13 @@ function _mkMuiComponent(
         ),
       ]),
     ),
-    children ? [factory.createJsxText(children, false)] : [],
+    !children
+      ? []
+      : typeof children === 'boolean'
+      ? [factory.createJsxText(children.toString(), false)]
+      : typeof children === 'string'
+      ? [factory.createJsxText(children, false)]
+      : [children],
     factory.createJsxClosingElement(factory.createIdentifier(name)),
   );
 }
@@ -138,4 +153,26 @@ function mapProps(context: NodeContext, node: InstanceNode2, config: MUIConfig) 
     return acc;
   }, [] as Array<[string, ValidAstPropValue]>);
   return Object.fromEntries(entries);
+}
+
+/** Returns import and JSX AST */
+export function iconInstanceToAst(icon: InstanceNode2 | undefined, size?: 'small' | 'medium' | 'large' | 'inherit') {
+  let iconName = icon?.mainComponent?.name;
+  if (!iconName) return [];
+  if (iconName?.endsWith('Filled')) {
+    iconName = iconName.slice(0, -6);
+  }
+  const iconVarName = `${iconName}Icon`;
+  return [
+    mkDefaultImportDeclaration(iconVarName, `@mui/icons-material/${iconName}`),
+    factory.createJsxSelfClosingElement(
+      factory.createIdentifier(iconVarName),
+      undefined,
+      factory.createJsxAttributes(
+        size
+          ? [factory.createJsxAttribute(factory.createIdentifier('fontSize'), factory.createStringLiteral(size))]
+          : [],
+      ),
+    ),
+  ] as const;
 }

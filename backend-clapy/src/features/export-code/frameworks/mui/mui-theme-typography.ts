@@ -64,8 +64,10 @@ function buildTypography(textStyles: Dict<TextStyle>) {
   for (const [id, style] of Object.entries(textStyles)) {
     const { name } = style;
     const key = typoMapping[name];
-    const jss = figmaTypoToJss(style);
-    typography[key] = jss;
+    if (key) {
+      const jss = figmaTypoToJss(style);
+      typography[key] = jss;
+    }
   }
 
   return typography;

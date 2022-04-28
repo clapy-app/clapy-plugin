@@ -55,11 +55,11 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
     const styles: Dict<DeclarationPlain> = {};
 
-    const muiConfig = checkAndProcessMuiComponent(context, node);
+    let muiConfig = checkAndProcessMuiComponent(context, node);
     if (muiConfig) {
       context.outerLayoutOnly = true;
       const node2 = node as InstanceNode2;
-      addMuiImport(componentContext, muiConfig);
+      muiConfig = addMuiImport(componentContext, muiConfig);
 
       // Add tag styles
       mapCommonStyles(context, node2, styles);
