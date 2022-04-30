@@ -276,7 +276,6 @@ export const extractionBlacklist = [
   'constrainProportions',
   'guides',
   'expanded',
-  'relativeTransform',
   'absoluteTransform',
   'absoluteRenderBounds',
   'vectorNetwork',

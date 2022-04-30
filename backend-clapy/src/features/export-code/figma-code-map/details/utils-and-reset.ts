@@ -47,7 +47,7 @@ export function round(num: number, precision = 4) {
   return res === 0 ? 0 : res;
 }
 
-function parseTransformationMatrix(transformationMatrix: Transform) {
+export function parseTransformationMatrix(transformationMatrix: Transform) {
   const [[a, c, tx], [b, d, ty]] = transformationMatrix;
   const sx = round(Math.sign(a) * Math.sqrt(a * a + b * b));
   const sy = round(Math.sign(d) * Math.sqrt(c * c + d * d));

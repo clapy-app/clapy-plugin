@@ -46,14 +46,12 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     const right = parentNode.width - nodeX - node.width;
     const parentWidth = parentNode.width;
 
-    let translateX = false;
     if (horizontal === 'MIN') {
       addStyle(styles, 'left', [left, 'px']);
     } else if (horizontal === 'MAX') {
       addStyle(styles, 'right', [right, 'px']);
     } else if (horizontal === 'CENTER') {
-      addStyle(styles, 'left', [((left + node.width / 2) / parentWidth) * 100, '%']);
-      translateX = true;
+      addStyle(styles, 'left', [(left / parentWidth) * 100, '%']);
     } else if (horizontal === 'STRETCH') {
       addStyle(styles, 'left', [left, 'px']);
       addStyle(styles, 'right', [right, 'px']);
@@ -67,7 +65,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     // Don't subtract borderTopWidth, it's already included in nodeY.
     const bottom = parentNode.height - nodeY - node.height;
     const parentHeight = parentNode.height;
-    let translateY = false;
 
     if (isLine(node)) {
       top -= node.strokeWeight;
@@ -81,19 +78,10 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(styles, 'top', [top, 'px']);
       addStyle(styles, 'bottom', [bottom, 'px']);
     } else if (vertical === 'CENTER') {
-      addStyle(styles, 'top', [((top + node.height / 2) / parentHeight) * 100, '%']);
-      translateY = true;
+      addStyle(styles, 'top', [(top / parentHeight) * 100, '%']);
     } else if (vertical === 'SCALE') {
       addStyle(styles, 'top', [(top / parentHeight) * 100, '%']);
       addStyle(styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
-    }
-
-    if (translateX && translateY) {
-      addStyle(styles, 'transform', 'translate(-50%, -50%)');
-    } else if (translateX) {
-      addStyle(styles, 'transform', 'translateX(-50%)');
-    } else if (translateY) {
-      addStyle(styles, 'transform', 'translateY(-50%)');
     }
   }
 }

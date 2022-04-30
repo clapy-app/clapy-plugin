@@ -55,6 +55,7 @@ export interface NodeContext {
   parentContext: NodeContext | null;
   isRootNode?: boolean;
   outerLayoutOnly?: boolean;
+  tranforms?: string[];
 }
 
 export interface BorderWidths {
