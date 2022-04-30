@@ -147,6 +147,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
         svgPathVarName,
         svgContent,
       };
+      // console.log(svgContent);
 
       // Add import in file
       componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));

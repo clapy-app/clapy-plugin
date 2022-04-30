@@ -3,7 +3,7 @@ import filetype from 'magic-bytes.js';
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
-import { isArrayOf } from '../../../common/general-utils';
+import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import {
   Dict,
   ExportImageEntry,
@@ -198,6 +198,12 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
           (nodeToExport as ShapeNode).effects = [];
           (nodeToExport as ShapeNode).effectStyleId = '';
         }
+        const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+        // console.log('absolute rotation:', rotation);
+        if (rotation !== 0) {
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+          // nodeToExport.rotation -= rotation;
+        }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
           obj.constraints = (nodeToExport.children[0] as ConstraintMixin)?.constraints;
@@ -211,7 +217,9 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
         // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
         try {
-          obj._svg = utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
+          obj._svg = utf8ArrayToStr(
+            await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: true /* false */ }),
+          );
         } catch (error) {
           warnNode(node, 'Failed to export node as SVG, ignoring.');
           console.error(error);

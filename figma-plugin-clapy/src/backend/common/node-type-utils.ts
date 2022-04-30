@@ -157,11 +157,11 @@ export function isMyComp(node: BaseNode | SceneNode | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
 
-export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode;
+export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode | BooleanOperationNode;
 
 export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is ShapeNode {
   // Rectangle and line are excluded
-  return isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node);
+  return isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node) || isBooleanOperation(node);
 }
 
 export function isStyledTextSegment(node: SceneNode | StyledTextSegment | Nil): node is StyledTextSegment {

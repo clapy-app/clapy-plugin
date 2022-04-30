@@ -77,3 +77,24 @@ export function toConcurrencySafeAsyncFn<T extends (...args: any[]) => Promise<a
     }
   }) as T;
 }
+
+export function parseTransformationMatrix(transformationMatrix: Transform) {
+  const [[a, c, tx], [b, d, ty]] = transformationMatrix;
+  const sx = round(Math.sign(a) * Math.sqrt(a * a + b * b));
+  const sy = round(Math.sign(d) * Math.sqrt(c * c + d * d));
+  const rotation = round(radiansToDegrees(Math.atan2(-b, a)));
+  // const rotation2 = round(radiansToDegrees(Math.atan2(c, d)));
+  // => Same for traditional transformation matrix.
+  // Gives a different result for gradientTransform => not the same type of transformation matrix?
+  return {
+    tx,
+    ty,
+    sx,
+    sy,
+    rotation, // in degrees
+  };
+}
+
+function radiansToDegrees(radians: number) {
+  return radians * (180 / Math.PI);
+}

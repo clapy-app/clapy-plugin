@@ -5,7 +5,7 @@ const svgWidthHeightRegex = /^<svg width="\d+" height="\d+"/;
 export function readSvg(node: VectorNodeDerived) {
   // Remove width and height from SVG. Let the CSS define it.
   // Useless when using SVGR to create a React component, but useful for masking since we don't use React SVG for masking.
-  let svg = node._svg?.replace(svgWidthHeightRegex, '<svg');
+  let svg = node._svg; /* ?.replace(svgWidthHeightRegex, '<svg') */
 
   // Patch viewbox if width or height is smaller than the stroke:
   // extend viewbox size to make the stroke visible, to match Figma behavior.

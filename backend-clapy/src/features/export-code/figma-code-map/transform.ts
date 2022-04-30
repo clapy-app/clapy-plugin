@@ -7,15 +7,11 @@ import { addStyle } from '../css-gen/css-factories-high';
 import { round } from './details/utils-and-reset';
 
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  applyRotate(context, node, styles);
-}
-
-export function applyRotate(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // The rotation is already included in the SVG itself when exporting from Figma
   if (isVector(node)) return;
   const [[a, c, tx0], [b, d, ty0]] = node.relativeTransform;
   const isIdentity = a === 1 && d === 1 && b === 0 && c === 0;
-  if (!styles.transform && !isIdentity /* && !!rotation */) {
+  if (!styles.transform && !isIdentity) {
     addTransform(context, `matrix(${round(a)}, ${round(b)}, ${round(c)}, ${round(d)}, 0, 0)`);
 
     const { parentNode } = context;
