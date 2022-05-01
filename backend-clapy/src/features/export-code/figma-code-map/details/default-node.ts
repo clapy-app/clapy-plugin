@@ -55,6 +55,10 @@ export const defaultNode: FrameNodeNoMethod = {
   reactions: [],
   children: [],
   stuckNodes: [],
+  relativeTransform: [
+    [1, 0, 0],
+    [0, 1, 0],
+  ],
 };
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNodeNoMethod>[]): FrameNodeNoMethod {

@@ -17,12 +17,13 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   const filters: string[] = [];
   for (const effect of node.effects) {
     if (effect.type === 'INNER_SHADOW' || effect.type === 'DROP_SHADOW') {
-      const {
+      let {
         color: { r, g, b, a },
         offset: { x, y },
-        radius: blur,
+        radius: blurRadius,
         spread = 0,
       } = effect;
+      blurRadius = convertRadius(blurRadius);
       const hex = figmaColorToCssHex({ r, g, b }, a);
       const insetPrefix = !nodeIsText && effect.type === 'INNER_SHADOW' ? 'inset ' : '';
       // box-shadow:
@@ -31,17 +32,19 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
       // drop-shadow: the opposite
       // Let's use box-shadow if inset or with a spread, otherwise drop-shadow.
       if (nodeIsText) {
-        textShadowStyles.push(`${x}px ${y}px ${blur}px ${hex}`);
+        textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
       } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
-        boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blur}px ${spread}px ${hex}`);
+        boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
       } else {
-        filters.push(`drop-shadow(${x}px ${y}px ${blur}px ${hex})`);
+        filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
       }
     } else if (effect.type === 'LAYER_BLUR') {
-      const { radius } = effect;
+      let { radius } = effect;
+      radius = convertRadius(radius);
       filters.push(`blur(${radius}px)`);
     } else if (effect.type === 'BACKGROUND_BLUR') {
-      const { radius } = effect;
+      let { radius } = effect;
+      radius = convertRadius(radius);
       backdropFilters.push(`blur(${radius}px)`);
     }
   }
@@ -57,4 +60,8 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   if (backdropFilters.length) {
     addStyle(styles, 'backdrop-filter', backdropFilters.join(' '));
   }
+}
+
+function convertRadius(radius: number) {
+  return radius / 2;
 }

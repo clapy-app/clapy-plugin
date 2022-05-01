@@ -2,16 +2,16 @@ import { FC, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import classes from '../1-import-sb/1-ImportSb.module.scss';
-import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
-import { handleError } from '../../common/error-utils';
-import { useCallbackAsync2 } from '../../common/front-utils';
-import { apiPost } from '../../common/http.utils';
-import { fetchPlugin } from '../../common/plugin-utils';
-import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
-import { Button } from '../../components-old/Button';
-import { env } from '../../environment/env';
-import { selectIsAlphaDTCUser } from '../auth/auth-slice';
-import { uploadAssetFromUintArrayRaw } from './cloudinary';
+import { ErrorComp } from '../../1-import-sb/detail/ErrorComp';
+import { handleError } from '../../../common/error-utils';
+import { useCallbackAsync2 } from '../../../common/front-utils';
+import { apiPost } from '../../../common/http.utils';
+import { fetchPlugin } from '../../../common/plugin-utils';
+import { CSBResponse, ExportImageMap2 } from '../../../common/sb-serialize.model';
+import { Button } from '../../../components-old/Button';
+import { env } from '../../../environment/env';
+import { selectIsAlphaDTCUser } from '../../auth/auth-slice';
+import { uploadAssetFromUintArrayRaw } from '../cloudinary';
 
 export const ExportCode: FC = memo(function ExportCode() {
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
@@ -23,7 +23,7 @@ export const ExportCode: FC = memo(function ExportCode() {
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
-const sendToApi = true;
+const sendToApi = false;
 
 const ExportCodeInner: FC = memo(function ExportCodeInner() {
   // const { figmaId } = useSelector(selectSelectionGuaranteed);
@@ -35,9 +35,9 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       setPreviewUrl('loading');
 
       // Extract the Figma configuration
-      const [parent, root, imagesExtracted, extraConfig] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, imagesExtracted, styles, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images, extraConfig };
+      const nodes = { parent, root, images, styles, extraConfig };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {

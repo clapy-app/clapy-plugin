@@ -3,6 +3,7 @@ import ts from 'typescript';
 import { ComponentContext, ProjectContext } from '../../code.model';
 import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { getSetInMap } from '../../figma-code-map/font';
+import { mkThemeVarCreation } from './mui-theme';
 
 const { factory } = ts;
 
@@ -15,25 +16,6 @@ export function addMUIFonts(context: ProjectContext) {
   }
 }
 
-function mkThemeVarCreation() {
-  return factory.createVariableStatement(
-    undefined,
-    factory.createVariableDeclarationList(
-      [
-        factory.createVariableDeclaration(
-          factory.createIdentifier('theme'),
-          undefined,
-          undefined,
-          factory.createCallExpression(factory.createIdentifier('createTheme'), undefined, [
-            factory.createObjectLiteralExpression([], false),
-          ]),
-        ),
-      ],
-      ts.NodeFlags.Const,
-    ),
-  );
-}
-
 export function addMUIProvidersImports(lightAppComponentContext: ComponentContext) {
   if (lightAppComponentContext.projectContext.enableMUIFramework) {
     const { imports, statements } = lightAppComponentContext;
@@ -43,38 +25,34 @@ export function addMUIProvidersImports(lightAppComponentContext: ComponentContex
     }
     imports.push(mkNamedImportsDeclaration(namedImports, '@mui/material'));
 
-    statements.push(mkThemeVarCreation());
+    statements.push(mkThemeVarCreation(lightAppComponentContext));
   }
 }
 
-export function addMUIProviders(context: ComponentContext, rootJsx: ts.JsxChild) {
+export function addMUIProviders<TNode extends ts.JsxChild>(
+  context: ComponentContext,
+  rootJsx: TNode,
+): TNode | ts.JsxElement {
   const { projectContext } = context;
   const { enableMUIFramework } = projectContext;
   if (!enableMUIFramework) return rootJsx;
-  rootJsx = wrapWithFragmentAndBaseline(rootJsx);
-  return rootJsx;
+  return wrapWithFragmentAndBaseline(rootJsx);
 }
 
-function wrapWithFragmentAndBaseline(jsx: ts.JsxChild) {
-  return factory.createJsxFragment(
-    factory.createJsxOpeningFragment(),
-    [
-      factory.createJsxElement(
-        factory.createJsxOpeningElement(
-          factory.createIdentifier('ThemeProvider'),
-          undefined,
-          factory.createJsxAttributes([
-            factory.createJsxAttribute(
-              factory.createIdentifier('theme'),
-              factory.createJsxExpression(undefined, factory.createIdentifier('theme')),
-            ),
-          ]),
+function wrapWithFragmentAndBaseline<TNode extends ts.JsxChild>(jsx: TNode) {
+  return factory.createJsxElement(
+    factory.createJsxOpeningElement(
+      factory.createIdentifier('ThemeProvider'),
+      undefined,
+      factory.createJsxAttributes([
+        factory.createJsxAttribute(
+          factory.createIdentifier('theme'),
+          factory.createJsxExpression(undefined, factory.createIdentifier('theme')),
         ),
-        addBaseline ? [mkBaselineTag(), jsx] : [jsx],
-        factory.createJsxClosingElement(factory.createIdentifier('ThemeProvider')),
-      ),
-    ],
-    factory.createJsxJsxClosingFragment(),
+      ]),
+    ),
+    addBaseline ? [mkBaselineTag(), jsx] : [jsx],
+    factory.createJsxClosingElement(factory.createIdentifier('ThemeProvider')),
   );
 }
 

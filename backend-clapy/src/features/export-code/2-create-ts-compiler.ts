@@ -14,14 +14,14 @@ import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { mkCompFunction, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
-import { addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
+import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
 
 const { factory } = ts;
 
 const appCssPath = 'src/App.module.css';
 
-export async function exportCode({ images, root, parent, extraConfig }: ExportCodePayload, uploadToCsb = true) {
+export async function exportCode({ root, parent, images, styles, extraConfig }: ExportCodePayload, uploadToCsb = true) {
   perfMeasure('a');
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles();
@@ -41,6 +41,7 @@ export async function exportCode({ images, root, parent, extraConfig }: ExportCo
     svgToWrite: {},
     cssFiles,
     images,
+    styles,
     // TODO hardcoded for now, detection TBD (option in the UI?)
     enableMUIFramework: false,
   };
@@ -118,7 +119,10 @@ function addCompToAppRoot(
 
   // The component import is added inside genComponent itself (with a TODO to refactor)
 
-  statements.push(mkCompFunction(compName, mkAppCompJsx(childCompContext.compName)));
+  let appJsx: ts.JsxElement | ts.JsxFragment = mkAppCompJsx(childCompContext.compName);
+  appJsx = addMUIProviders(appCompContext, appJsx);
+
+  statements.push(mkCompFunction(compName, appJsx));
 
   printFileInProject(appCompContext);
 }

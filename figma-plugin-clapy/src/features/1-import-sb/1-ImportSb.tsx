@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ExportCode } from '../2-export-code/4-ExportCode';
+import { ExportCode } from '../2-export-code/old/4-ExportCode';
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';

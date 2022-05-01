@@ -5,7 +5,7 @@ import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { genComponent } from './3-gen-component';
-import { mapCommonStyles, mapTagStyles, mapTextStyles } from './5-figma-to-code-map';
+import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './5-figma-to-code-map';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
@@ -55,11 +55,11 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
     const styles: Dict<DeclarationPlain> = {};
 
-    const muiConfig = checkAndProcessMuiComponent(context, node);
+    let muiConfig = checkAndProcessMuiComponent(context, node);
     if (muiConfig) {
       context.outerLayoutOnly = true;
       const node2 = node as InstanceNode2;
-      addMuiImport(componentContext, muiConfig);
+      muiConfig = addMuiImport(componentContext, muiConfig);
 
       // Add tag styles
       mapCommonStyles(context, node2, styles);
@@ -112,6 +112,9 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       const flexStyles: Dict<DeclarationPlain> = {};
       mapTagStyles(context, node, flexStyles);
 
+      postMapStyles(context, node, styles);
+      postMapStyles(context, node, flexStyles);
+
       if (!context.parentStyles || Object.keys(flexStyles).length) {
         const className = genClassName(context, node, isRoot);
         const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
@@ -144,6 +147,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
         svgPathVarName,
         svgContent,
       };
+      // console.log(svgContent);
 
       // Add import in file
       componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
@@ -172,6 +176,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
   mapTagStyles(context, node, styles);
   const className = genClassName(context, node, isRoot);
+  postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
@@ -201,6 +206,7 @@ async function generateBlockAst(
     await recurseOnChildren(context, node, children, styles);
   }
 
+  postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {

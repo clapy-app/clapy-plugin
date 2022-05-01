@@ -31,7 +31,7 @@ import { opacityFigmaToCode } from './figma-code-map/opacity';
 import { overflowFigmaToCode } from './figma-code-map/overflow';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
 import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches';
-import { transformFigmaToCode } from './figma-code-map/transform';
+import { postTransform, transformFigmaToCode } from './figma-code-map/transform';
 import { zindexFigmaToCode } from './figma-code-map/zindex';
 
 const { factory } = ts;
@@ -50,6 +50,10 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
   if (!context.outerLayoutOnly) {
     mapTagUIStyles(context, node, styles);
   }
+}
+
+export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  postTransform(context, styles);
 }
 
 // Styles applying "outside" the component and/or impacting the component independently of how the component is designed

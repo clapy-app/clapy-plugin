@@ -1,6 +1,7 @@
 import { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
-import { ArgTypes } from '../../../common/sb-serialize.model';
+import { ArgTypes, Dict } from '../../../common/sb-serialize.model';
 import { sbUrlIframe } from '../../../common/storybook-utils';
+import { isComponentSet, isInstance } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
@@ -51,12 +52,37 @@ function prepareSbCompSelection() /* : SbCompSelection[] */ {
   }, [] as SbAnySelection[]);
   // To log the selection flex config:
   if (selectedSbComp.length === 1) {
-    show(figma.getNodeById(selectedSbComp[0].tagFigmaId || selectedSbComp[0].figmaId) as FrameNode);
+    show(figma.getNodeById(selectedSbComp[0].tagFigmaId || selectedSbComp[0].figmaId));
   }
   return selectedSbComp;
 }
 
-function show(node: FrameNode) {
+type ValidAstPropPrimitive = string | boolean;
+interface VariantProps {
+  [figmaName: string]: {
+    name: string;
+    valuesMap: Dict<ValidAstPropPrimitive>;
+  };
+}
+
+const printComponentProps = false;
+
+function show(node: BaseNode | null) {
+  if (!node) return;
   const date = new Date().toISOString().substring(0, 19).replace('T', ' ');
   console.log(date, node.name, `figma.getNodeById('${node.id}')`, '=>', node);
+  if (printComponentProps && isInstance(node) && node.mainComponent && isComponentSet(node.mainComponent?.parent)) {
+    const compSet = node.mainComponent.parent;
+    const propsMapped: VariantProps = {};
+    for (const [propName, { values }] of Object.entries(compSet.variantGroupProperties)) {
+      propsMapped[propName] = {
+        name: 'TODO',
+        valuesMap: values.reduce<Dict<ValidAstPropPrimitive>>((prev, current) => {
+          prev[current] = 'TODO';
+          return prev;
+        }, {}),
+      };
+    }
+    console.log(JSON.stringify(propsMapped, null, 2));
+  }
 }

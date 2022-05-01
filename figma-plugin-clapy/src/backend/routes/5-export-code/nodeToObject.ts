@@ -3,8 +3,9 @@ import filetype from 'magic-bytes.js';
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
-import { isArrayOf } from '../../../common/general-utils';
+import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import {
+  Dict,
   ExportImageEntry,
   ExportImagesFigma,
   extractionBlacklist,
@@ -12,6 +13,7 @@ import {
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import {
+  isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
   isComponentSet,
@@ -56,6 +58,13 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 export interface SerializeContext {
   images: ExportImagesFigma;
   isInInstance?: boolean;
+  // Extract styles to process them later
+  textStyles: Dict<TextStyle>;
+  fillStyles: Dict<PaintStyle>;
+  strokeStyles: Dict<PaintStyle>;
+  effectStyles: Dict<EffectStyle>;
+  gridStyles: Dict<GridStyle>;
+  // VectorRegion fillStyleId
 }
 
 interface Options {
@@ -100,12 +109,13 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
     if (!context.isInInstance && isInstance(node)) {
       context = { ...context, isInInstance: true };
     }
-    if (!exportAsSvg && containsShapesOnly(node)) {
+    const { isInInstance, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+    if (!exportAsSvg && shouldGroupAsSVG(node)) {
       exportAsSvg = true;
     }
     const nodeIsLayout = isLayout(node);
     const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
-    const cancelRotation = useCancelRotationWorkaround && isSvgWithRotation && !context.isInInstance;
+    const cancelRotation = useCancelRotationWorkaround && isSvgWithRotation && !isInInstance;
 
     let currentRotation: number | undefined = undefined;
     if (cancelRotation) {
@@ -130,17 +140,32 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
             obj[name] = val;
           }
         } catch (err) {
+          console.warn('Failed to read node value', name, 'from node', node.name, node.type, node.id);
           obj[name] = undefined;
         }
       }
     }
     if (isTxt) {
-      obj._textSegments = node.getStyledTextSegments(rangeProps);
+      const segments = node.getStyledTextSegments(rangeProps);
+      obj._textSegments = segments;
+      for (const { textStyleId, fillStyleId } of segments) {
+        addStyle(textStyles, textStyleId);
+        addStyle(fillStyles, fillStyleId);
+      }
     }
 
     const isBlend = isBlendMixin(node);
     if (isBlend && node.isMask) {
       exportAsSvg = true;
+      addStyle(effectStyles, node.effectStyleId);
+    }
+
+    if (isMinimalStrokesMixin(node)) {
+      addStyle(strokeStyles, node.strokeStyleId);
+    }
+
+    if (isBaseFrameMixin(node)) {
+      addStyle(gridStyles, node.gridStyleId);
     }
 
     if (exportAsSvg) {
@@ -173,6 +198,12 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
           (nodeToExport as ShapeNode).effects = [];
           (nodeToExport as ShapeNode).effectStyleId = '';
         }
+        const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+        // console.log('absolute rotation:', rotation);
+        if (rotation !== 0) {
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+          // nodeToExport.rotation -= rotation;
+        }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
           obj.constraints = (nodeToExport.children[0] as ConstraintMixin)?.constraints;
@@ -186,7 +217,9 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
         // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
         try {
-          obj._svg = utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
+          obj._svg = utf8ArrayToStr(
+            await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ }),
+          );
         } catch (error) {
           warnNode(node, 'Failed to export node as SVG, ignoring.');
           console.error(error);
@@ -194,7 +227,10 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       } finally {
         removeNode(copyForExport);
       }
-    } else if (isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
+    } else if (!isTxt && isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
+      // Fills can be mixed if node is Text. Ignore it, text segments are already processed earlier.
+      addStyle(fillStyles, node.fillStyleId);
+
       for (const fill of node.fills) {
         if (fill.type === 'IMAGE') {
           if (!fill.imageHash) {
@@ -306,13 +342,17 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
   }
 }
 
-function containsShapesOnly(node: SceneNode) {
+function shouldGroupAsSVG(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
+  // If only one child, don't group as SVG
+  if (!(node.children.length > 1)) return false;
+  // If one of the children is not a shape, don't group as SVG
   for (const child of node.children) {
     if (!isShapeExceptDivable(child) && !isRectangleWithoutImage(child)) {
       return false;
     }
   }
+  // Otherwise, group as SVG
   return true;
 }
 
@@ -414,6 +454,36 @@ function fixStrokeAlign(node: SceneNode) {
   if (isChildrenMixin(node)) {
     for (const child of node.children) {
       fixStrokeAlign(child);
+    }
+  }
+}
+
+function addStyle<TStyle extends BaseStyle>(styles: Dict<TStyle>, styleId: string | typeof figma.mixed) {
+  if (typeof styleId === 'string') {
+    const styleFull = figma.getStyleById(styleId);
+    if (styleFull && !styles[styleId]) {
+      const style: Dict<any> = {};
+      const props = Object.entries(Object.getOwnPropertyDescriptors((styleFull as any).__proto__));
+      for (const [name, prop] of props) {
+        // Remove ID to make the JSON smaller because it's already available as key in the style dictionary.
+        if (name === 'id') continue;
+
+        const val = prop.get?.call(styleFull);
+        try {
+          if (val) {
+            if (typeof val === 'symbol') {
+              style[name] = 'Mixed';
+            } else {
+              style[name] = val;
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to assign value', name);
+          // style2[name] = undefined;
+        }
+      }
+
+      styles[styleId] = style as TStyle;
     }
   }
 }

@@ -1,10 +1,8 @@
 import { wsReady } from '../core/dev-preview-mode/PreviewMode';
-import { env } from '../environment/env';
+import { env, isFigmaPlugin } from '../environment/env';
 import { flags } from './app-config';
 import type { Routes, Subscriptions } from './app-models';
 import { wait } from './general-utils';
-
-export const isFigmaPlugin = window.location.origin === 'null';
 
 type UnPromise<T> = T extends Promise<infer U> ? U : T;
 
