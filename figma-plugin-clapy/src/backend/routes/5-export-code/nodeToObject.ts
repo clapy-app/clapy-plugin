@@ -110,7 +110,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       context = { ...context, isInInstance: true };
     }
     const { isInInstance, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
-    if (!exportAsSvg && containsShapesOnly(node)) {
+    if (!exportAsSvg && shouldGroupAsSVG(node)) {
       exportAsSvg = true;
     }
     const nodeIsLayout = isLayout(node);
@@ -218,7 +218,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
 
         try {
           obj._svg = utf8ArrayToStr(
-            await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: true /* false */ }),
+            await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ }),
           );
         } catch (error) {
           warnNode(node, 'Failed to export node as SVG, ignoring.');
@@ -342,13 +342,17 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
   }
 }
 
-function containsShapesOnly(node: SceneNode) {
+function shouldGroupAsSVG(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
+  // If only one child, don't group as SVG
+  if (!(node.children.length > 1)) return false;
+  // If one of the children is not a shape, don't group as SVG
   for (const child of node.children) {
     if (!isShapeExceptDivable(child) && !isRectangleWithoutImage(child)) {
       return false;
     }
   }
+  // Otherwise, group as SVG
   return true;
 }
 

@@ -163,7 +163,8 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
       .join('&');
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '</head>',
-      `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap" rel="stylesheet">\n</head>`,
+      // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
+      `  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap">\n</head>`,
     );
   }
 }
