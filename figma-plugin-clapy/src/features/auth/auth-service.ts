@@ -107,11 +107,13 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
 export function logout(mustReauth?: boolean) {
   setAccessToken(null);
   _tokenType = null;
-  const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
-    client_id: auth0ClientId,
-    returnTo: mustReauth ? `${loggedOutCallbackUrl}&reauth` : loggedOutCallbackUrl,
-  });
-  window.open(url, '_blank');
+  if (!mustReauth) {
+    const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
+      client_id: auth0ClientId,
+      returnTo: mustReauth ? `${loggedOutCallbackUrl}&reauth` : loggedOutCallbackUrl,
+    });
+    window.open(url, '_blank');
+  }
   fetchPlugin('clearCachedTokens').catch(handleError);
   dispatchOther(setSignedInState(false));
 }

@@ -5,10 +5,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import classes from './App.module.scss';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
+import { apiGet } from './common/http.utils';
 import alertClasses from './components-old/ErrorAlert/ErrorAlert.module.css';
 import { Layout } from './components-old/Layout/Layout';
 import { track } from './features/1-import-sb/detail/analytics';
-import { getTokens } from './features/auth/auth-service';
 
 const openPluginTime = performance.now();
 
@@ -20,15 +20,9 @@ window.addEventListener('unload', function () {
 
 export const App: FC = memo(function App() {
   useEffect(() => {
-    getTokens()
-      .then(() => {
-        track('open-plugin');
-        // setError(undefined);
-      })
-      .catch(err => {
-        handleError(err);
-        // setError(err?.message || 'Unknown error');
-      });
+    apiGet('check-session')
+      .catch(handleError)
+      .finally(() => track('open-plugin'));
   }, []);
 
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'
