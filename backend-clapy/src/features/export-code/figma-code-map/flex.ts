@@ -266,12 +266,14 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
+  // For root absolute container, fill width to try responsiveness,
+  // but respect the wireframe height.
   const widthFillContainer =
     (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) ||
     (context.isRootNode && !widthHugContents);
   const heightFillContainer =
     (isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer) ||
-    (context.isRootNode && !heightHugContents);
+    (isParentAutoLayout && context.isRootNode && !heightHugContents);
 
   const isWidthPositionAbsoluteAutoSize =
     !nodeIsGroup &&
@@ -311,7 +313,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   // const shouldApplyMaxWidth = parentRequireMaxSize || (parentIsBiggerThanNode && !parentHasHorizontalScroll);
   const shouldApplyMaxWidth = isSeparatorOrWorkaround;
   const shouldApplyMaxHeight =
-    (fixedHeight && parentRequireMaxSize) ||
+    (fixedHeight && parentRequireMaxSize && isNodeAutoLayout) ||
     isSeparatorOrWorkaround; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
 
   if (fixedWidth) {

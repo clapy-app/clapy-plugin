@@ -3,4 +3,5 @@
   font-family: sans-serif;
   background-color: #e5e5e5;
   flex-basis: 100%;
+  overflow-y: auto;
 }
