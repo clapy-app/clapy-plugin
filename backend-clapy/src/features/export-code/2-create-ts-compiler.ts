@@ -90,7 +90,7 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
   }
   if (Object.keys(csbFiles).length > 500) {
     throw new HttpException(
-      'The generated code has too many components. A max of ~500 components is supported by CodeSandbox. Please let us know to find how we could solve it.',
+      'The generated code has more than 500 components, which is the max supported by CodeSandbox. Please let us know to find how we could solve it.',
       400,
     );
   }
