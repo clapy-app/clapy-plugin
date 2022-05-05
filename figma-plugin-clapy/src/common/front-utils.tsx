@@ -1,7 +1,7 @@
 import { DependencyList, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import { ErrorAlert2, ErrorAlertButtons } from '../components-old/ErrorAlert/ErrorAlert';
+import { ErrorAlert2, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
 import { isFigmaPlugin } from '../environment/env';
 import { handleError } from './error-utils';
 
