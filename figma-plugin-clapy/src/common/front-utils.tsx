@@ -63,7 +63,12 @@ export function toastError(error: any) {
     return;
   }
 
-  let errorStr = error ? error?.stack || JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'Unknown error';
+  const { data, headers, status, statusText, type, url } = error || {};
+  let errorStr = data
+    ? JSON.stringify({ data, headers, status, statusText, type, url })
+    : error
+    ? error?.stack || JSON.stringify(error, Object.getOwnPropertyNames(error))
+    : 'Unknown error';
   if (error?.nodeName) {
     errorStr = `${error.nodeName}\n${errorStr}`;
   }
@@ -72,7 +77,7 @@ export function toastError(error: any) {
     `mailto:support@clapy.co?subject=Reporting%20an%20error%20I%20faced%20using%20Clapy&body=Hi%20Clapy%20team%2C%0D%0A%0D%0AI%20faced%20the%20following%20error%20while%20using%20the%20Clapy.%0D%0A%0D%0AHere%20are%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0AThe%20error%3A%0D%0A%0D%0A${encodeURIComponent(
       errorStr,
     )}`.substring(0, 1800);
-  const errorMsgDisplayed = `Error: ${error?.message || errorStr}`;
+  const errorMsgDisplayed = `Error: ${data ? JSON.stringify(data.error || data) : error?.message || errorStr}`;
   toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
     closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
   });

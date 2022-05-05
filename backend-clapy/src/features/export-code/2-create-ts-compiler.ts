@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import ts from 'typescript';
 
 import { perfMeasure } from '../../common/perf-utils';
@@ -86,6 +87,12 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
     perfMeasure('k');
     await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
     perfMeasure('l');
+  }
+  if (Object.keys(csbFiles).length > 500) {
+    throw new HttpException(
+      'The generated code has too many components. A max of ~500 components is supported by CodeSandbox. Please let us know to find how we could solve it.',
+      400,
+    );
   }
   if (!env.isDev || uploadToCsb) {
     const csbResponse = await uploadToCSB(csbFiles);
