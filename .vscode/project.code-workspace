@@ -19,5 +19,8 @@
       "figma-plugin-clapy/": true
     },
     "liveServer.settings.multiRootWorkspaceName": "backend-clapy",
+    "code-runner.executorMap": {
+      "typescript": "ts-node --transpile-only",
+    },
   }
 }
