@@ -55,7 +55,7 @@ export async function exportCode(
     images,
     styles,
     // TODO hardcoded for now, detection TBD (option in the UI?)
-    enableMUIFramework: false,
+    enableMUIFramework: !!extraConfig.enableMUIFramework,
   };
 
   const lightAppComponentContext = {

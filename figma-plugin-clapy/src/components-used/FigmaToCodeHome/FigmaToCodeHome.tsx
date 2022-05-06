@@ -1,4 +1,5 @@
 import { FC, memo, useCallback, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import { handleError } from '../../common/error-utils';
 import { toastError, useCallbackAsync2 } from '../../common/front-utils';
@@ -9,6 +10,7 @@ import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb
 import { env } from '../../environment/env';
 import { track } from '../../features/1-import-sb/detail/analytics';
 import { uploadAssetFromUintArrayRaw } from '../../features/2-export-code/cloudinary';
+import { selectIsAlphaDTCUser } from '../../features/auth/auth-slice';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { Button } from './Button/Button';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
@@ -31,6 +33,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
+  console.log('isAlphaDTCUser:', isAlphaDTCUser);
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -52,7 +56,16 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       // Extract the Figma configuration
       const [parent, root, imagesExtracted, styles, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes: ExportCodePayload = { parent, root, images, styles, extraConfig };
+      const nodes: ExportCodePayload = {
+        parent,
+        root,
+        images,
+        styles,
+        extraConfig: {
+          ...extraConfig,
+          enableMUIFramework: isAlphaDTCUser,
+        },
+      };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
@@ -112,7 +125,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAlphaDTCUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
