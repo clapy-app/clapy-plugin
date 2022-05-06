@@ -1,4 +1,10 @@
-import { ExportImagesFigma } from '../../../common/sb-serialize.model';
+import {
+  ComponentNodeNoMethod,
+  ExportImagesFigma,
+  FrameNodeNoMethod,
+  InstanceNodeNoMethod,
+  PageNodeNoMethod,
+} from '../../../common/sb-serialize.model';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { nodeToObject, SerializeContext } from './nodeToObject';
 
@@ -28,9 +34,9 @@ export async function serializeSelectedNode() {
   const skipInstance = !enableMUIFramework;
   const [parentConf, nodesConf] = await Promise.all([
     node.parent
-      ? nodeToObject(node.parent as SceneNode, context, {
+      ? (nodeToObject(node.parent as SceneNode, context, {
           skipChildren: true,
-        })
+        }) as Promise<FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined>)
       : null,
     nodeToObject(node, context, { skipChildren: false, skipInstance }),
   ]);

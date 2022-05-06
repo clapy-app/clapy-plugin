@@ -239,11 +239,11 @@ export type OmitMethods<T> = {
 };
 
 export interface ExportCodePayload {
-  parent: FrameNode | ComponentNode | InstanceNode | PageNode;
-  root: SceneNodeNoMethod;
+  parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
+  root: SceneNodeNoMethod | null | undefined;
   images: ExportImageMap2;
   styles: FigmaStyles;
-  extraConfig: { isClapyFile: boolean };
+  extraConfig: { isClapyFile?: boolean; enableMUIFramework?: boolean };
 }
 
 export interface FigmaStyles {
@@ -257,6 +257,15 @@ export interface FigmaStyles {
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
 export type TextNodeNoMethod = OmitMethods<TextNode>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
+export type ComponentNodeNoMethod = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList> & {
+  children: SceneNodeNoMethod[];
+};
+export type InstanceNodeNoMethod = Omit<OmitMethods<InstanceNode>, FrameNodeBlackList> & {
+  children: SceneNodeNoMethod[];
+};
+export type PageNodeNoMethod = Omit<OmitMethods<PageNode>, FrameNodeBlackList> & {
+  children: SceneNodeNoMethod[];
+};
 
 export const extractionBlacklist = [
   'parent',

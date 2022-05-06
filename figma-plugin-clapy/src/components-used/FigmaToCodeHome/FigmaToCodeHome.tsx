@@ -5,7 +5,7 @@ import { toastError, useCallbackAsync2 } from '../../common/front-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
-import { CSBResponse, ExportImageMap2 } from '../../common/sb-serialize.model';
+import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb-serialize.model';
 import { env } from '../../environment/env';
 import { track } from '../../features/1-import-sb/detail/analytics';
 import { uploadAssetFromUintArrayRaw } from '../../features/2-export-code/cloudinary';
@@ -52,7 +52,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       // Extract the Figma configuration
       const [parent, root, imagesExtracted, styles, extraConfig] = await fetchPlugin('serializeSelectedNode');
       const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images, styles, extraConfig };
+      const nodes: ExportCodePayload = { parent, root, images, styles, extraConfig };
 
       // Upload assets to a CDN before generating the code
       for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {

@@ -1,7 +1,7 @@
 import { relative } from 'path';
 import ts from 'typescript';
 
-import { isNonEmptyObject } from '../../common/general-utils';
+import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { figmaToAstRec } from './4-gen-node';
 import { ComponentContext, NodeContext, ParentNode } from './code.model';
 import { SceneNode2 } from './create-ts-compiler/canvas-utils';
@@ -18,7 +18,7 @@ const { factory } = ts;
 export async function genComponent(
   parentCompContext: ComponentContext,
   node: SceneNode2,
-  parent: ParentNode,
+  parent: ParentNode | Nil,
   isRootComponent = false,
 ) {
   const { projectContext, compDir: callerCompDir, imports: callerImports } = parentCompContext;
@@ -89,7 +89,7 @@ export function printFileInProject(componentContext: ComponentContext) {
   projectContext.tsFiles[path] = result;
 }
 
-async function figmaToAstRootNode(componentContext: ComponentContext, root: SceneNode2, parent: ParentNode) {
+async function figmaToAstRootNode(componentContext: ComponentContext, root: SceneNode2, parent: ParentNode | Nil) {
   const nodeContext: NodeContext = {
     componentContext,
     tagName: 'div', // Default value

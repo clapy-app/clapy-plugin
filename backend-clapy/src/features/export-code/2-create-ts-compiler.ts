@@ -1,6 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import ts from 'typescript';
 
+import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
@@ -22,7 +23,17 @@ const { factory } = ts;
 
 const appCssPath = 'src/App.module.css';
 
-export async function exportCode({ root, parent, images, styles, extraConfig }: ExportCodePayload, uploadToCsb = true) {
+export async function exportCode(
+  { root, parent: p, images, styles, extraConfig }: ExportCodePayload,
+  uploadToCsb = true,
+) {
+  const parent = p as ParentNode | Nil;
+  if (!root) {
+    throw new HttpException(
+      'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',
+      400,
+    );
+  }
   perfMeasure('a');
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles();
@@ -103,7 +114,7 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
 function addCompToAppRoot(
   appCompContext: ComponentContext,
   childCompContext: ComponentContext,
-  parentNode: ParentNode,
+  parentNode: ParentNode | Nil,
 ) {
   const {
     compName,
