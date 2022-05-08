@@ -25,6 +25,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "check-puppeteer": "node src/core/check-puppeteer.js",
+    "analytics": "ts-node --transpile-only src/scripts/analytics/calc-anaytics.ts",
     "_________________ implementation details _________________": "",
     "lint": "eslint \"{src,test}/**/*.{js,ts}\" --fix",
     "gentypes": "ts-node --transpile-only src/scripts/gentypes.ts"

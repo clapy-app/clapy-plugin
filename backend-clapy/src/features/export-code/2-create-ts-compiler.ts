@@ -1,5 +1,7 @@
+import { HttpException } from '@nestjs/common';
 import ts from 'typescript';
 
+import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
@@ -21,7 +23,17 @@ const { factory } = ts;
 
 const appCssPath = 'src/App.module.css';
 
-export async function exportCode({ root, parent, images, styles, extraConfig }: ExportCodePayload, uploadToCsb = true) {
+export async function exportCode(
+  { root, parent: p, images, styles, extraConfig }: ExportCodePayload,
+  uploadToCsb = true,
+) {
+  const parent = p as ParentNode | Nil;
+  if (!root) {
+    throw new HttpException(
+      'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',
+      400,
+    );
+  }
   perfMeasure('a');
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles();
@@ -43,7 +55,7 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
     images,
     styles,
     // TODO hardcoded for now, detection TBD (option in the UI?)
-    enableMUIFramework: false,
+    enableMUIFramework: !!extraConfig.enableMUIFramework,
   };
 
   const lightAppComponentContext = {
@@ -87,6 +99,12 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
     await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
     perfMeasure('l');
   }
+  if (Object.keys(csbFiles).length > 500) {
+    throw new HttpException(
+      'The generated code has more than 500 components, which is the max supported by CodeSandbox. Please let us know to find how we could solve it.',
+      400,
+    );
+  }
   if (!env.isDev || uploadToCsb) {
     const csbResponse = await uploadToCSB(csbFiles);
     return csbResponse;
@@ -96,7 +114,7 @@ export async function exportCode({ root, parent, images, styles, extraConfig }: 
 function addCompToAppRoot(
   appCompContext: ComponentContext,
   childCompContext: ComponentContext,
-  parentNode: ParentNode,
+  parentNode: ParentNode | Nil,
 ) {
   const {
     compName,

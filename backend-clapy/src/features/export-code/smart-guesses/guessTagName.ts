@@ -33,6 +33,7 @@ export function guessTagNameAndUpdateNode(
   } else if (
     !context.componentContext.inInteractiveElement &&
     isFlexNode(node) &&
+    !node.children.length &&
     ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
     (name === 'checkbox' || (name.includes('checkbox') && !name.includes('wrapper') && !name.includes('group')))
   ) {

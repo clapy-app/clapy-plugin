@@ -1,6 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
+import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
 import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
@@ -51,8 +52,8 @@ export interface NodeContext {
   nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
-  parentNode: ParentNode;
-  parentContext: NodeContext | null;
+  parentNode: ParentNode | Nil;
+  parentContext: NodeContext | Nil;
   isRootNode?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];

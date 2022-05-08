@@ -1,12 +1,13 @@
 import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
 
+import { Nil } from '../../../common/general-utils';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { ParentNode } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet, stylesToList } from './css-type-utils';
 
-export function addRulesToAppCss(appCss: string, parentNode: ParentNode) {
+export function addRulesToAppCss(appCss: string, parentNode: ParentNode | Nil) {
   if (!isValidNode(parentNode)) {
     if (!isPage(parentNode)) {
       console.warn('Parent node is not valid to add CSS rules in App.module.css', parentNode);

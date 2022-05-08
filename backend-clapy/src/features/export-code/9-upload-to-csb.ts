@@ -24,7 +24,11 @@ export async function uploadToCSB(files: CsbDict) {
 
 const srcCompPrefix = 'src/components/';
 
-export async function writeToDisk(files: CsbDict, componentContext: ComponentContext, isClapyFile: boolean) {
+export async function writeToDisk(
+  files: CsbDict,
+  componentContext: ComponentContext,
+  isClapyFile: boolean | undefined,
+) {
   const glob = require('glob');
   const globPromise = promisify(glob);
   const { compName } = componentContext;

@@ -345,6 +345,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
 function shouldGroupAsSVG(node: SceneNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   // If only one child, don't group as SVG
+  // TODO reactivate after having fixed the divider bug on Clément's wireframe
   // if (!(node.children.length > 1)) return false;
   // If one of the children is not a shape, don't group as SVG
   for (const child of node.children) {

@@ -6,8 +6,8 @@ import classes from './App.module.scss';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
 import { apiGet } from './common/http.utils';
-import alertClasses from './components-old/ErrorAlert/ErrorAlert.module.css';
-import { Layout } from './components-old/Layout/Layout';
+import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
+import { Layout } from './components-used/Layout/Layout';
 import { track } from './features/1-import-sb/detail/analytics';
 
 const openPluginTime = performance.now();
