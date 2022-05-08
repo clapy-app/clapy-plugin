@@ -241,6 +241,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
   root: SceneNodeNoMethod | null | undefined;
+  components: ComponentNodeNoMethod[];
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: { isClapyFile?: boolean; enableMUIFramework?: boolean };

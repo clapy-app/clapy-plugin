@@ -3,9 +3,10 @@ import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
-import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
+import { ComponentNode2, FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
+export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
 export type CodeDict = Dict<string>;
 
@@ -17,6 +18,8 @@ export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
   readonly fontWeightUsed: Map<string, Set<number>>;
+  readonly compNodes: Dict<ComponentNode2>;
+  readonly components: Map<FigmaId, ComponentContext>;
   readonly resources: CodeDict;
   readonly tsFiles: CodeDict;
   readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;

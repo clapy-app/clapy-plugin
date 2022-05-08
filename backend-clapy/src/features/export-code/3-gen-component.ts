@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { figmaToAstRec } from './4-gen-node';
 import { ComponentContext, NodeContext, ParentNode } from './code.model';
-import { SceneNode2 } from './create-ts-compiler/canvas-utils';
+import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
 import {
   genUniqueName,
@@ -12,10 +12,44 @@ import {
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
 } from './figma-code-map/details/ts-ast-utils';
+import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 const { factory } = ts;
 
-export async function genComponent(
+export async function getOrGenComponent(
+  parentCompContext: ComponentContext,
+  node: SceneNode2,
+  parent: ParentNode | Nil,
+  isRootComponent = false,
+) {
+  const {
+    projectContext: { compNodes, components },
+  } = parentCompContext;
+  const isComp = isComponent(node);
+  const isInst = isInstance(node);
+  let comp: ComponentNode2 | Nil;
+  if (isInst) {
+    comp = node.mainComponent;
+    if (comp) {
+      comp = compNodes[comp.id];
+      if (!comp) {
+        warnNode(node, 'Component source not found for instance. The instance will be treated as a frame.');
+      }
+    }
+  } else if (isComp) {
+    comp = node;
+  }
+  if (!comp) {
+    return genComponent(parentCompContext, node, parent, isRootComponent);
+  }
+  let compContext = components.get(comp.id);
+  if (compContext) return compContext;
+  compContext = await genComponent(parentCompContext, comp, parent, isRootComponent);
+  components.set(comp.id, compContext);
+  return compContext;
+}
+
+async function genComponent(
   parentCompContext: ComponentContext,
   node: SceneNode2,
   parent: ParentNode | Nil,
@@ -23,6 +57,12 @@ export async function genComponent(
 ) {
   const { projectContext, compDir: callerCompDir, imports: callerImports } = parentCompContext;
   const { cssFiles } = projectContext;
+
+  const isComp = isComponent(node);
+  const isInst = isInstance(node);
+  if (isComp || isInst) {
+    node = { ...node, type: 'FRAME' as const };
+  }
 
   const pageName = parentCompContext.pageName;
   const compName = genUniqueName(projectContext.compNamesAlreadyUsed, node.name, true);

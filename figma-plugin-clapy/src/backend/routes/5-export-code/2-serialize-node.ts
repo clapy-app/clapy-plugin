@@ -5,6 +5,7 @@ import {
   InstanceNodeNoMethod,
   PageNodeNoMethod,
 } from '../../../common/sb-serialize.model';
+import { env } from '../../../environment/env';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { nodeToObject, SerializeContext } from './nodeToObject';
 
@@ -19,15 +20,18 @@ export async function serializeSelectedNode() {
   const images: ExportImagesFigma = {};
   const context: SerializeContext = {
     images,
+    components: {},
     textStyles: {},
     fillStyles: {},
     strokeStyles: {},
     effectStyles: {},
     gridStyles: {},
   };
-  const extraConfig = {
-    isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
-  };
+  const extraConfig = env.isDev
+    ? {
+        isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+      }
+    : {};
 
   const enableMUIFramework = true;
   // Later, once variants are handled, we will use instances as well, but differently?
@@ -43,7 +47,7 @@ export async function serializeSelectedNode() {
   const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
   const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
-  return [parentConf, nodesConf, images, styles, extraConfig] as const;
+  return [parentConf, nodesConf, Object.values(context.components), images, styles, extraConfig] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.

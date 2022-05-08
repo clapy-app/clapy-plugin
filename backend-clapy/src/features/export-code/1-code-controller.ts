@@ -6,7 +6,7 @@ import { exportCode } from './2-create-ts-compiler';
 @Controller('code')
 export class CodeController {
   @Post('export')
-  async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true) {
+  async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = false) {
     return exportCode(figmaNode, uploadToCsb);
   }
 }

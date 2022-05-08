@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { genComponent } from './3-gen-component';
+import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './5-figma-to-code-map';
 import { JsxOneOrMore, NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
@@ -70,10 +70,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
     // If component or instance, generate the code in a separate component file and reference it here.
     if (isComponent(node) || isInstance(node)) {
-      // Change to frame to avoid infinite loops: don't re-extract the component.
-      // Components and instances are actually frames, so there shouldn't be any impact.
-      const node2 = { ...node, type: 'FRAME' as const };
-      const genComponentContext = await genComponent(componentContext, node2, context.parentNode);
+      const genComponentContext = await getOrGenComponent(componentContext, node, context.parentNode);
       return mkComponentUsage(genComponentContext.compName);
     }
 

@@ -5,6 +5,7 @@ import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import {
+  ComponentNodeNoMethod,
   Dict,
   ExportImageEntry,
   ExportImagesFigma,
@@ -57,6 +58,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 export interface SerializeContext {
   images: ExportImagesFigma;
+  components: Dict<ComponentNodeNoMethod>;
   isInInstance?: boolean;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
@@ -312,12 +314,20 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       ).filter(child => !!child);
     }
     if (isInstance(node) && node.mainComponent && !skipInstance) {
-      const { name, type } = node.mainComponent;
-      // Name probablement inutile ici. Même le type, pas sûr qu'il serve. Rien d'autre que le nom du parent n'est vraiment utile pour l'instant. À revoir plus tard.
-      obj.mainComponent = { name, type };
+      const { id, name, type } = node.mainComponent;
+      // For MUI, only the parent name is useful.
+      // For normal components, only the compoent ID is useful.
+      // But we keep id, name, type for both in case we want to do sanity checks.
+      obj.mainComponent = { id, name, type };
       if (isComponentSet(node.mainComponent.parent)) {
-        const { name, type } = node.mainComponent.parent;
-        obj.mainComponent.parent = { name, type };
+        const { id, name, type } = node.mainComponent.parent;
+        obj.mainComponent.parent = { id, name, type };
+      }
+      if (!context.components[id]) {
+        const comp = (await nodeToObjectRec(node.mainComponent, context, options)) as ComponentNodeNoMethod | undefined;
+        if (comp) {
+          context.components[id] = comp;
+        }
       }
     }
     // If we need to debug symbols:

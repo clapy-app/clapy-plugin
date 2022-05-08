@@ -4,14 +4,15 @@ import ts from 'typescript';
 import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
-import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
-import { genComponent, printFileInProject } from './3-gen-component';
+import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
+import { getOrGenComponent, printFileInProject } from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ComponentContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
+import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { mkCompFunction, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
@@ -24,7 +25,7 @@ const { factory } = ts;
 const appCssPath = 'src/App.module.css';
 
 export async function exportCode(
-  { root, parent: p, images, styles, extraConfig }: ExportCodePayload,
+  { root, parent: p, components, images, styles, extraConfig }: ExportCodePayload,
   uploadToCsb = true,
 ) {
   const parent = p as ParentNode | Nil;
@@ -48,13 +49,17 @@ export async function exportCode(
     compNamesAlreadyUsed: new Set(),
     assetsAlreadyUsed: new Set(),
     fontWeightUsed: new Map(),
+    compNodes: components.reduce((prev, cur) => {
+      prev[cur.id] = cur;
+      return prev;
+    }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>,
+    components: new Map(),
     resources,
     tsFiles,
     svgToWrite: {},
     cssFiles,
     images,
     styles,
-    // TODO hardcoded for now, detection TBD (option in the UI?)
     enableMUIFramework: !!extraConfig.enableMUIFramework,
   };
 
@@ -68,7 +73,7 @@ export async function exportCode(
     inInteractiveElement: false,
   } as ComponentContext;
   perfMeasure('c');
-  const componentContext = await genComponent(lightAppComponentContext, root, parent, true);
+  const componentContext = await getOrGenComponent(lightAppComponentContext, root, parent, true);
   perfMeasure('d');
 
   addCompToAppRoot(lightAppComponentContext, componentContext, parent);
