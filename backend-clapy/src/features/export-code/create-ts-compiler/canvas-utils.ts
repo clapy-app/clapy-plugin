@@ -1,5 +1,7 @@
+import { DeclarationPlain } from 'css-tree';
+
 import { Nil } from '../../../common/general-utils';
-import { FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
+import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -65,6 +67,7 @@ type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Exclu
 interface GlobalExtender {
   maskedBy?: Masker;
   skip?: boolean;
+  styles?: Dict<DeclarationPlain>;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.

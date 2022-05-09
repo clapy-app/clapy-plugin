@@ -30,11 +30,15 @@ export async function exportCode(
   uploadToCsb = true,
 ) {
   const parent = p as ParentNode | Nil;
-  fillWithDefaults(p);
-  fillWithDefaults(root);
   for (const comp of components) {
     fillWithDefaults(comp);
   }
+  const compNodes = components.reduce((prev, cur) => {
+    prev[cur.id] = cur;
+    return prev;
+  }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>;
+  fillWithDefaults(p);
+  fillWithDefaults(root, compNodes);
   if (!root) {
     throw new HttpException(
       'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',
@@ -55,10 +59,7 @@ export async function exportCode(
     compNamesAlreadyUsed: new Set(),
     assetsAlreadyUsed: new Set(),
     fontWeightUsed: new Map(),
-    compNodes: components.reduce((prev, cur) => {
-      prev[cur.id] = cur;
-      return prev;
-    }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>,
+    compNodes,
     components: new Map(),
     resources,
     tsFiles,

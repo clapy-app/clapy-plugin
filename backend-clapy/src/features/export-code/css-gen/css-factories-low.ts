@@ -25,7 +25,8 @@ import { csstree } from '../create-ts-compiler/csstree';
 import { round } from '../figma-code-map/details/utils-and-reset';
 
 export function cssAstToString(css: CssNodePlain) {
-  return csstree.generate(csstree.fromPlainObject(css));
+  // Clone because fromPlainObject changes the original object, which is not desired when comparing the instance and component styles.
+  return csstree.generate(csstree.fromPlainObject(csstree.clone(css as any) as any));
 }
 
 export type CssRootNode = AtrulePlain | RulePlain;

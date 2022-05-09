@@ -31,7 +31,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
     }
     const { parentNode } = context;
 
-    const styles: Dict<DeclarationPlain> = {};
+    let styles: Dict<DeclarationPlain> = {};
 
     // TODO what if a node is another instance?
 
@@ -62,12 +62,11 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
       const flexStyles: Dict<DeclarationPlain> = {};
       mapTagStyles(context, node, flexStyles);
 
-      postMapStyles(context, node, styles);
-      postMapStyles(context, node, flexStyles);
-
       if (!context.parentStyles || Object.keys(flexStyles).length) {
+        Object.assign(styles, flexStyles);
+        styles = postMapStyles(context, node, styles);
         const className = genClassName(context, node, isRoot);
-        const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
+        const styleDeclarations = stylesToList(styles);
         let attributes: ts.JsxAttribute[] = [];
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
@@ -75,6 +74,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
         }
         ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
       } else {
+        styles = postMapStyles(context, node, styles);
         Object.assign(context.parentStyles, styles);
       }
       //
@@ -97,7 +97,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
         recurseOnChildren(context, node, styles);
       }
 
-      postMapStyles(context, node, styles);
+      styles = postMapStyles(context, node, styles);
       const styleDeclarations = stylesToList(styles);
       if (styleDeclarations.length) {
         cssRule.block.children.push(...styleDeclarations);
@@ -168,7 +168,7 @@ function recurseOnChildren(
 function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
   mapTagStyles(context, node, styles);
   const className = genClassName(context, node, isRoot);
-  postMapStyles(context, node, styles);
+  styles = postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   if (styleDeclarations.length) {
     addCssRule(context, className, styleDeclarations);

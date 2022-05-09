@@ -56,7 +56,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
 
     const { parentNode, moduleContext } = context;
 
-    const styles: Dict<DeclarationPlain> = {};
+    let styles: Dict<DeclarationPlain> = {};
 
     let muiConfig = checkAndProcessMuiComponent(context, node);
     if (muiConfig) {
@@ -87,7 +87,9 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
 
-      const attrs = [mkClassAttr(root), mkClassesAttribute(instanceClasses)].filter(a => a) as ts.JsxAttribute[];
+      const classAttr = mkClassAttr(root);
+      const classesAttr = mkClassesAttribute(instanceClasses);
+      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
       return mkComponentUsage(componentContext.compName, attrs);
     }
@@ -127,12 +129,11 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       const flexStyles: Dict<DeclarationPlain> = {};
       mapTagStyles(context, node, flexStyles);
 
-      postMapStyles(context, node, styles);
-      postMapStyles(context, node, flexStyles);
-
       if (!context.parentStyles || Object.keys(flexStyles).length) {
+        Object.assign(styles, flexStyles);
+        styles = postMapStyles(context, node, styles);
         const className = genClassName(context, node, isRoot);
-        const styleDeclarations = [...stylesToList(styles), ...stylesToList(flexStyles)];
+        const styleDeclarations = stylesToList(styles);
         let attributes: ts.JsxAttribute[] = [];
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
@@ -140,6 +141,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
         }
         ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
       } else {
+        styles = postMapStyles(context, node, styles);
         Object.assign(context.parentStyles, styles);
         // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
         // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
@@ -187,7 +189,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
         recurseOnChildren(context, node, children, styles);
       }
 
-      postMapStyles(context, node, styles);
+      styles = postMapStyles(context, node, styles);
       const styleDeclarations = stylesToList(styles);
       let attributes: ts.JsxAttribute[] = [];
       if (styleDeclarations.length) {
@@ -213,7 +215,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
 function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
   mapTagStyles(context, node, styles);
   const className = genClassName(context, node, isRoot);
-  postMapStyles(context, node, styles);
+  styles = postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {

@@ -1,4 +1,4 @@
-import equals from 'fast-deep-equal/es6';
+import equal from 'fast-deep-equal';
 import filetype from 'magic-bytes.js';
 
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
@@ -127,8 +127,8 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       const k = key as keyof SceneNodeNoMethod;
       const compVal = nodeOfComp?.[k];
       if (
-        (!isInInstance && !equals(value, defaultNode[k])) ||
-        (isInInstance && (componentPropsNotInherited.has(k) || !equals(value, compVal)))
+        (!isInInstance && !equal(value, defaultNode[k])) ||
+        (isInInstance && (componentPropsNotInherited.has(k) || !equal(value, compVal)))
       ) {
         obj[key] = value;
       }

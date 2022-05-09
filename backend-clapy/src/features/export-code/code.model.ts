@@ -74,6 +74,10 @@ export interface InstanceContext extends NodeContext {
   nodeOfComp: SceneNode2;
 }
 
+export function isInstanceContext(context: NodeContext): context is InstanceContext {
+  return !!(context as InstanceContext).nodeOfComp;
+}
+
 export interface BorderWidths {
   borderBottomWidth: number;
   borderLeftWidth: number;
