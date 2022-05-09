@@ -1,13 +1,13 @@
 import ts from 'typescript';
 
-import { ComponentContext } from '../../code.model';
+import { ModuleContext } from '../../code.model';
 import { mkAstPalette } from './mui-theme-palette';
 import { mkAstTypography } from './mui-theme-typography';
 
 const { factory } = ts;
 
-export function mkThemeVarCreation(lightAppComponentContext: ComponentContext) {
-  const { palette, typography } = readThemeStyles(lightAppComponentContext);
+export function mkThemeVarCreation(lightAppModuleContext: ModuleContext) {
+  const { palette, typography } = readThemeStyles(lightAppModuleContext);
   return factory.createVariableStatement(
     undefined,
     factory.createVariableDeclarationList(
@@ -32,10 +32,10 @@ export function mkThemeVarCreation(lightAppComponentContext: ComponentContext) {
   );
 }
 
-function readThemeStyles(lightAppComponentContext: ComponentContext) {
+function readThemeStyles(lightAppModuleContext: ModuleContext) {
   const {
     projectContext: { styles },
-  } = lightAppComponentContext;
+  } = lightAppModuleContext;
   const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = styles;
 
   const palette = mkAstPalette(fillStyles, strokeStyles);

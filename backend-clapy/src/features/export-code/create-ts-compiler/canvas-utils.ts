@@ -70,7 +70,7 @@ interface GlobalExtender {
 // Incomplete typings. Complete by adding other node types when needed.
 export type BaseNode2 = ExtendNodeType<BaseNode>;
 export type PageNode2 = ExtendNodeType<PageNode>;
-export type SceneNode2 = ExtendNodeType<SceneNode>;
+export type SceneNode2 = ExtendNodeType<SceneNode, { className?: string }>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
 export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
 export type TextNode2 = ExtendNodeType<TextNode, { _textSegments?: StyledTextSegment[] }>;

@@ -49,12 +49,22 @@ export function addJss<T extends keyof TypographyStyle /* Include<keyof CSSStyle
 export function addStyle<T extends keyof PropertiesHyphen>(
   styles: Dict<DeclarationPlain>,
   name: T,
-  ...value: (NonNullable<PropertiesHyphen[T]> | [number, CssUnit] | number)[]
+  ...values: (NonNullable<PropertiesHyphen[T]> | [number, CssUnit] | number)[]
 ) {
+  for (const val of values) {
+    if (val == null) return;
+  }
+  values = values.filter(val => {
+    if (Array.isArray(val)) val = val[0];
+    return val != null && (typeof val !== 'number' || !isNaN(val));
+  });
+  if (!values.length) {
+    return;
+  }
   styles[name] = mkDeclarationCss(
     name,
     mkValueCss(
-      value.map(val =>
+      values.map(val =>
         val === 0
           ? mkNumberCss(0)
           : !Array.isArray(val)

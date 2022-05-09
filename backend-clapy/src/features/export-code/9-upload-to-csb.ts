@@ -9,7 +9,7 @@ import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { backendDir, dockerPluginCompDir } from '../../root';
 import { CSBResponse } from '../sb-serialize-preview/sb-serialize.model';
-import { CodeDict, ComponentContext, CsbDict } from './code.model';
+import { CodeDict, CsbDict, ModuleContext } from './code.model';
 
 export async function uploadToCSB(files: CsbDict) {
   const { data } = await axios.post<CSBResponse>('https://codesandbox.io/api/v1/sandboxes/define?json=1', {
@@ -24,14 +24,10 @@ export async function uploadToCSB(files: CsbDict) {
 
 const srcCompPrefix = 'src/components/';
 
-export async function writeToDisk(
-  files: CsbDict,
-  componentContext: ComponentContext,
-  isClapyFile: boolean | undefined,
-) {
+export async function writeToDisk(files: CsbDict, moduleContext: ModuleContext, isClapyFile: boolean | undefined) {
   const glob = require('glob');
   const globPromise = promisify(glob);
-  const { compName } = componentContext;
+  const { compName } = moduleContext;
 
   const filePaths: string[] = [];
   const filesToWrite: CodeDict = {};

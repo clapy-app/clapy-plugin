@@ -12,6 +12,10 @@ export type Properties = Dict<any>;
 export interface Dict<T = any> {
   [key: string | number | symbol]: T;
 }
+export type ObjKey = string | number | symbol;
+export type Dict2<Key extends ObjKey, Value> = Partial<{
+  [key in Key]: Value;
+}>;
 
 export type Intersect<T, U> = Extract<T, U>;
 
@@ -256,7 +260,7 @@ export interface FigmaStyles {
 }
 
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
-export type TextNodeNoMethod = OmitMethods<TextNode>;
+export type TextNodeNoMethod = OmitMethods<TextNode> & { listSpacing?: number };
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList> & {
   children: SceneNodeNoMethod[];
@@ -290,6 +294,7 @@ export const extractionBlacklist = [
   'absoluteRenderBounds',
   'vectorNetwork',
   'exportSettings',
+  'canUpgradeToNativeBidiSupport',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent'>;
@@ -314,3 +319,80 @@ export type ExportImageEntry = {
 
 export type ExportImagesFigma = Dict<ExportImageEntry>;
 export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;
+
+// This default matches the default CSS style, i.e. it should match the CSS global resets.
+export const defaultNode: Dict2<
+  keyof (FrameNodeNoMethod & Omit<ComponentNodeNoMethod, 'type'> & Omit<TextNodeNoMethod, 'type'>),
+  any
+> = {
+  id: 'fake',
+  type: 'FRAME',
+  name: '',
+  visible: true,
+  opacity: 1,
+  blendMode: 'PASS_THROUGH',
+  isMask: false,
+  effects: [],
+  effectStyleId: '',
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  rotation: 0,
+  layoutAlign: 'INHERIT',
+  layoutGrow: 0,
+  fills: [],
+  fillStyleId: 'fake',
+  strokes: [],
+  strokeStyleId: '',
+  strokeWeight: 0,
+  strokeAlign: 'INSIDE',
+  strokeJoin: 'MITER',
+  dashPattern: [],
+  strokeCap: 'NONE',
+  strokeMiterLimit: 4,
+  cornerSmoothing: 0,
+  topLeftRadius: 0,
+  topRightRadius: 0,
+  bottomLeftRadius: 0,
+  bottomRightRadius: 0,
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  primaryAxisSizingMode: 'FIXED',
+  layoutGrids: [],
+  gridStyleId: '',
+  clipsContent: false,
+  constraints: { horizontal: 'MIN', vertical: 'MIN' },
+  layoutMode: 'HORIZONTAL',
+  counterAxisSizingMode: 'FIXED',
+  itemSpacing: 0,
+  overflowDirection: 'NONE',
+  numberOfFixedChildren: 0,
+  overlayPositionType: 'CENTER',
+  overlayBackground: { type: 'NONE' },
+  overlayBackgroundInteraction: 'NONE',
+  reactions: [],
+  children: [],
+  stuckNodes: [],
+  relativeTransform: [
+    [1, 0, 0],
+    [0, 1, 0],
+  ],
+  description: '',
+  documentationLinks: [],
+  key: '',
+  remote: false,
+  variantProperties: null,
+  listSpacing: 0,
+  hasMissingFont: false,
+  paragraphIndent: 0,
+  paragraphSpacing: 0,
+  autoRename: true,
+  textAlignHorizontal: 'CENTER',
+  textAlignVertical: 'CENTER',
+  textAutoResize: 'WIDTH_AND_HEIGHT',
+};

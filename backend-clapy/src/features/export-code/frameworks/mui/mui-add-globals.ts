@@ -1,6 +1,6 @@
 import ts from 'typescript';
 
-import { ComponentContext, ProjectContext } from '../../code.model';
+import { ModuleContext, ProjectContext } from '../../code.model';
 import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { getSetInMap } from '../../figma-code-map/font';
 import { mkThemeVarCreation } from './mui-theme';
@@ -16,21 +16,21 @@ export function addMUIFonts(context: ProjectContext) {
   }
 }
 
-export function addMUIProvidersImports(lightAppComponentContext: ComponentContext) {
-  if (lightAppComponentContext.projectContext.enableMUIFramework) {
-    const { imports, statements } = lightAppComponentContext;
+export function addMUIProvidersImports(lightAppModuleContext: ModuleContext) {
+  if (lightAppModuleContext.projectContext.enableMUIFramework) {
+    const { imports, statements } = lightAppModuleContext;
     const namedImports = ['createTheme', 'ThemeProvider'];
     if (addBaseline) {
       namedImports.push('CssBaseline');
     }
     imports.push(mkNamedImportsDeclaration(namedImports, '@mui/material'));
 
-    statements.push(mkThemeVarCreation(lightAppComponentContext));
+    statements.push(mkThemeVarCreation(lightAppModuleContext));
   }
 }
 
 export function addMUIProviders<TNode extends ts.JsxChild>(
-  context: ComponentContext,
+  context: ModuleContext,
   rootJsx: TNode,
 ): TNode | ts.JsxElement {
   const { projectContext } = context;

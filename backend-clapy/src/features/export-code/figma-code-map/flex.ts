@@ -3,7 +3,7 @@ import { PropertiesHyphen } from 'csstype';
 
 import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
+import { defaultNode, Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import {
   FlexNode,
@@ -18,7 +18,6 @@ import {
   ValidNode,
 } from '../create-ts-compiler/canvas-utils';
 import { addStyle } from '../css-gen/css-factories-high';
-import { defaultNode } from './details/default-node';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -90,15 +89,11 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const isFlex = isFlexNode(node);
 
   const { parentStyles, outerLayoutOnly } = context;
-  const {
-    fixedWidth,
-    widthFillContainer,
-    fixedHeight,
-    heightFillContainer,
-    nodePrimaryAxisHugContents,
-    nodeCounterAxisHugContents,
-    parentAndNodeHaveSameDirection,
-  } = applyWidth(context, node, styles);
+  const { nodePrimaryAxisHugContents, nodeCounterAxisHugContents, parentAndNodeHaveSameDirection } = applyWidth(
+    context,
+    node,
+    styles,
+  );
 
   const defaultIsVertical = defaultNode.layoutMode === 'VERTICAL';
 

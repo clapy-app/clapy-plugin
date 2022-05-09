@@ -5,17 +5,18 @@ import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
-import { getOrGenComponent, printFileInProject } from './3-gen-component';
+import { createModuleCode, getOrGenComponent, printFileInProject } from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { CodeDict, ComponentContext, ParentNode, ProjectContext } from './code.model';
+import { CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
-import { mkCompFunction, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
+import { fillWithDefaults } from './figma-code-map/details/default-node';
+import { mkClassAttr, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
@@ -29,6 +30,11 @@ export async function exportCode(
   uploadToCsb = true,
 ) {
   const parent = p as ParentNode | Nil;
+  fillWithDefaults(p);
+  fillWithDefaults(root);
+  for (const comp of components) {
+    fillWithDefaults(comp);
+  }
   if (!root) {
     throw new HttpException(
       'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',
@@ -63,7 +69,7 @@ export async function exportCode(
     enableMUIFramework: !!extraConfig.enableMUIFramework,
   };
 
-  const lightAppComponentContext = {
+  const lightAppModuleContext = {
     projectContext,
     imports: [] as unknown[],
     statements: [] as unknown[],
@@ -71,12 +77,12 @@ export async function exportCode(
     compDir: 'src',
     compName: 'App',
     inInteractiveElement: false,
-  } as ComponentContext;
+  } as ModuleContext;
   perfMeasure('c');
-  const componentContext = await getOrGenComponent(lightAppComponentContext, root, parent, true);
+  const moduleContext = await getOrGenComponent(lightAppModuleContext, root, parent, true);
   perfMeasure('d');
 
-  addCompToAppRoot(lightAppComponentContext, componentContext, parent);
+  addCompToAppRoot(lightAppModuleContext, moduleContext, parent);
   perfMeasure('e');
 
   await writeSVGReactComponents(projectContext);
@@ -101,7 +107,7 @@ export async function exportCode(
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     perfMeasure('k');
-    await writeToDisk(csbFiles, componentContext, extraConfig.isClapyFile); // Takes time with many files
+    await writeToDisk(csbFiles, moduleContext, extraConfig.isClapyFile); // Takes time with many files
     perfMeasure('l');
   }
   if (Object.keys(csbFiles).length > 500) {
@@ -117,8 +123,8 @@ export async function exportCode(
 }
 
 function addCompToAppRoot(
-  appCompContext: ComponentContext,
-  childCompContext: ComponentContext,
+  appModuleContext: ModuleContext,
+  childModuleContext: ModuleContext,
   parentNode: ParentNode | Nil,
 ) {
   const {
@@ -126,7 +132,7 @@ function addCompToAppRoot(
     projectContext: { cssFiles },
     imports,
     statements,
-  } = appCompContext;
+  } = appModuleContext;
 
   // Add CSS classes import in TSX file
   imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
@@ -138,35 +144,24 @@ function addCompToAppRoot(
     cssFiles[appCssPath] = updatedAppCss;
   }
 
-  addMUIProvidersImports(appCompContext);
+  addMUIProvidersImports(appModuleContext);
 
   // The component import is added inside genComponent itself (with a TODO to refactor)
 
-  let appJsx: ts.JsxElement | ts.JsxFragment = mkAppCompJsx(childCompContext.compName);
-  appJsx = addMUIProviders(appCompContext, appJsx);
+  let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(childModuleContext.compName);
+  appTsx = addMUIProviders(appModuleContext, appTsx);
 
-  statements.push(mkCompFunction(compName, appJsx));
+  createModuleCode(appModuleContext, appTsx, []);
 
-  printFileInProject(appCompContext);
+  printFileInProject(appModuleContext);
 }
 
-function mkAppCompJsx(childComponentName: string) {
+function mkAppCompTsx(childComponentName: string) {
   return factory.createJsxElement(
     factory.createJsxOpeningElement(
       factory.createIdentifier('div'),
       undefined,
-      factory.createJsxAttributes([
-        factory.createJsxAttribute(
-          factory.createIdentifier('className'),
-          factory.createJsxExpression(
-            undefined,
-            factory.createPropertyAccessExpression(
-              factory.createIdentifier('classes'),
-              factory.createIdentifier('root'),
-            ),
-          ),
-        ),
-      ]),
+      factory.createJsxAttributes([mkClassAttr('root', true)]),
     ),
     [mkComponentUsage(childComponentName)],
     factory.createJsxClosingElement(factory.createIdentifier('div')),

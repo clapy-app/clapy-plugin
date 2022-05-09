@@ -1,8 +1,4 @@
-export type ObjKey = string | number | symbol;
-
-export type Dict2<Key extends ObjKey, Value> = Partial<{
-  [key in Key]: Value;
-}>;
+import { ObjKey } from '../features/sb-serialize-preview/sb-serialize.model';
 
 export type Nil = null | undefined;
 

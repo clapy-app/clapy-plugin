@@ -5,7 +5,7 @@ import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths
 
 export function writeAsset(context: NodeContext, node: BaseNode2, extension: string, content: string) {
   const {
-    componentContext: { projectContext },
+    moduleContext: { projectContext },
   } = context;
   const assetName = genUniqueName(projectContext.assetsAlreadyUsed, node.name);
   const imageFileName = `${assetName}.${extension}`;

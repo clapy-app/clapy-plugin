@@ -48,7 +48,7 @@ export const muiConfigIconButton: MUIConfig = {
 
     const [importAst, jsxAst] = iconInstanceToAst(iconSelected, fontSize);
     if (!importAst || !jsxAst) return;
-    context.componentContext.imports.push(importAst);
+    context.moduleContext.imports.push(importAst);
     return jsxAst;
   },
 };

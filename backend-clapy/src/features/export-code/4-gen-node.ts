@@ -5,11 +5,11 @@ import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
-import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './5-figma-to-code-map';
-import { JsxOneOrMore, NodeContext } from './code.model';
+import { genInstanceOverrides } from './5-instance-overrides';
+import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
+import { InstanceContext, JsxOneOrMore, NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
-  BlockNode,
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
@@ -36,6 +36,7 @@ import {
   genClassName,
   genComponentImportName,
   mkClassAttr,
+  mkClassesAttribute,
   mkComponentUsage,
   mkNamedImportsDeclaration,
   mkTag,
@@ -45,13 +46,15 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
+const { factory } = ts;
+
+export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
   try {
     if (!node.visible) {
       return;
     }
 
-    const { parentNode, componentContext } = context;
+    const { parentNode, moduleContext } = context;
 
     const styles: Dict<DeclarationPlain> = {};
 
@@ -59,7 +62,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
     if (muiConfig) {
       context.outerLayoutOnly = true;
       const node2 = node as InstanceNode2;
-      muiConfig = addMuiImport(componentContext, muiConfig);
+      muiConfig = addMuiImport(moduleContext, muiConfig);
 
       // Add tag styles
       mapCommonStyles(context, node2, styles);
@@ -70,8 +73,23 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
 
     // If component or instance, generate the code in a separate component file and reference it here.
     if (isComponent(node) || isInstance(node)) {
-      const genComponentContext = await getOrGenComponent(componentContext, node, context.parentNode);
-      return mkComponentUsage(genComponentContext.compName);
+      const componentContext = getOrGenComponent(moduleContext, node, context.parentNode);
+
+      // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
+      const instanceContext: InstanceContext = {
+        ...context,
+        instanceClasses: {},
+        instanceAttributes: {},
+        componentContext,
+        nodeOfComp: componentContext.node,
+      };
+      genInstanceOverrides(instanceContext, node, isRoot);
+
+      const { root, ...instanceClasses } = instanceContext.instanceClasses;
+
+      const attrs = [mkClassAttr(root), mkClassesAttribute(instanceClasses)].filter(a => a) as ts.JsxAttribute[];
+
+      return mkComponentUsage(componentContext.compName, attrs);
     }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
@@ -91,7 +109,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
     // Also check the existing logic on group when not skipped. It may have an assumption on the use case (e.g. assumes it's absolute positioning), which may become wrong if we change the conditions here.
     if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
       const childrenAst: ts.JsxChild[] = [];
-      await recurseOnChildren(context, node, childrenAst, styles, true);
+      recurseOnChildren(context, node, childrenAst, styles, true);
       return childrenAst.length ? childrenAst : undefined;
     }
 
@@ -118,7 +136,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
         let attributes: ts.JsxAttribute[] = [];
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
-          attributes.push(mkClassAttr(className));
+          attributes.push(mkClassAttr(className, true));
         }
         ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
       } else {
@@ -130,7 +148,7 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       }
       return ast;
     } else if (isVector(node)) {
-      const { projectContext } = componentContext;
+      const { projectContext } = moduleContext;
       let svgContent = readSvg(node);
       if (!svgContent) {
         warnNode(node, 'BUG No SVG content, skipping.');
@@ -140,14 +158,14 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       const svgPathVarName = genComponentImportName(context);
 
       // Save SVG to convert to React component later, so that we isolate the execution time, which is significant (second most expensive after Prettier formatting).
-      projectContext.svgToWrite[`${componentContext.compDir}/${svgPathVarName}.tsx`] = {
+      projectContext.svgToWrite[`${moduleContext.compDir}/${svgPathVarName}.tsx`] = {
         svgPathVarName,
         svgContent,
       };
       // console.log(svgContent);
 
       // Add import in file
-      componentContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
+      moduleContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
 
       const attributes = addNodeStyles(context, node, styles, isRoot);
 
@@ -155,9 +173,31 @@ export async function figmaToAstRec(context: NodeContext, node: SceneNode2, isRo
       const ast = mkComponentUsage(svgPathVarName, attributes);
       return ast;
     } else if (isBlockNode(node)) {
-      const [context2, attributes, children] = await generateBlockAst(context, node, styles, isRoot);
-      const tsx = mkTag(context2.tagName, [...attributes, ...extraAttributes], children);
-      return tsx;
+      // Add tag styles
+      mapTagStyles(context, node, styles);
+
+      const className = genClassName(context, node, isRoot);
+
+      // the CSS rule is created before checking the children so that it appears first in the CSS file.
+      // After generating the children, we can add the final list of rules or remove it if no rule.
+      const cssRule = addCssRule(context, className);
+
+      const children: ts.JsxChild[] = [];
+      if (isChildrenMixin(node)) {
+        recurseOnChildren(context, node, children, styles);
+      }
+
+      postMapStyles(context, node, styles);
+      const styleDeclarations = stylesToList(styles);
+      let attributes: ts.JsxAttribute[] = [];
+      if (styleDeclarations.length) {
+        cssRule.block.children.push(...styleDeclarations);
+        attributes.push(mkClassAttr(className, true));
+      } else {
+        removeCssRule(context, cssRule, node);
+      }
+
+      return mkTag(context.tagName, [...attributes, ...extraAttributes], children);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate node with error below. Skipping the node.');
@@ -178,45 +218,12 @@ function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<Decla
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
     addCssRule(context, className, styleDeclarations);
-    attributes.push(mkClassAttr(className));
+    attributes.push(mkClassAttr(className, true));
   }
   return attributes;
 }
 
-async function generateBlockAst(
-  context: NodeContext,
-  node: BlockNode,
-  styles: Dict<DeclarationPlain>,
-  isRoot?: boolean,
-) {
-  // Add tag styles
-  mapTagStyles(context, node, styles);
-
-  const className = genClassName(context, node, isRoot);
-
-  // the CSS rule is created before checking the children so that it appears first in the CSS file.
-  // After generating the children, we can add the final list of rules or remove it if no rule.
-  const cssRule = addCssRule(context, className);
-
-  const children: ts.JsxChild[] = [];
-  if (isChildrenMixin(node)) {
-    await recurseOnChildren(context, node, children, styles);
-  }
-
-  postMapStyles(context, node, styles);
-  const styleDeclarations = stylesToList(styles);
-  let attributes: ts.JsxAttribute[] = [];
-  if (styleDeclarations.length) {
-    cssRule.block.children.push(...styleDeclarations);
-    attributes.push(mkClassAttr(className));
-  } else {
-    removeCssRule(context, cssRule, node);
-  }
-
-  return [context, attributes, children] as const;
-}
-
-async function recurseOnChildren(
+function recurseOnChildren(
   context: NodeContext,
   node: SceneNode2 & ChildrenMixin2,
   children: ts.JsxChild[],
@@ -258,20 +265,20 @@ async function recurseOnChildren(
     }
   }
 
-  const { parentNode, parentStyles, parentContext, componentContext } = context;
+  const { parentNode, parentStyles, parentContext, moduleContext } = context;
   for (const child of node.children) {
     if (child.skip) {
       continue;
     }
     const contextForChildren: NodeContext = {
-      componentContext,
-      tagName: 'div', // Default value, will be overridden. Allows to keep a strong typing (no undefined).
+      moduleContext,
+      tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
       nodeNameLower: child.name.toLowerCase(),
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
       parentStyles: passParentToChildContext ? parentStyles : styles,
       parentContext: passParentToChildContext ? parentContext : context,
     };
-    const childTsx = await figmaToAstRec(contextForChildren, child);
+    const childTsx = figmaToAstRec(contextForChildren, child);
     if (childTsx) {
       if (Array.isArray(childTsx)) {
         children.push(...childTsx);
