@@ -15,7 +15,7 @@ import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
-import { fillWithDefaults } from './figma-code-map/details/default-node';
+import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
 import { mkClassAttr, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
@@ -38,7 +38,7 @@ export async function exportCode(
     return prev;
   }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>;
   fillWithDefaults(p);
-  fillWithDefaults(root, compNodes);
+  fillWithComponent(root, compNodes);
   if (!root) {
     throw new HttpException(
       'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',

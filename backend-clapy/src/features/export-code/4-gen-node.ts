@@ -1,6 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
+import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
@@ -72,6 +73,10 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     // If component or instance, generate the code in a separate component file and reference it here.
     if (isComponent(node) || isInstance(node)) {
       const componentContext = getOrGenComponent(moduleContext, node, context.parentNode);
+
+      if (!flags.enableInstanceOverrides) {
+        return mkComponentUsage(componentContext.compName);
+      }
 
       // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
       const instanceContext: InstanceContext = {

@@ -36,7 +36,7 @@ export function genClassName(context: NodeContext, node?: SceneNode2, isRoot?: b
   // No node when working on text segments. But can we find better class names than 'label' for this case?
   const baseName = isRoot ? 'root' : node?.name ? node.name : defaultClassName;
   const className = genUniqueName(context.moduleContext.classNamesAlreadyUsed, baseName);
-  if (node && !node.className && context.moduleContext.isComponent) {
+  if (node && !node.className) {
     node.className = className;
     if (!isRoot) {
       // Beware, the below code is also run for instance overrides and text classes (6-figma-to-code-mapa.ts),
@@ -313,7 +313,11 @@ export function mkClassAttr(classVarName: string, addClassOverride?: boolean) {
               factory.createTemplateMiddle(' ', ' '),
             ),
             factory.createTemplateSpan(
-              factory.createIdentifier(classVarName === 'root' ? 'className' : classVarName),
+              factory.createBinaryExpression(
+                factory.createIdentifier(classVarName === 'root' ? 'className' : classVarName),
+                factory.createToken(ts.SyntaxKind.BarBarToken),
+                factory.createStringLiteral(''),
+              ),
               factory.createTemplateTail('', ''),
             ),
           ]),

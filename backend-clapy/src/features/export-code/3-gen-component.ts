@@ -2,6 +2,7 @@ import { relative } from 'path';
 import ts from 'typescript';
 
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
+import { flags } from '../../env-and-config/app-config';
 import { figmaToAstRec } from './4-gen-node';
 import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode } from './code.model';
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
@@ -40,7 +41,7 @@ export function getOrGenComponent(
   } else if (isComp) {
     comp = node;
   }
-  if (!comp) {
+  if (!flags.enableInstanceOverrides || !comp) {
     return genComponent(parentModuleContext, node, parent, isRootComponent);
   }
   let moduleContext = components.get(comp.id);

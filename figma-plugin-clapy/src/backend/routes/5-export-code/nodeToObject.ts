@@ -56,7 +56,8 @@ const rangeProps: RangeProp[] = [
 const blacklist = new Set<string>(extractionBlacklist);
 const textBlacklist = new Set<string>([...extractionBlacklist, ...rangeProps, 'characters']);
 
-const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['visible', 'name']);
+const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
+const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -127,10 +128,10 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       const k = key as keyof SceneNodeNoMethod;
       const compVal = nodeOfComp?.[k];
       if (
-        (!isInInstance && !equal(value, defaultNode[k])) ||
+        (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, defaultNode[k]))) ||
         (isInInstance && (componentPropsNotInherited.has(k) || !equal(value, compVal)))
       ) {
-        obj[key] = value;
+        obj[k] = value;
       }
     }
 
@@ -478,14 +479,21 @@ function addReactionDestination(obj: any) {
 
 // Source: https://forum.figma.com/t/svg-export-issue/3424/6
 function fixStrokeAlign(node: SceneNode) {
-  if (!flags.fixSvgStrokePositionBug) return;
-  if (isMinimalStrokesMixin(node)) {
-    node.strokeAlign = 'CENTER';
-  }
-  if (isChildrenMixin(node)) {
-    for (const child of node.children) {
-      fixStrokeAlign(child);
+  try {
+    if (!flags.fixSvgStrokePositionBug) return;
+    if (isMinimalStrokesMixin(node)) {
+      node.strokeAlign = 'CENTER';
     }
+    if (isChildrenMixin(node)) {
+      for (const child of node.children) {
+        fixStrokeAlign(child);
+      }
+    }
+  } catch (error) {
+    warnNode(
+      node,
+      'Fix stroke align failed. Maybe the node is a read-only component in another file. To fix later by copying it here in addition to the top level node copy.',
+    );
   }
 }
 

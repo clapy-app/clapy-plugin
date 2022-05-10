@@ -10,6 +10,7 @@ export const flags = {
   useCssBoxSizingBorderBox: true,
   useFilterDropShadow: true,
   writeClapyFiles: false,
+  enableInstanceOverrides: false,
 };
 
 // What takes time:
