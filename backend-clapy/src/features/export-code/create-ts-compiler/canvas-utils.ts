@@ -155,6 +155,11 @@ export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is Instance
   return node?.type === 'INSTANCE';
 }
 
+export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
+  // For cases like fill with default values where we need to recognize what was originally an instance, even if we changed the type, e.g. to SVG.
+  return !!(node as InstanceNode2).mainComponent;
+}
+
 export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node is BaseFrameMixin {
   return !!(node as BaseFrameMixin)?.layoutMode;
 }

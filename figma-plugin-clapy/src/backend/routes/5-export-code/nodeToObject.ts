@@ -7,11 +7,12 @@ import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import {
   ComponentNodeNoMethod,
-  defaultNode,
   Dict,
   ExportImageEntry,
   ExportImagesFigma,
   extractionBlacklist,
+  nodeDefaults,
+  NodeWithDefaults,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
@@ -19,6 +20,7 @@ import {
   isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
+  isComponent,
   isComponentSet,
   isGroup,
   isInstance,
@@ -67,6 +69,7 @@ export interface SerializeContext {
   isInInstance?: boolean;
   // When into an instance, we keep track of the corresponding node in the component to find style overrides
   nodeOfComp?: SceneNode;
+  isComp?: boolean;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
   fillStyles: Dict<PaintStyle>;
@@ -95,7 +98,7 @@ interface Options {
  * @param node
  * @param options
  */
-export async function nodeToObject<T extends SceneNode>(
+export async function nodeToObject<T extends SceneNode | PageNode>(
   node: T,
   context: SerializeContext,
   options: Partial<Options> = {},
@@ -103,7 +106,8 @@ export async function nodeToObject<T extends SceneNode>(
   const { skipChildren = false, skipInstance = true, skipParent = true } = options;
   return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
 }
-async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
+
+async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context: SerializeContext, options: Options) {
   try {
     if (!isPage(node) && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
@@ -116,19 +120,28 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
     if (isProcessableInst) {
       context = { ...context, nodeOfComp: node.mainComponent };
     }
-    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+    if (isComponent(node)) {
+      context = { ...context, isComp: true };
+    }
+    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
     const isInInstance = !!nodeOfComp;
     if (!exportAsSvg && shouldGroupAsSVG(node)) {
       exportAsSvg = true;
     }
     const nodeIsLayout = isLayout(node);
     const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
+    let type = node.type as keyof typeof nodeDefaults;
+    if (!nodeDefaults[type]) {
+      warnNode(node, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
+      type = 'FRAME';
+    }
+    const currentNodeDefaults = nodeDefaults[type];
 
     function setProp(obj: any, key: string, value: any) {
-      const k = key as keyof SceneNodeNoMethod;
+      const k = key as keyof NodeWithDefaults;
       const compVal = nodeOfComp?.[k];
       if (
-        (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, defaultNode[k]))) ||
+        (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, currentNodeDefaults[k]))) ||
         (isInInstance && (componentPropsNotInherited.has(k) || !equal(value, compVal)))
       ) {
         obj[k] = value;
@@ -180,7 +193,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       addStyle(gridStyles, node.gridStyleId);
     }
 
-    if (exportAsSvg) {
+    if (exportAsSvg && !isComp) {
       let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {
@@ -210,11 +223,13 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
           (nodeToExport as ShapeNode).effects = [];
           (nodeToExport as ShapeNode).effectStyleId = '';
         }
-        const { rotation } = parseTransformationMatrix(node.absoluteTransform);
-        // console.log('absolute rotation:', rotation);
-        if (rotation !== 0) {
-          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-          // nodeToExport.rotation -= rotation;
+        if (!isPage(node)) {
+          const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+          // console.log('absolute rotation:', rotation);
+          if (rotation !== 0) {
+            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+            // nodeToExport.rotation -= rotation;
+          }
         }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
@@ -373,7 +388,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
   }
 }
 
-function shouldGroupAsSVG(node: SceneNode) {
+function shouldGroupAsSVG(node: SceneNode | PageNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   // If only one child, don't group as SVG
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
@@ -530,6 +545,6 @@ function addStyle<TStyle extends BaseStyle>(styles: Dict<TStyle>, styleId: strin
 type WithCompMixin = SceneNode & {
   mainComponent: ComponentNode;
 };
-function isProcessableInstance(node: SceneNode, skipInstance: boolean): node is WithCompMixin {
+function isProcessableInstance(node: SceneNode | PageNode, skipInstance: boolean): node is WithCompMixin {
   return !!(isInstance(node) && node.mainComponent && !skipInstance);
 }

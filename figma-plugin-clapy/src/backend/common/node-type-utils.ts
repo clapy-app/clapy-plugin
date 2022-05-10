@@ -164,7 +164,7 @@ export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is 
   return isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node) || isBooleanOperation(node);
 }
 
-export function isStyledTextSegment(node: SceneNode | StyledTextSegment | Nil): node is StyledTextSegment {
+export function isStyledTextSegment(node: SceneNode | StyledTextSegment | PageNode | Nil): node is StyledTextSegment {
   const sts = node as StyledTextSegment;
   return sts.characters != null && sts.start != null && sts.end != null;
 }

@@ -278,6 +278,34 @@ interface DefaultShapeMixin2
     ExportMixin2 {}
 type ConstraintMixin2 = Omit<OmitMethods<ConstraintMixin>, FrameNodeBlackList>;
 type TextSublayerNode2 = Omit<OmitMethods<TextSublayerNode>, FrameNodeBlackList>;
+type ContainerMixin2 = Omit<OmitMethods<ContainerMixin>, FrameNodeBlackList>;
+type CornerMixin2 = Omit<OmitMethods<CornerMixin>, FrameNodeBlackList>;
+type RectangleCornerMixin2 = Omit<OmitMethods<RectangleCornerMixin>, FrameNodeBlackList>;
+type BaseFrameMixin2 = Omit<OmitMethods<BaseFrameMixin>, FrameNodeBlackList>;
+type FramePrototypingMixin2 = Omit<OmitMethods<FramePrototypingMixin>, FrameNodeBlackList>;
+type DefaultFrameMixin2 = Omit<OmitMethods<DefaultFrameMixin>, FrameNodeBlackList>;
+type PublishableMixin2 = Omit<OmitMethods<PublishableMixin>, FrameNodeBlackList>;
+type VariantMixin2 = Omit<OmitMethods<VariantMixin>, FrameNodeBlackList>;
+type VectorLikeMixin2 = Omit<OmitMethods<VectorLikeMixin>, FrameNodeBlackList>;
+type StickableMixin2 = Omit<OmitMethods<StickableMixin>, FrameNodeBlackList>;
+
+type PageNode2 = Omit<OmitMethods<PageNode>, FrameNodeBlackList>;
+type SliceNode2 = Omit<OmitMethods<SliceNode>, FrameNodeBlackList>;
+type FrameNode2 = Omit<OmitMethods<FrameNode>, FrameNodeBlackList>;
+type GroupNode2 = Omit<OmitMethods<GroupNode>, FrameNodeBlackList>;
+type ComponentSetNode2 = Omit<OmitMethods<ComponentSetNode>, FrameNodeBlackList>;
+type ComponentNode2 = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList>;
+type InstanceNode2 = Omit<OmitMethods<InstanceNode>, FrameNodeBlackList>;
+type BooleanOperationNode2 = Omit<OmitMethods<BooleanOperationNode>, FrameNodeBlackList>;
+type VectorNode2 = Omit<OmitMethods<VectorNode>, FrameNodeBlackList>;
+type StarNode2 = Omit<OmitMethods<StarNode>, FrameNodeBlackList>;
+type LineNode2 = Omit<OmitMethods<LineNode>, FrameNodeBlackList>;
+type EllipseNode2 = Omit<OmitMethods<EllipseNode>, FrameNodeBlackList>;
+type PolygonNode2 = Omit<OmitMethods<PolygonNode>, FrameNodeBlackList>;
+type RectangleNode2 = Omit<OmitMethods<RectangleNode>, FrameNodeBlackList>;
+type StampNode2 = Omit<OmitMethods<StampNode>, FrameNodeBlackList>;
+
+// Later: rename XXNoMethod to XX2 to be consistent with the back.
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
 export type TextNodeNoMethod = Omit<OmitMethods<TextNode> & { listSpacing: number }, FrameNodeBlackList>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
@@ -346,7 +374,7 @@ const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
   stuckNodes: [],
 };
 
-const defaultLayoutNodeMixin: LayoutMixin2 = {
+const defaultLayoutMixin: LayoutMixin2 = {
   relativeTransform: [
     [1, 0, 0],
     [0, 1, 0],
@@ -375,56 +403,6 @@ const defaultLayoutNodeMixin: LayoutMixin2 = {
 //     [0, 1, 0],
 //   ],
 // };
-
-const defaultFrameNode: FrameNodeNoMethod = {
-  ...defaultSceneNodeMixin,
-  ...defaultLayoutNodeMixin,
-  type: 'FRAME',
-  opacity: 1,
-  blendMode: 'PASS_THROUGH',
-  isMask: false,
-  effects: [],
-  effectStyleId: '',
-  rotation: 0,
-  layoutAlign: 'INHERIT',
-  layoutGrow: 0,
-  fills: [],
-  fillStyleId: 'fake',
-  strokes: [],
-  strokeStyleId: '',
-  strokeWeight: 0,
-  strokeAlign: 'INSIDE',
-  strokeJoin: 'MITER',
-  dashPattern: [],
-  strokeCap: 'NONE',
-  strokeMiterLimit: 4,
-  cornerSmoothing: 0,
-  topLeftRadius: 0,
-  topRightRadius: 0,
-  bottomLeftRadius: 0,
-  bottomRightRadius: 0,
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingTop: 0,
-  paddingBottom: 0,
-  primaryAxisAlignItems: 'MIN',
-  counterAxisAlignItems: 'MIN',
-  primaryAxisSizingMode: 'FIXED',
-  layoutGrids: [],
-  gridStyleId: '',
-  clipsContent: false,
-  constraints: { horizontal: 'MIN', vertical: 'MIN' },
-  layoutMode: 'HORIZONTAL',
-  counterAxisSizingMode: 'FIXED',
-  itemSpacing: 0,
-  overflowDirection: 'NONE',
-  numberOfFixedChildren: 0,
-  overlayPositionType: 'CENTER',
-  overlayBackground: { type: 'NONE' },
-  overlayBackgroundInteraction: 'NONE',
-  reactions: [],
-  children: [],
-};
 
 const defaultBaseNodeMixin: BaseNodeMixin2 = {
   id: null as unknown as '', // Should be overridden
@@ -479,7 +457,7 @@ const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
   ...defaultReactionMixin,
   ...defaultBlendMixin,
   ...defaultGeometryMixin,
-  ...defaultLayoutNodeMixin,
+  ...defaultLayoutMixin,
   ...defaultExportMixin,
 };
 
@@ -509,12 +487,243 @@ const defaultTextSublayerNode: TextSublayerNode2 = {
   characters: '',
 };
 
+const defaultContainerMixin: ContainerMixin2 = {};
+
+const defaultCornerMixin: CornerMixin2 = {
+  cornerSmoothing: 0,
+};
+
+const defaultRectangleCornerMixin: RectangleCornerMixin2 = {
+  topLeftRadius: 0,
+  topRightRadius: 0,
+  bottomLeftRadius: 0,
+  bottomRightRadius: 0,
+};
+
+const defaultBaseFrameMixin: BaseFrameMixin2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultContainerMixin,
+  ...defaultGeometryMixin,
+  ...defaultCornerMixin,
+  ...defaultRectangleCornerMixin,
+  ...defaultBlendMixin,
+  ...defaultConstraintMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  layoutMode: 'HORIZONTAL',
+  primaryAxisSizingMode: 'FIXED',
+  counterAxisSizingMode: 'FIXED',
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  itemSpacing: 0,
+  layoutGrids: [],
+  gridStyleId: '',
+  clipsContent: false,
+};
+
+const defaultFramePrototypingMixin: FramePrototypingMixin2 = {
+  overflowDirection: 'NONE',
+  numberOfFixedChildren: 0,
+  overlayPositionType: 'CENTER',
+  overlayBackground: { type: 'NONE' },
+  overlayBackgroundInteraction: 'NONE',
+};
+
+const defaultDefaultFrameMixin: DefaultFrameMixin2 = {
+  ...defaultBaseFrameMixin,
+  ...defaultFramePrototypingMixin,
+  ...defaultReactionMixin,
+};
+
+const defaultPublishableMixin: PublishableMixin2 = {
+  description: '',
+  documentationLinks: [],
+  remote: false,
+  key: '',
+};
+
+const defaultVariantMixin: VariantMixin2 = {
+  variantProperties: null,
+};
+
+const defaultVectorLikeMixin: VectorLikeMixin2 = {
+  handleMirroring: 'NONE',
+};
+
+const defaultStickableMixin: StickableMixin2 = { stuckTo: null };
+
+// PageNode
+
+const defaultPageNode: PageNode2 = {
+  ...defaultBaseNodeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultExportMixin,
+  type: 'PAGE',
+  selection: [],
+  selectedTextRange: null,
+  flowStartingPoints: [],
+  // backgrounds: [
+  //   {
+  //     type: 'SOLID',
+  //     visible: true,
+  //     opacity: 1,
+  //     blendMode: 'NORMAL',
+  //     color: { r: 0.8980392217636108, g: 0.8980392217636108, b: 0.8980392217636108 },
+  //   },
+  // ],
+  prototypeBackgrounds: [
+    { type: 'SOLID', visible: true, opacity: 0, blendMode: 'NORMAL', color: { r: 0, g: 0, b: 0 } },
+  ],
+  prototypeStartNode: null,
+};
+
+// SliceNode
+
+const defaultSliceNode: SliceNode2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  type: 'SLICE',
+};
+
+// FrameNode
+
+const defaultFrameNode: FrameNode2 = {
+  ...defaultDefaultFrameMixin,
+  type: 'FRAME',
+};
+
+// GroupNode
+
+const defaultGroupNode: GroupNode2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  ...defaultReactionMixin,
+  // ...defaultChildrenMixin,
+  ...defaultContainerMixin,
+  ...defaultBlendMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  type: 'GROUP',
+};
+
+// ComponentSetNode
+
+const defaultComponentSetNode: ComponentSetNode2 = {
+  ...defaultBaseFrameMixin,
+  ...defaultPublishableMixin,
+  type: 'COMPONENT_SET',
+  defaultVariant: null as unknown as ComponentNode, // To override
+  variantGroupProperties: {},
+};
+
+// ComponentNode
+
+const defaultComponentNode: ComponentNode2 = {
+  ...defaultDefaultFrameMixin,
+  ...defaultPublishableMixin,
+  ...defaultVariantMixin,
+  type: 'COMPONENT',
+};
+
+// InstanceNode
+
+const defaultInstanceNode: InstanceNode2 = {
+  ...defaultDefaultFrameMixin,
+  ...defaultVariantMixin,
+  type: 'INSTANCE',
+  mainComponent: null,
+  scaleFactor: 1,
+};
+
+// BooleanOperationNode
+
+const defaultBooleanOperationNode: BooleanOperationNode2 = {
+  ...defaultDefaultShapeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultCornerMixin,
+  type: 'BOOLEAN_OPERATION',
+  booleanOperation: 'UNION',
+};
+
+// VectorNode
+
+const defaultVectorNode: VectorNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  ...defaultVectorLikeMixin,
+  type: 'VECTOR',
+};
+
+// StarNode
+
+const defaultStarNode: StarNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'STAR',
+  pointCount: 5,
+  innerRadius: 0.3819660246372223,
+};
+
+// LineNode
+
+const defaultLineNode: LineNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  type: 'LINE',
+};
+
+// EllipseNode
+
+const defaultEllipseNode: EllipseNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'ELLIPSE',
+  arcData: {
+    startingAngle: 0,
+    endingAngle: 6.2831854820251465,
+    innerRadius: 0,
+  },
+};
+
+// PolygonNode
+
+const defaultPolygonNode: PolygonNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'POLYGON',
+  pointCount: 3,
+};
+
+// RectangleNode
+
+const defaultRectangleNode: RectangleNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  ...defaultRectangleCornerMixin,
+  type: 'RECTANGLE',
+};
+
+// TextNode
+
 const defaultTextNode: TextNodeNoMethod = {
   ...defaultDefaultShapeMixin,
   ...defaultConstraintMixin,
   ...defaultTextSublayerNode,
-  listSpacing: 0,
   type: 'TEXT',
+  listSpacing: 0,
   textAlignHorizontal: 'CENTER',
   textAlignVertical: 'CENTER',
   textAutoResize: 'WIDTH_AND_HEIGHT',
@@ -522,84 +731,56 @@ const defaultTextNode: TextNodeNoMethod = {
   textStyleId: '',
 };
 
-// TODO continue using and adding default values by type
+// StampNode
 
-/**
- * @deprecated Legacy; prefer above defaults that are specific to the type.
- */
-// This default matches the default CSS style, i.e. it should match the CSS global resets.
-export const defaultNode: Dict2<
-  keyof (FrameNodeNoMethod & Omit<ComponentNodeNoMethod, 'type'> & Omit<TextNodeNoMethod, 'type'>),
-  any
-> = {
-  id: 'fake',
-  type: 'FRAME',
-  name: '',
-  visible: true,
-  opacity: 1,
-  blendMode: 'PASS_THROUGH',
-  isMask: false,
-  effects: [],
-  effectStyleId: '',
-  x: 0,
-  y: 0,
-  width: 0,
-  height: 0,
-  rotation: 0,
-  layoutAlign: 'INHERIT',
-  layoutGrow: 0,
-  fills: [],
-  fillStyleId: 'fake',
-  strokes: [],
-  strokeStyleId: '',
-  strokeWeight: 0,
-  strokeAlign: 'INSIDE',
-  strokeJoin: 'MITER',
-  dashPattern: [],
-  strokeCap: 'NONE',
-  strokeMiterLimit: 4,
-  cornerSmoothing: 0,
-  topLeftRadius: 0,
-  topRightRadius: 0,
-  bottomLeftRadius: 0,
-  bottomRightRadius: 0,
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingTop: 0,
-  paddingBottom: 0,
-  primaryAxisAlignItems: 'MIN',
-  counterAxisAlignItems: 'MIN',
-  primaryAxisSizingMode: 'FIXED',
-  layoutGrids: [],
-  gridStyleId: '',
-  clipsContent: false,
-  constraints: { horizontal: 'MIN', vertical: 'MIN' },
-  layoutMode: 'HORIZONTAL',
-  counterAxisSizingMode: 'FIXED',
-  itemSpacing: 0,
-  overflowDirection: 'NONE',
-  numberOfFixedChildren: 0,
-  overlayPositionType: 'CENTER',
-  overlayBackground: { type: 'NONE' },
-  overlayBackgroundInteraction: 'NONE',
-  reactions: [],
-  children: [],
-  stuckNodes: [],
-  relativeTransform: [
-    [1, 0, 0],
-    [0, 1, 0],
-  ],
-  description: '',
-  documentationLinks: [],
-  key: '',
-  remote: false,
-  variantProperties: null,
-  listSpacing: 0,
-  hasMissingFont: false,
-  paragraphIndent: 0,
-  paragraphSpacing: 0,
-  autoRename: true,
-  textAlignHorizontal: 'CENTER',
-  textAlignVertical: 'CENTER',
-  textAutoResize: 'WIDTH_AND_HEIGHT',
+const defaultStampNode: StampNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultStickableMixin,
+  type: 'STAMP',
 };
+
+export type LayoutNode =
+  | SliceNode2
+  | FrameNode2
+  | GroupNode2
+  | ComponentSetNode2
+  | ComponentNode2
+  | InstanceNode2
+  | BooleanOperationNode2
+  | VectorNode2
+  | StarNode2
+  | LineNode2
+  | EllipseNode2
+  | PolygonNode2
+  | RectangleNode2
+  | TextNodeNoMethod
+  | StampNode2;
+
+export type NodeWithDefaults = LayoutNode | PageNode2;
+
+// Function used to type-check the defaults below and ensure all keys are correctly mapped.
+function makeNodeDefaults<T extends { [key in NodeWithDefaults['type']]: NodeWithDefaults & { type: key } }>(
+  defaults: T,
+) {
+  return defaults;
+}
+
+export const nodeDefaults = makeNodeDefaults({
+  PAGE: defaultPageNode,
+  SLICE: defaultSliceNode,
+  FRAME: defaultFrameNode,
+  GROUP: defaultGroupNode,
+  COMPONENT_SET: defaultComponentSetNode,
+  COMPONENT: defaultComponentNode,
+  INSTANCE: defaultInstanceNode,
+  BOOLEAN_OPERATION: defaultBooleanOperationNode,
+  VECTOR: defaultVectorNode,
+  STAR: defaultStarNode,
+  LINE: defaultLineNode,
+  ELLIPSE: defaultEllipseNode,
+  POLYGON: defaultPolygonNode,
+  RECTANGLE: defaultRectangleNode,
+  TEXT: defaultTextNode,
+  STAMP: defaultStampNode,
+});

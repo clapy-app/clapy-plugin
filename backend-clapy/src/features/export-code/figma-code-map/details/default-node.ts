@@ -1,16 +1,16 @@
 import { Nil } from '../../../../common/general-utils';
 import {
-  defaultNode,
   Dict,
   FrameNodeNoMethod,
+  nodeDefaults,
   PageNodeNoMethod,
   SceneNodeNoMethod,
 } from '../../../sb-serialize-preview/sb-serialize.model';
-import { ComponentNode2, isChildrenMixin, isInstance } from '../../create-ts-compiler/canvas-utils';
+import { ComponentNode2, isChildrenMixin, isInstanceFeatureDetection } from '../../create-ts-compiler/canvas-utils';
 import { warnNode } from './utils-and-reset';
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNodeNoMethod>[]): FrameNodeNoMethod {
-  return Object.assign({ ...defaultNode, name }, ...nodeOverrides);
+  return Object.assign({ ...nodeDefaults.FRAME, name }, ...nodeOverrides);
 }
 
 export function addHugContents(): Partial<FrameNodeNoMethod> {
@@ -22,11 +22,9 @@ export function addHugContents(): Partial<FrameNodeNoMethod> {
   };
 }
 
-const defaultNodeKeys = Object.keys(defaultNode);
-
 export function fillWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod | Nil) {
   if (!node) return;
-  fillNodeWithDefaults(node, defaultNodeKeys, defaultNode);
+  fillNodeWithDefaults(node, defaultsForNode(node));
   if (isChildrenMixin(node)) {
     for (const child of node.children) {
       fillWithDefaults(child);
@@ -40,9 +38,9 @@ export function fillWithComponent(
   nodeOfComp?: SceneNodeNoMethod,
 ) {
   if (!node) return;
-  const isInst = isInstance(node) && node.mainComponent;
+  const isInst = isInstanceFeatureDetection(node);
   if (!nodeOfComp && !isInst) {
-    fillNodeWithDefaults(node, defaultNodeKeys, defaultNode);
+    fillNodeWithDefaults(node, defaultsForNode(node));
   } else {
     if (isInst) {
       nodeOfComp = compNodes[node.mainComponent!.id];
@@ -53,33 +51,43 @@ export function fillWithComponent(
     if (!nodeOfComp) {
       throw new Error('nodeOfComp is undefined, which should be impossible here. Bug?');
     }
-    const defaultKeys = Object.keys(nodeOfComp);
-    fillNodeWithDefaults(node, defaultKeys, nodeOfComp);
+    fillNodeWithDefaults(node, nodeOfComp);
   }
   if (isChildrenMixin(node)) {
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
-      if (nodeOfComp) {
-        if (!isChildrenMixin(nodeOfComp)) {
+      let childNodeOfComp = nodeOfComp;
+      if (childNodeOfComp) {
+        if (!isChildrenMixin(childNodeOfComp)) {
           warnNode(
             child,
-            `BUG Instance node ${child.name} has children, but the corresponding component node does not.`,
+            `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
           );
           throw new Error(
-            `BUG Instance node ${child.name} has children, but the corresponding component node does not.`,
+            `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
           );
         }
-        nodeOfComp = nodeOfComp.children[i];
+        childNodeOfComp = childNodeOfComp.children[i];
       }
-      fillWithComponent(child, compNodes, nodeOfComp);
+      fillWithComponent(child, compNodes, childNodeOfComp);
     }
   }
 }
 
-function fillNodeWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod, defaultKeys: string[], defaultValues: any) {
+function fillNodeWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod, defaultValues: any) {
+  const defaultKeys = Object.keys(defaultValues);
   for (const key of defaultKeys) {
     if (!node.hasOwnProperty(key)) {
       (node as any)[key] = defaultValues[key];
     }
   }
+}
+
+function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
+  let type = node.type as keyof typeof nodeDefaults;
+  if (!nodeDefaults[type]) {
+    warnNode(node, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
+    type = 'FRAME';
+  }
+  return nodeDefaults[type];
 }

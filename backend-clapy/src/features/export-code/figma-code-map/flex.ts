@@ -3,7 +3,7 @@ import { PropertiesHyphen } from 'csstype';
 
 import { Nil } from '../../../common/general-utils';
 import { flags } from '../../../env-and-config/app-config';
-import { defaultNode, Dict } from '../../sb-serialize-preview/sb-serialize.model';
+import { Dict, nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import {
   FlexNode,
@@ -95,7 +95,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     styles,
   );
 
-  const defaultIsVertical = defaultNode.layoutMode === 'VERTICAL';
+  const defaultIsVertical = nodeDefaults.FRAME.layoutMode === 'VERTICAL';
 
   const parentPrimaryAxisHugContents = parentAndNodeHaveSameDirection
     ? nodePrimaryAxisHugContents
