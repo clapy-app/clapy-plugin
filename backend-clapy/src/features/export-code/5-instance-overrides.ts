@@ -51,6 +51,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
     // Add common styles (text and tags)
     mapCommonStyles(context, node, styles);
 
+    // TODO sur text node d'une instance, type = FRAME, probablement car les valeurs par défaut ne sont pas bonnes. Réécriture des valeurs par défaut en cours dans sb-serialize-model.ts
+
     if (isText(node)) {
       // Add text styles
       let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);

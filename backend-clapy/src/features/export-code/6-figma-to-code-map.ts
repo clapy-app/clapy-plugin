@@ -57,7 +57,7 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
   postTransform(context, styles);
   if (isInstanceContext(context)) {
     // 2) On the instance, only keep the styles different from the component.
-    console.log(context.nodeOfComp.name, node.name);
+    console.log(context.nodeOfComp.name, '<=', node.name);
     const compStyles = context.nodeOfComp.styles;
     console.log('Comp styles:', context.nodeOfComp.styles, '-- inst:', styles);
     if (compStyles) {

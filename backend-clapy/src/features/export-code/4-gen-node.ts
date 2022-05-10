@@ -46,8 +46,6 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-const { factory } = ts;
-
 export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
   try {
     if (!node.visible) {

@@ -259,8 +259,27 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
+type BaseNodeMixin2 = Omit<OmitMethods<BaseNodeMixin>, FrameNodeBlackList>;
+type SceneNodeMixin2 = Omit<OmitMethods<SceneNodeMixin>, FrameNodeBlackList>;
+type ReactionMixin2 = Omit<OmitMethods<ReactionMixin>, FrameNodeBlackList>;
+type BlendMixin2 = Omit<OmitMethods<BlendMixin>, FrameNodeBlackList>;
+type MinimalStrokesMixin2 = Omit<OmitMethods<MinimalStrokesMixin>, FrameNodeBlackList>;
+type MinimalFillsMixin2 = Omit<OmitMethods<MinimalFillsMixin>, FrameNodeBlackList>;
+type GeometryMixin2 = Omit<OmitMethods<GeometryMixin>, FrameNodeBlackList>;
+type LayoutMixin2 = Omit<OmitMethods<LayoutMixin>, FrameNodeBlackList>;
+type ExportMixin2 = Omit<OmitMethods<ExportMixin>, FrameNodeBlackList>;
+interface DefaultShapeMixin2
+  extends BaseNodeMixin2,
+    SceneNodeMixin2,
+    ReactionMixin2,
+    BlendMixin2,
+    GeometryMixin2,
+    LayoutMixin2,
+    ExportMixin2 {}
+type ConstraintMixin2 = Omit<OmitMethods<ConstraintMixin>, FrameNodeBlackList>;
+type TextSublayerNode2 = Omit<OmitMethods<TextSublayerNode>, FrameNodeBlackList>;
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
-export type TextNodeNoMethod = OmitMethods<TextNode> & { listSpacing?: number };
+export type TextNodeNoMethod = Omit<OmitMethods<TextNode> & { listSpacing: number }, FrameNodeBlackList>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList> & {
   children: SceneNodeNoMethod[];
@@ -320,6 +339,194 @@ export type ExportImageEntry = {
 export type ExportImagesFigma = Dict<ExportImageEntry>;
 export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;
 
+const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
+  id: null as unknown as '', // Should be overridden
+  name: '',
+  visible: true,
+  stuckNodes: [],
+};
+
+const defaultLayoutNodeMixin: LayoutMixin2 = {
+  relativeTransform: [
+    [1, 0, 0],
+    [0, 1, 0],
+  ],
+  x: 0,
+  y: 0,
+  rotation: 0,
+  width: 0,
+  height: 0,
+  layoutAlign: 'INHERIT',
+  layoutGrow: 0,
+};
+
+// const defaultSceneNode: SceneNodeNoMethod = {
+//   id: null as unknown as '', // Should be overridden
+//   type: null as unknown as 'FRAME', // Should be overridden
+//   name: '',
+//   visible: true,
+//   x: 0,
+//   y: 0,
+//   width: 0,
+//   height: 0,
+//   stuckNodes: [],
+//   relativeTransform: [
+//     [1, 0, 0],
+//     [0, 1, 0],
+//   ],
+// };
+
+const defaultFrameNode: FrameNodeNoMethod = {
+  ...defaultSceneNodeMixin,
+  ...defaultLayoutNodeMixin,
+  type: 'FRAME',
+  opacity: 1,
+  blendMode: 'PASS_THROUGH',
+  isMask: false,
+  effects: [],
+  effectStyleId: '',
+  rotation: 0,
+  layoutAlign: 'INHERIT',
+  layoutGrow: 0,
+  fills: [],
+  fillStyleId: 'fake',
+  strokes: [],
+  strokeStyleId: '',
+  strokeWeight: 0,
+  strokeAlign: 'INSIDE',
+  strokeJoin: 'MITER',
+  dashPattern: [],
+  strokeCap: 'NONE',
+  strokeMiterLimit: 4,
+  cornerSmoothing: 0,
+  topLeftRadius: 0,
+  topRightRadius: 0,
+  bottomLeftRadius: 0,
+  bottomRightRadius: 0,
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  primaryAxisSizingMode: 'FIXED',
+  layoutGrids: [],
+  gridStyleId: '',
+  clipsContent: false,
+  constraints: { horizontal: 'MIN', vertical: 'MIN' },
+  layoutMode: 'HORIZONTAL',
+  counterAxisSizingMode: 'FIXED',
+  itemSpacing: 0,
+  overflowDirection: 'NONE',
+  numberOfFixedChildren: 0,
+  overlayPositionType: 'CENTER',
+  overlayBackground: { type: 'NONE' },
+  overlayBackgroundInteraction: 'NONE',
+  reactions: [],
+  children: [],
+};
+
+const defaultBaseNodeMixin: BaseNodeMixin2 = {
+  id: null as unknown as '', // Should be overridden
+  name: '',
+};
+
+const defaultSceneNodeMixin2: SceneNodeMixin2 = {
+  visible: true,
+  stuckNodes: [],
+};
+
+const defaultReactionMixin: ReactionMixin2 = {
+  reactions: [],
+};
+
+const defaultBlendMixin: BlendMixin2 = {
+  opacity: 1,
+  blendMode: 'PASS_THROUGH',
+  isMask: false,
+  effects: [],
+  effectStyleId: '',
+};
+
+const defaultMinimalStrokesMixin: MinimalStrokesMixin2 = {
+  strokes: [],
+  strokeStyleId: '',
+  strokeWeight: 0,
+  strokeJoin: 'MITER',
+  strokeAlign: 'INSIDE',
+  dashPattern: [],
+};
+
+const defaultMinimalFillsMixin: MinimalFillsMixin2 = {
+  fills: [],
+  fillStyleId: '',
+};
+
+const defaultGeometryMixin: GeometryMixin2 = {
+  ...defaultMinimalStrokesMixin,
+  ...defaultMinimalFillsMixin,
+  strokeCap: 'NONE',
+  strokeMiterLimit: 4,
+};
+
+const defaultExportMixin: ExportMixin2 = {
+  exportSettings: [],
+};
+
+const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin2,
+  ...defaultReactionMixin,
+  ...defaultBlendMixin,
+  ...defaultGeometryMixin,
+  ...defaultLayoutNodeMixin,
+  ...defaultExportMixin,
+};
+
+const defaultConstraintMixin: ConstraintMixin2 = {
+  constraints: { horizontal: 'MIN', vertical: 'MIN' },
+};
+
+const defaultTextSublayerNode: TextSublayerNode2 = {
+  hasMissingFont: false,
+  paragraphIndent: 0,
+  paragraphSpacing: 0,
+  fontSize: 0,
+  fontName: {
+    family: 'Inter',
+    style: 'Medium',
+  },
+  textCase: 'ORIGINAL',
+  textDecoration: 'NONE',
+  letterSpacing: {
+    unit: 'PERCENT',
+    value: 0,
+  },
+  lineHeight: {
+    unit: 'AUTO',
+  },
+  hyperlink: null,
+  characters: '',
+};
+
+const defaultTextNode: TextNodeNoMethod = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultTextSublayerNode,
+  listSpacing: 0,
+  type: 'TEXT',
+  textAlignHorizontal: 'CENTER',
+  textAlignVertical: 'CENTER',
+  textAutoResize: 'WIDTH_AND_HEIGHT',
+  autoRename: true,
+  textStyleId: '',
+};
+
+// TODO continue using and adding default values by type
+
+/**
+ * @deprecated Legacy; prefer above defaults that are specific to the type.
+ */
 // This default matches the default CSS style, i.e. it should match the CSS global resets.
 export const defaultNode: Dict2<
   keyof (FrameNodeNoMethod & Omit<ComponentNodeNoMethod, 'type'> & Omit<TextNodeNoMethod, 'type'>),
