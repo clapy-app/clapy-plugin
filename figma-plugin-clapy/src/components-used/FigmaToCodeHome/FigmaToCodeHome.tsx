@@ -34,7 +34,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
-  console.log('isAlphaDTCUser:', isAlphaDTCUser);
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -54,11 +53,14 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       track('gen-code', 'start');
 
       // Extract the Figma configuration
-      const [parent, root, imagesExtracted, styles, extraConfig] = await fetchPlugin('serializeSelectedNode');
+      const [parent, root, components, imagesExtracted, styles, extraConfig] = await fetchPlugin(
+        'serializeSelectedNode',
+      );
       const images: ExportImageMap2 = {};
       const nodes: ExportCodePayload = {
         parent,
         root,
+        components,
         images,
         styles,
         extraConfig: {

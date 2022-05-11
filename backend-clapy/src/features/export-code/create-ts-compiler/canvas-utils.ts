@@ -1,5 +1,7 @@
+import { DeclarationPlain } from 'css-tree';
+
 import { Nil } from '../../../common/general-utils';
-import { FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
+import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -65,12 +67,13 @@ type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Exclu
 interface GlobalExtender {
   maskedBy?: Masker;
   skip?: boolean;
+  styles?: Dict<DeclarationPlain>;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
 export type BaseNode2 = ExtendNodeType<BaseNode>;
 export type PageNode2 = ExtendNodeType<PageNode>;
-export type SceneNode2 = ExtendNodeType<SceneNode>;
+export type SceneNode2 = ExtendNodeType<SceneNode, { className?: string }>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
 export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
 export type TextNode2 = ExtendNodeType<TextNode, { _textSegments?: StyledTextSegment[] }>;
@@ -150,6 +153,11 @@ export function isComponent(node: BaseNode2 | SceneNode2 | Nil): node is Compone
 
 export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
   return node?.type === 'INSTANCE';
+}
+
+export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
+  // For cases like fill with default values where we need to recognize what was originally an instance, even if we changed the type, e.g. to SVG.
+  return !!(node as InstanceNode2).mainComponent;
 }
 
 export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node is BaseFrameMixin {

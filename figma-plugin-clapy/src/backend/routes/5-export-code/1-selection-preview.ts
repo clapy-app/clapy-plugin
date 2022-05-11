@@ -2,8 +2,14 @@ import { NextFn } from '../../../common/app-models';
 import { isBlendMixin } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 
+let sendSelectionPreview: (() => void) | undefined;
+
+export async function getSelectionPreview() {
+  sendSelectionPreview?.();
+}
+
 export function selectionPreview(next: NextFn<string | undefined | false>) {
-  const sendSelectionPreview = async () => next(await generatePreview());
+  sendSelectionPreview = async () => next(await generatePreview());
   figma.on('selectionchange', sendSelectionPreview);
   // Initial emit, for dev, when the figma plugin is open after the webapp.
   sendSelectionPreview();

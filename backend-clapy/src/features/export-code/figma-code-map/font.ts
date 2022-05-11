@@ -59,7 +59,7 @@ export function figmaTypoToJss(figmaStyle: TextStyle) {
 
 export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
   const {
-    componentContext: {
+    moduleContext: {
       projectContext: { fontWeightUsed },
     },
   } = context;

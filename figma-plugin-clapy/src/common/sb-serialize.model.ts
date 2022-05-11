@@ -12,6 +12,10 @@ export type Properties = Dict<any>;
 export interface Dict<T = any> {
   [key: string | number | symbol]: T;
 }
+export type ObjKey = string | number | symbol;
+export type Dict2<Key extends ObjKey, Value> = Partial<{
+  [key in Key]: Value;
+}>;
 
 export type Intersect<T, U> = Extract<T, U>;
 
@@ -241,6 +245,7 @@ export type OmitMethods<T> = {
 export interface ExportCodePayload {
   parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
   root: SceneNodeNoMethod | null | undefined;
+  components: ComponentNodeNoMethod[];
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: { isClapyFile?: boolean; enableMUIFramework?: boolean };
@@ -254,8 +259,55 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
+type BaseNodeMixin2 = Omit<OmitMethods<BaseNodeMixin>, FrameNodeBlackList>;
+type SceneNodeMixin2 = Omit<OmitMethods<SceneNodeMixin>, FrameNodeBlackList>;
+type ReactionMixin2 = Omit<OmitMethods<ReactionMixin>, FrameNodeBlackList>;
+type BlendMixin2 = Omit<OmitMethods<BlendMixin>, FrameNodeBlackList>;
+type MinimalStrokesMixin2 = Omit<OmitMethods<MinimalStrokesMixin>, FrameNodeBlackList>;
+type MinimalFillsMixin2 = Omit<OmitMethods<MinimalFillsMixin>, FrameNodeBlackList>;
+type GeometryMixin2 = Omit<OmitMethods<GeometryMixin>, FrameNodeBlackList>;
+type LayoutMixin2 = Omit<OmitMethods<LayoutMixin>, FrameNodeBlackList>;
+type ExportMixin2 = Omit<OmitMethods<ExportMixin>, FrameNodeBlackList>;
+interface DefaultShapeMixin2
+  extends BaseNodeMixin2,
+    SceneNodeMixin2,
+    ReactionMixin2,
+    BlendMixin2,
+    GeometryMixin2,
+    LayoutMixin2,
+    ExportMixin2 {}
+type ConstraintMixin2 = Omit<OmitMethods<ConstraintMixin>, FrameNodeBlackList>;
+type TextSublayerNode2 = Omit<OmitMethods<TextSublayerNode>, FrameNodeBlackList>;
+type ContainerMixin2 = Omit<OmitMethods<ContainerMixin>, FrameNodeBlackList>;
+type CornerMixin2 = Omit<OmitMethods<CornerMixin>, FrameNodeBlackList>;
+type RectangleCornerMixin2 = Omit<OmitMethods<RectangleCornerMixin>, FrameNodeBlackList>;
+type BaseFrameMixin2 = Omit<OmitMethods<BaseFrameMixin>, FrameNodeBlackList>;
+type FramePrototypingMixin2 = Omit<OmitMethods<FramePrototypingMixin>, FrameNodeBlackList>;
+type DefaultFrameMixin2 = Omit<OmitMethods<DefaultFrameMixin>, FrameNodeBlackList>;
+type PublishableMixin2 = Omit<OmitMethods<PublishableMixin>, FrameNodeBlackList>;
+type VariantMixin2 = Omit<OmitMethods<VariantMixin>, FrameNodeBlackList>;
+type VectorLikeMixin2 = Omit<OmitMethods<VectorLikeMixin>, FrameNodeBlackList>;
+type StickableMixin2 = Omit<OmitMethods<StickableMixin>, FrameNodeBlackList>;
+
+type PageNode2 = Omit<OmitMethods<PageNode>, FrameNodeBlackList>;
+type SliceNode2 = Omit<OmitMethods<SliceNode>, FrameNodeBlackList>;
+type FrameNode2 = Omit<OmitMethods<FrameNode>, FrameNodeBlackList>;
+type GroupNode2 = Omit<OmitMethods<GroupNode>, FrameNodeBlackList>;
+type ComponentSetNode2 = Omit<OmitMethods<ComponentSetNode>, FrameNodeBlackList>;
+type ComponentNode2 = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList>;
+type InstanceNode2 = Omit<OmitMethods<InstanceNode>, FrameNodeBlackList>;
+type BooleanOperationNode2 = Omit<OmitMethods<BooleanOperationNode>, FrameNodeBlackList>;
+type VectorNode2 = Omit<OmitMethods<VectorNode>, FrameNodeBlackList>;
+type StarNode2 = Omit<OmitMethods<StarNode>, FrameNodeBlackList>;
+type LineNode2 = Omit<OmitMethods<LineNode>, FrameNodeBlackList>;
+type EllipseNode2 = Omit<OmitMethods<EllipseNode>, FrameNodeBlackList>;
+type PolygonNode2 = Omit<OmitMethods<PolygonNode>, FrameNodeBlackList>;
+type RectangleNode2 = Omit<OmitMethods<RectangleNode>, FrameNodeBlackList>;
+type StampNode2 = Omit<OmitMethods<StampNode>, FrameNodeBlackList>;
+
+// Later: rename XXNoMethod to XX2 to be consistent with the back.
 export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
-export type TextNodeNoMethod = OmitMethods<TextNode>;
+export type TextNodeNoMethod = Omit<OmitMethods<TextNode> & { listSpacing: number }, FrameNodeBlackList>;
 export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList> & {
   children: SceneNodeNoMethod[];
@@ -289,6 +341,7 @@ export const extractionBlacklist = [
   'absoluteRenderBounds',
   'vectorNetwork',
   'exportSettings',
+  'canUpgradeToNativeBidiSupport',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent'>;
@@ -313,3 +366,421 @@ export type ExportImageEntry = {
 
 export type ExportImagesFigma = Dict<ExportImageEntry>;
 export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;
+
+const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
+  id: null as unknown as '', // Should be overridden
+  name: '',
+  visible: true,
+  stuckNodes: [],
+};
+
+const defaultLayoutMixin: LayoutMixin2 = {
+  relativeTransform: [
+    [1, 0, 0],
+    [0, 1, 0],
+  ],
+  x: 0,
+  y: 0,
+  rotation: 0,
+  width: 0,
+  height: 0,
+  layoutAlign: 'INHERIT',
+  layoutGrow: 0,
+};
+
+// const defaultSceneNode: SceneNodeNoMethod = {
+//   id: null as unknown as '', // Should be overridden
+//   type: null as unknown as 'FRAME', // Should be overridden
+//   name: '',
+//   visible: true,
+//   x: 0,
+//   y: 0,
+//   width: 0,
+//   height: 0,
+//   stuckNodes: [],
+//   relativeTransform: [
+//     [1, 0, 0],
+//     [0, 1, 0],
+//   ],
+// };
+
+const defaultBaseNodeMixin: BaseNodeMixin2 = {
+  id: null as unknown as '', // Should be overridden
+  name: '',
+};
+
+const defaultSceneNodeMixin2: SceneNodeMixin2 = {
+  visible: true,
+  stuckNodes: [],
+};
+
+const defaultReactionMixin: ReactionMixin2 = {
+  reactions: [],
+};
+
+const defaultBlendMixin: BlendMixin2 = {
+  opacity: 1,
+  blendMode: 'PASS_THROUGH',
+  isMask: false,
+  effects: [],
+  effectStyleId: '',
+};
+
+const defaultMinimalStrokesMixin: MinimalStrokesMixin2 = {
+  strokes: [],
+  strokeStyleId: '',
+  strokeWeight: 0,
+  strokeJoin: 'MITER',
+  strokeAlign: 'INSIDE',
+  dashPattern: [],
+};
+
+const defaultMinimalFillsMixin: MinimalFillsMixin2 = {
+  fills: [],
+  fillStyleId: '',
+};
+
+const defaultGeometryMixin: GeometryMixin2 = {
+  ...defaultMinimalStrokesMixin,
+  ...defaultMinimalFillsMixin,
+  strokeCap: 'NONE',
+  strokeMiterLimit: 4,
+};
+
+const defaultExportMixin: ExportMixin2 = {
+  exportSettings: [],
+};
+
+const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin2,
+  ...defaultReactionMixin,
+  ...defaultBlendMixin,
+  ...defaultGeometryMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+};
+
+const defaultConstraintMixin: ConstraintMixin2 = {
+  constraints: { horizontal: 'MIN', vertical: 'MIN' },
+};
+
+const defaultTextSublayerNode: TextSublayerNode2 = {
+  hasMissingFont: false,
+  paragraphIndent: 0,
+  paragraphSpacing: 0,
+  fontSize: 0,
+  fontName: {
+    family: 'Inter',
+    style: 'Medium',
+  },
+  textCase: 'ORIGINAL',
+  textDecoration: 'NONE',
+  letterSpacing: {
+    unit: 'PERCENT',
+    value: 0,
+  },
+  lineHeight: {
+    unit: 'AUTO',
+  },
+  hyperlink: null,
+  characters: '',
+};
+
+const defaultContainerMixin: ContainerMixin2 = {};
+
+const defaultCornerMixin: CornerMixin2 = {
+  cornerSmoothing: 0,
+};
+
+const defaultRectangleCornerMixin: RectangleCornerMixin2 = {
+  topLeftRadius: 0,
+  topRightRadius: 0,
+  bottomLeftRadius: 0,
+  bottomRightRadius: 0,
+};
+
+const defaultBaseFrameMixin: BaseFrameMixin2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultContainerMixin,
+  ...defaultGeometryMixin,
+  ...defaultCornerMixin,
+  ...defaultRectangleCornerMixin,
+  ...defaultBlendMixin,
+  ...defaultConstraintMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  layoutMode: 'HORIZONTAL',
+  primaryAxisSizingMode: 'FIXED',
+  counterAxisSizingMode: 'FIXED',
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  itemSpacing: 0,
+  layoutGrids: [],
+  gridStyleId: '',
+  clipsContent: false,
+};
+
+const defaultFramePrototypingMixin: FramePrototypingMixin2 = {
+  overflowDirection: 'NONE',
+  numberOfFixedChildren: 0,
+  overlayPositionType: 'CENTER',
+  overlayBackground: { type: 'NONE' },
+  overlayBackgroundInteraction: 'NONE',
+};
+
+const defaultDefaultFrameMixin: DefaultFrameMixin2 = {
+  ...defaultBaseFrameMixin,
+  ...defaultFramePrototypingMixin,
+  ...defaultReactionMixin,
+};
+
+const defaultPublishableMixin: PublishableMixin2 = {
+  description: '',
+  documentationLinks: [],
+  remote: false,
+  key: '',
+};
+
+const defaultVariantMixin: VariantMixin2 = {
+  variantProperties: null,
+};
+
+const defaultVectorLikeMixin: VectorLikeMixin2 = {
+  handleMirroring: 'NONE',
+};
+
+const defaultStickableMixin: StickableMixin2 = { stuckTo: null };
+
+// PageNode
+
+const defaultPageNode: PageNode2 = {
+  ...defaultBaseNodeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultExportMixin,
+  type: 'PAGE',
+  selection: [],
+  selectedTextRange: null,
+  flowStartingPoints: [],
+  // backgrounds: [
+  //   {
+  //     type: 'SOLID',
+  //     visible: true,
+  //     opacity: 1,
+  //     blendMode: 'NORMAL',
+  //     color: { r: 0.8980392217636108, g: 0.8980392217636108, b: 0.8980392217636108 },
+  //   },
+  // ],
+  prototypeBackgrounds: [
+    { type: 'SOLID', visible: true, opacity: 0, blendMode: 'NORMAL', color: { r: 0, g: 0, b: 0 } },
+  ],
+  prototypeStartNode: null,
+};
+
+// SliceNode
+
+const defaultSliceNode: SliceNode2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  type: 'SLICE',
+};
+
+// FrameNode
+
+const defaultFrameNode: FrameNode2 = {
+  ...defaultDefaultFrameMixin,
+  type: 'FRAME',
+};
+
+// GroupNode
+
+const defaultGroupNode: GroupNode2 = {
+  ...defaultBaseNodeMixin,
+  ...defaultSceneNodeMixin,
+  ...defaultReactionMixin,
+  // ...defaultChildrenMixin,
+  ...defaultContainerMixin,
+  ...defaultBlendMixin,
+  ...defaultLayoutMixin,
+  ...defaultExportMixin,
+  type: 'GROUP',
+};
+
+// ComponentSetNode
+
+const defaultComponentSetNode: ComponentSetNode2 = {
+  ...defaultBaseFrameMixin,
+  ...defaultPublishableMixin,
+  type: 'COMPONENT_SET',
+  defaultVariant: null as unknown as ComponentNode, // To override
+  variantGroupProperties: {},
+};
+
+// ComponentNode
+
+const defaultComponentNode: ComponentNode2 = {
+  ...defaultDefaultFrameMixin,
+  ...defaultPublishableMixin,
+  ...defaultVariantMixin,
+  type: 'COMPONENT',
+};
+
+// InstanceNode
+
+const defaultInstanceNode: InstanceNode2 = {
+  ...defaultDefaultFrameMixin,
+  ...defaultVariantMixin,
+  type: 'INSTANCE',
+  mainComponent: null,
+  scaleFactor: 1,
+};
+
+// BooleanOperationNode
+
+const defaultBooleanOperationNode: BooleanOperationNode2 = {
+  ...defaultDefaultShapeMixin,
+  // ...defaultChildrenMixin,
+  ...defaultCornerMixin,
+  type: 'BOOLEAN_OPERATION',
+  booleanOperation: 'UNION',
+};
+
+// VectorNode
+
+const defaultVectorNode: VectorNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  ...defaultVectorLikeMixin,
+  type: 'VECTOR',
+};
+
+// StarNode
+
+const defaultStarNode: StarNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'STAR',
+  pointCount: 5,
+  innerRadius: 0.3819660246372223,
+};
+
+// LineNode
+
+const defaultLineNode: LineNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  type: 'LINE',
+};
+
+// EllipseNode
+
+const defaultEllipseNode: EllipseNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'ELLIPSE',
+  arcData: {
+    startingAngle: 0,
+    endingAngle: 6.2831854820251465,
+    innerRadius: 0,
+  },
+};
+
+// PolygonNode
+
+const defaultPolygonNode: PolygonNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  type: 'POLYGON',
+  pointCount: 3,
+};
+
+// RectangleNode
+
+const defaultRectangleNode: RectangleNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultCornerMixin,
+  ...defaultRectangleCornerMixin,
+  type: 'RECTANGLE',
+};
+
+// TextNode
+
+const defaultTextNode: TextNodeNoMethod = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultTextSublayerNode,
+  type: 'TEXT',
+  listSpacing: 0,
+  textAlignHorizontal: 'CENTER',
+  textAlignVertical: 'CENTER',
+  textAutoResize: 'WIDTH_AND_HEIGHT',
+  autoRename: true,
+  textStyleId: '',
+};
+
+// StampNode
+
+const defaultStampNode: StampNode2 = {
+  ...defaultDefaultShapeMixin,
+  ...defaultConstraintMixin,
+  ...defaultStickableMixin,
+  type: 'STAMP',
+};
+
+export type LayoutNode =
+  | SliceNode2
+  | FrameNode2
+  | GroupNode2
+  | ComponentSetNode2
+  | ComponentNode2
+  | InstanceNode2
+  | BooleanOperationNode2
+  | VectorNode2
+  | StarNode2
+  | LineNode2
+  | EllipseNode2
+  | PolygonNode2
+  | RectangleNode2
+  | TextNodeNoMethod
+  | StampNode2;
+
+export type NodeWithDefaults = LayoutNode | PageNode2;
+
+// Function used to type-check the defaults below and ensure all keys are correctly mapped.
+function makeNodeDefaults<T extends { [key in NodeWithDefaults['type']]: NodeWithDefaults & { type: key } }>(
+  defaults: T,
+) {
+  return defaults;
+}
+
+export const nodeDefaults = makeNodeDefaults({
+  PAGE: defaultPageNode,
+  SLICE: defaultSliceNode,
+  FRAME: defaultFrameNode,
+  GROUP: defaultGroupNode,
+  COMPONENT_SET: defaultComponentSetNode,
+  COMPONENT: defaultComponentNode,
+  INSTANCE: defaultInstanceNode,
+  BOOLEAN_OPERATION: defaultBooleanOperationNode,
+  VECTOR: defaultVectorNode,
+  STAR: defaultStarNode,
+  LINE: defaultLineNode,
+  ELLIPSE: defaultEllipseNode,
+  POLYGON: defaultPolygonNode,
+  RECTANGLE: defaultRectangleNode,
+  TEXT: defaultTextNode,
+  STAMP: defaultStampNode,
+});
