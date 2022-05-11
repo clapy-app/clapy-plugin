@@ -57,6 +57,9 @@ export async function exportCode(
   const cssFiles: CodeDict = { [appCssPath]: appCss };
   perfMeasure('b');
 
+  const [varNamesMap, cssVarsDeclaration] = /* await */ genStyles(tokens as TokenStore | undefined);
+  perfMeasure('b2');
+
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
   const projectContext: ProjectContext = {
@@ -72,10 +75,8 @@ export async function exportCode(
     images,
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
-    tokens: tokens as TokenStore | undefined,
+    varNamesMap,
   };
-  perfMeasure('a0');
-  genStyles(projectContext);
 
   const lightAppModuleContext = {
     projectContext,
@@ -87,10 +88,10 @@ export async function exportCode(
     inInteractiveElement: false,
   } as ModuleContext;
   perfMeasure('c');
-  const moduleContext = await getOrGenComponent(lightAppModuleContext, root, parent, true);
+  const moduleContext = getOrGenComponent(lightAppModuleContext, root, parent, true);
   perfMeasure('d');
 
-  addCompToAppRoot(lightAppModuleContext, moduleContext, parent);
+  addCompToAppRoot(lightAppModuleContext, moduleContext, parent, cssVarsDeclaration);
   perfMeasure('e');
 
   await writeSVGReactComponents(projectContext);
@@ -134,6 +135,7 @@ function addCompToAppRoot(
   appModuleContext: ModuleContext,
   childModuleContext: ModuleContext,
   parentNode: ParentNode | Nil,
+  cssVarsDeclaration: string | Nil,
 ) {
   const {
     compName,
@@ -147,10 +149,14 @@ function addCompToAppRoot(
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
-  const updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode);
-  if (updatedAppCss) {
-    cssFiles[appCssPath] = updatedAppCss;
+  let updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
+
+  // Add design tokens on top of the file, if any
+  if (cssVarsDeclaration) {
+    updatedAppCss = `${cssVarsDeclaration}\n\n${updatedAppCss}`;
   }
+
+  cssFiles[appCssPath] = updatedAppCss;
 
   addMUIProvidersImports(appModuleContext);
 
