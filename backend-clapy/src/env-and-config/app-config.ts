@@ -10,6 +10,8 @@ export const flags = {
   useCssBoxSizingBorderBox: true,
   useFilterDropShadow: true,
   writeClapyFiles: false,
+  destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
+  enableInstanceOverrides: false,
 };
 
 // What takes time:

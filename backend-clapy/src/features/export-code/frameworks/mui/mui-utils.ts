@@ -1,7 +1,7 @@
 import ts from 'typescript';
 
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { ComponentContext, NodeContext } from '../../code.model';
+import { ModuleContext, NodeContext } from '../../code.model';
 import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   genUniqueName,
@@ -15,7 +15,7 @@ const { factory } = ts;
 
 export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNode2) {
   const {
-    componentContext: { projectContext },
+    moduleContext: { projectContext },
   } = context;
   const { enableMUIFramework } = projectContext;
   // MUI must be enabled
@@ -34,7 +34,7 @@ export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNod
   return config;
 }
 
-export function addMuiImport(context: ComponentContext, config: MUIConfig) {
+export function addMuiImport(context: ModuleContext, config: MUIConfig) {
   const { imports, subComponentNamesAlreadyUsed, importsAlreadyAdded } = context;
   const importHashKey = `${config.name}__${config.moduleSpecifier}`;
   if (!importsAlreadyAdded.has(importHashKey)) {

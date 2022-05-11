@@ -23,7 +23,7 @@ export function transformFigmaToCode(context: NodeContext, node: ValidNode, styl
   }
 }
 
-export function addTransform(context: NodeContext, transform: string) {
+function addTransform(context: NodeContext, transform: string) {
   if (!context.tranforms) {
     context.tranforms = [];
   }

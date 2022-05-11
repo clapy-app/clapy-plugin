@@ -1,8 +1,9 @@
 import { DeclarationPlain } from 'css-tree';
+import equal from 'fast-deep-equal';
 import ts from 'typescript';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, NodeContext } from './code.model';
+import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
 import { TextNode2, ValidNode } from './create-ts-compiler/canvas-utils';
 import { addStyle } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
@@ -54,6 +55,26 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, styles);
+  if (isInstanceContext(context)) {
+    // 2) On the instance, only keep the styles different from the component.
+    console.log(context.nodeOfComp.name, '<=', node.name);
+    const compStyles = context.nodeOfComp.styles;
+    console.log('Comp styles:', context.nodeOfComp.styles, '-- inst:', styles);
+    if (compStyles) {
+      const instanceStyles: Dict<DeclarationPlain> = {};
+      for (const [ruleName, astValue] of Object.entries(styles)) {
+        const compValue = compStyles[ruleName];
+        if (!equal(astValue, compValue)) {
+          instanceStyles[ruleName] = astValue;
+        }
+      }
+      return instanceStyles;
+    }
+  } else if (context.moduleContext.isComponent) {
+    // 1) save the component styles for 2) above.
+    node.styles = styles;
+  }
+  return styles;
 }
 
 // Styles applying "outside" the component and/or impacting the component independently of how the component is designed

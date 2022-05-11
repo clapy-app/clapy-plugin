@@ -5,7 +5,7 @@ import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-va
 import { runGrid } from './routes/2-update-canvas/grid-utils';
 import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
-import { selectionPreview } from './routes/5-export-code/1-selection-preview';
+import { getSelectionPreview, selectionPreview } from './routes/5-export-code/1-selection-preview';
 import { serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 
@@ -34,6 +34,9 @@ export const routes = {
   runGrid: runGrid,
 
   serializeSelectedNode: serializeSelectedNode,
+
+  // Gen code
+  getSelectionPreview: getSelectionPreview,
 };
 
 export const subscriptions = {

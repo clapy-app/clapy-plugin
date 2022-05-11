@@ -8,7 +8,7 @@ import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex } from './details/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (!node.effects.length) return;
+  if (!node.effects?.length) return;
   const nodeIsText = isText(node);
 
   const textShadowStyles: string[] = [];

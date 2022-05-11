@@ -17,21 +17,21 @@ export function guessTagNameAndUpdateNode(
   const name = context.nodeNameLower;
   const extraAttributes: ts.JsxAttribute[] = [];
   // If I want to use an img, the below code is the way to go. But the generic and simple way to handle multiple fills will be to use backgrounds, which is closer to how figma does it anyway.
-  // const { images } = context.componentContext.projectContext;
+  // const { images } = context.moduleContext.projectContext;
   /* if (images[node.id]) {
     context.tagName = 'img';
     extraAttributes.push(mkSrcStaticAttribute(images[node.id]));
     addStyle(styles, 'object-fit', 'cover');
   } else */ if (
-    !context.componentContext.inInteractiveElement &&
+    !context.moduleContext.inInteractiveElement &&
     isFlexNode(node) &&
     ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
     (name === 'button' || (name.includes('button') && !name.includes('wrapper') && !name.includes('group')))
   ) {
-    context.componentContext = { ...context.componentContext, inInteractiveElement: true };
+    context.moduleContext = { ...context.moduleContext, inInteractiveElement: true };
     context.tagName = 'button';
   } else if (
-    !context.componentContext.inInteractiveElement &&
+    !context.moduleContext.inInteractiveElement &&
     isFlexNode(node) &&
     !node.children.length &&
     ((Array.isArray(node.fills) && node.fills.length >= 1) || node.strokes.length >= 1 || node.effects.length >= 1) &&
@@ -63,7 +63,7 @@ export function guessTagNameAndUpdateNode(
         }
       }
     }
-    context.componentContext = { ...context.componentContext, inInteractiveElement: true };
+    context.moduleContext = { ...context.moduleContext, inInteractiveElement: true };
     context.tagName = 'input';
     extraAttributes.push(mkInputTypeAttr('checkbox'));
     // Padding has no effect on native checkboxes (Windows). Let's disable it and replace with width until we support styled checkboxes.

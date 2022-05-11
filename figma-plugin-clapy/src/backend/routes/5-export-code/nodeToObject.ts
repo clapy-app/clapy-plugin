@@ -1,3 +1,4 @@
+import equal from 'fast-deep-equal';
 import filetype from 'magic-bytes.js';
 
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
@@ -5,10 +6,13 @@ import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import {
+  ComponentNodeNoMethod,
   Dict,
   ExportImageEntry,
   ExportImagesFigma,
   extractionBlacklist,
+  nodeDefaults,
+  NodeWithDefaults,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
@@ -16,6 +20,7 @@ import {
   isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
+  isComponent,
   isComponentSet,
   isGroup,
   isInstance,
@@ -53,11 +58,18 @@ const rangeProps: RangeProp[] = [
 const blacklist = new Set<string>(extractionBlacklist);
 const textBlacklist = new Set<string>([...extractionBlacklist, ...rangeProps, 'characters']);
 
+const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
+const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
+
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 export interface SerializeContext {
   images: ExportImagesFigma;
+  components: Dict<ComponentNodeNoMethod>;
   isInInstance?: boolean;
+  // When into an instance, we keep track of the corresponding node in the component to find style overrides
+  nodeOfComp?: SceneNode;
+  isComp?: boolean;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
   fillStyles: Dict<PaintStyle>;
@@ -73,9 +85,6 @@ interface Options {
   skipParent: boolean;
 }
 
-// Let's keep it a week or two to ensure we don't need it. Then remove the flag and dead code if we validate the rotation workaround is not required anymore.
-const useCancelRotationWorkaround = false;
-
 /**
  * Transform node to object with keys, that are hidden by default.
  * @example
@@ -89,7 +98,7 @@ const useCancelRotationWorkaround = false;
  * @param node
  * @param options
  */
-export async function nodeToObject<T extends SceneNode>(
+export async function nodeToObject<T extends SceneNode | PageNode>(
   node: T,
   context: SerializeContext,
   options: Partial<Options> = {},
@@ -97,37 +106,51 @@ export async function nodeToObject<T extends SceneNode>(
   const { skipChildren = false, skipInstance = true, skipParent = true } = options;
   return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
 }
-async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeContext, options: Options) {
+
+async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context: SerializeContext, options: Options) {
   try {
     if (!isPage(node) && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
     }
     const { skipChildren, skipInstance, skipParent } = options;
+    const isProcessableInst = isProcessableInstance(node, skipInstance);
     const nodeIsShape = isShapeExceptDivable(node);
     let exportAsSvg = nodeIsShape;
     let obj: any;
-    if (!context.isInInstance && isInstance(node)) {
-      context = { ...context, isInInstance: true };
+    if (isProcessableInst) {
+      context = { ...context, nodeOfComp: node.mainComponent };
     }
-    const { isInInstance, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+    if (isComponent(node)) {
+      context = { ...context, isComp: true };
+    }
+    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
+    const isInInstance = !!nodeOfComp;
     if (!exportAsSvg && shouldGroupAsSVG(node)) {
       exportAsSvg = true;
     }
     const nodeIsLayout = isLayout(node);
     const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
-    const cancelRotation = useCancelRotationWorkaround && isSvgWithRotation && !isInInstance;
+    let type = node.type as keyof typeof nodeDefaults;
+    if (!nodeDefaults[type]) {
+      warnNode(node, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
+      type = 'FRAME';
+    }
+    const currentNodeDefaults = nodeDefaults[type];
 
-    let currentRotation: number | undefined = undefined;
-    if (cancelRotation) {
-      // SVG exports include the rotation, but coordinates don't match.
-      // The workaround is to cancel the rotation, the time to extract the various properties. And we still add the rotation in the exported object to be applied in the output.
-      // A better approach would be to better understand the link between the rotation and the coordinates in the exported SVG to write the corresponding CSS (would be better in terms of performance? + work in instances)
-      currentRotation = node.rotation;
-      node.rotation = 0;
+    function setProp(obj: any, key: string, value: any) {
+      const k = key as keyof NodeWithDefaults;
+      const compVal = nodeOfComp?.[k];
+      if (
+        (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, currentNodeDefaults[k]))) ||
+        (isInInstance && (componentPropsNotInherited.has(k) || !equal(value, compVal)))
+      ) {
+        obj[k] = value;
+      }
     }
 
     const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
-    obj = { id: node.id, type: node.type };
+    obj = { id: node.id };
+    setProp(obj, 'type', node.type);
     const isTxt = isText(node);
     const bl = isTxt ? textBlacklist : blacklist;
     for (const [name, prop] of props) {
@@ -135,18 +158,20 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
         try {
           const val = prop.get.call(node);
           if (typeof val === 'symbol') {
-            obj[name] = 'Mixed';
+            setProp(obj, name, 'Mixed');
           } else {
-            obj[name] = val;
+            setProp(obj, name, val);
           }
         } catch (err) {
           console.warn('Failed to read node value', name, 'from node', node.name, node.type, node.id);
+          // setProp(obj, name, undefined); // or nothing?
           obj[name] = undefined;
         }
       }
     }
     if (isTxt) {
       const segments = node.getStyledTextSegments(rangeProps);
+      // We may want to skip it for components (instances define the text used). Style usage to review.
       obj._textSegments = segments;
       for (const { textStyleId, fillStyleId } of segments) {
         addStyle(textStyles, textStyleId);
@@ -168,7 +193,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       addStyle(gridStyles, node.gridStyleId);
     }
 
-    if (exportAsSvg) {
+    if (exportAsSvg && !isComp) {
       let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {
@@ -192,21 +217,23 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
           }
         }
 
-        obj.type = 'VECTOR' as VectorNode['type'];
+        setProp(obj, 'type', 'VECTOR' as VectorNode['type']);
         if (isShapeExceptDivable(nodeToExport)) {
           [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
           (nodeToExport as ShapeNode).effects = [];
           (nodeToExport as ShapeNode).effectStyleId = '';
         }
-        const { rotation } = parseTransformationMatrix(node.absoluteTransform);
-        // console.log('absolute rotation:', rotation);
-        if (rotation !== 0) {
-          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-          // nodeToExport.rotation -= rotation;
+        if (!isPage(node)) {
+          const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+          // console.log('absolute rotation:', rotation);
+          if (rotation !== 0) {
+            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+            // nodeToExport.rotation -= rotation;
+          }
         }
         if (isGroup(nodeToExport)) {
           // Interesting properties like constraints are in the children nodes. Let's make a copy.
-          obj.constraints = (nodeToExport.children[0] as ConstraintMixin)?.constraints;
+          setProp(obj, 'constraints', (nodeToExport.children[0] as ConstraintMixin)?.constraints);
         }
 
         // Change all stroke positions to center to fix the bad SVG export bug
@@ -217,8 +244,10 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
         // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
         try {
-          obj._svg = utf8ArrayToStr(
-            await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ }),
+          setProp(
+            obj,
+            '_svg',
+            utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ })),
           );
         } catch (error) {
           warnNode(node, 'Failed to export node as SVG, ignoring.');
@@ -264,34 +293,31 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       }
     }
 
-    if (cancelRotation) {
-      node.rotation = currentRotation as number;
-      obj.rotation = currentRotation as number;
-    } else if (isSvgWithRotation) {
+    if (isSvgWithRotation) {
       const { rotation, width, height } = obj;
       const rotationRad = (rotation * Math.PI) / 180;
       // Adjust x/y depending on the rotation. Figma's x/y are the coordinates of the original top/left corner after rotation. In CSS, it's the top-left corner of the final square containing the SVG.
       // Sounds a bit complex. We could avoid that by rotating in CSS instead. But It will have other side effects, like the space used in the flow (different in Figma and CSS).
       if (rotation >= -180 && rotation <= -90) {
-        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
-        obj.x -= obj.width;
-        obj.y -= getOppositeSide(90 - (rotation + 180), height);
+        setProp(obj, 'height', Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad)));
+        setProp(obj, 'width', Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad)));
+        setProp(obj, 'x', obj.x - obj.width);
+        setProp(obj, 'y', obj.y - getOppositeSide(90 - (rotation + 180), height));
       } else if (rotation > -90 && rotation <= 0) {
-        obj.x += getOppositeSide(rotation, height);
-        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        setProp(obj, 'x', obj.x + getOppositeSide(rotation, height));
+        setProp(obj, 'height', Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad)));
+        setProp(obj, 'width', Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad)));
         // Do nothing for y
       } else if (rotation > 0 && rotation <= 90) {
-        obj.width = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-        obj.height = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+        setProp(obj, 'width', Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad)));
+        setProp(obj, 'height', Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad)));
         // Do nothing for x
-        obj.y -= getOppositeSide(rotation, width);
+        setProp(obj, 'y', obj.y - getOppositeSide(rotation, width));
       } else if (rotation > 90 && rotation <= 180) {
-        obj.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-        obj.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
-        obj.x -= getOppositeSide(rotation - 90, width);
-        obj.y -= obj.height;
+        setProp(obj, 'height', Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad)));
+        setProp(obj, 'width', Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad)));
+        setProp(obj, 'x', obj.x - getOppositeSide(rotation - 90, width));
+        setProp(obj, 'y', obj.y - obj.height);
       }
 
       // Here, the rotation is already included in the exported SVG. We shouldn't keep the CSS rotation.
@@ -303,21 +329,41 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
       obj.parent = { id: node.parent.id, type: node.parent.type };
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
-      obj.children = (
-        await Promise.all(
-          node.children
-            .filter(child => child.visible)
-            .map((child: SceneNode) => nodeToObjectRec(child, context, options)),
-        )
-      ).filter(child => !!child);
+      const promises: ReturnType<typeof nodeToObjectRec>[] = [];
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i];
+        if (child.visible) {
+          if (nodeOfComp) {
+            if (!isChildrenMixin(nodeOfComp)) {
+              warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+              throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+            }
+            context = { ...context, nodeOfComp: nodeOfComp.children[i] };
+          }
+          promises.push(nodeToObjectRec(child, context, options));
+        }
+      }
+      obj.children = (await Promise.all(promises)).filter(child => !!child);
     }
-    if (isInstance(node) && node.mainComponent && !skipInstance) {
-      const { name, type } = node.mainComponent;
-      // Name probablement inutile ici. Même le type, pas sûr qu'il serve. Rien d'autre que le nom du parent n'est vraiment utile pour l'instant. À revoir plus tard.
-      obj.mainComponent = { name, type };
+
+    if (isProcessableInst) {
+      const { id, name, type } = node.mainComponent;
+      // For MUI, only the parent name is useful.
+      // For normal components, only the compoent ID is useful.
+      // But we keep id, name, type for both in case we want to do sanity checks.
+      obj.mainComponent = { id, name, type };
       if (isComponentSet(node.mainComponent.parent)) {
-        const { name, type } = node.mainComponent.parent;
-        obj.mainComponent.parent = { name, type };
+        const { id, name, type } = node.mainComponent.parent;
+        obj.mainComponent.parent = { id, name, type };
+      }
+      if (!context.components[id]) {
+        const compContext = context.nodeOfComp ? { ...context, nodeOfComp: undefined } : context;
+        const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
+          | ComponentNodeNoMethod
+          | undefined;
+        if (comp) {
+          context.components[id] = comp;
+        }
       }
     }
     // If we need to debug symbols:
@@ -342,7 +388,7 @@ async function nodeToObjectRec<T extends SceneNode>(node: T, context: SerializeC
   }
 }
 
-function shouldGroupAsSVG(node: SceneNode) {
+function shouldGroupAsSVG(node: SceneNode | PageNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   // If only one child, don't group as SVG
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
@@ -448,14 +494,21 @@ function addReactionDestination(obj: any) {
 
 // Source: https://forum.figma.com/t/svg-export-issue/3424/6
 function fixStrokeAlign(node: SceneNode) {
-  if (!flags.fixSvgStrokePositionBug) return;
-  if (isMinimalStrokesMixin(node)) {
-    node.strokeAlign = 'CENTER';
-  }
-  if (isChildrenMixin(node)) {
-    for (const child of node.children) {
-      fixStrokeAlign(child);
+  try {
+    if (!flags.fixSvgStrokePositionBug) return;
+    if (isMinimalStrokesMixin(node)) {
+      node.strokeAlign = 'CENTER';
     }
+    if (isChildrenMixin(node)) {
+      for (const child of node.children) {
+        fixStrokeAlign(child);
+      }
+    }
+  } catch (error) {
+    warnNode(
+      node,
+      'Fix stroke align failed. Maybe the node is a read-only component in another file. To fix later by copying it here in addition to the top level node copy.',
+    );
   }
 }
 
@@ -487,4 +540,11 @@ function addStyle<TStyle extends BaseStyle>(styles: Dict<TStyle>, styleId: strin
       styles[styleId] = style as TStyle;
     }
   }
+}
+
+type WithCompMixin = SceneNode & {
+  mainComponent: ComponentNode;
+};
+function isProcessableInstance(node: SceneNode | PageNode, skipInstance: boolean): node is WithCompMixin {
+  return !!(isInstance(node) && node.mainComponent && !skipInstance);
 }

@@ -1,6 +1,7 @@
 import { Theme } from '@mui/material';
 import ts from 'typescript';
 
+import { env } from '../../../../env-and-config/env';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
 import { figmaColorToCssHex } from '../../figma-code-map/details/utils-and-reset';
 
@@ -122,7 +123,9 @@ function buildPalette(fillStyles: Dict<PaintStyle>, strokeStyles: Dict<PaintStyl
     const hex = figmaColorToCssHex(color, opacity);
     const styleMapping = paletteMapping[style.name];
     if (!styleMapping) {
-      console.warn('Style mapping not found for Figma style:', style);
+      if (env.isDev) {
+        console.warn('Style mapping not found for Figma style:', style);
+      }
       continue;
     }
     const [k1, k2] = styleMapping;

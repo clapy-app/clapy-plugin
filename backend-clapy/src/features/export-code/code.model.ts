@@ -3,9 +3,10 @@ import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
-import { FlexNode, GroupNode2, PageNode2 } from './create-ts-compiler/canvas-utils';
+import { ComponentNode2, FlexNode, GroupNode2, PageNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 
+export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
 export type CodeDict = Dict<string>;
 
@@ -17,6 +18,8 @@ export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
   readonly fontWeightUsed: Map<string, Set<number>>;
+  readonly compNodes: Dict<ComponentNode2>;
+  readonly components: Map<FigmaId, ModuleContext>;
   readonly resources: CodeDict;
   readonly tsFiles: CodeDict;
   readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
@@ -26,8 +29,9 @@ export interface ProjectContext {
   readonly enableMUIFramework: boolean;
 }
 
-export interface ComponentContext {
+export interface ModuleContext {
   readonly projectContext: ProjectContext;
+  readonly node: SceneNode2;
   readonly imports: ts.ImportDeclaration[];
   readonly statements: ts.Statement[];
   readonly pageName: string | undefined;
@@ -37,18 +41,20 @@ export interface ComponentContext {
   readonly subComponentNamesAlreadyUsed: Set<string>;
   readonly importsAlreadyAdded: Map<string, string>;
   readonly cssRules: CssRootNode[];
+  readonly isComponent: boolean;
   // E.g. button, a... https://stackoverflow.com/a/39386695/4053349
   // Cannot really guess at project level, because components can have multiple usages.
   // Let's follow it up at component level, and review with future use cases.
   readonly inInteractiveElement?: boolean;
   readonly isRootComponent?: boolean;
+  readonly classes: Set<string>;
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
 
 // Mutable
 export interface NodeContext {
-  componentContext: ComponentContext;
+  moduleContext: ModuleContext;
   nodeNameLower: string;
   tagName: TagName;
   parentStyles: Dict<DeclarationPlain> | null;
@@ -57,6 +63,19 @@ export interface NodeContext {
   isRootNode?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];
+  className?: string;
+}
+
+export interface InstanceContext extends NodeContext {
+  // tagName and nodeNameLower may be useless
+  instanceClasses: Dict<string>;
+  instanceAttributes: Dict<string>;
+  componentContext: ModuleContext;
+  nodeOfComp: SceneNode2;
+}
+
+export function isInstanceContext(context: NodeContext): context is InstanceContext {
+  return !!(context as InstanceContext).nodeOfComp;
 }
 
 export interface BorderWidths {

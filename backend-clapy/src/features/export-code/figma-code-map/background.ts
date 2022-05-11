@@ -17,7 +17,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
   const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
   if (visibleFills.length) {
     const { width, height } = node;
-    const { images } = context.componentContext.projectContext;
+    const { images } = context.moduleContext.projectContext;
     const bgColors: string[] = [];
     const bgImages: string[] = [];
     const bgSizes: PropertiesHyphen['background-size'][] = [];

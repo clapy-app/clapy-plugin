@@ -1,4 +1,3 @@
-import { Dict2 } from '../../../common/general-utils';
 import {
   CElementNode,
   CNode,
@@ -7,6 +6,7 @@ import {
   CSSStyleDeclarationNoMethod,
   CTextNode,
   Dict,
+  Dict2,
   MyCSSVariables,
   MyStyleRules,
   MyStyles,
