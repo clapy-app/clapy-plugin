@@ -22,11 +22,16 @@ function tokenOf(node: SceneNode | PageNode | DocumentNode, name: string, parseA
 export function extractFigmaTokens() {
   if (!enableFigmaTokens) return;
 
+  let values = tokenOf(figma.root, 'values', true);
+  const usedTokenSet = tokenOf(figma.root, 'usedTokenSet', true);
+  if (usedTokenSet) {
+    values = Object.fromEntries(Object.entries(values).filter(([key, _]) => usedTokenSet[key] !== 'disabled'));
+  }
   return {
     version: tokenOf(figma.root, 'version', true),
-    usedTokenSet: tokenOf(figma.root, 'usedTokenSet', true),
+    usedTokenSet,
     updatedAt: tokenOf(figma.root, 'updatedAt'),
-    values: tokenOf(figma.root, 'values', true),
+    values,
   };
 }
 

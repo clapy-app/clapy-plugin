@@ -20,6 +20,8 @@ import { mkClassAttr, mkComponentUsage, mkDefaultImportDeclaration } from './fig
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
+import { genStyles } from './frameworks/style-dictionary/gen-styles';
+import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
@@ -70,7 +72,10 @@ export async function exportCode(
     images,
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
+    tokens: tokens as TokenStore | undefined,
   };
+  perfMeasure('a0');
+  genStyles(projectContext);
 
   const lightAppModuleContext = {
     projectContext,
