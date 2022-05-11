@@ -25,6 +25,8 @@ const { factory } = ts;
 
 const appCssPath = 'src/App.module.css';
 
+const enableMUIInDev = false;
+
 export async function exportCode(
   { root, parent: p, components, images, styles, extraConfig }: ExportCodePayload,
   uploadToCsb = true,
@@ -67,7 +69,7 @@ export async function exportCode(
     cssFiles,
     images,
     styles,
-    enableMUIFramework: !!extraConfig.enableMUIFramework,
+    enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
   };
 
   const lightAppModuleContext = {

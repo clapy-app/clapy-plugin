@@ -1,7 +1,8 @@
 import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { subscribePlugin } from '../../common/plugin-utils';
+import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { env } from '../../environment/env';
 import { selectSignedIn } from '../../features/auth/auth-slice';
 import { CodeToFigma } from '../CodeToFigma/CodeToFigma';
 import { FigmaToCodeHome } from '../FigmaToCodeHome/FigmaToCodeHome';
@@ -27,6 +28,9 @@ export const Layout: FC = memo(function Layout() {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
     });
+    if (env.isDev) {
+      fetchPluginNoResponse('getSelectionPreview');
+    }
     return dispose;
   }, []);
 

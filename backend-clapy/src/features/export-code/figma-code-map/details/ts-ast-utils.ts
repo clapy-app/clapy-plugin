@@ -1,6 +1,7 @@
 import { DeclarationPlain, RulePlain } from 'css-tree';
 import ts from 'typescript';
 
+import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from '../../code.model';
 import { SceneNode2 } from '../../create-ts-compiler/canvas-utils';
@@ -219,52 +220,56 @@ export function mkCompFunction(fnName: string, classes: string[], tsx: JsxOneOrM
                   factory.createIdentifier('props'),
                   undefined,
                   undefined,
-                  undefined,
+                  factory.createObjectLiteralExpression([], false),
                 ),
               ],
               undefined,
               factory.createBlock(
                 [
-                  factory.createVariableStatement(
-                    undefined,
-                    factory.createVariableDeclarationList(
-                      [
-                        factory.createVariableDeclaration(
-                          factory.createObjectBindingPattern([
-                            factory.createBindingElement(
-                              undefined,
-                              undefined,
-                              factory.createIdentifier('className'),
-                              undefined,
-                            ),
-                            ...(!classes?.length
-                              ? []
-                              : [
+                  ...(flags.destructureClassNames
+                    ? [
+                        factory.createVariableStatement(
+                          undefined,
+                          factory.createVariableDeclarationList(
+                            [
+                              factory.createVariableDeclaration(
+                                factory.createObjectBindingPattern([
                                   factory.createBindingElement(
                                     undefined,
-                                    factory.createIdentifier('classes'),
-                                    factory.createObjectBindingPattern(
-                                      classes.map(cl =>
+                                    undefined,
+                                    factory.createIdentifier('className'),
+                                    undefined,
+                                  ),
+                                  ...(!classes?.length
+                                    ? []
+                                    : [
                                         factory.createBindingElement(
                                           undefined,
-                                          undefined,
-                                          factory.createIdentifier(cl),
-                                          undefined,
+                                          factory.createIdentifier('classes'),
+                                          factory.createObjectBindingPattern(
+                                            classes.map(cl =>
+                                              factory.createBindingElement(
+                                                undefined,
+                                                undefined,
+                                                factory.createIdentifier(cl),
+                                                undefined,
+                                              ),
+                                            ),
+                                          ),
+                                          factory.createObjectLiteralExpression([], false),
                                         ),
-                                      ),
-                                    ),
-                                    factory.createObjectLiteralExpression([], false),
-                                  ),
+                                      ]),
                                 ]),
-                          ]),
-                          undefined,
-                          undefined,
-                          factory.createIdentifier('props'),
+                                undefined,
+                                undefined,
+                                factory.createIdentifier('props'),
+                              ),
+                            ],
+                            ts.NodeFlags.Const,
+                          ),
                         ),
-                      ],
-                      ts.NodeFlags.Const,
-                    ),
-                  ),
+                      ]
+                    : []),
                   factory.createReturnStatement(returnedExpression),
                 ],
                 true,
@@ -295,6 +300,7 @@ export function mkTag(tagName: string, classAttr: ts.JsxAttribute[] | null, chil
 }
 
 export function mkClassAttr(classVarName: string, addClassOverride?: boolean) {
+  const isRootClassName = classVarName === 'root';
   return factory.createJsxAttribute(
     factory.createIdentifier('className'),
     factory.createJsxExpression(
@@ -314,7 +320,21 @@ export function mkClassAttr(classVarName: string, addClassOverride?: boolean) {
             ),
             factory.createTemplateSpan(
               factory.createBinaryExpression(
-                factory.createIdentifier(classVarName === 'root' ? 'className' : classVarName),
+                flags.destructureClassNames
+                  ? factory.createIdentifier(isRootClassName ? 'className' : classVarName)
+                  : isRootClassName
+                  ? factory.createPropertyAccessExpression(
+                      factory.createIdentifier('props'),
+                      factory.createIdentifier('className'),
+                    )
+                  : factory.createPropertyAccessChain(
+                      factory.createPropertyAccessExpression(
+                        factory.createIdentifier('props'),
+                        factory.createIdentifier('classes'),
+                      ),
+                      factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                      factory.createIdentifier(classVarName),
+                    ),
                 factory.createToken(ts.SyntaxKind.BarBarToken),
                 factory.createStringLiteral(''),
               ),
