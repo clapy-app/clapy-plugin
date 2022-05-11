@@ -1,0 +1,46 @@
+import { warnNode } from '../../../common/error-utils';
+import { Dict } from '../../../common/sb-serialize.model';
+import { isPage } from '../../common/node-type-utils';
+
+const enableFigmaTokens = true;
+
+// TODO better typing
+type TokenName = string;
+
+// const globalTokenKeys = ['version', 'usedTokenSet', 'updatedAt', 'values'];
+
+function tokenOf(node: SceneNode | PageNode | DocumentNode, name: string, parseAsJSON = false) {
+  const value = node.getSharedPluginData('tokens', name);
+  try {
+    return value && parseAsJSON ? JSON.parse(value) : value;
+  } catch (error) {
+    warnNode(node, `Failed to parse as JSON the token ${name} with value ${value}`);
+    return value;
+  }
+}
+
+export function extractFigmaTokens() {
+  if (!enableFigmaTokens) return;
+
+  return {
+    version: tokenOf(figma.root, 'version', true),
+    usedTokenSet: tokenOf(figma.root, 'usedTokenSet', true),
+    updatedAt: tokenOf(figma.root, 'updatedAt'),
+    values: tokenOf(figma.root, 'values', true),
+  };
+}
+
+export function exportNodeTokens(node: SceneNode | PageNode) {
+  try {
+    if (isPage(node)) return;
+    return node.getSharedPluginDataKeys('tokens').reduce((obj, key) => {
+      if (!obj) obj = {};
+      // obj[key] = JSON.stringify(node.getSharedPluginData('tokens', key));
+      obj[key] = tokenOf(node, key, key !== 'hash');
+      return obj;
+    }, undefined as Dict<TokenName> | undefined);
+  } catch (error) {
+    warnNode(node, 'while processing this node');
+    throw error;
+  }
+}

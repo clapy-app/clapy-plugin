@@ -34,6 +34,7 @@ import {
   LayoutNode,
   ShapeNode,
 } from '../../common/node-type-utils';
+import { exportNodeTokens } from './4-extract-tokens';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -177,6 +178,13 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         addStyle(textStyles, textStyleId);
         addStyle(fillStyles, fillStyleId);
       }
+    }
+
+    // Figma Tokens
+    const tokens = exportNodeTokens(node);
+    if (tokens) {
+      obj._tokens = tokens;
+      // Should we use setProp here? No real default except undefined, already handled.
     }
 
     const isBlend = isBlendMixin(node);

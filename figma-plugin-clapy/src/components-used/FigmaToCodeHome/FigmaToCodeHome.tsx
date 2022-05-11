@@ -53,7 +53,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       track('gen-code', 'start');
 
       // Extract the Figma configuration
-      const [parent, root, components, imagesExtracted, styles, extraConfig] = await fetchPlugin(
+      const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
         'serializeSelectedNode',
       );
       const images: ExportImageMap2 = {};
@@ -67,6 +67,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           ...extraConfig,
           enableMUIFramework: isAlphaDTCUser,
         },
+        tokens,
       };
 
       // Upload assets to a CDN before generating the code
