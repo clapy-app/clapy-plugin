@@ -249,6 +249,7 @@ export interface ExportCodePayload {
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: { isClapyFile?: boolean; enableMUIFramework?: boolean };
+  tokens?: Dict; // TODO better typing
 }
 
 export interface FigmaStyles {

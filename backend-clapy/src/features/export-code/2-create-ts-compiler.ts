@@ -28,7 +28,7 @@ const appCssPath = 'src/App.module.css';
 const enableMUIInDev = false;
 
 export async function exportCode(
-  { root, parent: p, components, images, styles, extraConfig }: ExportCodePayload,
+  { root, parent: p, components, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
 ) {
   const parent = p as ParentNode | Nil;
