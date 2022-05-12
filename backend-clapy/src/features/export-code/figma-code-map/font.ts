@@ -65,39 +65,44 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   } = context;
   const { fontSize, fontName, letterSpacing, lineHeight, textCase, textDecoration } = textSegment;
 
-  addStyle(styles, 'font-size', [fontSize, 'px']);
+  addStyle(context, textSegment, styles, 'font-size', [fontSize, 'px']);
 
   if (lineHeight.unit !== 'AUTO') {
-    addStyle(styles, 'line-height', [lineHeight.value, lineHeight.unit === 'PERCENT' ? '%' : 'px']);
+    addStyle(context, textSegment, styles, 'line-height', [
+      lineHeight.value,
+      lineHeight.unit === 'PERCENT' ? '%' : 'px',
+    ]);
   }
 
   const { family, style } = fontName;
   const { fontWeight, fontStretch, fontItalicStyle } = parseFontStyle(style);
   if (fontWeight !== 400) {
-    addStyle(styles, 'font-weight', replaceFontWeightWithLabel(fontWeight));
+    addStyle(context, textSegment, styles, 'font-weight', replaceFontWeightWithLabel(fontWeight));
   }
   if (fontStretch !== 'normal') {
-    addStyle(styles, 'font-stretch', fontStretch);
+    addStyle(context, textSegment, styles, 'font-stretch', fontStretch);
   }
   if (fontItalicStyle !== 'normal') {
-    addStyle(styles, 'font-style', fontItalicStyle);
+    addStyle(context, textSegment, styles, 'font-style', fontItalicStyle);
   }
 
   // Add font weight used, mapped to the family, to build the google fonts URL at the end
   getSetInMap(fontWeightUsed, family).add(fontWeight);
 
-  addStyle(styles, 'font-family', ...mkFamiliesValues(family));
+  addStyle(context, textSegment, styles, 'font-family', ...mkFamiliesValues(family));
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {
-      addStyle(styles, 'letter-spacing', [letterSpacing.value / 100, 'em']);
+      addStyle(context, textSegment, styles, 'letter-spacing', [letterSpacing.value / 100, 'em']);
     } else {
-      addStyle(styles, 'letter-spacing', [letterSpacing.value, 'px']);
+      addStyle(context, textSegment, styles, 'letter-spacing', [letterSpacing.value, 'px']);
     }
   }
 
   if (textCase !== 'ORIGINAL') {
     addStyle(
+      context,
+      textSegment,
       styles,
       'text-transform',
       textCase === 'UPPER' ? 'uppercase' : textCase === 'LOWER' ? 'lowercase' : 'capitalize',
@@ -105,7 +110,13 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   }
 
   if (textDecoration !== 'NONE') {
-    addStyle(styles, 'text-decoration', textDecoration === 'STRIKETHROUGH' ? 'line-through' : 'underline');
+    addStyle(
+      context,
+      textSegment,
+      styles,
+      'text-decoration',
+      textDecoration === 'STRIKETHROUGH' ? 'line-through' : 'underline',
+    );
   }
 }
 

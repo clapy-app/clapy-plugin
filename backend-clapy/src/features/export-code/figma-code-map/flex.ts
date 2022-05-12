@@ -107,7 +107,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     !isLine(node) &&
     (node.layoutGrow === 1 || (context.isRootNode && !parentPrimaryAxisHugContents))
   ) {
-    addStyle(styles, 'flex', 1);
+    addStyle(context, node, styles, 'flex', 1);
   }
 
   const parentCounterAxisHugContents = parentAndNodeHaveSameDirection
@@ -117,33 +117,39 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
   if (node.layoutAlign === 'STRETCH' || (context.isRootNode && !parentCounterAxisHugContents)) {
-    addStyle(styles, 'align-self', 'stretch');
+    addStyle(context, node, styles, 'align-self', 'stretch');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
     if (parentStyles && (!parentAlignItems || parentAlignItems === 'stretch')) {
-      addStyle(styles, 'align-self', 'flex-start');
+      addStyle(context, node, styles, 'align-self', 'flex-start');
     }
   }
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
   if (!outerLayoutOnly && isText(node)) {
     if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
-      addStyle(styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
+      addStyle(context, node, styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       if (node.textAlignHorizontal !== 'JUSTIFIED') {
         if (defaultIsVertical) {
-          addStyle(styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
+          addStyle(context, node, styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
         } else {
-          addStyle(styles, 'justify-content', textAlignHorizontalToJustifyContent[node.textAlignHorizontal]);
+          addStyle(
+            context,
+            node,
+            styles,
+            'justify-content',
+            textAlignHorizontalToJustifyContent[node.textAlignHorizontal],
+          );
         }
       }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
       if (defaultIsVertical) {
-        addStyle(styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
+        addStyle(context, node, styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
       } else {
-        addStyle(styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
+        addStyle(context, node, styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
       }
     }
   }
@@ -153,7 +159,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 
     if (node.layoutMode === (defaultIsVertical ? 'HORIZONTAL' : 'VERTICAL')) {
       // row is used as default in index.css reset. We can omit it.
-      addStyle(styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
+      addStyle(context, node, styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
@@ -164,15 +170,15 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       !atLeastOneChildHasLayoutGrow1
     ) {
       // use place-content instead of justify-content (+ align-content)
-      addStyle(styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
+      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
     }
 
     if ((!nodeCounterAxisHugContents || node.children.length > 1) && atLeastOneChildHasLayoutAlignNotStretch) {
-      addStyle(styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
+      addStyle(context, node, styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
     if (node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
-      addStyle(styles, 'gap', [node.itemSpacing, 'px']);
+      addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
     }
 
     // Padding is embedded here because, on Figma, it only applies to auto-layout elements.
@@ -212,18 +218,42 @@ function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<Declara
 
   if (paddingTop || paddingRight || paddingBottom || paddingLeft) {
     if (paddingBottom === paddingLeft && paddingBottom === paddingTop && paddingBottom === paddingRight) {
-      addStyle(styles, 'padding', [paddingTop, 'px']);
+      addStyle(context, node, styles, 'padding', { paddingTop: [paddingTop, 'px'] });
     } else if (paddingTop === paddingBottom && paddingLeft === paddingRight) {
-      addStyle(styles, 'padding', [paddingTop, 'px'], [paddingRight, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'padding',
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+      );
     } else if (paddingLeft === paddingRight) {
-      addStyle(styles, 'padding', [paddingTop, 'px'], [paddingRight, 'px'], [paddingBottom, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'padding',
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+        { paddingBottom: [paddingBottom, 'px'] },
+      );
     } else {
-      addStyle(styles, 'padding', [paddingTop, 'px'], [paddingRight, 'px'], [paddingBottom, 'px'], [paddingLeft, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'padding',
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+        { paddingBottom: [paddingBottom, 'px'] },
+        { paddingLeft: [paddingLeft, 'px'] },
+      );
     }
   } else {
     // If no padding applied, check if a reset is required
     // if (tagResets[context.tagName]?.padding) {
-    //   addStyle(styles, 'padding', 0);
+    //   addStyle(context, node, styles, 'padding', 0);
     // }
   }
 }
@@ -317,20 +347,20 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     if (isVector(node) && node.strokeWeight > width) {
       width = node.strokeWeight;
     }
-    addStyle(styles, 'width', [width, 'px']);
+    addStyle(context, node, styles, 'width', [width, 'px']);
   }
   if (shouldApplyMaxWidth) {
-    addStyle(styles, 'max-width', [100, '%']);
+    addStyle(context, node, styles, 'max-width', [100, '%']);
   }
   if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
     if (isVector(node) && node.strokeWeight > height) {
       height = node.strokeWeight;
     }
-    addStyle(styles, 'height', [height, 'px']);
+    addStyle(context, node, styles, 'height', [height, 'px']);
   }
   if (shouldApplyMaxHeight) {
-    addStyle(styles, 'max-height', [100, '%']);
+    addStyle(context, node, styles, 'max-height', [100, '%']);
   }
   const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {

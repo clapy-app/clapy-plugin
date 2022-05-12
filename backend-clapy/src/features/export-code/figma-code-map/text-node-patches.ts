@@ -7,6 +7,6 @@ import { addStyle } from '../css-gen/css-factories-high';
 
 export function textNodePatchesFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (isText(node) && node.textAutoResize === 'WIDTH_AND_HEIGHT') {
-    addStyle(styles, 'white-space', 'nowrap');
+    addStyle(context, node, styles, 'white-space', 'nowrap');
   }
 }

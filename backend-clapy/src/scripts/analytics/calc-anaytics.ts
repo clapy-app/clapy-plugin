@@ -100,7 +100,7 @@ import { readdir } from 'fs/promises';
       const dates2 = Array.from(dates).sort();
       const firstDate = dates2[0];
       if (day !== firstDate && dates2.length >= numberOfReuse) {
-        console.log(user, dates2);
+        console.log(`${user}\t${dates2.length}\t${JSON.stringify(dates2)}`);
       }
     }
   }

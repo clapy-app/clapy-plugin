@@ -60,7 +60,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         bgSizes.push(scaleModeToBgSize[scaleMode]);
 
         // Apply the first opacity I find
-        addOpacity(styles, fill.opacity);
+        addOpacity(context, node, styles, fill.opacity);
 
         // Rotation in background is not supported yet. The below code does not work that well.
         // if (fill.rotation && !rotation) {
@@ -109,15 +109,15 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
       }
     }
     if (bgColors.length) {
-      addStyle(styles, 'background-color', bgColors.reverse().join(', '));
+      addStyle(context, node, styles, 'background-color', bgColors.reverse().join(', '));
     }
     if (bgImages.length) {
-      addStyle(styles, 'background-image', bgImages.reverse().join(', '));
-      addStyle(styles, 'background-position', 'center');
-      addStyle(styles, 'background-repeat', 'no-repeat');
+      addStyle(context, node, styles, 'background-image', bgImages.reverse().join(', '));
+      addStyle(context, node, styles, 'background-position', 'center');
+      addStyle(context, node, styles, 'background-repeat', 'no-repeat');
     }
     if (bgSizes.length) {
-      addStyle(styles, 'background-size', bgSizes.reverse().join(', '));
+      addStyle(context, node, styles, 'background-size', bgSizes.reverse().join(', '));
     }
     // Previous logic, disabled for now:
     // Apply the rotation only if there is one image

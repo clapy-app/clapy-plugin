@@ -54,7 +54,7 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 }
 
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  postTransform(context, styles);
+  postTransform(context, node, styles);
   if (isInstanceContext(context)) {
     // 2) On the instance, only keep the styles different from the component.
     console.log(context.nodeOfComp.name, '<=', node.name);
@@ -199,7 +199,7 @@ export function mapTextStyles(
         'font-family': firstChildStylesRef.styles['font-family'],
       };
       // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
-      addStyle(wrapperStyles, 'flex-shrink', 1);
+      addStyle(context, node, wrapperStyles, 'flex-shrink', 1);
       const className = genClassName(context, undefined, undefined, 'labelWrapper');
       addCssRule(context, className, stylesToList(wrapperStyles));
       classAttr = mkClassAttr(className);

@@ -8,11 +8,16 @@ import { addStyle } from '../css-gen/css-factories-high';
 export function opacityFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // The opacity is already included in the SVG itself when exporting from Figma
   if (isVector(node)) return;
-  addOpacity(styles, node.opacity);
+  addOpacity(context, node, styles, node.opacity);
 }
 
-export function addOpacity(styles: Dict<DeclarationPlain>, opacity: number | undefined) {
+export function addOpacity(
+  context: NodeContext,
+  node: ValidNode,
+  styles: Dict<DeclarationPlain>,
+  opacity: number | undefined,
+) {
   if (!styles.opacity && opacity != null && opacity !== 1) {
-    addStyle(styles, 'opacity', opacity);
+    addStyle(context, node, styles, 'opacity', opacity);
   }
 }

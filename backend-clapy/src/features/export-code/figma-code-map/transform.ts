@@ -18,7 +18,7 @@ export function transformFigmaToCode(context: NodeContext, node: ValidNode, styl
     const parentIsAbsolute = isGroup(parentNode) || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE');
     if (parentIsAbsolute) {
       const rotationOrigin = isLine(node) ? 'bottom left' : 'top left';
-      addStyle(styles, 'transform-origin', rotationOrigin);
+      addStyle(context, node, styles, 'transform-origin', rotationOrigin);
     }
   }
 }
@@ -30,8 +30,8 @@ function addTransform(context: NodeContext, transform: string) {
   context.tranforms.push(transform);
 }
 
-export function postTransform(context: NodeContext, styles: Dict<DeclarationPlain>) {
+export function postTransform(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (context.tranforms) {
-    addStyle(styles, 'transform', context.tranforms.join(' '));
+    addStyle(context, node, styles, 'transform', context.tranforms.join(' '));
   }
 }

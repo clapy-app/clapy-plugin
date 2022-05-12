@@ -27,6 +27,7 @@ export interface ProjectContext {
   readonly images: ExportImageMap2;
   readonly styles: FigmaStyles;
   readonly enableMUIFramework: boolean;
+  readonly varNamesMap: Dict<string> | undefined;
 }
 
 export interface ModuleContext {

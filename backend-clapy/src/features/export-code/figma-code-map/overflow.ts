@@ -18,25 +18,25 @@ export function overflowFigmaToCode(context: NodeContext, node: ValidNode, style
   if (isVector(node)) {
     if (!(node as any).clipsContent) {
       // SVG might paint some content outside their viewbox (supported on Figma). If clipsContent is disabled, the overflow is visible.
-      addStyle(styles, 'overflow', 'visible');
+      addStyle(context, node, styles, 'overflow', 'visible');
     }
   }
   if (isText(node) || isVector(node) || isRectangle(node) || isComponentSet(node) || isGroup(node) || isLine(node))
     return;
   const { x, y } = guessScroll(context, node, styles);
   if (node.overflowDirection === 'BOTH' || (x && y)) {
-    addStyle(styles, 'overflow', 'auto');
+    addStyle(context, node, styles, 'overflow', 'auto');
   } else if (node.overflowDirection === 'VERTICAL' || y) {
-    addStyle(styles, 'overflow-y', 'auto');
+    addStyle(context, node, styles, 'overflow-y', 'auto');
     if (node.clipsContent) {
-      addStyle(styles, 'overflow-x', 'hidden');
+      addStyle(context, node, styles, 'overflow-x', 'hidden');
     }
   } else if (node.overflowDirection === 'HORIZONTAL' || x) {
-    addStyle(styles, 'overflow-x', 'auto');
+    addStyle(context, node, styles, 'overflow-x', 'auto');
     if (node.clipsContent) {
-      addStyle(styles, 'overflow-y', 'hidden');
+      addStyle(context, node, styles, 'overflow-y', 'hidden');
     }
   } else if (node.clipsContent) {
-    addStyle(styles, 'overflow', 'hidden');
+    addStyle(context, node, styles, 'overflow', 'hidden');
   }
 }

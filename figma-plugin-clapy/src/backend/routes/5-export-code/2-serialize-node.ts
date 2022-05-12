@@ -7,7 +7,8 @@ import {
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import { getFigmaSelection } from '../../common/selection-utils';
-import { nodeToObject, SerializeContext } from './nodeToObject';
+import { nodeToObject, SerializeContext } from './3-nodeToObject';
+import { extractFigmaTokens } from './4-extract-tokens';
 
 export async function serializeSelectedNode() {
   const selection = getFigmaSelection();
@@ -33,6 +34,8 @@ export async function serializeSelectedNode() {
       }
     : {};
 
+  const tokens = extractFigmaTokens();
+
   const enableMUIFramework = true;
   // Later, once variants are handled, we will use instances as well, but differently?
   const skipInstance = !enableMUIFramework;
@@ -47,7 +50,7 @@ export async function serializeSelectedNode() {
   const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
   const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
-  return [parentConf, nodesConf, Object.values(context.components), images, styles, extraConfig] as const;
+  return [extraConfig, parentConf, nodesConf, Object.values(context.components), images, styles, tokens] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.

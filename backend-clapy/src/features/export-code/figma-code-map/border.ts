@@ -39,23 +39,47 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         if (borderWidth <= 1) {
           // Another way to do that for horizontal lines is box-shadow, but it doesn't work well with rotations and/or vertical lines.
           // box-shadow: 0 -1px 0 #000;
-          addStyle(styles, 'border-bottom', 'solid', [borderWidth, 'px'], hex);
-          addStyle(styles, 'margin-bottom', [-borderWidth, 'px']);
+          addStyle(
+            context,
+            node,
+            styles,
+            'border-bottom',
+            'solid',
+            { borderWidth: [borderWidth, 'px'] },
+            { border: hex },
+          );
+          addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
         } else {
-          addStyle(styles, 'outline', 'solid', [borderWidth / 2, 'px'], hex);
+          addStyle(
+            context,
+            node,
+            styles,
+            'outline',
+            'solid',
+            { borderWidth: [borderWidth, 'px', 0.5] },
+            { border: hex },
+          );
         }
       } else if (node.width <= 1) {
-        addStyle(styles, 'border-right', 'solid', [borderWidth, 'px'], hex);
-        addStyle(styles, 'margin-right', [-borderWidth, 'px']);
+        addStyle(context, node, styles, 'border-right', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
+        addStyle(context, node, styles, 'margin-right', { borderWidth: [borderWidth, 'px', -1] });
       } else if (node.height <= 1) {
-        addStyle(styles, 'border-bottom', 'solid', [borderWidth, 'px'], hex);
-        addStyle(styles, 'margin-bottom', [-borderWidth, 'px']);
+        addStyle(
+          context,
+          node,
+          styles,
+          'border-bottom',
+          'solid',
+          { borderWidth: [borderWidth, 'px'] },
+          { border: hex },
+        );
+        addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
       } else {
-        addStyle(styles, 'outline', 'solid', [borderWidth, 'px'], hex);
+        addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
         if (strokeAlign === 'INSIDE') {
-          addStyle(styles, 'outline-offset', [-borderWidth, 'px']);
+          addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -1] });
         } else if (strokeAlign === 'CENTER') {
-          addStyle(styles, 'outline-offset', [-borderWidth / 2, 'px']);
+          addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -0.5] });
         }
       }
     } else {
