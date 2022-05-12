@@ -18,7 +18,7 @@ export function colorFigmaToCode(context: NodeContext, textSegment: StyledTextSe
       // fill.blendMode
       const { color, opacity } = fill;
       const hex = figmaColorToCssHex(color, opacity);
-      addStyle(styles, 'color', hex);
+      addStyle(context, textSegment, styles, 'color', hex);
     } else {
       warnNode(textSegment, 'Unsupported non solid text color (TODO)');
     }

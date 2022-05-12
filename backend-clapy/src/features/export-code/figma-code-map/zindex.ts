@@ -14,6 +14,6 @@ export function zindexFigmaToCode(context: NodeContext, node: ValidNode, styles:
     isFlexNode(parentNode) &&
     !parentNode.clipsContent
   ) {
-    addStyle(styles, 'z-index', 0);
+    addStyle(context, node, styles, 'z-index', 0);
   }
 }

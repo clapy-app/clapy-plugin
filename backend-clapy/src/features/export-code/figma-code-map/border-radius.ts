@@ -10,13 +10,23 @@ export function borderRadiusFigmaToCode(context: NodeContext, node: ValidNode, s
   const { topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius } = node;
   if (topLeftRadius || topRightRadius || bottomRightRadius || bottomLeftRadius) {
     if (topLeftRadius === topRightRadius && topLeftRadius === bottomRightRadius && topLeftRadius === bottomLeftRadius) {
-      addStyle(styles, 'border-radius', [topLeftRadius, 'px']);
+      addStyle(context, node, styles, 'border-radius', [topLeftRadius, 'px']);
     } else if (topLeftRadius === bottomRightRadius && topRightRadius === bottomLeftRadius) {
-      addStyle(styles, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px']);
+      addStyle(context, node, styles, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px']);
     } else if (topRightRadius === bottomLeftRadius) {
-      addStyle(styles, 'border-radius', [topLeftRadius, 'px'], [topRightRadius, 'px'], [bottomRightRadius, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'border-radius',
+        [topLeftRadius, 'px'],
+        [topRightRadius, 'px'],
+        [bottomRightRadius, 'px'],
+      );
     } else {
       addStyle(
+        context,
+        node,
         styles,
         'border-radius',
         [topLeftRadius, 'px'],

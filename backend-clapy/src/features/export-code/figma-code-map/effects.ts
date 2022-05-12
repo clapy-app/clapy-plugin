@@ -49,16 +49,16 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
     }
   }
   if (textShadowStyles.length) {
-    addStyle(styles, 'text-shadow', textShadowStyles.join(', '));
+    addStyle(context, node, styles, 'text-shadow', textShadowStyles.join(', '));
   }
   if (boxShadowStyles.length) {
-    addStyle(styles, 'box-shadow', boxShadowStyles.join(', '));
+    addStyle(context, node, styles, 'box-shadow', boxShadowStyles.join(', '));
   }
   if (filters.length) {
-    addStyle(styles, 'filter', filters.join(' '));
+    addStyle(context, node, styles, 'filter', filters.join(' '));
   }
   if (backdropFilters.length) {
-    addStyle(styles, 'backdrop-filter', backdropFilters.join(' '));
+    addStyle(context, node, styles, 'backdrop-filter', backdropFilters.join(' '));
   }
 }
 

@@ -18,6 +18,11 @@ export function unquoteAndTrimString<T extends string | undefined>(str: T): T {
   return str ? (str.replace(/^\s*"\s*(.*?)\s*"\s*$/, '$1').trim() as T) : str;
 }
 
+// Prefer lodash _.isPlainObject
+// export function isObject(obj: any): boolean {
+//   return Object.getPrototypeOf(obj) === Object.prototype;
+// }
+
 /**
  * @returns true if the argument is an object with at least one key, false otherwise.
  */
