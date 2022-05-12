@@ -14,10 +14,6 @@ export function genStyles(tokens: TokenStore | undefined) {
 
   const tokens2 = unserializeTokens(tokens.values);
 
-  //
-  // TODO should not print tokens that are for resolution only
-  //
-
   const sd = StyleDictionary.extend({
     tokens: tokens2,
     platforms: {

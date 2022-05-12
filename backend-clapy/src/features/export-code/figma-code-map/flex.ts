@@ -218,21 +218,36 @@ function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<Declara
 
   if (paddingTop || paddingRight || paddingBottom || paddingLeft) {
     if (paddingBottom === paddingLeft && paddingBottom === paddingTop && paddingBottom === paddingRight) {
-      addStyle(context, node, styles, 'padding', [paddingTop, 'px']);
+      addStyle(context, node, styles, 'padding', { paddingTop: [paddingTop, 'px'] });
     } else if (paddingTop === paddingBottom && paddingLeft === paddingRight) {
-      addStyle(context, node, styles, 'padding', [paddingTop, 'px'], [paddingRight, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'padding',
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+      );
     } else if (paddingLeft === paddingRight) {
-      addStyle(context, node, styles, 'padding', [paddingTop, 'px'], [paddingRight, 'px'], [paddingBottom, 'px']);
+      addStyle(
+        context,
+        node,
+        styles,
+        'padding',
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+        { paddingBottom: [paddingBottom, 'px'] },
+      );
     } else {
       addStyle(
         context,
         node,
         styles,
         'padding',
-        [paddingTop, 'px'],
-        [paddingRight, 'px'],
-        [paddingBottom, 'px'],
-        [paddingLeft, 'px'],
+        { paddingTop: [paddingTop, 'px'] },
+        { paddingRight: [paddingRight, 'px'] },
+        { paddingBottom: [paddingBottom, 'px'] },
+        { paddingLeft: [paddingLeft, 'px'] },
       );
     }
   } else {
