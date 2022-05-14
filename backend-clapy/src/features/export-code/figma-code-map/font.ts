@@ -89,7 +89,7 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   // Add font weight used, mapped to the family, to build the google fonts URL at the end
   getSetInMap(fontWeightUsed, family).add(fontWeight);
 
-  addStyle(context, textSegment, styles, 'font-family', ...mkFamiliesValues(family));
+  addStyle(context, textSegment, styles, 'font-family', ...mkFamiliesValues({ fontFamily: family }));
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {
@@ -132,7 +132,7 @@ export function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, k
   return set;
 }
 
-function mkFamiliesValues(family: string) {
+function mkFamiliesValues<T extends string | Dict<string>>(family: T) {
   return [
     family,
     ',',

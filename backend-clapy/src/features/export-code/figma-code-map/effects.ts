@@ -4,8 +4,9 @@ import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex } from './details/utils-and-reset';
+import { addStyle, applyTokenGroup } from '../css-gen/css-factories-high';
+import { TokenBoxshadowValue } from '../frameworks/style-dictionary/types/types/values';
+import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (!node.effects?.length) return;
@@ -15,39 +16,67 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   const boxShadowStyles: string[] = [];
   const backdropFilters: string[] = [];
   const filters: string[] = [];
-  for (const effect of node.effects) {
-    if (effect.type === 'INNER_SHADOW' || effect.type === 'DROP_SHADOW') {
-      let {
-        color: { r, g, b, a },
-        offset: { x, y },
-        radius: blurRadius,
-        spread = 0,
-      } = effect;
-      blurRadius = convertRadius(blurRadius);
-      const hex = figmaColorToCssHex({ r, g, b }, a);
-      const insetPrefix = !nodeIsText && effect.type === 'INNER_SHADOW' ? 'inset ' : '';
-      // box-shadow:
-      // + supports the spread parameter
-      // - it keeps a rectangle form instead of following the children shape
-      // drop-shadow: the opposite
-      // Let's use box-shadow if inset or with a spread, otherwise drop-shadow.
-      if (nodeIsText) {
-        textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
-      } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
-        boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
-      } else {
-        filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
+
+  let tokens = applyTokenGroup(context, node, 'boxShadow') as TokenBoxshadowValue | TokenBoxshadowValue[] | undefined;
+  if (tokens) {
+    if (!Array.isArray(tokens)) {
+      tokens = [];
+    }
+    for (const { x, y, spread, color, blur, type } of tokens) {
+      const isInset = type === 'innerShadow';
+      const insetPrefix = isInset ? 'inset ' : '';
+      if (nodeIsText && isInset) {
+        warnNode(node, 'UNSUPPORTED Inner shadow (inset) is not supported for text nodes.');
+        continue;
       }
-    } else if (effect.type === 'LAYER_BLUR') {
-      let { radius } = effect;
-      radius = convertRadius(radius);
-      filters.push(`blur(${radius}px)`);
-    } else if (effect.type === 'BACKGROUND_BLUR') {
-      let { radius } = effect;
-      radius = convertRadius(radius);
-      backdropFilters.push(`blur(${radius}px)`);
+      if (nodeIsText) {
+        textShadowStyles.push(`${x} ${y} ${blur} ${color}`);
+      } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
+        boxShadowStyles.push(`${insetPrefix}${x} ${y} ${blur} ${spread} ${color}`);
+      } else {
+        filters.push(`drop-shadow(${x} ${y} ${blur} ${color})`);
+      }
+    }
+  } else {
+    for (const effect of node.effects) {
+      const isInset = effect.type === 'INNER_SHADOW';
+      if (nodeIsText && isInset) {
+        warnNode(node, 'UNSUPPORTED Inner shadow (inset) is not supported for text nodes.');
+        continue;
+      }
+      if (isInset || effect.type === 'DROP_SHADOW') {
+        let {
+          color: { r, g, b, a },
+          offset: { x, y },
+          radius: blurRadius,
+          spread = 0,
+        } = effect;
+        const hex = figmaColorToCssHex({ r, g, b }, a);
+        const insetPrefix = isInset ? 'inset ' : '';
+        // box-shadow:
+        // + supports the spread parameter
+        // - it keeps a rectangle form instead of following the children shape
+        // drop-shadow: the opposite
+        // Let's use box-shadow if inset or with a spread, otherwise drop-shadow.
+        if (nodeIsText) {
+          textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
+        } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
+          boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
+        } else {
+          filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
+        }
+      } else if (effect.type === 'LAYER_BLUR') {
+        let { radius } = effect;
+        radius = convertRadius(radius);
+        filters.push(`blur(${radius}px)`);
+      } else if (effect.type === 'BACKGROUND_BLUR') {
+        let { radius } = effect;
+        radius = convertRadius(radius);
+        backdropFilters.push(`blur(${radius}px)`);
+      }
     }
   }
+
   if (textShadowStyles.length) {
     addStyle(context, node, styles, 'text-shadow', textShadowStyles.join(', '));
   }
@@ -62,6 +91,7 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   }
 }
 
+// For blurs, it seems Figma uses values twice as the equivalent in CSS (like a diameter instead of a radius?). Found by testing and comparing on multiple values. It's not documented anywhere when implementing this.
 function convertRadius(radius: number) {
   return radius / 2;
 }

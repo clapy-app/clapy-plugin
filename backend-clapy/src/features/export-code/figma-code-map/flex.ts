@@ -177,6 +177,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       addStyle(context, node, styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
     }
 
+    // May also cover paragraph-spacing, paragraphSpacing, paragraph spacing
+    // (using multiple typo for future global text researches)
     if (node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
       addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
     }

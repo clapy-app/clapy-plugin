@@ -57,7 +57,7 @@ export async function exportCode(
   const cssFiles: CodeDict = { [appCssPath]: appCss };
   perfMeasure('b');
 
-  const [varNamesMap, cssVarsDeclaration] = /* await */ genStyles(tokens as TokenStore | undefined);
+  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
   perfMeasure('b2');
 
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
@@ -76,6 +76,7 @@ export async function exportCode(
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
     varNamesMap,
+    tokensRawMap,
   };
 
   const lightAppModuleContext = {

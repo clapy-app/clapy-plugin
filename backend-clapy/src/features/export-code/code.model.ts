@@ -5,6 +5,7 @@ import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
 import { ComponentNode2, FlexNode, GroupNode2, PageNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
+import { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken';
 
 export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
@@ -13,6 +14,11 @@ export type CodeDict = Dict<string>;
 export type TagName = keyof JSX.IntrinsicElements;
 
 export type JsxOneOrMore = ts.JsxChild | ts.JsxChild[];
+
+export interface MySingleToken {
+  type: SingleToken['type'];
+  value: SingleToken['value'];
+}
 
 export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
@@ -28,6 +34,7 @@ export interface ProjectContext {
   readonly styles: FigmaStyles;
   readonly enableMUIFramework: boolean;
   readonly varNamesMap: Dict<string> | undefined;
+  readonly tokensRawMap: Dict<MySingleToken> | undefined;
 }
 
 export interface ModuleContext {
