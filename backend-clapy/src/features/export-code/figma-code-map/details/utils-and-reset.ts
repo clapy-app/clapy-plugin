@@ -61,7 +61,8 @@ function zeroOneToHex(value: number) {
 }
 
 export function round(num: number, precision = 4) {
-  let res = Math.round(num * 10 ** precision) / 10 ** precision;
+  // Math.round for rounding, but let's try trunc() so that elements are rounded to the bigger size.
+  let res = Math.trunc(num * 10 ** precision) / 10 ** precision;
   // To avoid -0 (not nice for display)
   return res === 0 ? 0 : res;
 }

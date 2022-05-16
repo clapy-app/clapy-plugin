@@ -40,10 +40,10 @@ const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
   height: ['height', 'sizing'],
   gap: ['itemSpacing', 'spacing'],
   // Special format for cases when a token has multiple keys, e.g. typography has fontSize, fontFamily...
-  'font-size': [['typography', 'fontSize']],
-  fontFamily: [['typography', 'fontFamily']], // Special case because we need fallback fonts
-  'font-weight': [['typography', 'fontWeight']],
-  'line-height': [['typography', 'lineHeight']],
+  'font-size': [['typography', 'fontSize'], 'fontSizes'],
+  fontFamily: [['typography', 'fontFamily'], 'fontFamilies'], // Special case because we need fallback fonts
+  'font-weight': [['typography', 'fontWeight'], 'fontWeights'],
+  'line-height': [['typography', 'lineHeight'], 'lineHeights'],
   // 'paragraphSpacing': [['typography', 'paragraphSpacing']], // TODO, seems to miss in generated CSS
 
   // Not CSS properties, but special keys we use to facilitate the binding to multiple tokens. The first found that is filled is used.
@@ -66,7 +66,7 @@ type StyleValue<T extends keyof PropertiesHyphen> =
 
 export function addStyle<T extends keyof PropertiesHyphen>(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   styles: Dict<DeclarationPlain>,
   name: T,
   ...values: StyleValue<T>[]
@@ -118,7 +118,7 @@ export function addStyle<T extends keyof PropertiesHyphen>(
 
 export function applyToken<T extends keyof PropertiesHyphen>(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   name: string,
   value: StyleValue<T>,
 ) {
@@ -142,7 +142,7 @@ export function applyToken<T extends keyof PropertiesHyphen>(
 
 export function applyTokenGroup(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   tokenNames: string | (string | [string, string])[] | undefined,
 ) {
   const varNames = getVarNamesFromTokenNames(context, node, tokenNames);
@@ -175,7 +175,7 @@ function buildCssValueWithVariables<T extends Variables | undefined>(varNames: T
 // To refactor? It's very similar to getVarNameFromTokenNames below (that I actually copied to get started), but the workflow is slightly different. To test carefully.
 export function getVarNamesFromTokenNames(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   tokenNames: string | (string | [string, string])[] | undefined,
 ) {
   const { varNamesMap, tokensRawMap } = context.moduleContext.projectContext;
@@ -201,11 +201,10 @@ export function getVarNamesFromTokenNames(
 
 function getVarNameFromTokenNames(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   varNamesMap: Dict<string> | undefined,
   tokenNames: string | (string | [string, string])[] | undefined,
 ) {
-  const { tokensRawMap } = context.moduleContext.projectContext;
   if (!varNamesMap || !tokenNames) return;
   if (!Array.isArray(tokenNames)) {
     tokenNames = [tokenNames];

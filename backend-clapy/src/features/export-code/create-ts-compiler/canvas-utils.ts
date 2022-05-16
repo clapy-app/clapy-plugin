@@ -84,6 +84,7 @@ export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode>;
 export type LineNode2 = ExtendNodeType<LineNode>;
 export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode>;
+export type TextSegment2 = StyledTextSegment;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
