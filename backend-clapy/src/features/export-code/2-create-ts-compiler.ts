@@ -25,7 +25,7 @@ import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
-const appCssPath = 'src/App.module.css';
+const cssVariablesFile = 'variables.css';
 
 const enableMUIInDev = false;
 
@@ -50,6 +50,10 @@ export async function exportCode(
     );
   }
   perfMeasure('a');
+
+  const appCompDir = 'src';
+  const appCompName = 'App';
+  const appCssPath = `${appCompDir}/${appCompName}.module.css`;
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles();
   // If useful, resources['tsconfig.json']
@@ -84,8 +88,8 @@ export async function exportCode(
     imports: [] as unknown[],
     statements: [] as unknown[],
     pageName: undefined,
-    compDir: 'src',
-    compName: 'App',
+    compDir: appCompDir,
+    compName: appCompName,
     inInteractiveElement: false,
   } as ModuleContext;
   perfMeasure('c');
@@ -139,11 +143,13 @@ function addCompToAppRoot(
   cssVarsDeclaration: string | Nil,
 ) {
   const {
+    compDir,
     compName,
     projectContext: { cssFiles },
     imports,
     statements,
   } = appModuleContext;
+  const appCssPath = `${compDir}/${compName}.module.css`;
 
   // Add CSS classes import in TSX file
   imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
@@ -154,7 +160,8 @@ function addCompToAppRoot(
 
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration) {
-    updatedAppCss = `${cssVarsDeclaration}\n\n${updatedAppCss}`;
+    const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
+    cssFiles[cssVariablesPath] = cssVarsDeclaration;
   }
 
   cssFiles[appCssPath] = updatedAppCss;
