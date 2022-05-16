@@ -338,15 +338,16 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
       const promises: ReturnType<typeof nodeToObjectRec>[] = [];
+      const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
         if (child.visible) {
-          if (nodeOfComp) {
+          if (nodeOfComp && instanceToCompIndexMap) {
             if (!isChildrenMixin(nodeOfComp)) {
               warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
               throw new Error('BUG Instance node has children, but the corresponding component node does not.');
             }
-            context = { ...context, nodeOfComp: nodeOfComp.children[i] };
+            context = { ...context, nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]] };
           }
           promises.push(nodeToObjectRec(child, context, options));
         }
@@ -438,6 +439,22 @@ function ensureCloned<T extends LayoutNode>(node: T, clone: T | undefined): [T, 
     node = clone;
   }
   return [node, clone];
+}
+
+/**
+ * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
+ */
+function instanceToCompIndexRemapper(instance: ChildrenMixin, nodeOfComp: SceneNode | undefined) {
+  if (!isChildrenMixin(nodeOfComp)) return undefined;
+  const mapper: Dict<number> = {};
+  for (let i = 0; i < instance.children.length; i++) {
+    const child = instance.children[i];
+    const childId = child.id;
+    const compId = childId.substring(childId.lastIndexOf(';') + 1);
+    const compIndex = nodeOfComp.children.findIndex(child => child.id === compId);
+    mapper[i] = compIndex;
+  }
+  return mapper;
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349

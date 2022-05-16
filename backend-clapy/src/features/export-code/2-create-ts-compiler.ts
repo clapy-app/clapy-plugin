@@ -16,7 +16,12 @@ import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
-import { mkClassAttr, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
+import {
+  mkClassAttr,
+  mkComponentUsage,
+  mkDefaultImportDeclaration,
+  mkSimpleImportDeclaration,
+} from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
@@ -151,18 +156,19 @@ function addCompToAppRoot(
   } = appModuleContext;
   const appCssPath = `${compDir}/${compName}.module.css`;
 
+  // Add design tokens on top of the file, if any
+  if (cssVarsDeclaration) {
+    const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
+    imports.push(mkSimpleImportDeclaration(`./${cssVariablesFile}`));
+    cssFiles[cssVariablesPath] = cssVarsDeclaration;
+  }
+
   // Add CSS classes import in TSX file
   imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
   let updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
-
-  // Add design tokens on top of the file, if any
-  if (cssVarsDeclaration) {
-    const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
-    cssFiles[cssVariablesPath] = cssVarsDeclaration;
-  }
 
   cssFiles[appCssPath] = updatedAppCss;
 
