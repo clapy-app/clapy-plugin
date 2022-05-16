@@ -16,7 +16,12 @@ import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
-import { mkClassAttr, mkComponentUsage, mkDefaultImportDeclaration } from './figma-code-map/details/ts-ast-utils';
+import {
+  mkClassAttr,
+  mkComponentUsage,
+  mkDefaultImportDeclaration,
+  mkSimpleImportDeclaration,
+} from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
@@ -25,7 +30,7 @@ import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
-const appCssPath = 'src/App.module.css';
+const cssVariablesFile = 'variables.css';
 
 const enableMUIInDev = false;
 
@@ -50,6 +55,10 @@ export async function exportCode(
     );
   }
   perfMeasure('a');
+
+  const appCompDir = 'src';
+  const appCompName = 'App';
+  const appCssPath = `${appCompDir}/${appCompName}.module.css`;
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles();
   // If useful, resources['tsconfig.json']
@@ -57,7 +66,7 @@ export async function exportCode(
   const cssFiles: CodeDict = { [appCssPath]: appCss };
   perfMeasure('b');
 
-  const [varNamesMap, cssVarsDeclaration] = /* await */ genStyles(tokens as TokenStore | undefined);
+  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
   perfMeasure('b2');
 
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
@@ -76,6 +85,7 @@ export async function exportCode(
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
     varNamesMap,
+    tokensRawMap,
   };
 
   const lightAppModuleContext = {
@@ -83,8 +93,8 @@ export async function exportCode(
     imports: [] as unknown[],
     statements: [] as unknown[],
     pageName: undefined,
-    compDir: 'src',
-    compName: 'App',
+    compDir: appCompDir,
+    compName: appCompName,
     inInteractiveElement: false,
   } as ModuleContext;
   perfMeasure('c');
@@ -138,11 +148,20 @@ function addCompToAppRoot(
   cssVarsDeclaration: string | Nil,
 ) {
   const {
+    compDir,
     compName,
     projectContext: { cssFiles },
     imports,
     statements,
   } = appModuleContext;
+  const appCssPath = `${compDir}/${compName}.module.css`;
+
+  // Add design tokens on top of the file, if any
+  if (cssVarsDeclaration) {
+    const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
+    imports.push(mkSimpleImportDeclaration(`./${cssVariablesFile}`));
+    cssFiles[cssVariablesPath] = cssVarsDeclaration;
+  }
 
   // Add CSS classes import in TSX file
   imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
@@ -150,11 +169,6 @@ function addCompToAppRoot(
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
   let updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
-
-  // Add design tokens on top of the file, if any
-  if (cssVarsDeclaration) {
-    updatedAppCss = `${cssVarsDeclaration}\n\n${updatedAppCss}`;
-  }
 
   cssFiles[appCssPath] = updatedAppCss;
 

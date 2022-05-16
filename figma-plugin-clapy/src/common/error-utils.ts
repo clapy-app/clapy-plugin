@@ -11,6 +11,14 @@ export function warnNode(node: SceneNode | StyledTextSegment | PageNode | Docume
   if (isStyledTextSegment(node)) {
     console.warn(...msg, node.characters);
   } else {
-    console.warn(...msg, node.name, node.type, node.id);
+    const { name, type, id } = node;
+    let name2 = name;
+    while (node.parent) {
+      node = node.parent;
+      if (node) {
+        name2 = `${node.name} > ${name2}`;
+      }
+    }
+    console.warn(...msg, name2, type, id);
   }
 }

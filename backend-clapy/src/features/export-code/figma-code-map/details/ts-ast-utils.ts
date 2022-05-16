@@ -108,6 +108,16 @@ function prefixIfNumber(varName: string) {
 
 // AST generation functions
 
+export function mkSimpleImportDeclaration(moduleSpecifier: string) {
+  return factory.createImportDeclaration(
+    undefined,
+    undefined,
+    undefined,
+    factory.createStringLiteral(moduleSpecifier),
+    undefined,
+  );
+}
+
 export function mkDefaultImportDeclaration(importClauseName: string, moduleSpecifier: string) {
   return factory.createImportDeclaration(
     undefined,

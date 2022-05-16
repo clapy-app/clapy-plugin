@@ -36,13 +36,33 @@ function shortenHex(hex: string) {
   return hex;
 }
 
+export function hexToCSSRgb(hex: string) {
+  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+  var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, (_, r, g, b) => {
+    return r + r + g + g + b + b;
+  });
+
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) {
+    console.warn('Invalid color hexadecimal value:', hex, '- defaulting to white');
+    return { r: 1, g: 1, b: 1 };
+  }
+  return {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16),
+  };
+}
+
 function zeroOneToHex(value: number) {
   const hex = Math.round(value * 255).toString(16);
   return hex.length === 1 ? `0${hex}` : hex;
 }
 
 export function round(num: number, precision = 4) {
-  let res = Math.round(num * 10 ** precision) / 10 ** precision;
+  // Math.round for rounding, but let's try trunc() so that elements are rounded to the bigger size.
+  let res = Math.trunc(num * 10 ** precision) / 10 ** precision;
   // To avoid -0 (not nice for display)
   return res === 0 ? 0 : res;
 }

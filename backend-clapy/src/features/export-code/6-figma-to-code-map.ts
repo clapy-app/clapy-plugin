@@ -4,7 +4,7 @@ import ts from 'typescript';
 
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
-import { TextNode2, ValidNode } from './create-ts-compiler/canvas-utils';
+import { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
 import { addStyle } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { backgroundFigmaToCode } from './figma-code-map/background';
@@ -98,14 +98,14 @@ function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<Decl
   return context;
 }
 
-function mapTextFragmentStyles(
+function mapTextSegmentStyles(
   context: NodeContext,
-  textSegment: StyledTextSegment,
+  textSegment: TextSegment2,
   styles: Dict<DeclarationPlain>,
   node: TextNode2,
 ) {
-  colorFigmaToCode(context, textSegment, styles);
-  fontFigmaToCode(context, textSegment, styles);
+  colorFigmaToCode(context, textSegment, styles, node);
+  fontFigmaToCode(context, textSegment, styles, node);
 
   //   const {
   //     characters,
@@ -128,7 +128,7 @@ function mapTextFragmentStyles(
 }
 
 //--------------------------------------------------------------------------------
-// Details for text - it is split into fragments, each applying its styles
+// Details for text - it is split into segments, each applying its styles
 
 interface StylesRef {
   styles?: Dict<DeclarationPlain>;
@@ -136,7 +136,7 @@ interface StylesRef {
 
 function textNodeToAst(
   context: NodeContext,
-  textSegment: StyledTextSegment,
+  textSegment: TextSegment2,
   parentStyles: Dict<DeclarationPlain>,
   node: TextNode2,
   firstChildStylesRef: StylesRef,
@@ -145,13 +145,16 @@ function textNodeToAst(
   const singleChild = node._textSegments?.length === 1;
 
   // Add text segment styles
-  mapTextFragmentStyles(context, textSegment, styles, node);
+  mapTextSegmentStyles(context, textSegment, styles, node);
+
+  if (!firstChildStylesRef.styles) {
+    firstChildStylesRef.styles = styles;
+  }
 
   let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
   if (!singleChild) {
     const className = genClassName(context);
     addCssRule(context, className, stylesToList(styles));
-    firstChildStylesRef.styles = styles;
     const classAttr = mkClassAttr(className);
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {
@@ -182,14 +185,23 @@ export function mapTextStyles(
   const textSegments: StyledTextSegment[] | undefined = node._textSegments;
   if (!textSegments) return;
   const firstChildStylesRef: StylesRef = {};
+  const singleChild = textSegments?.length === 1;
   let ast: ts.JsxChild[] | ts.JsxElement = textSegments.map(segment =>
     textNodeToAst(context, segment, styles, node, firstChildStylesRef),
   );
+
+  // TODO Add Figma tokens text rules here to a common style.
+  // Merge with wrapperStyles?
+  // If any rule, should apply to both single and multiple children.
+
   // If there are multiple text segments, we wrap in a span to:
   // - preserve the inline, including spaces between text segments
   // - make its positioning easier, e.g. vertically centered in a flex container
-  if (firstChildStylesRef.styles) {
-    // If we have the styles of the first child, it means we have more than one text fragments, so we should wrap.
+  if (!singleChild) {
+    if (!firstChildStylesRef.styles) {
+      throw new Error(`BUG Multiple text segments, but firstChildStylesRef.styles is undefined.`);
+    }
+    // If we have the styles of the first child, it means we have more than one text segments, so we should wrap.
     // And we can use it to extract the font-family and font-size, to apply on the wrapper.
     // The reason why we need to apply those is that an inline wrapper's layout is impacted by those styles (e.g. it changes the baseline location, and potentially other things).
     let classAttr: ts.JsxAttribute | undefined = undefined;

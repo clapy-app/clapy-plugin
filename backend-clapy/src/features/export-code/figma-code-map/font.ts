@@ -3,6 +3,7 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, ProjectContext } from '../code.model';
+import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
 import { indexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
 import { addJss, addStyle } from '../css-gen/css-factories-high';
 import { addMUIFonts } from '../frameworks/mui/mui-add-globals';
@@ -57,7 +58,12 @@ export function figmaTypoToJss(figmaStyle: TextStyle) {
   return styles;
 }
 
-export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSegment, styles: Dict<DeclarationPlain>) {
+export function fontFigmaToCode(
+  context: NodeContext,
+  textSegment: TextSegment2,
+  styles: Dict<DeclarationPlain>,
+  node: TextNode2,
+) {
   const {
     moduleContext: {
       projectContext: { fontWeightUsed },
@@ -65,44 +71,41 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   } = context;
   const { fontSize, fontName, letterSpacing, lineHeight, textCase, textDecoration } = textSegment;
 
-  addStyle(context, textSegment, styles, 'font-size', [fontSize, 'px']);
+  addStyle(context, node, styles, 'font-size', [fontSize, 'px']);
 
   if (lineHeight.unit !== 'AUTO') {
-    addStyle(context, textSegment, styles, 'line-height', [
-      lineHeight.value,
-      lineHeight.unit === 'PERCENT' ? '%' : 'px',
-    ]);
+    addStyle(context, node, styles, 'line-height', [lineHeight.value, lineHeight.unit === 'PERCENT' ? '%' : 'px']);
   }
 
   const { family, style } = fontName;
   const { fontWeight, fontStretch, fontItalicStyle } = parseFontStyle(style);
   if (fontWeight !== 400) {
-    addStyle(context, textSegment, styles, 'font-weight', replaceFontWeightWithLabel(fontWeight));
+    addStyle(context, node, styles, 'font-weight', replaceFontWeightWithLabel(fontWeight));
   }
   if (fontStretch !== 'normal') {
-    addStyle(context, textSegment, styles, 'font-stretch', fontStretch);
+    addStyle(context, node, styles, 'font-stretch', fontStretch);
   }
   if (fontItalicStyle !== 'normal') {
-    addStyle(context, textSegment, styles, 'font-style', fontItalicStyle);
+    addStyle(context, node, styles, 'font-style', fontItalicStyle);
   }
 
   // Add font weight used, mapped to the family, to build the google fonts URL at the end
   getSetInMap(fontWeightUsed, family).add(fontWeight);
 
-  addStyle(context, textSegment, styles, 'font-family', ...mkFamiliesValues(family));
+  addStyle(context, node, styles, 'font-family', ...mkFamiliesValues({ fontFamily: family }));
 
   if (letterSpacing.value !== 0) {
     if (letterSpacing.unit === 'PERCENT') {
-      addStyle(context, textSegment, styles, 'letter-spacing', [letterSpacing.value / 100, 'em']);
+      addStyle(context, node, styles, 'letter-spacing', [letterSpacing.value / 100, 'em']);
     } else {
-      addStyle(context, textSegment, styles, 'letter-spacing', [letterSpacing.value, 'px']);
+      addStyle(context, node, styles, 'letter-spacing', [letterSpacing.value, 'px']);
     }
   }
 
   if (textCase !== 'ORIGINAL') {
     addStyle(
       context,
-      textSegment,
+      node,
       styles,
       'text-transform',
       textCase === 'UPPER' ? 'uppercase' : textCase === 'LOWER' ? 'lowercase' : 'capitalize',
@@ -112,7 +115,7 @@ export function fontFigmaToCode(context: NodeContext, textSegment: StyledTextSeg
   if (textDecoration !== 'NONE') {
     addStyle(
       context,
-      textSegment,
+      node,
       styles,
       'text-decoration',
       textDecoration === 'STRIKETHROUGH' ? 'line-through' : 'underline',
@@ -132,28 +135,29 @@ export function getSetInMap<MapKey, SetValue>(map: Map<MapKey, Set<SetValue>>, k
   return set;
 }
 
-function mkFamiliesValues(family: string) {
-  return [
-    family,
-    ',',
-    'system-ui',
-    ',',
-    '-apple-system',
-    ',',
-    '"Segoe UI"',
-    ',',
-    'Roboto',
-    ',',
-    '"Helvetica Neue"',
-    ',',
-    'Arial',
-    ',',
-    '"Noto Sans"',
-    ',',
-    '"Liberation Sans"',
-    ',',
-    'sans-serif',
-  ];
+const fallbackFontFamilies = [
+  ',',
+  'system-ui',
+  ',',
+  '-apple-system',
+  ',',
+  '"Segoe UI"',
+  ',',
+  'Roboto',
+  ',',
+  '"Helvetica Neue"',
+  ',',
+  'Arial',
+  ',',
+  '"Noto Sans"',
+  ',',
+  '"Liberation Sans"',
+  ',',
+  'sans-serif',
+];
+
+function mkFamiliesValues<T extends string | Dict<string>>(family: T) {
+  return [family, ...fallbackFontFamilies];
 }
 
 export function addFontsToIndexHtml(projectContext: ProjectContext) {

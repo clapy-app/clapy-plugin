@@ -4,7 +4,7 @@ import { PropertiesHyphen } from 'csstype';
 import { isPlainObject } from 'lodash';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import { MySingleToken, NodeContext } from '../code.model';
 import { ValidNode } from '../create-ts-compiler/canvas-utils';
 import { round } from '../figma-code-map/details/utils-and-reset';
 import {
@@ -33,12 +33,20 @@ type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
  *
  * This mapping can also be used with annotation keys when we need to check multiple tokens in specific situations.
  */
-const cssToFigmaTokenMap: Dict<string | string[]> = {
+const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
   'background-color': 'fill',
   opacity: 'opacity',
   width: ['width', 'sizing'],
   height: ['height', 'sizing'],
   gap: ['itemSpacing', 'spacing'],
+  // Special format for cases when a token has multiple keys, e.g. typography has fontSize, fontFamily...
+  'font-size': [['typography', 'fontSize'], 'fontSizes'],
+  fontFamily: [['typography', 'fontFamily'], 'fontFamilies'], // Special case because we need fallback fonts
+  'font-weight': [['typography', 'fontWeight'], 'fontWeights'],
+  'line-height': [['typography', 'lineHeight'], 'lineHeights'],
+  // 'paragraphSpacing': [['typography', 'paragraphSpacing']], // TODO, seems to miss in generated CSS
+
+  // Not CSS properties, but special keys we use to facilitate the binding to multiple tokens. The first found that is filled is used.
   paddingTop: ['paddingTop', 'spacing'],
   paddingRight: ['paddingRight', 'spacing'],
   paddingBottom: ['paddingBottom', 'spacing'],
@@ -58,7 +66,7 @@ type StyleValue<T extends keyof PropertiesHyphen> =
 
 export function addStyle<T extends keyof PropertiesHyphen>(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   styles: Dict<DeclarationPlain>,
   name: T,
   ...values: StyleValue<T>[]
@@ -108,9 +116,9 @@ export function addStyle<T extends keyof PropertiesHyphen>(
   );
 }
 
-function applyToken<T extends keyof PropertiesHyphen>(
+export function applyToken<T extends keyof PropertiesHyphen>(
   context: NodeContext,
-  node: ValidNode | StyledTextSegment,
+  node: ValidNode,
   name: string,
   value: StyleValue<T>,
 ) {
@@ -120,44 +128,135 @@ function applyToken<T extends keyof PropertiesHyphen>(
     return;
   }
   const { varNamesMap } = context.moduleContext.projectContext;
-  const figmaTokenProp = cssToFigmaTokenMap[name as keyof typeof cssToFigmaTokenMap] || name;
-  const varName = getVarNameFromTokenNames(node, varNamesMap, figmaTokenProp);
+  const tokenNames = cssToFigmaTokenMap[name as keyof typeof cssToFigmaTokenMap] || name;
+  const varName = getVarNameFromTokenNames(context, node, varNamesMap, tokenNames);
   if (varName) {
     const valIsArray = Array.isArray(value);
-    const applyUnit = valIsArray && !!(value as any)[1];
-    const unit = applyUnit ? (value as any)[1] : undefined;
-    const applyFactor = applyUnit || (valIsArray && !!(value as any)[2]);
+    const applyFactor = valIsArray && !!(value as any)[2];
     const factor = applyFactor ? (value as any)[2] || 1 : undefined;
 
-    // With length, the unit must be specified. But as is, Figma tokens + Style Dictionary generate numbers alone in the variables, without the units.
-    // Workaround: we use a trick with calc to indicate the browser the unit to apply.
-    // Ideally, the unit should be included in the variable value itself (ticket for later?)
-    return applyUnit
-      ? `calc(var(--${varName}) * ${factor}${unit})`
-      : applyFactor
-      ? `calc(var(--${varName}) * ${factor})`
-      : `var(--${varName})`;
+    const cssVar = varNameToCSSVar(varName);
+    return applyFactor ? `calc(${cssVar} * ${factor})` : cssVar;
+  }
+}
+
+export function applyTokenGroup(
+  context: NodeContext,
+  node: ValidNode,
+  tokenNames: string | (string | [string, string])[] | undefined,
+) {
+  const varNames = getVarNamesFromTokenNames(context, node, tokenNames);
+  return buildCssValueWithVariables(varNames);
+}
+
+function varNameToCSSVar(varName: string | number) {
+  return `var(--${varName})`;
+}
+
+type Variables = string | number | Array<Variables> | Dict<Variables>;
+
+function buildCssValueWithVariables<T extends Variables | undefined>(varNames: T): T {
+  if (!varNames) return varNames;
+  if (typeof varNames === 'string' || typeof varNames === 'number') {
+    return varNameToCSSVar(varNames) as T;
+  }
+  if (Array.isArray(varNames)) {
+    return varNames.map(varName => buildCssValueWithVariables(varName)) as T;
+  }
+  if (isPlainObject(varNames)) {
+    return Object.entries(varNames).reduce((obj, [key, val]) => {
+      (obj as any)[key] = key === 'type' ? val : buildCssValueWithVariables(val);
+      return obj;
+    }, {} as T);
+  }
+  throw new Error(`BUG Unsupported varNames value: ${JSON.stringify(varNames)}`);
+}
+
+// To refactor? It's very similar to getVarNameFromTokenNames below (that I actually copied to get started), but the workflow is slightly different. To test carefully.
+export function getVarNamesFromTokenNames(
+  context: NodeContext,
+  node: ValidNode,
+  tokenNames: string | (string | [string, string])[] | undefined,
+) {
+  const { varNamesMap, tokensRawMap } = context.moduleContext.projectContext;
+
+  if (!varNamesMap || !tokenNames || !tokensRawMap) return;
+  if (!Array.isArray(tokenNames)) {
+    tokenNames = [tokenNames];
+  }
+  for (let name of tokenNames) {
+    let subKey: string | undefined = undefined;
+    if (Array.isArray(name)) {
+      [name, subKey] = name;
+    }
+    let tokenName = (node as any)._tokens?.[name];
+    if (tokenName) {
+      if (subKey) {
+        tokenName = `${tokenName}.${subKey}`;
+      }
+      return prepareFullTokenNames(varNamesMap, tokensRawMap, tokenName);
+    }
   }
 }
 
 function getVarNameFromTokenNames(
-  node: ValidNode | StyledTextSegment,
+  context: NodeContext,
+  node: ValidNode,
   varNamesMap: Dict<string> | undefined,
-  tokenNames: string | string[] | undefined,
+  tokenNames: string | (string | [string, string])[] | undefined,
 ) {
   if (!varNamesMap || !tokenNames) return;
   if (!Array.isArray(tokenNames)) {
     tokenNames = [tokenNames];
   }
-  for (const name of tokenNames) {
-    if ((node as any)._tokens?.[name] && varNamesMap[(node as any)._tokens[name]]) {
-      return varNamesMap[(node as any)._tokens[name]];
+  for (let name of tokenNames) {
+    let subKey: string | undefined = undefined;
+    if (Array.isArray(name)) {
+      [name, subKey] = name;
+    }
+    let tokenName = (node as any)._tokens?.[name];
+    if (tokenName) {
+      if (subKey) {
+        tokenName = `${tokenName}.${subKey}`;
+      }
+      if (varNamesMap[tokenName]) {
+        return varNamesMap[tokenName];
+      }
     }
   }
-  return;
 }
 
-// Deprecated? Would addStyle work as a substitution?
+function prepareFullTokenNames(varNamesMap: Dict<string>, tokensRawMap: Dict<MySingleToken>, tokenName: string) {
+  if (!tokensRawMap[tokenName]) {
+    throw new Error(
+      `BUG tokensRawMap does not have the key ${tokenName}, which is unexpected because varNamesMap should have been checked before with this key.`,
+    );
+  }
+  const value = tokensRawMap[tokenName].value; // string, array or object
+  return _prepareFullTokenNames(varNamesMap, tokenName, value);
+  // Map the same structure, build the key then map to the corresponding variable(s) keeping the same structure
+}
+
+function _prepareFullTokenNames(
+  varNamesMap: Dict<string>,
+  key: string,
+  value: MySingleToken['value'] | string | number,
+): Variables {
+  if (varNamesMap[key]) {
+    return varNamesMap[key];
+  }
+  if (Array.isArray(value)) {
+    return value.map((v, i) => _prepareFullTokenNames(varNamesMap, `${key}.${i}`, v));
+  }
+  if (isPlainObject(value)) {
+    return Object.entries(value).reduce((obj, [k, v]) => {
+      obj[k] = k === 'type' ? v.value : _prepareFullTokenNames(varNamesMap, `${key}.${k}`, v);
+      return obj;
+    }, {} as Dict<Variables>);
+  }
+  throw new Error(`BUG unsupported token value type: ${JSON.stringify(value)}`);
+}
+
 /**
  * Include in T those types that are assignable to U
  */

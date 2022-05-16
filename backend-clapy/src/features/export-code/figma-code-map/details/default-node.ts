@@ -6,7 +6,13 @@ import {
   PageNodeNoMethod,
   SceneNodeNoMethod,
 } from '../../../sb-serialize-preview/sb-serialize.model';
-import { ComponentNode2, isChildrenMixin, isInstanceFeatureDetection } from '../../create-ts-compiler/canvas-utils';
+import {
+  ChildrenMixin2,
+  ComponentNode2,
+  isChildrenMixin,
+  isInstanceFeatureDetection,
+  SceneNode2,
+} from '../../create-ts-compiler/canvas-utils';
 import { warnNode } from './utils-and-reset';
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNodeNoMethod>[]): FrameNodeNoMethod {
@@ -54,10 +60,11 @@ export function fillWithComponent(
     fillNodeWithDefaults(node, nodeOfComp);
   }
   if (isChildrenMixin(node)) {
+    const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
       let childNodeOfComp = nodeOfComp;
-      if (childNodeOfComp) {
+      if (childNodeOfComp && instanceToCompIndexMap) {
         if (!isChildrenMixin(childNodeOfComp)) {
           warnNode(
             child,
@@ -67,7 +74,7 @@ export function fillWithComponent(
             `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
           );
         }
-        childNodeOfComp = childNodeOfComp.children[i];
+        childNodeOfComp = childNodeOfComp.children[instanceToCompIndexMap[i]];
       }
       fillWithComponent(child, compNodes, childNodeOfComp);
     }
@@ -90,4 +97,20 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
     type = 'FRAME';
   }
   return nodeDefaults[type];
+}
+
+/**
+ * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
+ */
+function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
+  if (!isChildrenMixin(nodeOfComp)) return undefined;
+  const mapper: Dict<number> = {};
+  for (let i = 0; i < instance.children.length; i++) {
+    const child = instance.children[i];
+    const childId = child.id;
+    const compId = childId.substring(childId.lastIndexOf(';') + 1);
+    const compIndex = nodeOfComp.children.findIndex(child => child.id === compId);
+    mapper[i] = compIndex;
+  }
+  return mapper;
 }

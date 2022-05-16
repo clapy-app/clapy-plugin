@@ -1,46 +1,38 @@
+import { isPlainObject } from 'lodash';
 import StyleDictionary, { Core } from 'style-dictionary';
 import { DesignToken, DesignTokens } from 'style-dictionary/types/DesignToken';
 
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
+import { MySingleToken } from '../../code.model';
+import { getStyleDictionaryConfig, postTransforms } from './style-dictionary-config';
 import { TokenStore } from './types/types/tokens';
 
 const transformConfig = require('style-dictionary/lib/transform/config');
 const createDictionary = require('style-dictionary/lib/utils/createDictionary');
 const filterProperties = require('style-dictionary/lib/filterProperties');
 const createFormatArgs = require('style-dictionary/lib/utils/createFormatArgs');
+const transformProperty = require('style-dictionary/lib/transform/property');
 
 export function genStyles(tokens: TokenStore | undefined) {
-  if (!tokens) return [undefined, undefined];
+  if (!tokens) return {};
 
-  const tokens2 = unserializeTokens(tokens.values);
+  const [tokens2, tokensRawMap] = unserializeTokens(tokens.values);
 
-  const sd = StyleDictionary.extend({
-    tokens: tokens2,
-    platforms: {
-      css: {
-        transformGroup: 'css',
-        prefix: 'sd',
-        // buildPath: 'build/css/',
-        files: [
-          {
-            destination: '_variables.css', // Ignored by our implementation
-            format: 'css/variables',
-          },
-        ],
-      },
-    },
-  });
-  return buildStyles(sd);
+  const sd = StyleDictionary.extend(getStyleDictionaryConfig(tokens2));
+  const { varNamesMap, cssVarsDeclaration } = buildStyles(sd);
+  return { varNamesMap, cssVarsDeclaration, tokensRawMap } as const;
 }
 
-function unserializeTokens(tokenStoreValues: TokenStore['values']): DesignTokens {
+function unserializeTokens(tokenStoreValues: TokenStore['values']) {
   const tokens: DesignTokens = {};
+  const tokensRawMap: Dict<MySingleToken> = {};
   for (const [setName, tokensList] of Object.entries(tokenStoreValues)) {
     for (const { name, type, value } of tokensList) {
       assignWithDotNotation(tokens, name, { value, type });
+      tokensRawMap[name] = { type, value };
     }
   }
-  return tokens;
+  return [tokens, tokensRawMap] as const;
 }
 
 function assignWithDotNotation(object: any, keyWithDots: string, token: DesignToken) {
@@ -95,7 +87,7 @@ function buildPlatform(sd: Core, platform: string) {
     throw new Error(`Platform "${platform}" does not exist`);
   }
 
-  let properties;
+  let properties: StyleDictionary.TransformedTokens;
   // We don't want to mutate the original object
   const platformConfig: StyleDictionary.Platform = transformConfig(sd.options.platforms[platform], sd, platform);
 
@@ -107,6 +99,7 @@ function buildPlatform(sd: Core, platform: string) {
   properties = sd.exportPlatform(platform);
 
   // -- Clapy addition
+  applyPostTransform(platformConfig, properties);
   const varNamesMap = indexVarNames(properties);
 
   // This is the dictionary object we pass to the file
@@ -122,7 +115,37 @@ function buildPlatform(sd: Core, platform: string) {
   }
 
   const cssVarsDeclaration = buildFile(file, platformConfig, dictionary);
-  return [varNamesMap, cssVarsDeclaration] as const;
+  return { varNamesMap, cssVarsDeclaration } as const;
+}
+
+type PostTransformEntry =
+  | StyleDictionary.TransformedToken
+  | Array<PostTransformEntry>
+  | StyleDictionary.TransformedTokens;
+
+function applyPostTransform(platformConfig: StyleDictionary.Platform, entry: PostTransformEntry) {
+  if (Array.isArray(entry)) {
+    for (const e of entry) {
+      applyPostTransform(platformConfig, e);
+      return;
+    }
+  }
+  if (!isPlainObject(entry)) {
+    throw new Error(`Not a valid entry to apply post-transformation: ${JSON.stringify(entry)}`);
+  }
+  for (const [propName, prop] of Object.entries(entry)) {
+    if (isPTEntryLeaf(prop)) {
+      (platformConfig as any).transforms = postTransforms;
+      (entry as any)[propName] = transformProperty(prop, platformConfig);
+    } else {
+      applyPostTransform(platformConfig, prop);
+    }
+  }
+}
+
+function isPTEntryLeaf(entry: PostTransformEntry): entry is StyleDictionary.TransformedToken {
+  const e = entry as StyleDictionary.TransformedToken;
+  return !!e.value && e.type && !isPlainObject(e.value);
 }
 
 function indexVarNames(properties: StyleDictionary.TransformedTokens) {

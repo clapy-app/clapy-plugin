@@ -161,7 +161,14 @@ export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | Vector
 
 export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is ShapeNode {
   // Rectangle and line are excluded
-  return isEllipse(node) || isPolygon(node) || isStar(node) || isVector(node) || isBooleanOperation(node);
+  return (
+    isEllipse(node) ||
+    isPolygon(node) ||
+    isStar(node) ||
+    isVector(node) ||
+    isBooleanOperation(node) ||
+    (isFrame(node) && node.isMask)
+  );
 }
 
 export function isStyledTextSegment(
