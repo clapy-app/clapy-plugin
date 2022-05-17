@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
-import { Dict, ExportImageMap2, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
 import { ComponentNode2, FlexNode, GroupNode2, PageNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 import { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken';
@@ -35,6 +35,7 @@ export interface ProjectContext {
   readonly enableMUIFramework: boolean;
   readonly varNamesMap: Dict<string> | undefined;
   readonly tokensRawMap: Dict<MySingleToken> | undefined;
+  readonly extraConfig: ExtraConfig;
 }
 
 export interface ModuleContext {

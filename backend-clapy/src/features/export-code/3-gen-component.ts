@@ -1,5 +1,5 @@
 import { relative } from 'path';
-import ts from 'typescript';
+import ts, { Statement } from 'typescript';
 
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { flags } from '../../env-and-config/app-config';
@@ -118,17 +118,28 @@ function genComponent(
   return moduleContext;
 }
 
-export function createModuleCode(moduleContext: ModuleContext, tsx: JsxOneOrMore | undefined, classes: string[]) {
+export function createModuleCode(
+  moduleContext: ModuleContext,
+  tsx: JsxOneOrMore | undefined,
+  classes: string[],
+  prefixStatements: Statement[] = [],
+) {
   const { imports, statements, compName } = moduleContext;
 
   // Add React imports: import { FC, memo } from 'react';
-  imports.push(mkNamedImportsDeclaration(['FC', 'memo'], 'react'));
+
+  imports.push(
+    mkNamedImportsDeclaration(
+      ['FC', 'memo', ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : [])],
+      'react',
+    ),
+  );
 
   // Add component Prop interface
   statements.push(mkPropInterface(classes));
 
   // Add the component
-  statements.push(mkCompFunction(compName, classes, tsx));
+  statements.push(mkCompFunction(compName, classes, tsx, prefixStatements));
 }
 
 export function printFileInProject(moduleContext: ModuleContext) {

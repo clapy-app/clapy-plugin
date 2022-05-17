@@ -1,5 +1,5 @@
 import { DeclarationPlain, RulePlain } from 'css-tree';
-import ts from 'typescript';
+import ts, { Statement } from 'typescript';
 
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
@@ -192,7 +192,12 @@ export function mkPropInterface(classes: string[]) {
   );
 }
 
-export function mkCompFunction(fnName: string, classes: string[], tsx: JsxOneOrMore | undefined) {
+export function mkCompFunction(
+  fnName: string,
+  classes: string[],
+  tsx: JsxOneOrMore | undefined,
+  prefixStatements: Statement[] = [],
+) {
   let returnedExpression: ts.Expression | undefined = undefined;
   if (tsx) {
     if (Array.isArray(tsx)) {
@@ -236,6 +241,7 @@ export function mkCompFunction(fnName: string, classes: string[], tsx: JsxOneOrM
               undefined,
               factory.createBlock(
                 [
+                  ...prefixStatements,
                   ...(flags.destructureClassNames
                     ? [
                         factory.createVariableStatement(
