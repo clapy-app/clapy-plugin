@@ -47,6 +47,7 @@ export function addRulesToAppCss(context: ModuleContext, appCss: string, parentN
     addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'position', 'absolute');
     addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'top', '10px');
     addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'right', '20px');
+    addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'z-index', '10');
 
     const className = 'themeSwitcher';
     const styleDeclarations = stylesToList(styles2);
