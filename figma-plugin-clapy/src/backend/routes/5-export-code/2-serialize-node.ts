@@ -28,11 +28,14 @@ export async function serializeSelectedNode() {
     effectStyles: {},
     gridStyles: {},
   };
-  const extraConfig = env.isDev
-    ? {
-        isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
-      }
-    : {};
+  const extraConfig = {
+    ...(env.isDev
+      ? {
+          isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+        }
+      : {}),
+    isFTD: figma.fileKey === 'OtDi3McbgoeMAAQk6ACjc9',
+  };
 
   const tokens = extractFigmaTokens();
 

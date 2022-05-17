@@ -242,13 +242,19 @@ export type OmitMethods<T> = {
   [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
+export interface ExtraConfig {
+  isClapyFile?: boolean;
+  isFTD?: boolean;
+  enableMUIFramework?: boolean;
+}
+
 export interface ExportCodePayload {
   parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
   root: SceneNodeNoMethod | null | undefined;
   components: ComponentNodeNoMethod[];
   images: ExportImageMap2;
   styles: FigmaStyles;
-  extraConfig: { isClapyFile?: boolean; enableMUIFramework?: boolean };
+  extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
 }
 

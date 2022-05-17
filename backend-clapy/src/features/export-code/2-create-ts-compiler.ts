@@ -1,5 +1,5 @@
 import { HttpException } from '@nestjs/common';
-import ts from 'typescript';
+import ts, { Statement } from 'typescript';
 
 import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
@@ -86,6 +86,7 @@ export async function exportCode(
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
     varNamesMap,
     tokensRawMap,
+    extraConfig,
   };
 
   const lightAppModuleContext = {
@@ -168,7 +169,7 @@ function addCompToAppRoot(
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
-  let updatedAppCss = addRulesToAppCss(cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
+  let updatedAppCss = addRulesToAppCss(appModuleContext, cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
 
   cssFiles[appCssPath] = updatedAppCss;
 
@@ -179,7 +180,20 @@ function addCompToAppRoot(
   let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(childModuleContext.compName);
   appTsx = addMUIProviders(appModuleContext, appTsx);
 
-  createModuleCode(appModuleContext, appTsx, []);
+  let prefixStatements: Statement[] | undefined = undefined;
+  if (appModuleContext.projectContext.extraConfig.isFTD) {
+    // Add demo patch
+    const themeDefaultValue = 'light';
+    const themeValues = {
+      light: 'Light',
+      dark: 'Dark',
+    };
+    appTsx = addDemoThemeSwitcher(appModuleContext, appTsx, themeValues, themeDefaultValue);
+    statements.push(mkInitBodyClassName(themeDefaultValue));
+    prefixStatements = [mkSwitchThemeHandler()];
+  }
+
+  createModuleCode(appModuleContext, appTsx, [], prefixStatements);
 
   printFileInProject(appModuleContext);
 }
@@ -198,4 +212,134 @@ function mkAppCompTsx(childComponentName: string) {
 
 function addPackages(projectContext: ProjectContext) {
   addMUIPackages(projectContext);
+}
+
+function addDemoThemeSwitcher(
+  context: ModuleContext,
+  appTsx: ts.JsxElement | ts.JsxFragment,
+  themeValues: Dict<string>,
+  themeDefaultValue: string,
+) {
+  if (!context.projectContext.extraConfig.isFTD) return appTsx;
+
+  return factory.createJsxFragment(
+    factory.createJsxOpeningFragment(),
+    [
+      factory.createJsxElement(
+        factory.createJsxOpeningElement(
+          factory.createIdentifier('select'),
+          undefined,
+          factory.createJsxAttributes([
+            factory.createJsxAttribute(
+              factory.createIdentifier('className'),
+              factory.createJsxExpression(
+                undefined,
+                factory.createPropertyAccessExpression(
+                  factory.createIdentifier('classes'),
+                  factory.createIdentifier('themeSwitcher'),
+                ),
+              ),
+            ),
+            factory.createJsxAttribute(
+              factory.createIdentifier('onChange'),
+              factory.createJsxExpression(undefined, factory.createIdentifier('switchTheme')),
+            ),
+            factory.createJsxAttribute(
+              factory.createIdentifier('defaultValue'),
+              factory.createStringLiteral(themeDefaultValue),
+            ),
+          ]),
+        ),
+        Object.entries(themeValues).map(([key, label]) =>
+          factory.createJsxElement(
+            factory.createJsxOpeningElement(
+              factory.createIdentifier('option'),
+              undefined,
+              factory.createJsxAttributes([
+                factory.createJsxAttribute(factory.createIdentifier('value'), factory.createStringLiteral(key)),
+              ]),
+            ),
+            [factory.createJsxText(label, false)],
+            factory.createJsxClosingElement(factory.createIdentifier('option')),
+          ),
+        ),
+        factory.createJsxClosingElement(factory.createIdentifier('select')),
+      ),
+      appTsx,
+    ],
+    factory.createJsxJsxClosingFragment(),
+  );
+}
+
+function mkInitBodyClassName(themeDefaultValue: string) {
+  return factory.createExpressionStatement(
+    factory.createBinaryExpression(
+      factory.createPropertyAccessExpression(
+        factory.createPropertyAccessExpression(factory.createIdentifier('document'), factory.createIdentifier('body')),
+        factory.createIdentifier('className'),
+      ),
+      factory.createToken(ts.SyntaxKind.EqualsToken),
+      factory.createStringLiteral(themeDefaultValue),
+    ),
+  );
+}
+
+function mkSwitchThemeHandler() {
+  return factory.createVariableStatement(
+    undefined,
+    factory.createVariableDeclarationList(
+      [
+        factory.createVariableDeclaration(
+          factory.createIdentifier('switchTheme'),
+          undefined,
+          undefined,
+          factory.createCallExpression(factory.createIdentifier('useCallback'), undefined, [
+            factory.createArrowFunction(
+              undefined,
+              undefined,
+              [
+                factory.createParameterDeclaration(
+                  undefined,
+                  undefined,
+                  undefined,
+                  factory.createIdentifier('e'),
+                  undefined,
+                  undefined,
+                  undefined,
+                ),
+              ],
+              undefined,
+              factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              factory.createBlock(
+                [
+                  factory.createExpressionStatement(
+                    factory.createBinaryExpression(
+                      factory.createPropertyAccessExpression(
+                        factory.createPropertyAccessExpression(
+                          factory.createIdentifier('document'),
+                          factory.createIdentifier('body'),
+                        ),
+                        factory.createIdentifier('className'),
+                      ),
+                      factory.createToken(ts.SyntaxKind.EqualsToken),
+                      factory.createPropertyAccessExpression(
+                        factory.createPropertyAccessExpression(
+                          factory.createIdentifier('e'),
+                          factory.createIdentifier('target'),
+                        ),
+                        factory.createIdentifier('value'),
+                      ),
+                    ),
+                  ),
+                ],
+                true,
+              ),
+            ),
+            factory.createArrayLiteralExpression([], false),
+          ]),
+        ),
+      ],
+      ts.NodeFlags.Const,
+    ),
+  );
 }
