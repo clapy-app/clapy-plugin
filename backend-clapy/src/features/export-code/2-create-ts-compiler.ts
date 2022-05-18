@@ -193,10 +193,10 @@ function addCompToAppRoot(
     const themeDefaultValue = 'brand-a-light-theme';
     const themeValues = {
       'brand-a-light-theme': 'Brand A light theme',
-      'brand-b-light-theme': 'Brand B light theme',
-      'brand-c-light-theme': 'Brand C light theme',
       'brand-a-dark-theme': 'Brand A dark theme',
+      'brand-b-light-theme': 'Brand B light theme',
       'brand-b-dark-theme': 'Brand B dark theme',
+      'brand-c-light-theme': 'Brand C light theme',
       'brand-c-dark-theme': 'Brand C dark theme',
     };
     appTsx = addDemoThemeSwitcher(appModuleContext, appTsx, themeValues, themeDefaultValue);
