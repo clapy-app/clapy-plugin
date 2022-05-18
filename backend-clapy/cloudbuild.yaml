@@ -38,6 +38,9 @@ steps:
       - '--quiet'
     id: Deploy
     entrypoint: gcloud
+# Default timeout is 10 minutes (600s). Increasing because the full image is regularly rebuilt, which
+# tends to exceed 10 minutes.
+timeout: 900s
 images:
   - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
 options:
