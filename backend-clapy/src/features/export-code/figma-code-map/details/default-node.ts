@@ -9,6 +9,7 @@ import {
 import {
   ChildrenMixin2,
   ComponentNode2,
+  InstanceNode2,
   isChildrenMixin,
   isInstanceFeatureDetection,
   SceneNode2,
@@ -28,12 +29,17 @@ export function addHugContents(): Partial<FrameNodeNoMethod> {
   };
 }
 
-export function fillWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod | Nil) {
+export function fillWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod | Nil, instancesInComp: InstanceNode2[]) {
   if (!node) return;
-  fillNodeWithDefaults(node, defaultsForNode(node));
-  if (isChildrenMixin(node)) {
-    for (const child of node.children) {
-      fillWithDefaults(child);
+  const isInst = isInstanceFeatureDetection(node);
+  if (isInst) {
+    instancesInComp.push(node);
+  } else {
+    fillNodeWithDefaults(node, defaultsForNode(node));
+    if (isChildrenMixin(node)) {
+      for (const child of node.children) {
+        fillWithDefaults(child, instancesInComp);
+      }
     }
   }
 }
@@ -105,12 +111,56 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
 function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
   if (!isChildrenMixin(nodeOfComp)) return undefined;
   const mapper: Dict<number> = {};
+  let compStartIndex = 0;
   for (let i = 0; i < instance.children.length; i++) {
-    const child = instance.children[i];
-    const childId = child.id;
+    const instanceChild = instance.children[i];
+    const childId = instanceChild.id;
     const compId = childId.substring(childId.lastIndexOf(';') + 1);
-    const compIndex = nodeOfComp.children.findIndex(child => child.id === compId);
-    mapper[i] = compIndex;
+
+    // First, try to match by ID
+    let matchingIndex = -1;
+    for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+      const compChild = nodeOfComp.children[j];
+      if (compChild.id === compId) {
+        matchingIndex = j;
+        break;
+      }
+    }
+    // If no match, try to match by type + name
+    if (matchingIndex === -1) {
+      for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+        const compChild = nodeOfComp.children[j];
+        if (compChild.type === instanceChild.type && compChild.name === instanceChild.name) {
+          matchingIndex = j;
+          break;
+        }
+      }
+    }
+    // If no match, take the first match by type
+    if (matchingIndex === -1) {
+      for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+        const compChild = nodeOfComp.children[j];
+        if (compChild.type === instanceChild.type) {
+          matchingIndex = j;
+          break;
+        }
+      }
+    }
+    // If still no match, it's a bug. We fallback to the first child of the list, but may be wrong if the component has hidden elements.
+    if (matchingIndex === -1) {
+      warnNode(
+        instance as unknown as SceneNode2,
+        'No match found for child at index',
+        i,
+        'with the corresponding component',
+        nodeOfComp,
+        '- falling back to the next component child.',
+      );
+      matchingIndex = compStartIndex;
+    }
+
+    mapper[i] = matchingIndex;
+    compStartIndex = matchingIndex + 1;
   }
   return mapper;
 }

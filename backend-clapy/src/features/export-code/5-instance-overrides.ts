@@ -1,5 +1,4 @@
 import { DeclarationPlain } from 'css-tree';
-import ts from 'typescript';
 
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
@@ -21,7 +20,7 @@ import {
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { stylesToList } from './css-gen/css-type-utils';
-import { addCssRule, genClassName, mkClassAttr, mkTag, removeCssRule } from './figma-code-map/details/ts-ast-utils';
+import { addCssRule, genClassName, removeCssRule } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2, isRoot = false) {
@@ -69,12 +68,10 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
         styles = postMapStyles(context, node, styles);
         const className = genClassName(context, node, isRoot);
         const styleDeclarations = stylesToList(styles);
-        let attributes: ts.JsxAttribute[] = [];
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
-          attributes.push(mkClassAttr(className));
+          addClassOverride(context, className);
         }
-        ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
       } else {
         styles = postMapStyles(context, node, styles);
         Object.assign(context.parentStyles, styles);
