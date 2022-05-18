@@ -161,7 +161,11 @@ function mkFamiliesValues<T extends string | Dict<string>>(family: T) {
 }
 
 export function addFontsToIndexHtml(projectContext: ProjectContext) {
-  const { fontWeightUsed, resources } = projectContext;
+  const {
+    fontWeightUsed,
+    resources,
+    extraConfig: { isFTD },
+  } = projectContext;
   addMUIFonts(projectContext);
   if (fontWeightUsed.size) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())
@@ -180,6 +184,23 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
       '</head>',
       // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
       `  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?${familyUrlFragment}&display=swap">\n</head>`,
+    );
+  }
+  if (isFTD) {
+    resources[indexHtmlPath] = resources[indexHtmlPath].replace(
+      '</head>',
+      // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
+      `  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Serif:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/zodiak/zodiak.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/satoshi/satoshi.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/general-sans/general-sans.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-a-light.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-b-light.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-c-light.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-a-dark.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-b-dark.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-c-dark.css" />
+</head>`,
     );
   }
 }

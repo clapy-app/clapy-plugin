@@ -12,7 +12,7 @@ import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
-import { ComponentNode2 } from './create-ts-compiler/canvas-utils';
+import { ComponentNode2, InstanceNode2 } from './create-ts-compiler/canvas-utils';
 import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
@@ -39,14 +39,18 @@ export async function exportCode(
   uploadToCsb = true,
 ) {
   const parent = p as ParentNode | Nil;
+  const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
-    fillWithDefaults(comp);
+    fillWithDefaults(comp, instancesInComp);
   }
   const compNodes = components.reduce((prev, cur) => {
     prev[cur.id] = cur;
     return prev;
   }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>;
-  fillWithDefaults(p);
+  fillWithDefaults(p, instancesInComp);
+  for (const instance of instancesInComp) {
+    fillWithComponent(instance, compNodes);
+  }
   fillWithComponent(root, compNodes);
   if (!root) {
     throw new HttpException(
@@ -151,14 +155,17 @@ function addCompToAppRoot(
   const {
     compDir,
     compName,
-    projectContext: { cssFiles },
+    projectContext: {
+      cssFiles,
+      extraConfig: { isFTD },
+    },
     imports,
     statements,
   } = appModuleContext;
   const appCssPath = `${compDir}/${compName}.module.css`;
 
   // Add design tokens on top of the file, if any
-  if (cssVarsDeclaration) {
+  if (cssVarsDeclaration && !isFTD) {
     const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
     imports.push(mkSimpleImportDeclaration(`./${cssVariablesFile}`));
     cssFiles[cssVariablesPath] = cssVarsDeclaration;
@@ -183,10 +190,14 @@ function addCompToAppRoot(
   let prefixStatements: Statement[] | undefined = undefined;
   if (appModuleContext.projectContext.extraConfig.isFTD) {
     // Add demo patch
-    const themeDefaultValue = 'light';
+    const themeDefaultValue = 'brand-a-light-theme';
     const themeValues = {
-      light: 'Light',
-      dark: 'Dark',
+      'brand-a-light-theme': 'Brand A light theme',
+      'brand-b-light-theme': 'Brand B light theme',
+      'brand-c-light-theme': 'Brand C light theme',
+      'brand-a-dark-theme': 'Brand A dark theme',
+      'brand-b-dark-theme': 'Brand B dark theme',
+      'brand-c-dark-theme': 'Brand C dark theme',
     };
     appTsx = addDemoThemeSwitcher(appModuleContext, appTsx, themeValues, themeDefaultValue);
     statements.push(mkInitBodyClassName(themeDefaultValue));
