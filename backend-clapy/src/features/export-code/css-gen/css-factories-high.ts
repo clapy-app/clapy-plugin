@@ -35,6 +35,7 @@ type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
  */
 const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
   'background-color': 'fill',
+  color: 'fill',
   opacity: 'opacity',
   width: ['width', 'sizing'],
   height: ['height', 'sizing'],
