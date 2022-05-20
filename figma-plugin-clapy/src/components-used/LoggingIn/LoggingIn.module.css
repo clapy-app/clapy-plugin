@@ -1,0 +1,76 @@
+.root {
+  height: 600px;
+  flex: 1;
+  align-self: stretch;
+  flex-direction: column;
+  background-color: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.container {
+  flex: 1;
+  align-self: stretch;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 32px;
+}
+.frame99 {
+  flex: 1;
+  flex-direction: column;
+  place-content: space-between;
+  align-items: flex-start;
+}
+.headline {
+  width: 340px;
+  flex-direction: column;
+  gap: 8px;
+}
+.helloFirstname {
+  color: #000;
+  font-size: 28px;
+  line-height: 126.4999%;
+  font-weight: 600;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  text-align: center;
+  justify-content: center;
+  align-items: flex-end;
+}
+.letSSetUpYourClapyAccount {
+  color: #000;
+  font-size: 16px;
+  font-family: Nunito Sans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  text-align: center;
+  justify-content: center;
+}
+.form {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+.frame94 {
+  align-self: stretch;
+  flex-direction: column;
+}
+.frame89 {
+  align-self: stretch;
+  flex-direction: column;
+}
+.frame95 {
+  align-self: stretch;
+  flex-direction: column;
+}
+.frame892 {
+  align-self: stretch;
+  flex-direction: column;
+}
+.frame98 {
+  width: 340px;
+}
+.submitButton {
+  flex: 1;
+  align-self: flex-start;
+}
