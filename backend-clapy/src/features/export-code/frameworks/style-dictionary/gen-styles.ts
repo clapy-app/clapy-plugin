@@ -49,7 +49,7 @@ function assignWithDotNotation(object: any, keyWithDots: string, token: DesignTo
   const key = fragments[fragments.length - 1];
 
   // Once we have the last object and key, there is a special case: if token.value is a sub-object or array
-  if (typeof token.value === 'string') {
+  if (typeof token.value === 'string' || Array.isArray(token.value)) {
     obj[key] = token;
   } else if (typeof token.value !== 'object') {
     throw new Error(`Unsupported token value: ${JSON.stringify(token.value)}`);

@@ -149,14 +149,15 @@ export function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp
     }
     // If still no match, it's a bug. We fallback to the first child of the list, but may be wrong if the component has hidden elements.
     if (matchingIndex === -1) {
-      warnNode(
-        instance as unknown as SceneNode2,
-        'No match found for child at index',
-        i,
-        'with the corresponding component',
-        nodeOfComp,
-        '- falling back to the next component child.',
-      );
+      // TODO improve
+      // warnNode(
+      //   instance as unknown as SceneNode2,
+      //   'No match found for child at index',
+      //   i,
+      //   'with the corresponding component',
+      //   nodeOfComp,
+      //   '- falling back to the next component child.',
+      // );
       matchingIndex = compStartIndex;
     }
 

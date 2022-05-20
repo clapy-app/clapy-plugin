@@ -4,8 +4,7 @@ import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle, applyTokenGroup } from '../css-gen/css-factories-high';
-import { TokenBoxshadowValue } from '../frameworks/style-dictionary/types/types/values';
+import { addStyle } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -17,27 +16,32 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   const backdropFilters: string[] = [];
   const filters: string[] = [];
 
-  let tokens = applyTokenGroup(context, node, 'boxShadow') as TokenBoxshadowValue | TokenBoxshadowValue[] | undefined;
-  if (tokens) {
-    if (!Array.isArray(tokens)) {
-      tokens = [];
-    }
-    for (const { x, y, spread, color, blur, type } of tokens) {
-      const isInset = type === 'innerShadow';
-      const insetPrefix = isInset ? 'inset ' : '';
-      if (nodeIsText && isInset) {
-        warnNode(node, 'UNSUPPORTED Inner shadow (inset) is not supported for text nodes.');
-        continue;
-      }
-      if (nodeIsText) {
-        textShadowStyles.push(`${x} ${y} ${blur} ${color}`);
-      } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
-        boxShadowStyles.push(`${insetPrefix}${x} ${y} ${blur} ${spread} ${color}`);
-      } else {
-        filters.push(`drop-shadow(${x} ${y} ${blur} ${color})`);
-      }
-    }
+  if ((node as any)._tokens?.['boxShadow']) {
+    addStyle(context, node, styles, 'box-shadow', { boxShadow: '' });
   } else {
+    //// Let's keep this code for now in case we need to restore the detailed version of shadows, each piece of the shadow rule using a different variable:
+    ////
+    // let tokens = applyTokenGroup(context, node, 'boxShadow') as TokenBoxshadowValue | TokenBoxshadowValue[] | undefined;
+    // if (tokens) {
+    //   if (!Array.isArray(tokens)) {
+    //     tokens = [];
+    //   }
+    //   for (const { x, y, spread, color, blur, type } of tokens) {
+    //     const isInset = type === 'innerShadow';
+    //     const insetPrefix = isInset ? 'inset ' : '';
+    //     if (nodeIsText && isInset) {
+    //       warnNode(node, 'UNSUPPORTED Inner shadow (inset) is not supported for text nodes.');
+    //       continue;
+    //     }
+    //     if (nodeIsText) {
+    //       textShadowStyles.push(`${x} ${y} ${blur} ${color}`);
+    //     } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
+    //       boxShadowStyles.push(`${insetPrefix}${x} ${y} ${blur} ${spread} ${color}`);
+    //     } else {
+    //       filters.push(`drop-shadow(${x} ${y} ${blur} ${color})`);
+    //     }
+    //   }
+    // } else {
     for (const effect of node.effects) {
       const isInset = effect.type === 'INNER_SHADOW';
       if (nodeIsText && isInset) {
