@@ -56,6 +56,7 @@ const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
   borderRadiusTopRight: ['borderRadiusTopRight', 'borderRadius'],
   borderRadiusBottomRight: ['borderRadiusBottomRight', 'borderRadius'],
   borderRadiusBottomLeft: ['borderRadiusBottomLeft', 'borderRadius'],
+  boxShadow: ['boxShadow'],
 };
 
 type StyleValue<T extends keyof PropertiesHyphen> =

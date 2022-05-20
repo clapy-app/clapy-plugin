@@ -60,7 +60,7 @@ export interface Masker {
   y: number;
 }
 
-type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Exclude<FrameNodeBlackList, 'children'>> &
+type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
   GlobalExtender &
   SpecificExtender;
 
@@ -72,18 +72,18 @@ interface GlobalExtender {
 
 // Incomplete typings. Complete by adding other node types when needed.
 export type BaseNode2 = ExtendNodeType<BaseNode>;
-export type PageNode2 = ExtendNodeType<PageNode>;
+export type PageNode2 = ExtendNodeType<PageNode> & ChildrenMixin2;
 export type SceneNode2 = ExtendNodeType<SceneNode, { className?: string }>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
 export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
 export type TextNode2 = ExtendNodeType<TextNode, { _textSegments?: StyledTextSegment[] }>;
-export type FrameNode2 = ExtendNodeType<FrameNode>;
-export type ComponentNode2 = ExtendNodeType<ComponentNode>;
-export type InstanceNode2 = ExtendNodeType<InstanceNode>;
+export type FrameNode2 = ExtendNodeType<FrameNode> & ChildrenMixin2;
+export type ComponentNode2 = ExtendNodeType<ComponentNode> & ChildrenMixin2;
+export type InstanceNode2 = ExtendNodeType<InstanceNode> & ChildrenMixin2;
 export type RectangleNode2 = ExtendNodeType<RectangleNode>;
-export type GroupNode2 = ExtendNodeType<GroupNode>;
+export type GroupNode2 = ExtendNodeType<GroupNode> & ChildrenMixin2;
 export type LineNode2 = ExtendNodeType<LineNode>;
-export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode>;
+export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode> & ChildrenMixin2;
 export type TextSegment2 = StyledTextSegment;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {

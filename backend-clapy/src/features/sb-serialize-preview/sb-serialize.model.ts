@@ -266,15 +266,30 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
-type BaseNodeMixin2 = Omit<OmitMethods<BaseNodeMixin>, FrameNodeBlackList>;
-type SceneNodeMixin2 = Omit<OmitMethods<SceneNodeMixin>, FrameNodeBlackList>;
-type ReactionMixin2 = Omit<OmitMethods<ReactionMixin>, FrameNodeBlackList>;
-type BlendMixin2 = Omit<OmitMethods<BlendMixin>, FrameNodeBlackList>;
-type MinimalStrokesMixin2 = Omit<OmitMethods<MinimalStrokesMixin>, FrameNodeBlackList>;
-type MinimalFillsMixin2 = Omit<OmitMethods<MinimalFillsMixin>, FrameNodeBlackList>;
-type GeometryMixin2 = Omit<OmitMethods<GeometryMixin>, FrameNodeBlackList>;
-type LayoutMixin2 = Omit<OmitMethods<LayoutMixin>, FrameNodeBlackList>;
-type ExportMixin2 = Omit<OmitMethods<ExportMixin>, FrameNodeBlackList>;
+// type UpdateChildren<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
+type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList>;
+// & T extends ChildrenMixin
+// ? { children: ReadonlyArray<ClapifyNode<T['children']> /* LayoutNode */> }
+// : {};
+// type UpdateChildren2<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
+// type ClapifyNode2<T> = UpdateChildren2<Omit<OmitMethods<T>, FrameNodeBlackList>>;
+// type FrameNode3 = ClapifyNode2<UpdateChildren2<FrameNode>>;
+// type A = FrameNode3['c
+// const f: ClapifyNode2<FrameNode>;
+// f.chil
+
+type BaseNodeMixin2 = ClapifyNode<BaseNodeMixin>;
+type SceneNodeMixin2 = ClapifyNode<SceneNodeMixin>;
+type ChildrenMixin2 = {
+  children: ReadonlyArray<LayoutNode>;
+} /* Omit<OmitMethods<ChildrenMixin>, FrameNodeBlackList> */;
+type ReactionMixin2 = ClapifyNode<ReactionMixin>;
+type BlendMixin2 = ClapifyNode<BlendMixin>;
+type MinimalStrokesMixin2 = ClapifyNode<MinimalStrokesMixin>;
+type MinimalFillsMixin2 = ClapifyNode<MinimalFillsMixin>;
+type GeometryMixin2 = ClapifyNode<GeometryMixin>;
+type LayoutMixin2 = ClapifyNode<LayoutMixin>;
+type ExportMixin2 = ClapifyNode<ExportMixin>;
 interface DefaultShapeMixin2
   extends BaseNodeMixin2,
     SceneNodeMixin2,
@@ -283,46 +298,46 @@ interface DefaultShapeMixin2
     GeometryMixin2,
     LayoutMixin2,
     ExportMixin2 {}
-type ConstraintMixin2 = Omit<OmitMethods<ConstraintMixin>, FrameNodeBlackList>;
-type TextSublayerNode2 = Omit<OmitMethods<TextSublayerNode>, FrameNodeBlackList>;
-type ContainerMixin2 = Omit<OmitMethods<ContainerMixin>, FrameNodeBlackList>;
-type CornerMixin2 = Omit<OmitMethods<CornerMixin>, FrameNodeBlackList>;
-type RectangleCornerMixin2 = Omit<OmitMethods<RectangleCornerMixin>, FrameNodeBlackList>;
-type BaseFrameMixin2 = Omit<OmitMethods<BaseFrameMixin>, FrameNodeBlackList>;
-type FramePrototypingMixin2 = Omit<OmitMethods<FramePrototypingMixin>, FrameNodeBlackList>;
-type DefaultFrameMixin2 = Omit<OmitMethods<DefaultFrameMixin>, FrameNodeBlackList>;
-type PublishableMixin2 = Omit<OmitMethods<PublishableMixin>, FrameNodeBlackList>;
-type VariantMixin2 = Omit<OmitMethods<VariantMixin>, FrameNodeBlackList>;
-type VectorLikeMixin2 = Omit<OmitMethods<VectorLikeMixin>, FrameNodeBlackList>;
-type StickableMixin2 = Omit<OmitMethods<StickableMixin>, FrameNodeBlackList>;
+type ConstraintMixin2 = ClapifyNode<ConstraintMixin>;
+type TextSublayerNode2 = ClapifyNode<TextSublayerNode>;
+type ContainerMixin2 = ClapifyNode<ContainerMixin>;
+type CornerMixin2 = ClapifyNode<CornerMixin>;
+type RectangleCornerMixin2 = ClapifyNode<RectangleCornerMixin>;
+type BaseFrameMixin2 = ClapifyNode<BaseFrameMixin> & ChildrenMixin2;
+type FramePrototypingMixin2 = ClapifyNode<FramePrototypingMixin>;
+type DefaultFrameMixin2 = ClapifyNode<DefaultFrameMixin>;
+type PublishableMixin2 = ClapifyNode<PublishableMixin>;
+type VariantMixin2 = ClapifyNode<VariantMixin>;
+type VectorLikeMixin2 = ClapifyNode<VectorLikeMixin>;
+type StickableMixin2 = ClapifyNode<StickableMixin>;
 
-type PageNode2 = Omit<OmitMethods<PageNode>, FrameNodeBlackList>;
-type SliceNode2 = Omit<OmitMethods<SliceNode>, FrameNodeBlackList>;
-type FrameNode2 = Omit<OmitMethods<FrameNode>, FrameNodeBlackList>;
-type GroupNode2 = Omit<OmitMethods<GroupNode>, FrameNodeBlackList>;
-type ComponentSetNode2 = Omit<OmitMethods<ComponentSetNode>, FrameNodeBlackList>;
-type ComponentNode2 = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList>;
-type InstanceNode2 = Omit<OmitMethods<InstanceNode>, FrameNodeBlackList>;
-type BooleanOperationNode2 = Omit<OmitMethods<BooleanOperationNode>, FrameNodeBlackList>;
-type VectorNode2 = Omit<OmitMethods<VectorNode>, FrameNodeBlackList>;
-type StarNode2 = Omit<OmitMethods<StarNode>, FrameNodeBlackList>;
-type LineNode2 = Omit<OmitMethods<LineNode>, FrameNodeBlackList>;
-type EllipseNode2 = Omit<OmitMethods<EllipseNode>, FrameNodeBlackList>;
-type PolygonNode2 = Omit<OmitMethods<PolygonNode>, FrameNodeBlackList>;
-type RectangleNode2 = Omit<OmitMethods<RectangleNode>, FrameNodeBlackList>;
-type StampNode2 = Omit<OmitMethods<StampNode>, FrameNodeBlackList>;
+type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
+type SliceNode2 = ClapifyNode<SliceNode>;
+export type FrameNode2 = ClapifyNode<FrameNode>;
+type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
+type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
+type ComponentNode2 = ClapifyNode<ComponentNode>;
+type InstanceNode2 = ClapifyNode<InstanceNode>;
+type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
+type VectorNode2 = ClapifyNode<VectorNode>;
+type StarNode2 = ClapifyNode<StarNode>;
+type LineNode2 = ClapifyNode<LineNode>;
+type EllipseNode2 = ClapifyNode<EllipseNode>;
+type PolygonNode2 = ClapifyNode<PolygonNode>;
+type RectangleNode2 = ClapifyNode<RectangleNode>;
+type StampNode2 = ClapifyNode<StampNode>;
 
 // Later: rename XXNoMethod to XX2 to be consistent with the back.
-export type SceneNodeNoMethod = Omit<OmitMethods<SceneNode>, FrameNodeBlackList>;
-export type TextNodeNoMethod = Omit<OmitMethods<TextNode> & { listSpacing: number }, FrameNodeBlackList>;
-export type FrameNodeNoMethod = Omit<OmitMethods<FrameNode>, FrameNodeBlackList> & { children: SceneNodeNoMethod[] };
-export type ComponentNodeNoMethod = Omit<OmitMethods<ComponentNode>, FrameNodeBlackList> & {
+export type SceneNodeNoMethod = ClapifyNode<SceneNode>;
+export type TextNodeNoMethod = ClapifyNode<TextNode> & { listSpacing: number };
+export type FrameNodeNoMethod = ClapifyNode<FrameNode> & { children: SceneNodeNoMethod[] };
+export type ComponentNodeNoMethod = ClapifyNode<ComponentNode> & {
   children: SceneNodeNoMethod[];
 };
-export type InstanceNodeNoMethod = Omit<OmitMethods<InstanceNode>, FrameNodeBlackList> & {
+export type InstanceNodeNoMethod = ClapifyNode<InstanceNode> & {
   children: SceneNodeNoMethod[];
 };
-export type PageNodeNoMethod = Omit<OmitMethods<PageNode>, FrameNodeBlackList> & {
+export type PageNodeNoMethod = ClapifyNode<PageNode> & {
   children: SceneNodeNoMethod[];
 };
 
@@ -351,7 +366,7 @@ export const extractionBlacklist = [
   'canUpgradeToNativeBidiSupport',
 ] as const;
 
-export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent'>;
+export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
 
 export interface CSBResponse {
   sandbox_id: string;
@@ -379,6 +394,10 @@ const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
   name: '',
   visible: true,
   stuckNodes: [],
+};
+
+const defaultChildrenMixin: ChildrenMixin2 = {
+  children: [],
 };
 
 const defaultLayoutMixin: LayoutMixin2 = {
@@ -510,7 +529,7 @@ const defaultRectangleCornerMixin: RectangleCornerMixin2 = {
 const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultBaseNodeMixin,
   ...defaultSceneNodeMixin,
-  // ...defaultChildrenMixin,
+  ...defaultChildrenMixin,
   ...defaultContainerMixin,
   ...defaultGeometryMixin,
   ...defaultCornerMixin,
@@ -569,7 +588,7 @@ const defaultStickableMixin: StickableMixin2 = { stuckTo: null };
 
 const defaultPageNode: PageNode2 = {
   ...defaultBaseNodeMixin,
-  // ...defaultChildrenMixin,
+  ...defaultChildrenMixin,
   ...defaultExportMixin,
   type: 'PAGE',
   selection: [],
@@ -613,7 +632,7 @@ const defaultGroupNode: GroupNode2 = {
   ...defaultBaseNodeMixin,
   ...defaultSceneNodeMixin,
   ...defaultReactionMixin,
-  // ...defaultChildrenMixin,
+  ...defaultChildrenMixin,
   ...defaultContainerMixin,
   ...defaultBlendMixin,
   ...defaultLayoutMixin,
@@ -654,7 +673,7 @@ const defaultInstanceNode: InstanceNode2 = {
 
 const defaultBooleanOperationNode: BooleanOperationNode2 = {
   ...defaultDefaultShapeMixin,
-  // ...defaultChildrenMixin,
+  ...defaultChildrenMixin,
   ...defaultCornerMixin,
   type: 'BOOLEAN_OPERATION',
   booleanOperation: 'UNION',

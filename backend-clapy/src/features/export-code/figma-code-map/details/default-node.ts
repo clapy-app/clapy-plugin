@@ -9,6 +9,7 @@ import {
 import {
   ChildrenMixin2,
   ComponentNode2,
+  FrameNode2,
   InstanceNode2,
   isChildrenMixin,
   isInstanceFeatureDetection,
@@ -16,7 +17,7 @@ import {
 } from '../../create-ts-compiler/canvas-utils';
 import { warnNode } from './utils-and-reset';
 
-export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNodeNoMethod>[]): FrameNodeNoMethod {
+export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNode2>[]): FrameNodeNoMethod {
   return Object.assign({ ...nodeDefaults.FRAME, name }, ...nodeOverrides);
 }
 
@@ -108,7 +109,7 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
 /**
  * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
  */
-function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
+export function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
   if (!isChildrenMixin(nodeOfComp)) return undefined;
   const mapper: Dict<number> = {};
   let compStartIndex = 0;
@@ -148,14 +149,15 @@ function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: Scene
     }
     // If still no match, it's a bug. We fallback to the first child of the list, but may be wrong if the component has hidden elements.
     if (matchingIndex === -1) {
-      warnNode(
-        instance as unknown as SceneNode2,
-        'No match found for child at index',
-        i,
-        'with the corresponding component',
-        nodeOfComp,
-        '- falling back to the next component child.',
-      );
+      // TODO improve
+      // warnNode(
+      //   instance as unknown as SceneNode2,
+      //   'No match found for child at index',
+      //   i,
+      //   'with the corresponding component',
+      //   nodeOfComp,
+      //   '- falling back to the next component child.',
+      // );
       matchingIndex = compStartIndex;
     }
 

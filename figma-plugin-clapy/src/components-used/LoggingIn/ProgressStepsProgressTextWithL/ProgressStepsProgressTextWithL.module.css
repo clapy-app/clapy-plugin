@@ -1,0 +1,14 @@
+.root {
+  width: 340px;
+  gap: 16px;
+}
+._StepBase {
+  flex: 1;
+  align-self: stretch;
+  overflow: visible;
+}
+._StepBase2 {
+  flex: 1;
+  align-self: stretch;
+  overflow: visible;
+}

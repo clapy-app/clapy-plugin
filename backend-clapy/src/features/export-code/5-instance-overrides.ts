@@ -5,21 +5,27 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
 import { InstanceContext, JsxOneOrMore } from './code.model';
+import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
+  isBlendMixin,
   isBlockNode,
   isChildrenMixin,
   isFlexNode,
+  isFrame,
   isGroup,
   isText,
   isValidNode,
   isVector,
+  Masker,
   SceneNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { stylesToList } from './css-gen/css-type-utils';
+import { instanceToCompIndexRemapper } from './figma-code-map/details/default-node';
+import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import { addCssRule, genClassName, removeCssRule } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 
@@ -123,6 +129,40 @@ function recurseOnChildren(
   styles: Dict<DeclarationPlain>,
   passParentToChildContext?: boolean,
 ) {
+  let masker: Masker | undefined = undefined;
+  for (const child of node.children) {
+    if (isBlendMixin(child) && child.isMask) {
+      child.skip = true;
+      masker = undefined; // In case we ignore the mask because of an error, don't mask target elements (vs wrong mask)
+      if (!isVector(child)) {
+        warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
+        continue;
+      }
+      let svgContent = readSvg(child);
+      if (!svgContent) {
+        warnNode(child, 'BUG Mask SVG has no content, skipping.');
+        continue;
+      }
+      const extension = 'svg';
+      const assetCssUrl = writeAsset(context, node, extension, svgContent);
+
+      masker = {
+        width: child.width,
+        height: child.height,
+        // TODO Instead of Figma raw x/y, we may need to use the calculated top/left from flex.ts.
+        // Test with borders, padding, scale mode for left in %...
+        x: child.x,
+        y: child.y,
+        url: assetCssUrl,
+      };
+    } else if (isFrame(child) && child.clipsContent) {
+      // frames reset the masking. The frame and next elements are not masked.
+      masker = undefined;
+    } else if (masker) {
+      // Extend the node interface to add the mask info to process it with other properties
+      child.maskedBy = masker;
+    }
+  }
   // Rare case: masks change on the instance, e.g. because a frame clipsContent changes
   // (if no clipsContent, it doesn't ends the list of masked nodes).
   // For that case, we would need to recalculate maskedBy.
@@ -143,6 +183,11 @@ function recurseOnChildren(
     throw new Error('BUG Instance node has children, but the corresponding component node does not.');
   }
 
+  const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
+  if (!instanceToCompIndexMap) {
+    warnNode(node, 'BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
+    throw new Error('BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
+  }
   for (let i = 0; i < node.children.length; i++) {
     const child = node.children[i];
     if (child.skip) {
@@ -158,7 +203,7 @@ function recurseOnChildren(
       componentContext,
       instanceClasses,
       instanceAttributes,
-      nodeOfComp: nodeOfComp.children[i],
+      nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]],
     };
     genInstanceOverrides(contextForChildren, child);
   }

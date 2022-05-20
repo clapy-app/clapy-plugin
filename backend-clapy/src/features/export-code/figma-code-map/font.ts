@@ -194,12 +194,14 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/zodiak/zodiak.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/satoshi/satoshi.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/general-sans/general-sans.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-a-light.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-b-light.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-c-light.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-a-dark.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-b-dark.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@latest/output/brand-c-dark.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Darkmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Lightmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Darkmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Lightmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Darkmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Lightmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Darkmode.css" />
+  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Lightmode.css" />
 </head>`,
     );
   }
