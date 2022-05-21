@@ -13,6 +13,7 @@ import { useSelector } from 'react-redux';
 
 import { ExportCode } from '../2-export-code/old/4-ExportCode';
 import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
+import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiGet } from '../../common/http.utils';
@@ -27,7 +28,6 @@ import { env } from '../../environment/env';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
-import { track } from './detail/analytics';
 import { ErrorComp } from './detail/ErrorComp';
 import { renderComponent } from './detail/renderComponent';
 import { setSelection } from './import-slice';

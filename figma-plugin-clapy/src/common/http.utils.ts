@@ -1,10 +1,34 @@
 import { getTokens, refreshTokens } from '../core/auth/auth-service';
+import { env } from '../environment/env';
 import {
   apiGetUnauthenticated,
   apiPostUnauthenticated,
   ApiRequestConfig,
   ApiResponse,
+  httpGetUnauthenticated,
 } from './unauthenticated-http.utils';
+
+const hasuraUri = `${env.hasuraHttp}/v1/graphql`;
+
+export async function hasuraFetch(query: string) {
+  return fetch(hasuraUri, {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+  });
+  // query:
+  // `
+  //   query samplePokeAPIquery {
+  //     gen3_species: pokemon_v2_pokemonspecies(limit: 9, order_by: {id: asc}) {
+  //         name
+  //         id
+  //     }
+  // }
+  // `
+}
+
+export async function httpGet<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+  return withAuthRetry(async () => httpGetUnauthenticated(url, await addAuthHeader(config)));
+}
 
 export async function apiGet<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
   return withAuthRetry(async () => apiGetUnauthenticated(url, await addAuthHeader(config)));

@@ -1,12 +1,15 @@
-import { FC, memo, useEffect, useState } from 'react';
+import { FC, memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { apiGet, apiPost } from '../../common/http.utils';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
-import { selectSignedIn } from '../../core/auth/auth-slice';
+import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
 import { CodeToFigma } from '../CodeToFigma/CodeToFigma';
 import { FigmaToCodeHome } from '../FigmaToCodeHome/FigmaToCodeHome';
+import { Loading } from '../Loading/Loading';
 import { LoginHome } from '../LoginHome/LoginHome';
+import loginHomeClasses from '../LoginHome/LoginHome.module.css';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
 import classes from './Layout.module.css';
@@ -18,9 +21,18 @@ const sendToApi = true;
 
 export type MyStates = 'loading' | 'noselection' | 'selection' | 'generated';
 
+interface UserMetadata {
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  jobTitle: string;
+  techTeamSize: string;
+}
+
 export const Layout: FC = memo(function Layout() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
+  const authLoading = useSelector(selectAuthLoading);
   const isSignedIn = useSelector(selectSignedIn);
 
   // Show selection
@@ -34,10 +46,35 @@ export const Layout: FC = memo(function Layout() {
     return dispose;
   }, []);
 
+  const updateMetadata = useCallback(() => {
+    (async () => {
+      // TODO in auth, after loading the token, call the API to fetch user metadata.
+      // Update the redux state with it, and add a selector here to read them.
+      // authLoading should not be false before metadata are available.
+      // If at least 1 missing metadata, route to the form asking to provide the data.
+      // Prefill with the data available, etc.
+      const payload: UserMetadata = {
+        firstName: 'Antoine2',
+        lastName: 'ORY-LAMBALLE2',
+        companyName: 'Clapy',
+        jobTitle: 'Tech co-founder',
+        techTeamSize: '1_10',
+      };
+      await apiPost('user/update-metadata', payload, { noLogout: true });
+      console.log((await apiGet<UserMetadata>('user', { noLogout: true })).data);
+    })();
+  }, []);
+
   return (
     <div className={classes.root}>
-      {!isSignedIn && <LoginHome />}
-      {isSignedIn && (
+      {/* <Button onClick={updateMetadata}>Update metadata</Button> */}
+      {authLoading && (
+        <div className={loginHomeClasses.content}>
+          <Loading />
+        </div>
+      )}
+      {!authLoading && !isSignedIn && <LoginHome />}
+      {!authLoading && isSignedIn && (
         <>
           <Header activeTab={activeTab} selectTab={setActiveTab} />
           <div className={classes.content}>

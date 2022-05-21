@@ -10,6 +10,7 @@ export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;
   noRetry?: boolean;
   isAppApi?: boolean;
+  noLogout?: boolean;
 }
 
 export interface ApiResponse<T>
@@ -142,7 +143,7 @@ async function httpReqUnauthenticated<T>(
   config: ApiRequestConfig | undefined,
   sendRequest: (url: string, config: RequestInit) => Promise<Response>,
 ): Promise<ApiResponse<T>> {
-  const { noRetry, query, isAppApi, ...fetchConfig } = config || {};
+  const { noRetry, query, isAppApi, noLogout, ...fetchConfig } = config || {};
   url = mkUrl(url, query);
   let resp: ApiResponse<T> | undefined;
   try {
@@ -178,7 +179,9 @@ async function httpReqUnauthenticated<T>(
     const data2: any = data;
     if (status === 403 || data2?.error?.error === 'invalid_grant') {
       console.warn('Logout because getting 403 on request. Not authorized, not an authentication issue.');
-      logout(true);
+      if (!noLogout) {
+        logout(true);
+      }
     }
     throw Object.assign(
       new Error(data2?.message || (typeof data2?.error === 'string' && data2.error) || '[http utils] Failed request'),

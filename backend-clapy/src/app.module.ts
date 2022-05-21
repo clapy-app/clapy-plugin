@@ -12,6 +12,7 @@ import { LoginController } from './auth/login.controller';
 import { env } from './env-and-config/env';
 import { CodeController } from './features/export-code/1-code-controller';
 import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller';
+import { UserController } from './features/user/user.controller';
 
 @Module({
   imports: [
@@ -32,7 +33,14 @@ import { SbSerializeController } from './features/sb-serialize-preview/sb-serial
     }),
     TypeOrmModule.forFeature([LoginTokensEntity]),
   ],
-  controllers: [AppController, LoginController, LoginPrivateController, SbSerializeController, CodeController],
+  controllers: [
+    AppController,
+    LoginController,
+    LoginPrivateController,
+    UserController,
+    SbSerializeController,
+    CodeController,
+  ],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

@@ -1,6 +1,7 @@
 import { FC, memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
 import { toastError, useCallbackAsync2 } from '../../common/front-utils';
 import { getDuration } from '../../common/general-utils';
@@ -9,7 +10,6 @@ import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb-serialize.model';
 import { selectIsAlphaDTCUser } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
-import { track } from '../../pages/1-import-sb/detail/analytics';
 import { uploadAssetFromUintArrayRaw } from '../../pages/2-export-code/cloudinary';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { Button } from './Button/Button';

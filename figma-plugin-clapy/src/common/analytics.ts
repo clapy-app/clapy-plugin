@@ -1,9 +1,9 @@
 // import { gql } from '@apollo/client';
-import { Clapy_Analytics } from '../../../../generated/schema';
-import { handleError } from '../../../common/error-utils';
-import { fetchPlugin } from '../../../common/plugin-utils';
-import { _accessTokenDecoded } from '../../../core/auth/auth-service';
-import { env } from '../../../environment/env';
+import { Clapy_Analytics } from '../../generated/schema';
+import { _accessTokenDecoded } from '../core/auth/auth-service';
+import { env } from '../environment/env';
+import { handleError } from './error-utils';
+import { fetchPlugin } from './plugin-utils';
 
 // export const PUSH_EVENT = gql`
 //   mutation ($object: clapy_analytics_insert_input!) {
