@@ -25,9 +25,9 @@
   flex-direction: column;
   gap: 8px;
 }
-.helloFirstname {
+.welcomeToClapy {
   color: #000;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 126.4999%;
   font-weight: 600;
   font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -37,7 +37,7 @@
   justify-content: center;
   align-items: flex-end;
 }
-.letSSetUpYourClapyAccount {
+.letSSetUpYourAccount {
   color: #000;
   font-size: 16px;
   font-family: Nunito Sans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -51,15 +51,16 @@
   align-items: flex-start;
   gap: 20px;
 }
-.frame94 {
-  align-self: stretch;
+.frame91 {
   flex-direction: column;
 }
 .frame89 {
-  align-self: stretch;
-  flex-direction: column;
+  width: 340px;
+  align-self: flex-start;
+  align-items: flex-start;
+  gap: 16px;
 }
-.frame95 {
+.frame94 {
   align-self: stretch;
   flex-direction: column;
 }

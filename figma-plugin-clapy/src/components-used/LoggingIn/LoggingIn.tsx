@@ -5,6 +5,7 @@ import { Footer } from './Footer/Footer';
 import { InputDropdown2 } from './InputDropdown2/InputDropdown2';
 import { InputDropdown } from './InputDropdown/InputDropdown';
 import { InputField2 } from './InputField2/InputField2';
+import { InputField3 } from './InputField3/InputField3';
 import { InputField } from './InputField/InputField';
 import classes from './LoggingIn.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
@@ -15,12 +16,12 @@ interface Props {
     container?: string;
     frame99?: string;
     headline?: string;
-    helloFirstname?: string;
-    letSSetUpYourClapyAccount?: string;
+    welcomeToClapy?: string;
+    letSSetUpYourAccount?: string;
     form?: string;
-    frame94?: string;
+    frame91?: string;
     frame89?: string;
-    frame95?: string;
+    frame94?: string;
     frame892?: string;
     frame98?: string;
     submitButton?: string;
@@ -33,22 +34,21 @@ export const LoggingIn: FC<Props> = memo(function LoggingIn(props = {}) {
         <div className={`${classes.frame99} ${props.classes?.frame99 || ''}`}>
           <ProgressStepsProgressTextWithL />
           <div className={`${classes.headline} ${props.classes?.headline || ''}`}>
-            <div className={`${classes.helloFirstname} ${props.classes?.helloFirstname || ''}`}>
-              Hello &#123;firstname&#125;!
-            </div>
-            <div className={`${classes.letSSetUpYourClapyAccount} ${props.classes?.letSSetUpYourClapyAccount || ''}`}>
-              Let’s set up your Clapy account
+            <div className={`${classes.welcomeToClapy} ${props.classes?.welcomeToClapy || ''}`}>Welcome to Clapy!</div>
+            <div className={`${classes.letSSetUpYourAccount} ${props.classes?.letSSetUpYourAccount || ''}`}>
+              Let’s set up your account
             </div>
           </div>
           <div className={`${classes.form} ${props.classes?.form || ''}`}>
-            <div className={`${classes.frame94} ${props.classes?.frame94 || ''}`}>
+            <div className={`${classes.frame91} ${props.classes?.frame91 || ''}`}>
               <div className={`${classes.frame89} ${props.classes?.frame89 || ''}`}>
                 <InputField />
+                <InputField2 />
               </div>
             </div>
-            <div className={`${classes.frame95} ${props.classes?.frame95 || ''}`}>
+            <div className={`${classes.frame94} ${props.classes?.frame94 || ''}`}>
               <div className={`${classes.frame892} ${props.classes?.frame892 || ''}`}>
-                <InputField2 />
+                <InputField3 />
               </div>
             </div>
             <InputDropdown />

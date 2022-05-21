@@ -64,7 +64,7 @@ function login(username, password, callback) {
       if (resp.statusCode !== 200) {
         return callback(
           new Error(
-            `Status is not 200: ${
+            `Status is ${resp.statusCode}, not 200: ${
               (err === null || err === void 0 ? void 0 : err.message) ||
               (err === null || err === void 0 ? void 0 : err.stack) ||
               err

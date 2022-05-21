@@ -17,7 +17,7 @@ export const _InputFieldBase2: FC<Props> = memo(function _InputFieldBase2(props 
       <div className={`${classes.inputWithLabel} ${props.classes?.inputWithLabel || ''}`}>
         <div className={`${classes.input} ${props.classes?.input || ''}`}>
           <div className={`${classes.content} ${props.classes?.content || ''}`}>
-            <div className={`${classes.text} ${props.classes?.text || ''}`}>Company name</div>
+            <div className={`${classes.text} ${props.classes?.text || ''}`}>Last name*</div>
           </div>
         </div>
       </div>

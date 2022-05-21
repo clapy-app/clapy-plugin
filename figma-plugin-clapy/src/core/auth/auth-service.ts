@@ -5,8 +5,8 @@ import { openWindowStep1, openWindowStep2, toastError } from '../../common/front
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
-import { dispatchOther } from '../../core/redux/redux.utils';
 import { env, isFigmaPlugin } from '../../environment/env';
+import { dispatchOther } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
 

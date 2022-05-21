@@ -1,8 +1,8 @@
 import { FC, memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
-import { login, signup } from '../../features/auth/auth-service';
-import { selectAuthLoading } from '../../features/auth/auth-slice';
+import { login, signup } from '../../core/auth/auth-service';
+import { selectAuthLoading } from '../../core/auth/auth-slice';
 import { Button } from '../FigmaToCodeHome/Button/Button';
 import { ClapyLogo2Icon } from './ClapyLogo2Icon';
 import { Decoration } from './Decoration/Decoration';

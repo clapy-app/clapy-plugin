@@ -2,8 +2,8 @@ import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
-import { selectSignedIn } from '../../features/auth/auth-slice';
 import { CodeToFigma } from '../CodeToFigma/CodeToFigma';
 import { FigmaToCodeHome } from '../FigmaToCodeHome/FigmaToCodeHome';
 import { LoginHome } from '../LoginHome/LoginHome';

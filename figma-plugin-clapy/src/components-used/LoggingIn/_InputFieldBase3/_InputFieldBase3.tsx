@@ -1,6 +1,6 @@
 import { FC, memo } from 'react';
 
-import classes from './_InputFieldBase.module.css';
+import classes from './_InputFieldBase3.module.css';
 
 interface Props {
   className?: string;
@@ -11,13 +11,13 @@ interface Props {
     text?: string;
   };
 }
-export const _InputFieldBase: FC<Props> = memo(function _InputFieldBase(props = {}) {
+export const _InputFieldBase3: FC<Props> = memo(function _InputFieldBase3(props = {}) {
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.inputWithLabel} ${props.classes?.inputWithLabel || ''}`}>
         <div className={`${classes.input} ${props.classes?.input || ''}`}>
           <div className={`${classes.content} ${props.classes?.content || ''}`}>
-            <div className={`${classes.text} ${props.classes?.text || ''}`}>First name*</div>
+            <div className={`${classes.text} ${props.classes?.text || ''}`}>Company name</div>
           </div>
         </div>
       </div>

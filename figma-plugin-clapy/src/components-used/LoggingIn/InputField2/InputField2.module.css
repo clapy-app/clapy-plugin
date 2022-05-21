@@ -1,4 +1,4 @@
 .root {
-  align-self: stretch;
+  flex: 1;
   flex-direction: column;
 }

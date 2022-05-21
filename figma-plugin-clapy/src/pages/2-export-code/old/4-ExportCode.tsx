@@ -9,8 +9,8 @@ import { apiPost } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env';
-import { selectIsAlphaDTCUser } from '../../auth/auth-slice';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary';
 
 export const ExportCode: FC = memo(function ExportCode() {

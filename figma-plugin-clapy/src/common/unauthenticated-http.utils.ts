@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { logout } from '../core/auth/auth-service';
+import { mkUrl } from '../core/auth/auth-service.utils';
 import { env } from '../environment/env';
-import { logout } from '../features/auth/auth-service';
-import { mkUrl } from '../features/auth/auth-service.utils';
 import { wait } from './general-utils';
 import { Dict } from './sb-serialize.model';
 

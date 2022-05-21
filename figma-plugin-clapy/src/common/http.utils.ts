@@ -1,4 +1,4 @@
-import { getTokens, refreshTokens } from '../features/auth/auth-service';
+import { getTokens, refreshTokens } from '../core/auth/auth-service';
 import {
   apiGetUnauthenticated,
   apiPostUnauthenticated,

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { Nil } from '../../common/app-models';
-import { RootState } from '../../core/redux/store';
+import { RootState } from '../redux/store';
 import { AccessTokenDecoded, roleAlphaDTC } from './auth-service';
 
 export interface AuthState {

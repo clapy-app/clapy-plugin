@@ -20,10 +20,10 @@ import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../commo
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components-used/Button';
+import { getTokens, login } from '../../core/auth/auth-service';
+import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
-import { getTokens, login } from '../auth/auth-service';
-import { selectAuthLoading, selectSignedIn } from '../auth/auth-slice';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
