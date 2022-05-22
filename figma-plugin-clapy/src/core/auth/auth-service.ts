@@ -16,12 +16,12 @@ const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 const redirectUri = `${apiBaseUrl}/login/callback?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 const loggedOutCallbackUrl = `${apiBaseUrl}/logged-out?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 
-let _accessToken: string | null = null;
-/**
- * Don't use unless you know what you are doing. Prefer getToken() instead.
- */
+/** Don't use unless you know what you are doing. Prefer getToken() instead. */
+export let _accessToken: string | null = null;
+/** Don't use unless you know what you are doing. Prefer getToken() instead. */
 export let _accessTokenDecoded: AccessTokenDecoded | null = null;
-let _tokenType: string | null = null;
+/** Don't use unless you know what you are doing. Prefer getToken() instead. */
+export let _tokenType: string | null = null;
 
 // Exported methods
 

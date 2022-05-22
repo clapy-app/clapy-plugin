@@ -11,6 +11,8 @@ export interface ApiRequestConfig extends RequestInit {
   noRetry?: boolean;
   isAppApi?: boolean;
   noLogout?: boolean;
+  /** Warning: don't use this option unless you know what you are doing. */
+  _readCachedTokenNoFetch?: boolean;
 }
 
 export interface ApiResponse<T>

@@ -13,7 +13,7 @@ export interface UserMetadata {
 export async function findUserMetadata() {
   let metadata = readSelectorOnce(selectUserMetadata);
   if (!metadata) {
-    metadata = (await apiGet<UserMetadata>('user' /* , { noLogout: true } */)).data;
+    metadata = (await apiGet<UserMetadata>('user', { _readCachedTokenNoFetch: true })).data;
     dispatchOther(setMetadata(metadata));
   }
   return metadata;

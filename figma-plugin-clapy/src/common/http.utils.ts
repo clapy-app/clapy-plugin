@@ -1,4 +1,4 @@
-import { getTokens, refreshTokens } from '../core/auth/auth-service';
+import { _accessToken, _tokenType, getTokens, refreshTokens } from '../core/auth/auth-service';
 import { env } from '../environment/env';
 import {
   apiGetUnauthenticated,
@@ -57,8 +57,10 @@ async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Pro
 }
 
 async function addAuthHeader(config: ApiRequestConfig | undefined): Promise<ApiRequestConfig> {
-  const { headers, ...otherConf } = config || ({} as ApiRequestConfig);
-  const { accessToken, tokenType } = await getTokens();
+  const { headers, _readCachedTokenNoFetch, ...otherConf } = config || ({} as ApiRequestConfig);
+  const { accessToken, tokenType } = _readCachedTokenNoFetch
+    ? { accessToken: _accessToken, tokenType: _tokenType }
+    : await getTokens();
   return {
     ...otherConf,
     headers: {
