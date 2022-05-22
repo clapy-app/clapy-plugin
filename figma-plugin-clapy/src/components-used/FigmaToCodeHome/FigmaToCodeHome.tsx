@@ -11,8 +11,8 @@ import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb
 import { selectIsAlphaDTCUser } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
 import { uploadAssetFromUintArrayRaw } from '../../pages/2-export-code/cloudinary';
+import { Button } from '../Button/Button';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
-import { Button } from './Button/Button';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';

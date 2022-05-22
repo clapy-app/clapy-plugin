@@ -8,7 +8,7 @@ import { useCallbackAsync2 } from '../../../common/front-utils';
 import { apiPost } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { CSBResponse, ExportImageMap2 } from '../../../common/sb-serialize.model';
-import { Button } from '../../../components-used/Button';
+import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary';

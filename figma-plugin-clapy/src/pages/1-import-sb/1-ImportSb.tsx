@@ -20,7 +20,7 @@ import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
-import { Button } from '../../components-used/Button';
+import { Button } from '../../components-used/Button/Button';
 import { getTokens, login } from '../../core/auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks';

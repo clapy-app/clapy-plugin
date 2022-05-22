@@ -2,7 +2,6 @@
   height: 600px;
   flex: 1;
   align-self: stretch;
-  flex-direction: column;
   background-color: #fff;
   overflow-y: auto;
   overflow-x: hidden;
@@ -10,19 +9,16 @@
 .container {
   flex: 1;
   align-self: stretch;
-  flex-direction: column;
   align-items: center;
   padding: 48px 32px;
 }
 .frame99 {
   flex: 1;
-  flex-direction: column;
   place-content: space-between;
   align-items: flex-start;
 }
 .headline {
-  width: 340px;
-  flex-direction: column;
+  align-self: stretch;
   gap: 8px;
 }
 .welcomeToClapy {
@@ -47,31 +43,26 @@
   justify-content: center;
 }
 .form {
-  flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-}
-.frame91 {
-  flex-direction: column;
+  align-self: stretch;
 }
 .frame89 {
-  width: 340px;
-  align-self: flex-start;
+  flex-direction: row;
+  align-self: stretch;
   align-items: flex-start;
   gap: 16px;
 }
 .frame94 {
   align-self: stretch;
-  flex-direction: column;
 }
 .frame892 {
   align-self: stretch;
-  flex-direction: column;
 }
 .frame98 {
-  width: 340px;
+  align-self: stretch;
 }
 .submitButton {
   flex: 1;
-  align-self: flex-start;
+  align-self: stretch;
 }

@@ -1,15 +1,11 @@
 .root {
-  flex-direction: column;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
+  align-self: stretch;
 }
 .inputWithLabel {
   align-self: stretch;
-  flex-direction: column;
 }
 .input {
+  flex-direction: row;
   align-self: stretch;
   align-items: center;
   gap: 8px;

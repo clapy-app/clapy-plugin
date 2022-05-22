@@ -1,7 +1,5 @@
 import { FC, memo } from 'react';
 
-import { _stepBaseIcon } from './_stepBaseIcon';
-import { _stepBaseIcon2 } from './_stepBaseIcon2';
 import classes from './ProgressStepsProgressTextWithL.module.css';
 
 interface Props {
@@ -14,8 +12,8 @@ interface Props {
 export const ProgressStepsProgressTextWithL: FC<Props> = memo(function ProgressStepsProgressTextWithL(props = {}) {
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <_stepBaseIcon className={`${classes._StepBase} ${props.classes?._StepBase || ''}`} />
-      <_stepBaseIcon2 className={`${classes._StepBase2} ${props.classes?._StepBase2 || ''}`} />
+      <div className={`${classes._StepBase} ${classes._StepBase1}`}></div>
+      <div className={`${classes._StepBase} ${classes._StepBase2}`}></div>
     </div>
   );
 });

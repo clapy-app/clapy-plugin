@@ -1,10 +1,8 @@
 .root {
   align-self: stretch;
-  flex-direction: column;
 }
 .inputWithLabel {
   align-self: stretch;
-  flex-direction: column;
 }
 .input {
   align-self: stretch;

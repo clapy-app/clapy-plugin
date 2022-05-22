@@ -1,8 +1,7 @@
 import { FC, memo } from 'react';
 
-import { Button } from './Button/Button';
+import { Button } from '../../../components-used/Button/Button';
 import classes from './FillUserProfile.module.css';
-import { Footer } from './Footer/Footer';
 import { InputDropdown2 } from './InputDropdown2/InputDropdown2';
 import { InputDropdown } from './InputDropdown/InputDropdown';
 import { InputField2 } from './InputField2/InputField2';
@@ -19,7 +18,6 @@ interface Props {
     welcomeToClapy?: string;
     letSSetUpYourAccount?: string;
     form?: string;
-    frame91?: string;
     frame89?: string;
     frame94?: string;
     frame892?: string;
@@ -40,11 +38,9 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
             </div>
           </div>
           <div className={`${classes.form} ${props.classes?.form || ''}`}>
-            <div className={`${classes.frame91} ${props.classes?.frame91 || ''}`}>
-              <div className={`${classes.frame89} ${props.classes?.frame89 || ''}`}>
-                <InputField />
-                <InputField2 />
-              </div>
+            <div className={`${classes.frame89} ${props.classes?.frame89 || ''}`}>
+              <InputField />
+              <InputField2 />
             </div>
             <div className={`${classes.frame94} ${props.classes?.frame94 || ''}`}>
               <div className={`${classes.frame892} ${props.classes?.frame892 || ''}`}>
@@ -56,12 +52,11 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
           </div>
           <div className={`${classes.frame98} ${props.classes?.frame98 || ''}`}>
             <div className={`${classes.submitButton} ${props.classes?.submitButton || ''}`}>
-              <Button />
+              <Button size='medium'>Next</Button>
             </div>
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 });
