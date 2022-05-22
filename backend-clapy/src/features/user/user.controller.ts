@@ -58,12 +58,21 @@ export class UserController {
   @Post('update-usage')
   async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() request: Request) {
     perfReset('Starting...');
-    const { components, designSystem, landingPages, other } = userMetaUsage;
-    if (!components && !designSystem && !landingPages && !other) {
+    const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage;
+    if (!components && !designSystem && !landingPages && !(other && otherDetail)) {
       throw new BadRequestException(
         `Cannot update user usage, at least one usage is required: components, designSystem, landingPages or other.`,
       );
     }
+
+    // Delete fields that are false
+    for (const key of Object.keys(userMetaUsage)) {
+      const k = key as keyof UserMetaUsage;
+      if (!userMetaUsage[k]) {
+        delete userMetaUsage[k];
+      }
+    }
+
     const userId = (request as any).user.sub;
     await updateUserMetadata(userId, { usage: userMetaUsage });
     perfMeasure();
@@ -89,4 +98,5 @@ interface UserMetaUsage {
   designSystem?: boolean;
   landingPages?: boolean;
   other?: boolean;
+  otherDetail?: string;
 }

@@ -68,6 +68,9 @@
   flex-shrink: 1;
   align-self: stretch;
 }
+.hide {
+  visibility: hidden;
+}
 .selectionButtons.selectionButtons {
   align-self: stretch;
   justify-content: flex-start;

@@ -18,6 +18,7 @@ export interface UserMetaUsage {
   designSystem?: boolean;
   landingPages?: boolean;
   other?: boolean;
+  otherDetail?: string;
 }
 
 export async function findUserMetadata() {
@@ -38,6 +39,9 @@ export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispa
 
 export async function updateUserMetaUsage(metaUsage: UserMetaUsage, dispatch: Dispatch) {
   metaUsage = { ...metaUsage };
+  if (!metaUsage.other && metaUsage.otherDetail) {
+    delete metaUsage.otherDetail;
+  }
   const res = (await apiPost('user/update-usage', metaUsage)).data;
   dispatch(setMetaUsage(metaUsage));
   return res;
@@ -54,6 +58,6 @@ export function hasMissingMetaProfile(
 }
 
 export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
-  const { components, designSystem, landingPages, other } = userMetaUsage || {};
-  return !components && !designSystem && !landingPages && !other;
+  const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage || {};
+  return !components && !designSystem && !landingPages && !(other && otherDetail);
 }

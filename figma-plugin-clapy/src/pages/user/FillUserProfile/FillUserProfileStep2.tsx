@@ -1,7 +1,7 @@
 import { ArrowForward } from '@mui/icons-material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, MenuItem, SvgIcon } from '@mui/material';
-import { FC, memo, MouseEvent, useCallback, useState } from 'react';
+import { Button, MenuItem, SvgIcon, TextField } from '@mui/material';
+import { ChangeEvent, FC, memo, MouseEvent, useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../../common/front-utils';
@@ -41,6 +41,8 @@ export const FillUserProfileStep2: FC<Props> = memo(function FillUserProfile(pro
   const [designSystem, setDesignSystem] = useState(userMetaUsage.designSystem);
   const [landingPages, setLandingPages] = useState(userMetaUsage.landingPages);
   const [other, setOther] = useState(userMetaUsage.other);
+  const [otherDetail, setOtherDetail] = useState(userMetaUsage.otherDetail);
+  const otherDetailDefaultRef = useRef(userMetaUsage.otherDetail || '');
   // Follow-up if the form is complete (i.e. at least one usage provided)
   const [atLeastOneFilled, setAtLeastOneFilled] = useState(!hasMissingMetaUsage);
 
@@ -51,12 +53,12 @@ export const FillUserProfileStep2: FC<Props> = memo(function FillUserProfile(pro
     async (e: MouseEvent<HTMLButtonElement>) => {
       try {
         setIsLoading(true);
-        await updateUserMetaUsage({ components, designSystem, landingPages, other }, dispatch);
+        await updateUserMetaUsage({ components, designSystem, landingPages, other, otherDetail }, dispatch);
       } finally {
         setIsLoading(false);
       }
     },
-    [components, designSystem, dispatch, landingPages, other],
+    [components, designSystem, dispatch, landingPages, other, otherDetail],
   );
 
   const handleChange = useCallback(
@@ -83,7 +85,15 @@ export const FillUserProfileStep2: FC<Props> = memo(function FillUserProfile(pro
         other2 = !other;
         setOther(other2);
       }
-      setAtLeastOneFilled(!!(components2 || designSystem2 || landingPages2 || other2));
+      setAtLeastOneFilled(!!(components2 || designSystem2 || landingPages2 || (other2 && otherDetail)));
+    },
+    [components, designSystem, landingPages, other, otherDetail],
+  );
+
+  const changeOtherDetail = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setOtherDetail(e.target.value);
+      setAtLeastOneFilled(!!(components || designSystem || landingPages || (other && e.target.value)));
     },
     [components, designSystem, landingPages, other],
   );
@@ -160,6 +170,15 @@ export const FillUserProfileStep2: FC<Props> = memo(function FillUserProfile(pro
             >
               Other reason
             </Button>
+            <TextField
+              className={`${classes.textField} ${other ? '' : classes.hide}`}
+              name='otherDetail'
+              label='Please detail'
+              variant='outlined'
+              size='small'
+              defaultValue={otherDetailDefaultRef.current}
+              onChange={changeOtherDetail}
+            />
           </div>
           <LoadingButton
             size='large'
