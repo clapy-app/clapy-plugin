@@ -21,7 +21,7 @@ export class UserController {
     perfReset('Starting...');
     const userId = (request as any).user.sub;
     if (!userId) throw new UnauthorizedException();
-    const res = (await auth0Management.getUser({ id: userId })).user_metadata;
+    const res = (await auth0Management.getUser({ id: userId })).user_metadata || {};
     perfMeasure();
     return res;
   }
