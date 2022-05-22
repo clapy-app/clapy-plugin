@@ -1,10 +1,10 @@
+import LoadingButton from '@mui/lab/LoadingButton';
 import { MenuItem, TextField } from '@mui/material';
 import { ChangeEvent, FC, memo, MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { Dict } from '../../../common/sb-serialize.model';
-import { Button } from '../../../components-used/Button/Button';
 import { hasMissingMetaProfile, updateUserMetadata, UserMetadata } from '../user-service';
 import { selectUserMetadata } from '../user-slice';
 import classes from './FillUserProfile.module.css';
@@ -190,9 +190,16 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
               {teamSizesTsx}
             </TextField>
           </div>
-          <Button size='medium' disabled={!allFilled || isLoading} loading={isLoading} onClick={submitMetadata}>
-            Next
-          </Button>
+          <LoadingButton
+            size='large'
+            variant='contained'
+            className={classes.submitButton}
+            disabled={!allFilled || isLoading}
+            loading={isLoading}
+            onClick={submitMetadata}
+          >
+            Start generating code
+          </LoadingButton>
         </div>
       </div>
     </div>

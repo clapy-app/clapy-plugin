@@ -22,7 +22,8 @@ body > :where(#react-page) * {
   border: none;
   text-decoration: none;
   min-width: 0;
-  font-family: Nunito Sans, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  /* "Nunito Sans" */
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 
 body button:not(:disabled) {

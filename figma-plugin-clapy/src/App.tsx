@@ -37,6 +37,7 @@ const theme = createTheme({
     },
   },
   typography: {
+    // "Nunito Sans"
     fontFamily:
       'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif',
   },
