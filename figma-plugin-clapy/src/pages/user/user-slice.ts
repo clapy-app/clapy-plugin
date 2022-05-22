@@ -17,6 +17,10 @@ export const userSlice = createSlice({
     setMetadata: (state, { payload }: PayloadAction<UserMetadata>) => {
       state.userMetadata = payload;
     },
+    setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
+      const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
+      state.userMetadata = { ...state.userMetadata, firstName, lastName, companyName, jobRole, techTeamSize };
+    },
     setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
       if (!state.userMetadata) state.userMetadata = {};
       state.userMetadata.usage = payload;
@@ -27,7 +31,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setMetadata, setMetaUsage, clearMetadata } = userSlice.actions;
+export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata } = userSlice.actions;
 
 /**
  * Not undefined, which assumes the value is read after the authentication initial loading is completed

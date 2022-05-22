@@ -2,7 +2,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 
 import { apiGet, apiPost } from '../../common/http.utils';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
-import { clearMetadata, selectUserMetadata, setMetadata, setMetaUsage } from './user-slice';
+import { clearMetadata, selectUserMetadata, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
 
 export interface UserMetadata {
   firstName?: string;
@@ -32,7 +32,7 @@ export async function findUserMetadata() {
 export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispatch) {
   metadata = { ...metadata };
   const res = (await apiPost('user/update-profile', metadata)).data;
-  dispatch(setMetadata(metadata));
+  dispatch(setMetaProfile(metadata));
   return res;
 }
 
