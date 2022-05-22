@@ -3,6 +3,7 @@ import { FC, memo } from 'react';
 import classes from './ProgressStepsProgressTextWithL.module.css';
 
 interface Props {
+  step2?: boolean;
   className?: string;
   classes?: {
     _StepBase?: string;
@@ -10,10 +11,11 @@ interface Props {
   };
 }
 export const ProgressStepsProgressTextWithL: FC<Props> = memo(function ProgressStepsProgressTextWithL(props = {}) {
+  const { step2 } = props;
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes._StepBase} ${classes._StepBase1}`}></div>
-      <div className={`${classes._StepBase} ${classes._StepBase2}`}></div>
+      <div className={`${classes._StepBase} ${step2 ? classes._StepBase1 : classes._StepBase2}`}></div>
     </div>
   );
 });

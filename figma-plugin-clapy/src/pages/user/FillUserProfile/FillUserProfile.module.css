@@ -62,11 +62,19 @@
   align-self: stretch;
 }
 .submitButton {
-  flex: 1;
   align-self: stretch;
-  flex-direction: column;
 }
 .textField {
   flex-shrink: 1;
   align-self: stretch;
+}
+.selectionButtons.selectionButtons {
+  align-self: stretch;
+  justify-content: flex-start;
+  font-size: 15px;
+  padding-left: 18px;
+  padding-right: 14px;
+}
+.buttonIcon.buttonIcon {
+  font-size: 20px;
 }

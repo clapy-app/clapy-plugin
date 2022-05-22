@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { RootState } from '../../core/redux/store';
-import { hasMissingMetadata, UserMetadata } from './user-service';
+import { hasMissingMetaProfile, hasMissingMetaUsage, UserMetadata, UserMetaUsage } from './user-service';
 
 export interface UserState {
   userMetadata?: UserMetadata;
@@ -17,13 +17,23 @@ export const userSlice = createSlice({
     setMetadata: (state, { payload }: PayloadAction<UserMetadata>) => {
       state.userMetadata = payload;
     },
+    setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
+      if (!state.userMetadata) state.userMetadata = {};
+      state.userMetadata.usage = payload;
+    },
     clearMetadata: state => {
       state.userMetadata = undefined;
     },
   },
 });
 
-export const { setMetadata, clearMetadata } = userSlice.actions;
+export const { setMetadata, setMetaUsage, clearMetadata } = userSlice.actions;
 
-export const selectUserMetadata = (state: RootState) => state.user.userMetadata;
-export const selectHasMissingMetadata = (state: RootState) => hasMissingMetadata(state.user.userMetadata);
+/**
+ * Not undefined, which assumes the value is read after the authentication initial loading is completed
+ * (selectAuthLoading === false)
+ */
+export const selectUserMetadata = (state: RootState) => state.user.userMetadata!;
+export const selectUserMetaUsage = (state: RootState) => state.user.userMetadata?.usage;
+export const selectHasMissingMetaProfile = (state: RootState) => hasMissingMetaProfile(state.user.userMetadata);
+export const selectHasMissingMetaUsage = (state: RootState) => hasMissingMetaUsage(state.user.userMetadata?.usage);

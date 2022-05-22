@@ -2,14 +2,22 @@ import { Dispatch } from '@reduxjs/toolkit';
 
 import { apiGet, apiPost } from '../../common/http.utils';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
-import { clearMetadata, selectUserMetadata, setMetadata } from './user-slice';
+import { clearMetadata, selectUserMetadata, setMetadata, setMetaUsage } from './user-slice';
 
 export interface UserMetadata {
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  jobRole: string;
-  techTeamSize: string;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  jobRole?: string;
+  techTeamSize?: string;
+  usage?: UserMetaUsage;
+}
+
+export interface UserMetaUsage {
+  components?: boolean;
+  designSystem?: boolean;
+  landingPages?: boolean;
+  other?: boolean;
 }
 
 export async function findUserMetadata() {
@@ -22,8 +30,16 @@ export async function findUserMetadata() {
 }
 
 export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispatch) {
-  const res = (await apiPost('user/update-metadata', metadata /* , { noLogout: true } */)).data;
-  dispatch(setMetadata({ ...metadata }));
+  metadata = { ...metadata };
+  const res = (await apiPost('user/update-profile', metadata)).data;
+  dispatch(setMetadata(metadata));
+  return res;
+}
+
+export async function updateUserMetaUsage(metaUsage: UserMetaUsage, dispatch: Dispatch) {
+  metaUsage = { ...metaUsage };
+  const res = (await apiPost('user/update-usage', metaUsage)).data;
+  dispatch(setMetaUsage(metaUsage));
   return res;
 }
 
@@ -31,6 +47,13 @@ export function clearLocalUserMetadata() {
   dispatchOther(clearMetadata());
 }
 
-export function hasMissingMetadata({ firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata) {
+export function hasMissingMetaProfile(
+  { firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata,
+) {
   return !firstName || !lastName || !companyName || !jobRole || !techTeamSize;
+}
+
+export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
+  const { components, designSystem, landingPages, other } = userMetaUsage || {};
+  return !components && !designSystem && !landingPages && !other;
 }

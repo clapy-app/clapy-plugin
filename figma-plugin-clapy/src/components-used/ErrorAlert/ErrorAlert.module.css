@@ -9,12 +9,14 @@
   pointer-events: auto;
   max-width: 100%;
   cursor: initial;
+  flex-direction: column;
 }
 .content {
   z-index: 0;
   align-self: stretch;
   align-items: flex-start;
   gap: 12px;
+  flex-direction: column;
 }
 .supportingText {
   color: #d92d20;

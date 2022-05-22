@@ -5,8 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { Dict } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button/Button';
-import { Loading } from '../../../components-used/Loading/Loading';
-import { hasMissingMetadata, updateUserMetadata, UserMetadata } from '../user-service';
+import { hasMissingMetaProfile, updateUserMetadata, UserMetadata } from '../user-service';
 import { selectUserMetadata } from '../user-slice';
 import classes from './FillUserProfile.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
@@ -20,10 +19,11 @@ const roles = {
 };
 
 const teamSizes = {
-  _1_side: 'Only me (side project)',
-  _1_solo: 'Only me (freelancer, solofounder)',
-  _2_10: '2 - 10 tech people',
-  _11_50: '11 - 50 tech people',
+  _1_side: 'Solopreneur / side project',
+  _1_solo: 'Freelancer',
+  _2_5: '2 - 5 tech people',
+  _6_15: '6 - 15 tech people',
+  _16_50: '16 - 50 tech people',
   _51_100: '51 - 100 tech people',
   _more_than_100: '> 100 tech people',
 };
@@ -49,7 +49,7 @@ interface Props {
 }
 
 function updateAllFilled(metadata: UserMetadata, allFilled: boolean, setAllFilled: (allFilled: boolean) => void) {
-  const allFilled2 = !hasMissingMetadata(metadata);
+  const allFilled2 = !hasMissingMetaProfile(metadata);
   if (allFilled2 !== allFilled) {
     setAllFilled(allFilled2);
   }
@@ -82,10 +82,15 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
   );
 
   useEffect(() => {
+    if (!userMetadata) {
+      console.log('BUG userMetadata in FillUserProfile#useEffect is falsy', userMetadata);
+      return;
+    }
     // Initialize when the value is available
-    if (!modelRef.current && userMetadata) {
-      modelRef.current = { ...userMetadata };
-      updateAllFilled(userMetadata, allFilled, setAllFilled);
+    if (!modelRef.current) {
+      const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
+      modelRef.current = { firstName, lastName, companyName, jobRole, techTeamSize };
+      updateAllFilled(modelRef.current, allFilled, setAllFilled);
     }
   }, [allFilled, userMetadata]);
 
@@ -108,8 +113,6 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
     },
     [allFilled],
   );
-
-  if (!userMetadata) return <Loading />;
 
   const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
 
@@ -187,13 +190,9 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
               {teamSizesTsx}
             </TextField>
           </div>
-          <div className={`${classes.frame98} ${props.classes?.frame98 || ''}`}>
-            <div className={`${classes.submitButton} ${props.classes?.submitButton || ''}`}>
-              <Button size='medium' disabled={!allFilled || isLoading} loading={isLoading} onClick={submitMetadata}>
-                Next
-              </Button>
-            </div>
-          </div>
+          <Button size='medium' disabled={!allFilled || isLoading} loading={isLoading} onClick={submitMetadata}>
+            Next
+          </Button>
         </div>
       </div>
     </div>

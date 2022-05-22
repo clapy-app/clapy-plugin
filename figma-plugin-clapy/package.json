@@ -43,6 +43,7 @@
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.8.0",
+    "@mui/lab": "^5.0.0-alpha.82",
     "@mui/material": "^5.8.0",
     "@reduxjs/toolkit": "^1.8.1",
     "@types/react-lottie": "^1.2.6",

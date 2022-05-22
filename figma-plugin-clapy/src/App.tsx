@@ -1,3 +1,4 @@
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { FC, memo, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,6 +10,61 @@ import { getDuration } from './common/general-utils';
 import { apiGet } from './common/http.utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { Layout } from './components-used/Layout/Layout';
+
+declare module '@mui/material/styles' {
+  interface Palette {
+    neutral: Palette['primary'];
+  }
+  interface PaletteOptions {
+    neutral: PaletteOptions['primary'];
+  }
+}
+
+// Update the Button's color prop options
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    neutral: true;
+  }
+}
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#155eef',
+    },
+    neutral: {
+      main: '#101828',
+    },
+  },
+  typography: {
+    fontFamily:
+      'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif',
+  },
+  components: {
+    MuiButton: {
+      defaultProps: {
+        disableRipple: true,
+      },
+      styleOverrides: {
+        root: ({ ownerState, theme }) => ({
+          textTransform: 'none',
+          fontSize: 16,
+          fontWeight: 500,
+          borderRadius: 8,
+          ...(ownerState.variant === 'outlined' &&
+            ownerState.color === 'neutral' && {
+              borderColor: '#d0d5dd',
+            }),
+          ...(ownerState.variant === 'outlined' &&
+            ownerState.color === 'primary' && {
+              borderColor: '#004eeb',
+              color: '#004eeb',
+            }),
+        }),
+      },
+    },
+  },
+});
 
 const openPluginTime = performance.now();
 
@@ -28,19 +84,21 @@ export const App: FC = memo(function App() {
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'
   // instead, but we would need to re-add animations & co to make it work.
   return (
-    <div className={classes.root}>
-      <Layout />
-      <ToastContainer
-        position='top-center'
-        autoClose={false}
-        hideProgressBar={true}
-        newestOnTop={true}
-        closeOnClick={false}
-        draggable={false}
-        className={classes.toasters}
-        toastClassName={alertClasses.root}
-      />
-    </div>
+    <ThemeProvider theme={theme}>
+      <div className={classes.root}>
+        <Layout />
+        <ToastContainer
+          position='top-center'
+          autoClose={false}
+          hideProgressBar={true}
+          newestOnTop={true}
+          closeOnClick={false}
+          draggable={false}
+          className={classes.toasters}
+          toastClassName={alertClasses.root}
+        />
+      </div>
+    </ThemeProvider>
   );
   // return (
   //   <div className={styles.container}>

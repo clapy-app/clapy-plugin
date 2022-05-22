@@ -26,13 +26,13 @@ export class UserController {
     return res;
   }
 
-  @Post('update-metadata')
-  async updateUserMetadata(@Body() userMetadata: UserMetadata, @Req() request: Request) {
+  @Post('update-profile')
+  async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
     const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
     if (!firstName || !lastName || !companyName || !jobRole || !techTeamSize) {
       throw new BadRequestException(
-        `Cannot update user data, missing fields: ${Object.entries({
+        `Cannot update user profile, missing fields: ${Object.entries({
           firstName,
           lastName,
           companyName,
@@ -45,25 +45,48 @@ export class UserController {
       );
     }
     const userId = (request as any).user.sub;
-    if (!userId) throw new UnauthorizedException();
-    await auth0Management.updateUserMetadata(
-      { id: userId },
-      {
-        firstName,
-        lastName,
-        companyName,
-        jobRole,
-        techTeamSize,
-      },
-    );
+    await updateUserMetadata(userId, {
+      firstName,
+      lastName,
+      companyName,
+      jobRole,
+      techTeamSize,
+    });
+    perfMeasure();
+  }
+
+  @Post('update-usage')
+  async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() request: Request) {
+    perfReset('Starting...');
+    const { components, designSystem, landingPages, other } = userMetaUsage;
+    if (!components && !designSystem && !landingPages && !other) {
+      throw new BadRequestException(
+        `Cannot update user usage, at least one usage is required: components, designSystem, landingPages or other.`,
+      );
+    }
+    const userId = (request as any).user.sub;
+    await updateUserMetadata(userId, { usage: userMetaUsage });
     perfMeasure();
   }
 }
 
+async function updateUserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
+  if (!userId) throw new UnauthorizedException();
+  await auth0Management.updateUserMetadata({ id: userId }, userMetadata);
+}
+
 interface UserMetadata {
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  jobRole: string;
-  techTeamSize: string;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  jobRole?: string;
+  techTeamSize?: string;
+  usage?: UserMetaUsage;
+}
+
+interface UserMetaUsage {
+  components?: boolean;
+  designSystem?: boolean;
+  landingPages?: boolean;
+  other?: boolean;
 }
