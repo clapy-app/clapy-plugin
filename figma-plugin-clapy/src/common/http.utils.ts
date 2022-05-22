@@ -1,10 +1,35 @@
-import { getTokens, refreshTokens } from '../features/auth/auth-service';
+import { _accessToken, _tokenType, getTokens, refreshTokens } from '../core/auth/auth-service';
+import { env } from '../environment/env';
 import {
   apiGetUnauthenticated,
   apiPostUnauthenticated,
   ApiRequestConfig,
   ApiResponse,
+  httpGetUnauthenticated,
 } from './unauthenticated-http.utils';
+
+const hasuraUri = `${env.hasuraHttp}/v1/graphql`;
+
+// src: https://thetombomb.com/posts/do-you-need-graphql-client
+export async function hasuraFetch(query: string) {
+  return fetch(hasuraUri, {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+  });
+  // query:
+  // `
+  //   query samplePokeAPIquery {
+  //     gen3_species: pokemon_v2_pokemonspecies(limit: 9, order_by: {id: asc}) {
+  //         name
+  //         id
+  //     }
+  // }
+  // `
+}
+
+export async function httpGet<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+  return withAuthRetry(async () => httpGetUnauthenticated(url, await addAuthHeader(config)));
+}
 
 export async function apiGet<T>(url: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
   return withAuthRetry(async () => apiGetUnauthenticated(url, await addAuthHeader(config)));
@@ -32,8 +57,10 @@ async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Pro
 }
 
 async function addAuthHeader(config: ApiRequestConfig | undefined): Promise<ApiRequestConfig> {
-  const { headers, ...otherConf } = config || ({} as ApiRequestConfig);
-  const { accessToken, tokenType } = await getTokens();
+  const { headers, _readCachedTokenNoFetch, ...otherConf } = config || ({} as ApiRequestConfig);
+  const { accessToken, tokenType } = _readCachedTokenNoFetch
+    ? { accessToken: _accessToken, tokenType: _tokenType }
+    : await getTokens();
   return {
     ...otherConf,
     headers: {

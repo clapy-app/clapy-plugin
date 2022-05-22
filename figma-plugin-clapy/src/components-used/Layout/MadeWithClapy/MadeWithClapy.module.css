@@ -39,6 +39,7 @@
     'Liberation Sans', sans-serif;
   width: 68px;
   height: 12px;
+  flex-direction: column;
   justify-content: center;
   position: absolute;
   left: 0.4706px;

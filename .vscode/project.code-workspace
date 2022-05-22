@@ -22,5 +22,6 @@
     "code-runner.executorMap": {
       "typescript": "ts-node --transpile-only",
     },
+    "references.preferredLocation": "view",
   }
 }

@@ -206,3 +206,12 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
     );
   }
 }
+// Links provided by Figma Tokens team:
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Darkmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Lightmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Darkmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Lightmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Darkmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css
+// https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css

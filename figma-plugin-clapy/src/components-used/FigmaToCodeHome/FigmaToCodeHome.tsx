@@ -1,18 +1,18 @@
 import { FC, memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
-import { toastError, useCallbackAsync2 } from '../../common/front-utils';
+import { useCallbackAsync2 } from '../../common/front-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb-serialize.model';
+import { selectIsAlphaDTCUser } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
-import { track } from '../../features/1-import-sb/detail/analytics';
-import { uploadAssetFromUintArrayRaw } from '../../features/2-export-code/cloudinary';
-import { selectIsAlphaDTCUser } from '../../features/auth/auth-slice';
+import { uploadAssetFromUintArrayRaw } from '../../pages/2-export-code/cloudinary';
+import { Button } from '../Button/Button';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
-import { Button } from './Button/Button';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
@@ -113,19 +113,15 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           track('gen-code', 'completed-no-data', { durationInS });
         }
       }
-
-      setSandboxId(undefined);
     } catch (error: any) {
-      handleError(error);
       const durationInS = getDuration(timer, performance.now());
       track('gen-code', 'error', { error: error?.message, durationInS });
       if (error?.message === 'NODE_NOT_VISIBLE') {
         error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
       }
-      toastError(error);
-      setSandboxId(undefined);
       throw error;
     } finally {
+      setSandboxId(undefined);
       setIsLoading(false);
     }
   }, [isAlphaDTCUser]);

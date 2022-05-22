@@ -19,18 +19,21 @@ if (!isDev && !isStaging && !isProd) {
 const dev = {
   auth0Domain: 'clapy-dev.eu.auth0.com',
   auth0ClientId: 'BxwH4Y8N4xsrJp55lm4UTWblnHVDRDz9',
+  auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',
   baseUrl: 'http://localhost:4141',
 };
 
 const staging = {
   auth0Domain: 'todo',
   auth0ClientId: 'todo',
+  auth0BackendClientId: 'todo',
   baseUrl: 'todo',
 };
 
 const prod = {
   auth0Domain: 'clapy.eu.auth0.com',
   auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
+  auth0BackendClientId: 'BSeUsfhXeYXBUSRH1zfsxftkc4e43vj1',
   baseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
@@ -53,6 +56,7 @@ export const env = {
   isNodeProduction,
   port: process.env.PORT || '4141',
   auth0Audience: 'clapy',
+  auth0BackendClientSecret: process.env.AUTH0_BACKEND_CLIENT_SECRET as string,
   securityRequestedByHeader: 'clapy',
   localhostLatency: 400, // ms
   // Hasura

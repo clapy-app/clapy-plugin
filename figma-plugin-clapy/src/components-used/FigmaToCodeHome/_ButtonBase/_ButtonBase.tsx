@@ -1,7 +1,8 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
-import Lottie, { Options } from 'react-lottie';
+import { Options } from 'react-lottie';
 
 import animationData from '../../../lotties/loading.json';
+import { Loading } from '../../Loading/Loading';
 import classes from './_ButtonBase.module.css';
 
 const defaultOptions: Options = {
@@ -30,7 +31,7 @@ export const _ButtonBase: FC<Props> = memo(function _ButtonBase(props) {
     >
       {loading && (
         <div className={classes.loading}>
-          <Lottie options={defaultOptions} height={60} width={28} isClickToPauseDisabled={true} />
+          <Loading />
         </div>
       )}
       {!loading && <div className={classes.label}>{children}</div>}

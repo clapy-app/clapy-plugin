@@ -1,0 +1,17 @@
+.root {
+  align-self: stretch;
+  gap: 16px;
+  flex-direction: row;
+}
+._StepBase {
+  flex: 1;
+  align-self: stretch;
+  overflow: visible;
+  height: 4px;
+}
+._StepBase1 {
+  background-color: #155EEF;
+}
+._StepBase2 {
+  background-color: #EAECF0;
+}

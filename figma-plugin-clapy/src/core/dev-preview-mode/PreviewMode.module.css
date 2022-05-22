@@ -5,6 +5,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  flex: 1;
 }
 .previewConnectionInfo {
   display: flex;
@@ -21,9 +22,8 @@
   outline: 1px solid black;
   overflow: auto;
 
-  /* Must match global.scss #react-page for children-oriented styles */
+  /* Must match resets.css #react-page for children-oriented styles */
   display: flex;
-  flex-direction: column;
 }
 .select-warning {
   text-align: center;

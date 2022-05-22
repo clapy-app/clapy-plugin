@@ -1,0 +1,83 @@
+.root {
+  flex: 1;
+  align-self: stretch;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.container {
+  flex: 1;
+  align-items: stretch;
+  padding: 48px 32px;
+}
+.frame99 {
+  flex: 1;
+  place-content: space-between;
+  align-items: flex-start;
+  flex-direction: column;
+}
+.headline {
+  flex-direction: column;
+  align-self: stretch;
+  gap: 8px;
+}
+.welcomeToClapy {
+  color: #000;
+  font-size: 32px;
+  line-height: 126.4999%;
+  font-weight: 600;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  text-align: center;
+  justify-content: center;
+  align-items: flex-end;
+}
+.letSSetUpYourAccount {
+  color: #000;
+  font-size: 16px;
+  font-family: Nunito Sans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  text-align: center;
+  justify-content: center;
+}
+.form {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  align-self: stretch;
+}
+.frame89 {
+  flex-direction: row;
+  align-self: stretch;
+  gap: 16px;
+}
+.frame94 {
+  align-self: stretch;
+}
+.frame892 {
+  align-self: stretch;
+}
+.frame98 {
+  align-self: stretch;
+}
+.submitButton {
+  align-self: stretch;
+}
+.textField {
+  flex-shrink: 1;
+  align-self: stretch;
+}
+.hide {
+  visibility: hidden;
+}
+.selectionButtons.selectionButtons {
+  align-self: stretch;
+  justify-content: flex-start;
+  font-size: 15px;
+  padding-left: 18px;
+  padding-right: 14px;
+}
+.buttonIcon.buttonIcon {
+  font-size: 20px;
+}

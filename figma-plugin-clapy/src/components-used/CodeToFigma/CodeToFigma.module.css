@@ -16,7 +16,6 @@
 }
 .title {
   height: 60px;
-  align-self: stretch;
 }
 .codeToFigmaWillBeBackSoon {
   color: #000;
@@ -54,7 +53,6 @@
     'Liberation Sans', sans-serif;
 }
 .paragraph {
-  width: 250px;
   flex: 1;
   text-align: center;
 }

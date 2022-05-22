@@ -60,7 +60,7 @@ export function handleException(exception: any, response: any = null): any {
     }
   }
 
-  return { error, errors, status };
+  return { error, errors, status, message: errorMessage };
 }
 
 @Catch()
@@ -71,13 +71,14 @@ export class UnknownExceptionFilter implements ExceptionFilter {
     try {
       const request = ctx.getRequest();
 
-      const { error, errors, status } = handleException(exception, response);
+      const { error, errors, status, message } = handleException(exception, response);
 
       response.status(status).json({
         statusCode: status,
         path: request.url,
         error: error?.message || error,
         errors,
+        message,
       });
     } catch (error) {
       console.error('Error while trying to send an error response. There is something wrong out there.');

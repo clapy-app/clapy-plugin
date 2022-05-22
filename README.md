@@ -34,10 +34,12 @@ Suggested package: https://github.com/dsifford/yarn-completion
 Alternative: https://github.com/mklabs/yarn-completions
 Discussion: https://github.com/yarnpkg/yarn/issues/609
 
-## Open PR from me:
+## Open PR & issues from me:
 
 PR: https://github.com/opentypejs/opentype.js/pull/503
 Fork: https://github.com/antoineol/opentype.js
+
+VS Code debugger : https://github.com/microsoft/vscode/issues/150036
 
 ## Notes for later
 
