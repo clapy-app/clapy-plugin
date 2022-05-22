@@ -15,7 +15,7 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setMetadata: (state, { payload }: PayloadAction<UserMetadata>) => {
-      state.userMetadata = payload;
+      state.userMetadata = payload || {};
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
       const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
