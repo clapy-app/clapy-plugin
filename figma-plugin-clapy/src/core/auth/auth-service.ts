@@ -6,6 +6,7 @@ import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { env, isFigmaPlugin } from '../../environment/env';
+import { clearUserMetadata, findUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
@@ -49,6 +50,7 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
 
     setAccessToken(accessToken);
     _tokenType = tokenType;
+    await findUserMetadata();
 
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
@@ -70,6 +72,7 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
       setAccessToken(accessToken);
       _tokenType = tokenType;
+      await findUserMetadata();
     }
     if (!_accessToken) {
       await refreshTokens();
@@ -97,6 +100,7 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
     setAccessToken(accessToken);
     _tokenType = tokenType;
+    await findUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }
@@ -107,6 +111,7 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
 export function logout(mustReauth?: boolean) {
   setAccessToken(null);
   _tokenType = null;
+  clearUserMetadata();
   if (!mustReauth) {
     const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
       client_id: auth0ClientId,

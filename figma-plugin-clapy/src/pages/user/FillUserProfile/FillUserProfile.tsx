@@ -1,13 +1,13 @@
 import { FC, memo } from 'react';
 
 import { Button } from './Button/Button';
+import classes from './FillUserProfile.module.css';
 import { Footer } from './Footer/Footer';
 import { InputDropdown2 } from './InputDropdown2/InputDropdown2';
 import { InputDropdown } from './InputDropdown/InputDropdown';
 import { InputField2 } from './InputField2/InputField2';
 import { InputField3 } from './InputField3/InputField3';
 import { InputField } from './InputField/InputField';
-import classes from './LoggingIn.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
     submitButton?: string;
   };
 }
-export const LoggingIn: FC<Props> = memo(function LoggingIn(props = {}) {
+export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = {}) {
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.container} ${props.classes?.container || ''}`}>

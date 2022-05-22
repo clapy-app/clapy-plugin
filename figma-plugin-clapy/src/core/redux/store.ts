@@ -5,6 +5,7 @@ import { AnyAction } from 'redux';
 import { env } from '../../environment/env';
 import { importSlice } from '../../pages/1-import-sb/import-slice';
 import { sampleApi } from '../../pages/api-sample';
+import { userSlice } from '../../pages/user/user-slice';
 import { authSlice } from '../auth/auth-slice';
 import { setStore } from './storeIsolated';
 
@@ -12,6 +13,7 @@ const reducer = {
   [authSlice.name]: authSlice.reducer,
   [sampleApi.reducerPath]: sampleApi.reducer,
   [importSlice.name]: importSlice.reducer,
+  [userSlice.name]: userSlice.reducer,
 };
 
 // TODO bad practice, should refactor and re-enable after it works again.

@@ -10,6 +10,7 @@ import {
 
 const hasuraUri = `${env.hasuraHttp}/v1/graphql`;
 
+// src: https://thetombomb.com/posts/do-you-need-graphql-client
 export async function hasuraFetch(query: string) {
   return fetch(hasuraUri, {
     method: 'POST',
