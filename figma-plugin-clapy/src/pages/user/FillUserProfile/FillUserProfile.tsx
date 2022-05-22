@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { Dict } from '../../../common/sb-serialize.model';
+import { LogoutButton } from '../../../components-used/Layout/LogoutButton/LogoutButton';
 import { hasMissingMetaProfile, updateUserMetadata, UserMetadata } from '../user-service';
 import { selectUserMetadata } from '../user-slice';
 import classes from './FillUserProfile.module.css';
@@ -125,6 +126,7 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
+      <LogoutButton absolute />
       <div className={`${classes.container} ${props.classes?.container || ''}`}>
         <div className={`${classes.frame99} ${props.classes?.frame99 || ''}`}>
           <ProgressStepsProgressTextWithL />
