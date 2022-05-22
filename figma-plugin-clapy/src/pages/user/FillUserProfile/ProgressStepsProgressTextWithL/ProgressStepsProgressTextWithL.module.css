@@ -2,6 +2,8 @@
   align-self: stretch;
   gap: 16px;
   flex-direction: row;
+  margin-bottom: -3px;
+  margin-top: 3px;
 }
 ._StepBase {
   flex: 1;
