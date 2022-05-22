@@ -6,8 +6,8 @@ import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { env, isFigmaPlugin } from '../../environment/env';
-import { clearUserMetadata, findUserMetadata } from '../../pages/user/user-service';
-import { dispatchOther } from '../redux/redux.utils';
+import { clearLocalUserMetadata, findUserMetadata } from '../../pages/user/user-service';
+import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
 
@@ -77,7 +77,14 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
     if (!_accessToken) {
       await refreshTokens();
     }
-    dispatchOther(setSignedInState(!!_accessToken));
+
+    // Don't dispatch unless it has changed, to avoid causing errors in the UI
+    // when reading the token in the middle of a component action (and state change).
+    const signedInState = !!_accessToken;
+    const { isSignedIn, loading } = readSelectorOnce(({ auth: { isSignedIn, loading } }) => ({ isSignedIn, loading }));
+    if (loading || signedInState !== isSignedIn) {
+      dispatchOther(setSignedInState(signedInState));
+    }
     return { accessToken: _accessToken, tokenType: _tokenType, accessTokenDecoded: _accessTokenDecoded };
   } catch (error: any) {
     if (error.message === interactiveSignInMsg) {
@@ -111,7 +118,7 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
 export function logout(mustReauth?: boolean) {
   setAccessToken(null);
   _tokenType = null;
-  clearUserMetadata();
+  clearLocalUserMetadata();
   if (!mustReauth) {
     const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
       client_id: auth0ClientId,

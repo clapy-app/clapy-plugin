@@ -5,7 +5,7 @@ body,
   padding: 0;
   height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-basis: 100%;
 }
 
 #react-page {
@@ -13,16 +13,15 @@ body,
 }
 
 /* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
-body > div * {
+body > :where(#react-page) * {
   display: flex;
-  flex-direction: column;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   background: none;
   border: none;
-  flex-shrink: 0;
   text-decoration: none;
+  min-width: 0;
   font-family: Nunito Sans, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 

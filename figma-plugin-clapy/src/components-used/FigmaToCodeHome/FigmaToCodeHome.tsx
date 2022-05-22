@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
-import { toastError, useCallbackAsync2 } from '../../common/front-utils';
+import { useCallbackAsync2 } from '../../common/front-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils';
@@ -113,19 +113,15 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           track('gen-code', 'completed-no-data', { durationInS });
         }
       }
-
-      setSandboxId(undefined);
     } catch (error: any) {
-      handleError(error);
       const durationInS = getDuration(timer, performance.now());
       track('gen-code', 'error', { error: error?.message, durationInS });
       if (error?.message === 'NODE_NOT_VISIBLE') {
         error = `Node ${error.nodeName} is not visible, you must select a visible node to export as code.`;
       }
-      toastError(error);
-      setSandboxId(undefined);
       throw error;
     } finally {
+      setSandboxId(undefined);
       setIsLoading(false);
     }
   }, [isAlphaDTCUser]);

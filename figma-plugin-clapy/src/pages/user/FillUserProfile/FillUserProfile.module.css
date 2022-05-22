@@ -1,23 +1,22 @@
 .root {
-  height: 600px;
   flex: 1;
   align-self: stretch;
-  background-color: #fff;
   overflow-y: auto;
   overflow-x: hidden;
 }
 .container {
   flex: 1;
-  align-self: stretch;
-  align-items: center;
+  align-items: stretch;
   padding: 48px 32px;
 }
 .frame99 {
   flex: 1;
   place-content: space-between;
   align-items: flex-start;
+  flex-direction: column;
 }
 .headline {
+  flex-direction: column;
   align-self: stretch;
   gap: 8px;
 }
@@ -43,6 +42,7 @@
   justify-content: center;
 }
 .form {
+  flex-direction: column;
   align-items: flex-start;
   gap: 20px;
   align-self: stretch;
@@ -50,7 +50,6 @@
 .frame89 {
   flex-direction: row;
   align-self: stretch;
-  align-items: flex-start;
   gap: 16px;
 }
 .frame94 {
@@ -64,5 +63,10 @@
 }
 .submitButton {
   flex: 1;
+  align-self: stretch;
+  flex-direction: column;
+}
+.textField {
+  flex-shrink: 1;
   align-self: stretch;
 }

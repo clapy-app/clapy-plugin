@@ -3,6 +3,7 @@
   place-content: center;
   overflow: hidden;
   transition: background-color 150ms ease-in-out;
+  flex-direction: column;
 }
 .root.active, .root:hover {
   background-color: #eff4ff;

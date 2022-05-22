@@ -15,6 +15,7 @@
     'Liberation Sans', sans-serif;
   width: 278px;
   text-align: center;
+  flex-direction: column;
 }
 
 .previewPlaceholderImage {

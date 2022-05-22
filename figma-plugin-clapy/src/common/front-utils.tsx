@@ -26,6 +26,7 @@ export function useCallbackAsync2<T extends (...args: any[]) => any>(callback: T
         return await callback(...args);
       } catch (error) {
         handleError(error);
+        toastError(error);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

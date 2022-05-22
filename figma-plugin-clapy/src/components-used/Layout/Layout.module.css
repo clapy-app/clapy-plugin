@@ -1,6 +1,7 @@
 .root {
   flex: 1;
   background-color: #fff;
+  flex-direction: column;
 }
 
 .content {
@@ -11,4 +12,5 @@
   gap: 16px;
   padding: 48px 24px;
   overflow: hidden;
+  flex-direction: column;
 }

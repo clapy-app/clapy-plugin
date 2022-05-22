@@ -1,11 +1,10 @@
-import { FC, memo, useCallback, useEffect, useState } from 'react';
+import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
 import { FillUserProfile } from '../../pages/user/FillUserProfile/FillUserProfile';
-import { findUserMetadata, updateUserMetadata, UserMetadata } from '../../pages/user/user-service';
 import { selectHasMissingMetadata } from '../../pages/user/user-slice';
 import { CodeToFigma } from '../CodeToFigma/CodeToFigma';
 import { FigmaToCodeHome } from '../FigmaToCodeHome/FigmaToCodeHome';
@@ -39,25 +38,6 @@ export const Layout: FC = memo(function Layout() {
       fetchPluginNoResponse('getSelectionPreview');
     }
     return dispose;
-  }, []);
-
-  const updateMetadata = useCallback(() => {
-    (async () => {
-      // TODO in auth, after loading the token, call the API to fetch user metadata.
-      // Update the redux state with it, and add a selector here to read them.
-      // authLoading should not be false before metadata are available.
-      // If at least 1 missing metadata, route to the form asking to provide the data.
-      // Prefill with the data available, etc.
-      const payload: UserMetadata = {
-        firstName: 'Antoine2',
-        lastName: 'ORY-LAMBALLE2',
-        companyName: 'Clapy',
-        jobTitle: 'Tech co-founder',
-        techTeamSize: '1_10',
-      };
-      await updateUserMetadata(payload);
-      console.log(await findUserMetadata());
-    })();
   }, []);
 
   return (

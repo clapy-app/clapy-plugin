@@ -1,3 +1,5 @@
+import { Dispatch } from '@reduxjs/toolkit';
+
 import { apiGet, apiPost } from '../../common/http.utils';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
 import { clearMetadata, selectUserMetadata, setMetadata } from './user-slice';
@@ -6,7 +8,7 @@ export interface UserMetadata {
   firstName: string;
   lastName: string;
   companyName: string;
-  jobTitle: string;
+  jobRole: string;
   techTeamSize: string;
 }
 
@@ -19,16 +21,16 @@ export async function findUserMetadata() {
   return metadata;
 }
 
-export async function updateUserMetadata(metadata: UserMetadata) {
+export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispatch) {
   const res = (await apiPost('user/update-metadata', metadata /* , { noLogout: true } */)).data;
-  dispatchOther(setMetadata(metadata));
+  dispatch(setMetadata({ ...metadata }));
   return res;
 }
 
-export function clearUserMetadata() {
+export function clearLocalUserMetadata() {
   dispatchOther(clearMetadata());
 }
 
-export function hasMissingMetadata({ firstName, lastName, companyName, jobTitle, techTeamSize } = {} as UserMetadata) {
-  return !firstName || !lastName || !companyName || !jobTitle || !techTeamSize;
+export function hasMissingMetadata({ firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata) {
+  return !firstName || !lastName || !companyName || !jobRole || !techTeamSize;
 }

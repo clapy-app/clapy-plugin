@@ -29,14 +29,14 @@ export class UserController {
   @Post('update-metadata')
   async updateUserMetadata(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
-    const { firstName, lastName, companyName, jobTitle, techTeamSize } = userMetadata;
-    if (!firstName || !lastName || !companyName || !jobTitle || !techTeamSize) {
+    const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
+    if (!firstName || !lastName || !companyName || !jobRole || !techTeamSize) {
       throw new BadRequestException(
         `Cannot update user data, missing fields: ${Object.entries({
           firstName,
           lastName,
           companyName,
-          jobTitle,
+          jobRole,
           techTeamSize,
         })
           .filter(([_, value]) => !value)
@@ -52,7 +52,7 @@ export class UserController {
         firstName,
         lastName,
         companyName,
-        jobTitle,
+        jobRole,
         techTeamSize,
       },
     );
@@ -64,6 +64,6 @@ interface UserMetadata {
   firstName: string;
   lastName: string;
   companyName: string;
-  jobTitle: string;
+  jobRole: string;
   techTeamSize: string;
 }
