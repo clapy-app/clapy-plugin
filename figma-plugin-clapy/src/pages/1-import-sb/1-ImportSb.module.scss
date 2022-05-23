@@ -106,6 +106,12 @@
 
 .errorWrapper {
   max-width: 100%;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.errorWrapper p {
+  display: block;
 }
 
 .errorWrapper2 {

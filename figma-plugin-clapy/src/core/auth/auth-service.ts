@@ -91,6 +91,8 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       dispatchOther(setSignedInState(false));
       return { accessToken: null, tokenType: null, accessTokenDecoded: null };
     } else {
+      dispatchOther(setAuthError(error));
+      toastError(error);
       throw error;
     }
   }

@@ -64,6 +64,14 @@ export function toastError(error: any) {
     return;
   }
 
+  const { emailLink, errorMsgDisplayed } = parseErrorForDisplay(error);
+
+  toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
+    closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
+  });
+}
+
+export function parseErrorForDisplay(error: any) {
   const { data, headers, status, statusText, type, url } = error || {};
   let errorStr = data
     ? JSON.stringify({ data, headers, status, statusText, type, url })
@@ -79,7 +87,5 @@ export function toastError(error: any) {
       errorStr,
     )}`.substring(0, 1800);
   const errorMsgDisplayed = `Error: ${data ? JSON.stringify(data.error || data) : error?.message || errorStr}`;
-  toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
-    closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
-  });
+  return { emailLink, errorMsgDisplayed };
 }
