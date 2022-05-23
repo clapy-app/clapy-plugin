@@ -1,4 +1,5 @@
 import { TypographyStyle } from '@mui/material';
+import axios from 'axios';
 import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
@@ -160,7 +161,7 @@ function mkFamiliesValues<T extends string | Dict<string>>(family: T) {
   return [family, ...fallbackFontFamilies];
 }
 
-export function addFontsToIndexHtml(projectContext: ProjectContext) {
+export async function addFontsToIndexHtml(projectContext: ProjectContext) {
   const {
     fontWeightUsed,
     resources,
@@ -187,6 +188,9 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
     );
   }
   if (isFTD) {
+    const version =
+      (await axios.get('https://raw.githubusercontent.com/brandcodeapp/headless-ds-tokens/main/dist/version.json')).data
+        .version || 'latest';
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '</head>',
       // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
@@ -194,14 +198,14 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/zodiak/zodiak.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/satoshi/satoshi.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/general-sans/general-sans.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Darkmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Lightmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Darkmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Lightmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Darkmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-A-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-A-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-B-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-B-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-C-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-C-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-I-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-I-Lightmode.css" />
 </head>`,
     );
   }
@@ -216,14 +220,14 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
 // https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css
 // https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css
 
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Darkmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Lightmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Darkmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Lightmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Darkmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css" />
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-A-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-A-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-B-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-B-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-C-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-C-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-I-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@${version}/dist/css/Brand-I-Lightmode.css" />
 
 // My fix in my CDN (not desired, since they can fix their own CDN):
 
