@@ -68,10 +68,19 @@ export const env = {
   dbName: process.env.POSTGRES_DB as string /* 'clapy' */,
   dbUser: process.env.POSTGRES_USER as string,
   dbPassword: process.env.POSTGRES_PASSWORD as string,
+  pipedriveApiKey: process.env.PIPEDRIVE_API_KEY as string,
 };
 
 // variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.
-const criticalVariables: Array<keyof typeof env> = ['dbHost', 'dbPort', 'dbName', 'dbUser', 'dbPassword'];
+const criticalVariables: Array<keyof typeof env> = [
+  'dbHost',
+  'dbPort',
+  'dbName',
+  'dbUser',
+  'dbPassword',
+  'auth0BackendClientSecret',
+  'pipedriveApiKey',
+];
 if (isDev) {
   criticalVariables.push('hasuraAdminSecret');
 }

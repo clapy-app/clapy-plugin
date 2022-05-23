@@ -33,6 +33,7 @@ export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) 
         </a>
         .
       </p>
+      <p>After that, you can try to reopen the plugin. In some cases, it can unblock.</p>
       <p className={classes.errorWrapper2}>
         <em>{error?.message || errorStr}</em>
       </p>

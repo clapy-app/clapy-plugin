@@ -1,18 +1,17 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, UnauthorizedException } from '@nestjs/common';
-import { ManagementClient } from 'auth0';
+import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 
 import { perfMeasure, perfReset } from '../../common/perf-utils';
-import { env } from '../../env-and-config/env';
-
-const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
-
-var auth0Management = new ManagementClient({
-  domain: auth0Domain,
-  clientId: auth0BackendClientId,
-  clientSecret: auth0BackendClientSecret,
-  scope: 'read:users update:users',
-});
+import { handleError } from '../../utils';
+import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service';
+import {
+  getAuth0User,
+  hasMissingMetaProfile,
+  hasMissingMetaUsage,
+  updateAuth0UserMetadata,
+  UserMetadata,
+  UserMetaUsage,
+} from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -20,8 +19,7 @@ export class UserController {
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
     const userId = (request as any).user.sub;
-    if (!userId) throw new UnauthorizedException();
-    const res = (await auth0Management.getUser({ id: userId })).user_metadata || {};
+    const res = (await getAuth0User(userId)).user_metadata || {};
     perfMeasure();
     return res;
   }
@@ -30,7 +28,7 @@ export class UserController {
   async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
     const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
-    if (!firstName || !lastName || !companyName || !jobRole || !techTeamSize) {
+    if (hasMissingMetaProfile(userMetadata)) {
       throw new BadRequestException(
         `Cannot update user profile, missing fields: ${Object.entries({
           firstName,
@@ -45,21 +43,30 @@ export class UserController {
       );
     }
     const userId = (request as any).user.sub;
-    await updateUserMetadata(userId, {
+    const auth0user = await updateAuth0UserMetadata(userId, {
       firstName,
       lastName,
       companyName,
       jobRole,
       techTeamSize,
     });
+
+    // Insert data in Pipedrive asynchronously (non-blocking operation).
+    // We normally wait for update-usage (below route, updating usage field = why Clapy in pipedrive),
+    // but if the usage is already provided for some reason, this step will be skipped in the plugin,
+    // So we immediately push the updated data in Pipedrive.
+    // TODO do it in production only
+    if (!hasMissingMetaUsage(auth0user.user_metadata?.usage)) {
+      upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
+    }
+
     perfMeasure();
   }
 
   @Post('update-usage')
   async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() request: Request) {
     perfReset('Starting...');
-    const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage;
-    if (!components && !designSystem && !landingPages && !(other && otherDetail)) {
+    if (hasMissingMetaUsage(userMetaUsage)) {
       throw new BadRequestException(
         `Cannot update user usage, at least one usage is required: components, designSystem, landingPages or other.`,
       );
@@ -74,29 +81,12 @@ export class UserController {
     }
 
     const userId = (request as any).user.sub;
-    await updateUserMetadata(userId, { usage: userMetaUsage });
+    const auth0user = await updateAuth0UserMetadata(userId, { usage: userMetaUsage });
+
+    // Insert data in Pipedrive asynchronously (non-blocking operation)
+    // TODO do it in production only
+    upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
+
     perfMeasure();
   }
-}
-
-async function updateUserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
-  if (!userId) throw new UnauthorizedException();
-  await auth0Management.updateUserMetadata({ id: userId }, userMetadata);
-}
-
-interface UserMetadata {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  jobRole?: string;
-  techTeamSize?: string;
-  usage?: UserMetaUsage;
-}
-
-interface UserMetaUsage {
-  components?: boolean;
-  designSystem?: boolean;
-  landingPages?: boolean;
-  other?: boolean;
-  otherDetail?: string;
 }

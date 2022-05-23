@@ -12,11 +12,11 @@ import classes from './FillUserProfile.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
 
 const roles = {
-  ux_ui: 'UX/UI Designer',
-  tech: 'Software Engineer',
-  product: 'Product Manager/Owner',
-  entrepreneur: 'Entrepreneur',
-  marketing: 'Marketing Manager',
+  ux_ui_designer: 'UX/UI Designer',
+  software_engineer: 'Software Engineer',
+  product_manager_owner: 'Product Manager/Owner',
+  founder_c_level: 'Founder & C-level',
+  marketing_manager: 'Marketing Manager',
 };
 
 const teamSizes = {

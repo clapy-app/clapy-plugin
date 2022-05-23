@@ -9,6 +9,8 @@ import { round } from './features/export-code/figma-code-map/details/utils-and-r
 async function main() {
   perfReset('Starting...');
 
+  // await runPipedriveSample();
+
   // Send to codesandbox
   await new CodeController().exportCode(devFigmaConfig, false);
 
