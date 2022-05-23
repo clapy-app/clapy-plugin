@@ -11,6 +11,7 @@ export interface ApiRequestConfig extends RequestInit {
   noRetry?: boolean;
   isAppApi?: boolean;
   noLogout?: boolean;
+  forceJSONResponse?: boolean;
   /** Warning: don't use this option unless you know what you are doing. */
   _readCachedTokenNoFetch?: boolean;
 }
@@ -145,11 +146,11 @@ async function httpReqUnauthenticated<T>(
   config: ApiRequestConfig | undefined,
   sendRequest: (url: string, config: RequestInit) => Promise<Response>,
 ): Promise<ApiResponse<T>> {
-  const { noRetry, query, isAppApi, noLogout, ...fetchConfig } = config || {};
+  const { noRetry, query, isAppApi, noLogout, forceJSONResponse, ...fetchConfig } = config || {};
   url = mkUrl(url, query);
   let resp: ApiResponse<T> | undefined;
   try {
-    resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)));
+    resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)), forceJSONResponse);
   } catch (e) {
     const err: Error = e as any;
     if (err.message === 'Failed to fetch') {
@@ -173,7 +174,7 @@ async function httpReqUnauthenticated<T>(
       await wait(1000);
       // tslint:disable-next-line:no-console
       console.info('Retrying HTTP request...');
-      resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)));
+      resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)), forceJSONResponse);
     }
   }
   if (!resp.ok) {
@@ -194,9 +195,18 @@ async function httpReqUnauthenticated<T>(
   return resp;
 }
 
-async function unwrapFetchResp<T>(respPromise: Promise<Response>): Promise<ApiResponse<T>> {
+async function unwrapFetchResp<T>(
+  respPromise: Promise<Response>,
+  forceJSONResponse: boolean | undefined,
+): Promise<ApiResponse<T>> {
   const respRaw = await respPromise;
-  const data: T = respRaw.headers.has('content-type') ? await respRaw.json() : undefined;
+  const hasContent = !!respRaw.headers.has('content-length');
+  const contentType = respRaw.headers.get('content-type');
+
+  const data: T =
+    hasContent && (forceJSONResponse || contentType?.includes('application/json'))
+      ? await respRaw.json()
+      : await respRaw.text();
   const { bodyUsed, headers, ok, redirected, status, statusText, type, url } = respRaw;
   return {
     bodyUsed,
