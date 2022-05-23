@@ -1,7 +1,10 @@
 import { FC, memo } from 'react';
 
 import classes from '../1-ImportSb.module.scss';
-import { ErrorCompProps } from '../../2-export-code/old/4-ExportCode';
+
+export interface ErrorCompProps {
+  error: any;
+}
 
 export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) {
   if (!error) return null;

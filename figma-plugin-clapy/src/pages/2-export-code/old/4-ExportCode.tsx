@@ -111,7 +111,3 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
     </>
   );
 });
-
-export interface ErrorCompProps {
-  error: any;
-}
