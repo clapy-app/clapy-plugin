@@ -117,7 +117,7 @@ export async function exportCode(
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
 
-  addFontsToIndexHtml(projectContext);
+  await addFontsToIndexHtml(projectContext);
   perfMeasure('i');
 
   addPackages(projectContext);
