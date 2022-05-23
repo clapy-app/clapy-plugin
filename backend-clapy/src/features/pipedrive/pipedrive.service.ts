@@ -5,6 +5,10 @@ import { getAuth0FirstLastName, UserMetadata, UserMetaUsage } from '../user/user
 
 const pipedrive = require('pipedrive');
 
+// Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
+// API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons
+// Tutorials and other documentation (e.g. rate limit): https://pipedrive.readme.io/docs/updating-a-person
+
 const apiClient = pipedrive.ApiClient.instance;
 let apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = env.pipedriveApiKey;
@@ -23,6 +27,7 @@ const F = {
   auth0LoginsCount: '9085f36ae33fc3aa5bb9fad41aad4bc486802c7f',
   auth0UpdatedAt: 'bcb6d4f87894982ebf629d10960cf819c94380c6',
   auth0Locale: '129090bbda0cb9109ea2a7dbeca2f7666feb621c',
+  auth0LocaleRaw: 'a83809015bf7dbadaec02ba10b3ff1c9ce4b3fd1',
   auth0LastIp: '314b92c61d9b95bae88f29d5af1ccae4d67b07f9',
   pluginUser: 'eb08908b9cd8d441b275a7857d480b8bb638a5ed',
   leadSource: '6eb9f9cf1c0a3dbbadca0d4dbc14fa34c522c356',
@@ -48,7 +53,7 @@ export async function upsertPipedrivePersonByAuth0Id(auth0User: User) {
     logins_count,
     updated_at,
   } = auth0User;
-  const locale = (auth0User as any).locale;
+  const locale = (auth0User as any).locale || (auth0User as any).location?.toLowerCase?.();
 
   const personObj = {
     [F.email]: [{ value: email }],
@@ -62,6 +67,7 @@ export async function upsertPipedrivePersonByAuth0Id(auth0User: User) {
     [F.auth0LoginsCount]: logins_count,
     [F.auth0UpdatedAt]: updated_at,
     [F.auth0Locale]: locale,
+    [F.auth0LocaleRaw]: locale,
     [F.auth0LastIp]: last_ip,
     [F.companyName]: companyName,
     [F.jobRole]: jobRole,
