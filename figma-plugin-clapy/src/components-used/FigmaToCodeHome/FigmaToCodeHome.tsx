@@ -113,7 +113,10 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           track('gen-code', 'completed-no-data', { durationInS });
         }
       }
+      // Dont put in Finally, there is a return above. Set to undefined is only if not successfully completed.
+      setSandboxId(undefined);
     } catch (error: any) {
+      setSandboxId(undefined);
       const durationInS = getDuration(timer, performance.now());
       track('gen-code', 'error', { error: error?.message, durationInS });
       if (error?.message === 'NODE_NOT_VISIBLE') {
@@ -121,7 +124,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       }
       throw error;
     } finally {
-      setSandboxId(undefined);
       setIsLoading(false);
     }
   }, [isAlphaDTCUser]);
