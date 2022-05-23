@@ -40,9 +40,9 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   const authError = useSelector(selectAuthError);
   const isSignedIn = useSelector(selectSignedIn);
   let hasMissingMetaProfile = useSelector(selectHasMissingMetaProfile);
-  hasMissingMetaProfile = false;
+  // hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
-  hasMissingMetaUsage = false;
+  // hasMissingMetaUsage = false;
 
   // Show selection
   useEffect(() => {
