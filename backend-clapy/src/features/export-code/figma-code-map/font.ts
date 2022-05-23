@@ -194,14 +194,14 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/zodiak/zodiak.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/satoshi/satoshi.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/brandcodeapp/bc-design-tokens@main/fonts/general-sans/general-sans.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Darkmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Lightmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Darkmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Lightmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Darkmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Lightmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Darkmode.css" />
-  <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css" />
 </head>`,
     );
   }
@@ -215,3 +215,23 @@ export function addFontsToIndexHtml(projectContext: ProjectContext) {
 // https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css
 // https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css
 // https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css
+
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-A-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-B-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-C-Lightmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Darkmode.css" />
+// <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/brandcodeapp/headless-ds-tokens@latest/dist/css/Brand-I-Lightmode.css" />
+
+// My fix in my CDN (not desired, since they can fix their own CDN):
+
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Darkmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-A-Lightmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Darkmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-B-Lightmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Darkmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-C-Lightmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Darkmode.css" />
+// <link rel="stylesheet" href="https://clapy-demo-tokens.netlify.app/Brand-I-Lightmode.css" />

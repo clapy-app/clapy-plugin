@@ -29,9 +29,9 @@ export const Layout: FC = memo(function Layout() {
   const authLoading = useSelector(selectAuthLoading);
   const isSignedIn = useSelector(selectSignedIn);
   let hasMissingMetaProfile = useSelector(selectHasMissingMetaProfile);
-  // hasMissingMetaProfile = true;
+  hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
-  // hasMissingMetaUsage = true;
+  hasMissingMetaUsage = false;
 
   // Show selection
   useEffect(() => {
