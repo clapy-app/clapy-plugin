@@ -34,7 +34,7 @@ export async function serializeSelectedNode() {
           isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
         }
       : {}),
-    isFTD: figma.fileKey === 'OtDi3McbgoeMAAQk6ACjc9',
+    isFTD: figma.root.name?.includes('Clapy — Token demo file'),
   };
 
   const tokens = extractFigmaTokens();

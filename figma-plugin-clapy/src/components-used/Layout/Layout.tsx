@@ -2,8 +2,9 @@ import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
-import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
+import { selectAuthError, selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
+import { ErrorComp } from '../../pages/1-import-sb/detail/ErrorComp';
 import { FillUserProfile } from '../../pages/user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../../pages/user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../../pages/user/user-slice';
@@ -24,9 +25,19 @@ const sendToApi = true;
 export type MyStates = 'loading' | 'noselection' | 'selection' | 'generated';
 
 export const Layout: FC = memo(function Layout() {
+  return (
+    <div className={classes.root}>
+      <LayoutInner />
+      <Footer />
+    </div>
+  );
+});
+
+export const LayoutInner: FC = memo(function LayoutInner() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   const authLoading = useSelector(selectAuthLoading);
+  const authError = useSelector(selectAuthError);
   const isSignedIn = useSelector(selectSignedIn);
   let hasMissingMetaProfile = useSelector(selectHasMissingMetaProfile);
   hasMissingMetaProfile = false;
@@ -44,35 +55,28 @@ export const Layout: FC = memo(function Layout() {
     return dispose;
   }, []);
 
+  if (authError) return <ErrorComp error={authError} />;
+
+  if (authLoading)
+    return (
+      <div className={loginHomeClasses.content}>
+        <Loading />
+      </div>
+    );
+
+  if (!isSignedIn) return <LoginHome />;
+
+  if (hasMissingMetaProfile) return <FillUserProfile />;
+
+  if (hasMissingMetaUsage) return <FillUserProfileStep2 />;
+
   return (
-    <div className={classes.root}>
-      {/* <Button onClick={updateMetadata}>Update metadata</Button> */}
-      {authLoading && (
-        <div className={loginHomeClasses.content}>
-          <Loading />
-        </div>
-      )}
-      {!authLoading && (
-        <>
-          {!isSignedIn && <LoginHome />}
-          {isSignedIn && (
-            <>
-              {hasMissingMetaProfile && <FillUserProfile />}
-              {!hasMissingMetaProfile && hasMissingMetaUsage && <FillUserProfileStep2 />}
-              {!hasMissingMetaProfile && !hasMissingMetaUsage && (
-                <>
-                  <Header activeTab={activeTab} selectTab={setActiveTab} />
-                  <div className={classes.content}>
-                    {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
-                    {activeTab === 1 && <CodeToFigma />}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </>
-      )}
-      <Footer />
-    </div>
+    <>
+      <Header activeTab={activeTab} selectTab={setActiveTab} />
+      <div className={classes.content}>
+        {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
+        {activeTab === 1 && <CodeToFigma />}
+      </div>
+    </>
   );
 });
