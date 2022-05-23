@@ -190,16 +190,16 @@ function addCompToAppRoot(
   let prefixStatements: Statement[] | undefined = undefined;
   if (appModuleContext.projectContext.extraConfig.isFTD) {
     // Add demo patch
-    const themeDefaultValue = 'Brand-A-Darkmode';
+    const themeDefaultValue = 'Brand-A-Lightmode';
     const themeValues = {
-      'Brand-A-Darkmode': 'Brand A dark mode',
       'Brand-A-Lightmode': 'Brand A light mode',
-      'Brand-B-Lightmode': 'Brand B dark mode',
-      'Brand-B-Darkmode': 'Brand B light mode',
-      'Brand-C-Darkmode': 'Brand C dark mode',
+      'Brand-A-Darkmode': 'Brand A dark mode',
+      'Brand-B-Lightmode': 'Brand B light mode',
+      'Brand-B-Darkmode': 'Brand B dark mode',
       'Brand-C-Lightmode': 'Brand C light mode',
-      'Brand-I-Darkmode': 'Brand I dark mode',
+      'Brand-C-Darkmode': 'Brand C dark mode',
       'Brand-I-Lightmode': 'Brand I light mode',
+      'Brand-I-Darkmode': 'Brand I dark mode',
     };
     appTsx = addDemoThemeSwitcher(appModuleContext, appTsx, themeValues, themeDefaultValue);
     statements.push(mkInitBodyClassName(themeDefaultValue));
