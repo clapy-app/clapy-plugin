@@ -57,7 +57,7 @@ export async function upsertPipedrivePersonByAuth0Id(auth0User: User) {
 
   const personObj = {
     [F.email]: [{ value: email }],
-    [F.name]: `${firstName} ${lastName}`,
+    [F.name]: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || '-',
     [F.firstName]: firstName,
     [F.lastName]: lastName,
     [F.auth0Id]: auth0Id,
