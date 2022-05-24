@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/backend-clapy/atest-gen" />
+      <excludeFolder url="file://$MODULE_DIR$/backend-clapy/.vscode" />
+      <excludeFolder url="file://$MODULE_DIR$/backend-clapy/export-templates" />
+      <excludeFolder url="file://$MODULE_DIR$/backend-clapy/stories" />
+      <excludeFolder url="file://$MODULE_DIR$/backend-clapy/test" />
+      <excludeFolder url="file://$MODULE_DIR$/.vscode" />
+      <excludeFolder url="file://$MODULE_DIR$/credentials" />
+      <excludeFolder url="file://$MODULE_DIR$/db" />
+      <excludeFolder url="file://$MODULE_DIR$/figma-plugin-clapy/build" />
+      <excludeFolder url="file://$MODULE_DIR$/figma-plugin-clapy/.vscode" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
