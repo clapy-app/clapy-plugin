@@ -23,12 +23,6 @@ export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) 
 
   return (
     <div className={classes.errorWrapper}>
-      <div>
-        <img
-          src='https://st.depositphotos.com/1794049/1359/i/450/depositphotos_13599623-stock-photo-bad-parking.jpg'
-          alt=''
-        />
-      </div>
       <p>
         <a href={emailLink} target='_blank' rel='noopener noreferrer'>
           Report the error
@@ -42,6 +36,12 @@ export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) 
         <em>{errorMsgDisplayed}</em>
       </p>
       <hr />
+      <div>
+        <img
+          src='https://st.depositphotos.com/1794049/1359/i/450/depositphotos_13599623-stock-photo-bad-parking.jpg'
+          alt=''
+        />
+      </div>
     </div>
   );
 });

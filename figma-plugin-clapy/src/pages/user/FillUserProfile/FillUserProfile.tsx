@@ -200,7 +200,7 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
             loading={isLoading}
             onClick={submitMetadata}
           >
-            Start generating code
+            Next
           </LoadingButton>
         </div>
       </div>
