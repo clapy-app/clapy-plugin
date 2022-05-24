@@ -55,7 +55,13 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     return dispose;
   }, []);
 
-  if (authError) return <ErrorComp error={authError} />;
+  if (authError) {
+    return (
+      <div className={loginHomeClasses.content}>
+        <ErrorComp error={authError} />
+      </div>
+    );
+  }
 
   if (authLoading)
     return (

@@ -174,7 +174,15 @@ async function httpReqUnauthenticated<T>(
       await wait(1000);
       // tslint:disable-next-line:no-console
       console.info('Retrying HTTP request...');
-      resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)), forceJSONResponse);
+      try {
+        resp = await unwrapFetchResp(sendRequest(url, extendConfig(fetchConfig, isAppApi)), forceJSONResponse);
+      } catch (error: any) {
+        if (error.message === 'Failed to fetch') {
+          (error as Error).message =
+            'The server is not reachable. Either you lost your connection to internet or the server is down. Please let us know if the issue persists.';
+        }
+        throw error;
+      }
     }
   }
   if (!resp.ok) {
