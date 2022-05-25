@@ -13,8 +13,9 @@ export async function writeSVGReactComponents(projectContext: ProjectContext) {
         jsxRuntime: 'automatic',
         dimensions: false,
         memo: true,
-        // svgo could be useful to optimise the SVGs. To try later.
-        plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx'],
+        // svgo optimizes the SVG, reducing its size: https://github.com/svg/svgo
+        // jsx converts into React component
+        plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
         // prettierConfig: await getPrettierConfig(),
       },
       { componentName: svgPathVarName },

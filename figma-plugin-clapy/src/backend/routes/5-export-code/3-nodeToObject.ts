@@ -400,7 +400,11 @@ function shouldGroupAsSVG(node: SceneNode | PageNode) {
   // if (!(node.children.length > 1)) return false;
   // If one of the children is not a shape, don't group as SVG
   for (const child of node.children) {
-    if (!isShapeExceptDivable(child) && !isRectangleWithoutImage(child)) {
+    if (
+      !isShapeExceptDivable(child) &&
+      !isRectangleWithoutImage(child) &&
+      !(isGroup(child) && shouldGroupAsSVG(child))
+    ) {
       return false;
     }
   }
