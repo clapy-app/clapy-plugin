@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Websocket app" type="js.build_tools.npm" folderName="Plugin dev mode" singleton="false">
+    <package-json value="$PROJECT_DIR$/figma-plugin-clapy/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="dev-with-browser:server" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

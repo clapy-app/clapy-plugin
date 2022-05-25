@@ -5,6 +5,7 @@ import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { handleError } from '../../utils';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service';
 import {
+  getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
@@ -19,9 +20,18 @@ export class UserController {
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
     const userId = (request as any).user.sub;
-    const res = (await getAuth0User(userId)).user_metadata || {};
+    const auth0User = await getAuth0User(userId);
+    const userMetadata: UserMetadata = auth0User.user_metadata || {};
+
+    // If missing name, pre-fill with other profile info available.
+    if (!userMetadata.firstName || !userMetadata.lastName) {
+      const [firstName, lastName] = getAuth0FirstLastName(auth0User);
+      userMetadata.firstName = firstName;
+      userMetadata.lastName = lastName;
+    }
+
     perfMeasure();
-    return res;
+    return userMetadata;
   }
 
   @Post('update-profile')

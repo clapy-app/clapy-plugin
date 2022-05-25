@@ -118,3 +118,8 @@
   max-width: 100%;
   overflow: auto;
 }
+
+.buttonWrapper.buttonWrapper {
+  display: flex;
+  justify-content: space-between;
+}

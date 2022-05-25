@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Backend WSL debug",
+      "type": "node",
+      "request": "attach",
+      "restart": true,
+      // "remoteRoot": "/app",
+      "localRoot": "${workspaceFolder}/backend-clapy",
+      // "preLaunchTask": "${defaultBuildTask}",
+    },
+    {
       "name": "Docker: Attach to Node",
       "type": "node",
       "request": "attach",

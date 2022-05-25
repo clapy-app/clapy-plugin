@@ -1,17 +1,10 @@
 import { initRoutes, initSubscriptions } from './core/initRoutes';
 import { routes, subscriptions } from './routes';
-
-const isPreviewInFigma = process.env.PREVIEW_ENV === 'figma';
+import { showUI } from './routes/9-common/load-ui';
 
 figma.skipInvisibleInstanceChildren = true;
 
-figma.showUI(__html__);
-if (isPreviewInFigma) {
-  figma.ui.resize(300, 200);
-} else {
-  // Must match src/core/dev-preview-mode/PreviewMode.module.css
-  figma.ui.resize(404, 600);
-}
+showUI();
 
 initRoutes(routes);
 initSubscriptions(subscriptions);

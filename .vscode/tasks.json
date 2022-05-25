@@ -10,6 +10,7 @@
 				"Figma plugin",
 				"Browser app (plugin dev)",
 				"Websocket app",
+				"Backend node",
 				// "Hasura console", 
 				// "Docker containers" // Already marked as dependency of Hasura console, not needed here.
 			],
@@ -93,6 +94,21 @@
 					"endsPattern": "^\\[nodemon\\] (starting `[^`]+`|app crashed - waiting for file changes before starting\\.\\.\\.)$"
 				}
 			},
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": "build"
+		},
+		{
+			"label": "Backend node",
+			"detail": "`npm run dev:debug` as VSCode task",
+			"options": {
+				"cwd": "${workspaceFolder}/backend-clapy"
+			},
+			"type": "npm",
+			"script": "dev:debug",
+			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"

@@ -1,7 +1,10 @@
+import { Button } from '@mui/material';
 import { FC, memo } from 'react';
 
 import classes from '../1-ImportSb.module.scss';
-import { parseErrorForDisplay } from '../../../common/front-utils';
+import { parseErrorForDisplay, useCallbackAsync2 } from '../../../common/front-utils';
+import { fetchPlugin } from '../../../common/plugin-utils';
+import { env } from '../../../environment/env';
 
 export interface ErrorCompProps {
   error: any;
@@ -9,6 +12,14 @@ export interface ErrorCompProps {
 
 export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) {
   const isInterrupted = error === 'Interrupted';
+
+  const reloadPlugin = useCallbackAsync2(async () => {
+    if (env.isDev && !env.isFigmaPlugin) {
+      window.location.reload();
+    } else {
+      await fetchPlugin('reloadUI');
+    }
+  }, []);
 
   if (!error) return null;
   if (isInterrupted) {
@@ -23,10 +34,11 @@ export const ErrorComp: FC<ErrorCompProps> = memo(function ErrorComp({ error }) 
 
   return (
     <div className={classes.errorWrapper}>
-      <p>
-        <a href={emailLink} target='_blank' rel='noopener noreferrer'>
-          Report the error
-        </a>
+      <p className={classes.buttonWrapper}>
+        <Button href={emailLink} target='_blank' rel='noopener noreferrer'>
+          Report bug
+        </Button>
+        <Button onClick={reloadPlugin}>Reload plugin</Button>
       </p>
       <p>
         Unfortunately, this error prevents the plugin from displaying as it should. You can try to reopen the plugin. In
