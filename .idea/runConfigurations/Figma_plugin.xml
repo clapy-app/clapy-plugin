@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Figma plugin" type="js.build_tools.npm" folderName="Run all folder" singleton="false">
+  <configuration default="false" name="Figma plugin" type="js.build_tools.npm" folderName="Plugin dev mode" singleton="false">
     <package-json value="$PROJECT_DIR$/figma-plugin-clapy/package.json" />
     <command value="run" />
     <scripts>

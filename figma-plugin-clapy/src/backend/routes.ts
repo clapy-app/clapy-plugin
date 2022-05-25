@@ -7,9 +7,13 @@ import { updateVariantsFromFilters } from './routes/3-properties/1-update-varian
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
 import { getSelectionPreview, selectionPreview } from './routes/5-export-code/1-selection-preview';
 import { serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
+import { reloadUI } from './routes/9-common/load-ui';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
 
 export const routes = {
+  // Common
+  reloadUI: reloadUI,
+
   // Auth routes
   getCachedToken: getCachedToken,
   setCachedToken: setCachedToken,
