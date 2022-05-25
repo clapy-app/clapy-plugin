@@ -20,7 +20,6 @@ import {
   isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
-  isComponent,
   isComponentSet,
   isGroup,
   isInstance,
@@ -120,9 +119,6 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     let obj: any;
     if (isProcessableInst) {
       context = { ...context, nodeOfComp: node.mainComponent };
-    }
-    if (isComponent(node)) {
-      context = { ...context, isComp: true };
     }
     const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
     const isInInstance = !!nodeOfComp;
@@ -366,7 +362,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         obj.mainComponent.parent = { id, name, type };
       }
       if (!context.components[id]) {
-        const compContext = context.nodeOfComp ? { ...context, nodeOfComp: undefined } : context;
+        const compContext = context.nodeOfComp ? { ...context, nodeOfComp: undefined, isComp: true } : context;
         const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
           | ComponentNodeNoMethod
           | undefined;
