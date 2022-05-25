@@ -116,6 +116,21 @@
 			"group": "build"
 		},
 		{
+			"label": "Backend node main only",
+			"detail": "`npm run dev:debug2` as VSCode task",
+			"options": {
+				"cwd": "${workspaceFolder}/backend-clapy"
+			},
+			"type": "npm",
+			"script": "dev:debug2",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": "build"
+		},
+		{
 			"label": "Hasura console",
 			"detail": "`npm run console` as VSCode task",
 			"type": "npm",
