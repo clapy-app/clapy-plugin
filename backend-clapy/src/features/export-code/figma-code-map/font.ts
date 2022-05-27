@@ -5,7 +5,7 @@ import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext, ProjectContext } from '../code.model';
 import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
-import { indexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
+import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
 import { addJss, addStyle } from '../css-gen/css-factories-high';
 import { addMUIFonts } from '../frameworks/mui/mui-add-globals';
 import { parseFontStyle, replaceFontWeightWithLabel } from './details/fonts-utils';
@@ -167,6 +167,7 @@ export async function addFontsToIndexHtml(projectContext: ProjectContext) {
     resources,
     extraConfig: { isFTD },
   } = projectContext;
+  const indexHtmlPath = getIndexHtmlPath(projectContext);
   addMUIFonts(projectContext);
   if (fontWeightUsed.size) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())

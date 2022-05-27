@@ -1,4 +1,5 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, StreamableFile } from '@nestjs/common';
+import { Readable } from 'stream';
 import ts, { Statement } from 'typescript';
 
 import { Nil } from '../../common/general-utils';
@@ -8,12 +9,12 @@ import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-
 import { createModuleCode, getOrGenComponent, printFileInProject } from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
-import { uploadToCSB, writeToDisk } from './9-upload-to-csb';
+import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { ComponentNode2, InstanceNode2 } from './create-ts-compiler/canvas-utils';
-import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
+import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
 import {
@@ -38,6 +39,8 @@ export async function exportCode(
   { root, parent: p, components, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
 ) {
+  if (!extraConfig.output) extraConfig.output = 'csb';
+  extraConfig.useViteJS = extraConfig.output === 'zip';
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
@@ -64,7 +67,7 @@ export async function exportCode(
   const appCompName = 'App';
   const appCssPath = `${appCompDir}/${appCompName}.module.css`;
   // Initialize the project template with base files
-  const filesCsb = await readReactTemplateFiles();
+  const filesCsb = await readReactTemplateFiles(extraConfig.useViteJS ? reactViteDir : reactCRADir);
   // If useful, resources['tsconfig.json']
   const [tsFiles, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(filesCsb);
   const cssFiles: CodeDict = { [appCssPath]: appCss };
@@ -141,8 +144,13 @@ export async function exportCode(
     );
   }
   if (!env.isDev || uploadToCsb) {
-    const csbResponse = await uploadToCSB(csbFiles);
-    return csbResponse;
+    if (extraConfig.output === 'zip') {
+      const zipResponse = await makeZip(csbFiles);
+      return new StreamableFile(zipResponse as Readable);
+    } else {
+      const csbResponse = await uploadToCSB(csbFiles);
+      return csbResponse;
+    }
   }
 }
 

@@ -1,10 +1,13 @@
 import { exportTemplatesDir } from '../../../root';
-import { CodeDict } from '../code.model';
+import { CodeDict, ProjectContext } from '../code.model';
 
-export const reactTemplateDir = `${exportTemplatesDir}/react-project`;
+export const reactCRADir = `${exportTemplatesDir}/react-cra`;
+export const reactViteDir = `${exportTemplatesDir}/react-vite`;
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
-export const indexHtmlPath = 'public/index.html';
+export function getIndexHtmlPath({ extraConfig: { useViteJS } }: ProjectContext) {
+  return useViteJS ? 'index.html' : 'public/index.html';
+}
 
 // Both variables must be consistent.
 export const assetsResourceDir = `public/assets/`;

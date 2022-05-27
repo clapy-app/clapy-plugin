@@ -1,8 +1,8 @@
 import { ButtonHTMLAttributes, FC, memo } from 'react';
 import { Options } from 'react-lottie';
 
-import animationData from '../../../lotties/loading.json';
-import { Loading } from '../../Loading/Loading';
+import { Loading } from '../../../../components-used/Loading/Loading';
+import animationData from '../../../../lotties/loading.json';
 import classes from './_ButtonBase.module.css';
 
 const defaultOptions: Options = {

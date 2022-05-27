@@ -246,6 +246,8 @@ export interface ExtraConfig {
   isClapyFile?: boolean;
   isFTD?: boolean;
   enableMUIFramework?: boolean;
+  output?: 'csb' | 'zip';
+  useViteJS?: boolean;
 }
 
 export interface ExportCodePayload {

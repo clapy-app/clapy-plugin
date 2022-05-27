@@ -1,18 +1,18 @@
 import { FC, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { LoginHome } from '../0-login/LoginHome/LoginHome';
+import loginHomeClasses from '../0-login/LoginHome/LoginHome.module.css';
+import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma';
+import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
+import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { Loading } from '../../components-used/Loading/Loading';
 import { selectAuthError, selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env';
-import { ErrorComp } from '../../pages/1-import-sb/detail/ErrorComp';
-import { FillUserProfile } from '../../pages/user/FillUserProfile/FillUserProfile';
-import { FillUserProfileStep2 } from '../../pages/user/FillUserProfile/FillUserProfileStep2';
-import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../../pages/user/user-slice';
-import { CodeToFigma } from '../CodeToFigma/CodeToFigma';
-import { FigmaToCodeHome } from '../FigmaToCodeHome/FigmaToCodeHome';
-import { Loading } from '../Loading/Loading';
-import { LoginHome } from '../LoginHome/LoginHome';
-import loginHomeClasses from '../LoginHome/LoginHome.module.css';
+import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
+import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
+import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
 import classes from './Layout.module.css';
