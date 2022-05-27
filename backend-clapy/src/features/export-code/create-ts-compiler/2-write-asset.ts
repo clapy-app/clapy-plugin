@@ -15,7 +15,7 @@ export function writeAsset(context: NodeContext, node: BaseNode2, extension: str
   // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
 
   // Write image in public directory - the codesandbox workaround
-  projectContext.resources[`${assetsResourceDir}/${imageFileName}`] = content;
+  projectContext.resources[`${assetsResourceDir}${imageFileName}`] = content;
 
   const assetCssUrl = `${assetsCssBaseUrl}${imageFileName}`;
   return assetCssUrl;

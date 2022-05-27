@@ -1,0 +1,45 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-basis: 100%;
+  width: 100%;
+}
+
+#root {
+  position: relative;
+}
+
+/* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
+body > div * {
+  display: flex;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  text-decoration: none;
+  min-width: 0;
+}
+
+body button:not(:disabled) {
+  cursor: pointer;
+  user-select: none;
+}
+
+body label {
+  user-select: none;
+  cursor: pointer;
+}
+
+body span, body a {
+  display: inline;
+}
+
+img {
+  object-fit: contain;
+}

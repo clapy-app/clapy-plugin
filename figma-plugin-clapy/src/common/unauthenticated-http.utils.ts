@@ -214,6 +214,8 @@ async function unwrapFetchResp<T>(
   const data: T =
     hasContent && (forceJSONResponse || contentType?.includes('application/json'))
       ? await respRaw.json()
+      : contentType?.includes('application/octet-stream')
+      ? await respRaw.blob()
       : await respRaw.text();
   const { bodyUsed, headers, ok, redirected, status, statusText, type, url } = respRaw;
   return {

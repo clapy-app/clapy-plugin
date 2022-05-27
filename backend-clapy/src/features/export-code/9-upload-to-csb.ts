@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createWriteStream } from 'fs';
 import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
+import JSZip from 'jszip';
 import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
@@ -20,6 +21,33 @@ export async function uploadToCSB(files: CsbDict) {
     console.log(`Edit: https://codesandbox.io/s/${data.sandbox_id}`);
   }
   return data;
+}
+
+export async function makeZip(files: CsbDict) {
+  // Sample from: https://stuk.github.io/jszip/ - repo: https://github.com/Stuk/jszip
+  const zip = new JSZip();
+
+  const promises = [];
+
+  for (let [path, { content, isBinary }] of Object.entries(files)) {
+    // If isBinary, fetch the resources and add to zip
+    if (isBinary) {
+      promises.push(
+        // To get all content at once with promise, use 'arraybuffer'
+        axios.get(content, { responseType: 'stream' /* 'arraybuffer' */ }).then(({ data }) => {
+          zip.file(path, data);
+        }),
+      );
+    } else {
+      zip.file(path, content);
+    }
+  }
+
+  await Promise.all(promises);
+
+  // To get all content at once with promise, use zip.generateAsync({ type: 'uint8array' })
+  const content = zip.generateNodeStream();
+  return content;
 }
 
 const srcCompPrefix = 'src/components/';

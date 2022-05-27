@@ -1,17 +1,17 @@
 import { FC, memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { track } from '../../common/analytics';
-import { handleError } from '../../common/error-utils';
-import { useCallbackAsync2 } from '../../common/front-utils';
-import { getDuration } from '../../common/general-utils';
-import { apiPost } from '../../common/http.utils';
-import { fetchPlugin } from '../../common/plugin-utils';
-import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../common/sb-serialize.model';
-import { selectIsAlphaDTCUser } from '../../core/auth/auth-slice';
-import { env } from '../../environment/env';
-import { uploadAssetFromUintArrayRaw } from '../../pages/2-export-code/cloudinary';
-import { Button } from '../Button/Button';
+import { track } from '../../../common/analytics';
+import { handleError } from '../../../common/error-utils';
+import { useCallbackAsync2 } from '../../../common/front-utils';
+import { getDuration } from '../../../common/general-utils';
+import { apiPost } from '../../../common/http.utils';
+import { fetchPlugin } from '../../../common/plugin-utils';
+import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
+import { Button } from '../../../components-used/Button/Button';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { env } from '../../../environment/env';
+import { uploadAssetFromUintArrayRaw } from '../cloudinary';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
@@ -101,17 +101,21 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       if (!env.isDev || sendToApi) {
         const { data } = await apiPost<CSBResponse>('code/export', nodes);
         const durationInS = getDuration(timer, performance.now());
-        if (data) {
+        if (data?.sandbox_id) {
           if (env.isDev) {
             console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`);
           }
           // window.open(url, '_blank', 'noopener');
           setSandboxId(data.sandbox_id);
           track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
+          //
           return;
         } else {
           track('gen-code', 'completed-no-data', { durationInS });
         }
+
+        // Tmp code:
+        downloadFile(data as unknown as Blob, 'foo.zip');
       }
       // Dont put in Finally, there is a return above. Set to undefined is only if not successfully completed.
       setSandboxId(undefined);
@@ -163,3 +167,16 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     </>
   );
 });
+
+function downloadFile(blob: Blob, fileName: string) {
+  const link = document.createElement('a');
+  // create a blobURI pointing to our Blob
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  // some browser needs the anchor to be in the doc
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // in case the Blob uses a lot of memory
+  setTimeout(() => URL.revokeObjectURL(link.href), 7000);
+}

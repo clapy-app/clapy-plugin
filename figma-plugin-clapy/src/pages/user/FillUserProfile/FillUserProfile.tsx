@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { Dict } from '../../../common/sb-serialize.model';
-import { LogoutButton } from '../../../components-used/Layout/LogoutButton/LogoutButton';
+import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
 import { hasMissingMetaProfile, updateUserMetadata, UserMetadata } from '../user-service';
 import { selectUserMetadata } from '../user-slice';
 import classes from './FillUserProfile.module.css';

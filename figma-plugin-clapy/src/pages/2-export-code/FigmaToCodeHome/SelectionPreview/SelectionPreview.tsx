@@ -1,8 +1,8 @@
 import { FC, memo } from 'react';
 import Lottie, { Options } from 'react-lottie';
 
-import successLottie from '../../../lotties/gen-code-success.json';
-import loadingLottie from '../../../lotties/generating-code.json';
+import successLottie from '../../../../lotties/gen-code-success.json';
+import loadingLottie from '../../../../lotties/generating-code.json';
 import { MyStates } from '../FigmaToCodeHome';
 import classes from './SelectionPreview.module.css';
 

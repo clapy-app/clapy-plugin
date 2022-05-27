@@ -9,7 +9,7 @@ import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
 import { apiGet } from './common/http.utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
-import { Layout } from './components-used/Layout/Layout';
+import { Layout } from './pages/Layout/Layout';
 
 declare module '@mui/material/styles' {
   interface Palette {
