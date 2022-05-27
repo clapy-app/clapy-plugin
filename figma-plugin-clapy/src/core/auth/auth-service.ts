@@ -139,8 +139,6 @@ export async function getAuth0Id() {
 
 // Steps (detail)
 
-export const roleAlphaDTC = 'alpha_design_to_code';
-
 export interface AccessTokenDecoded {
   // Audience - if array, second member could be "https://clapy.eu.auth0.com/userinfo"
   aud: 'clapy' | ['clapy', ...string[]];

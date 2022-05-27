@@ -17,3 +17,15 @@
   align-items: center;
   gap: 16px;
 }
+
+.accordionRoot.accordionRoot {
+  align-self: stretch;
+  display: block;
+  box-shadow: none;
+}
+.accordionRoot.accordionRoot::before {
+  content: none;
+}
+html body :where(.accordionRoot) * {
+  display: block;
+}

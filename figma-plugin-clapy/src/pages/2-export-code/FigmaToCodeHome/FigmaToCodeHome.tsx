@@ -1,4 +1,15 @@
-import { FC, memo, useCallback, useState } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  FormControlLabel,
+  FormGroup,
+  Switch,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { FC, memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
@@ -9,9 +20,10 @@ import { apiPost } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser, selectIsZipEnabled } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary';
+import { downloadFile } from '../export-code-utils';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
@@ -29,11 +41,16 @@ interface Props {
   selectionPreview: string | false | undefined;
 }
 
+interface AdvancedOptions {
+  zip?: boolean;
+}
+
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
+  const isZipEnabled = useSelector(selectIsZipEnabled);
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -44,6 +61,18 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     : selectionPreview === false
     ? 'selectionko'
     : 'noselection';
+
+  const advancedOptionsRef = useRef<AdvancedOptions>({});
+
+  const updateAdvancedOption = useCallback((event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    if (!event.target.name) {
+      handleError(
+        new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
+      );
+      return;
+    }
+    advancedOptionsRef.current[event.target.name as keyof AdvancedOptions] = checked;
+  }, []);
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
@@ -66,6 +95,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         extraConfig: {
           ...extraConfig,
           enableMUIFramework: isAlphaDTCUser,
+          output: advancedOptionsRef.current.zip ? 'zip' : 'csb',
         },
         tokens,
       };
@@ -151,9 +181,28 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} />
       {state !== 'generated' && (
-        <Button onClick={generateCode} disabled={state === 'loading' || state === 'noselection'} loading={isLoading}>
-          &lt; Generate code &gt;
-        </Button>
+        <>
+          {isZipEnabled && (
+            <Accordion classes={{ root: classes.accordionRoot }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                <Typography>Advanced options</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <FormGroup>
+                  <Tooltip title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'>
+                    <FormControlLabel
+                      control={<Switch name='zip' onChange={updateAdvancedOption} />}
+                      label='Download as zip'
+                    />
+                  </Tooltip>
+                </FormGroup>
+              </AccordionDetails>
+            </Accordion>
+          )}
+          <Button onClick={generateCode} disabled={state === 'loading' || state === 'noselection'} loading={isLoading}>
+            &lt; Generate code &gt;
+          </Button>
+        </>
       )}
       {state === 'generated' && (
         <>
@@ -167,16 +216,3 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     </>
   );
 });
-
-function downloadFile(blob: Blob, fileName: string) {
-  const link = document.createElement('a');
-  // create a blobURI pointing to our Blob
-  link.href = URL.createObjectURL(blob);
-  link.download = fileName;
-  // some browser needs the anchor to be in the doc
-  document.body.append(link);
-  link.click();
-  link.remove();
-  // in case the Blob uses a lot of memory
-  setTimeout(() => URL.revokeObjectURL(link.href), 7000);
-}
