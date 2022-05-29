@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 
-import { prepareFrontDefineVar } from './build-prepare';
+import { addFrontDefineVarToContext, BuildContext } from './build-prepare';
 import { getConfigBackend } from './config-backend';
 import { getConfigFront } from './config-front';
 
@@ -15,17 +15,19 @@ runBuild().catch((e: any) => {
 });
 
 async function runBuild() {
-  const frontDefineVar = prepareFrontDefineVar();
+  const context: BuildContext = {};
+
+  addFrontDefineVarToContext(context);
 
   await Promise.all([
     esbuild.build({
-      ...(await getConfigFront(frontDefineVar)),
+      ...(await getConfigFront(context)),
       // Add development config
       watch: true,
       sourcemap: 'inline',
     }),
     esbuild.build({
-      ...(await getConfigBackend(frontDefineVar)),
+      ...(await getConfigBackend(context)),
       // Add development config
       watch: true,
       sourcemap: 'inline',

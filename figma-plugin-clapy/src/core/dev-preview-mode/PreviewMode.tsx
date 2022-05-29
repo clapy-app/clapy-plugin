@@ -53,7 +53,7 @@ export const PreviewMode: FC = memo(function PreviewMode({ children }) {
         <div className={`${styles.previewConnectionStatus} ${isConnected ? styles.statusGreen : ''}`} />
       </div>
 
-      {isPreviewInBrowser && setIsConnected && <div className={styles.previewPluginWrapper}>{children}</div>}
+      {isPreviewInBrowser && /* setIsConnected && */ <div className={styles.previewPluginWrapper}>{children}</div>}
     </div>
   );
 });

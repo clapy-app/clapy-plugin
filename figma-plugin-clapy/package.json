@@ -41,7 +41,7 @@
     "wpstats": "NODE_ENV=production webpack --mode=production --env APP_ENV=production --profile --json > stats.json",
     "____ end webpack command ____": "",
     "build-step1": "rimraf dist && mkdirp dist/build && ncp manifest.json dist/manifest.json",
-    "build-step2": "ncp build/index.html dist/build/index.html && ncp build/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
+    "build-step2": "ncp build-prod/index.html dist/build/index.html && ncp build-prod/backend.js dist/build/backend.js && cd dist && bestzip plugin.zip *",
     "analyzebundle": "yarn webpackbuild:staging --profile --json > stats.json",
     "killbyport": "sudo kill -9 `sudo lsof -t -i:9001`"
   },

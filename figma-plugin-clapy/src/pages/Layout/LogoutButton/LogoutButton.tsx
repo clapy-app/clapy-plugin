@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 import { FC, memo, useCallback } from 'react';
 
 import { logout } from '../../../core/auth/auth-service';

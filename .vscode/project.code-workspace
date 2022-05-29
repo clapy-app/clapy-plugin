@@ -24,8 +24,8 @@
     },
     "references.preferredLocation": "view",
     "search.exclude": {
-      "**/build": true,
-      "**/dist": true,
+      "**/build*": true,
+      "**/dist*": true,
       "**/old": true
     },
   }

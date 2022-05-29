@@ -1,11 +1,12 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-import { prepareFrontDefineVar } from './src/scripts/esbuild/build-prepare';
+import { addFrontDefineVarToContext, BuildContext, pluginDir } from './src/scripts/esbuild/build-prepare';
 
-const frontDefineVar = prepareFrontDefineVar();
+const context: BuildContext = {};
+addFrontDefineVarToContext(context);
 export default defineConfig({
-  root: 'src',
+  root: `${pluginDir}/src`,
   plugins: [react()],
-  define: frontDefineVar,
+  define: context.defineEnvVar,
 });

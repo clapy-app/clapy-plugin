@@ -5,6 +5,12 @@ import { resolve } from 'path';
 
 import { Dict } from '../../common/sb-serialize.model';
 
+export interface BuildContext {
+  outDir?: string;
+  outDirPath?: string;
+  defineEnvVar?: Dict<string>;
+}
+
 // In case we have to switch to ESM. But it doesn't work well (importing other files, default extensions, default imports...)
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(__filename);
@@ -12,9 +18,11 @@ import { Dict } from '../../common/sb-serialize.model';
 export const pluginDir = resolve(`${__dirname}/../../..`);
 const rootDir = resolve(`${pluginDir}/..`);
 
+export const indexHtmlPath = `${pluginDir}/src/index.html`;
+
 let dotEnvLoaded = false;
 
-function readEnv() {
+function readEnv(context: BuildContext) {
   const previewEnv = (process.env.PREVIEW_ENV || undefined) as 'figma' | 'browser' | undefined;
   const mode = process.env.NODE_ENV || 'development';
   const appEnv = process.env.APP_ENV;
@@ -26,6 +34,9 @@ function readEnv() {
   const shouldUseSourceMap = true;
   // If not production and not browser, it's a normal dev env in Figma.
 
+  context.outDir = isProduction ? 'build-prod' : 'build';
+  context.outDirPath = `${pluginDir}/${context.outDir}`;
+
   if (!dotEnvLoaded) {
     dotEnvLoaded = true;
     dotenv.config({
@@ -36,8 +47,8 @@ function readEnv() {
   return { isProduction, appEnv, previewEnv };
 }
 
-export async function updateDistManifest() {
-  const { isProduction } = readEnv();
+export async function updateDistManifest(context: BuildContext) {
+  const { isProduction } = readEnv(context);
 
   // Update manifest.json with the bundle folder name.
   const distFolder = 'build';
@@ -56,30 +67,30 @@ export async function updateDistManifest() {
   }
 }
 
-export function prepareFrontDefineVar() {
-  const frontVarToDefine = prepareFrontVarToDefine();
+export function addFrontDefineVarToContext(context: BuildContext) {
+  const frontVarToDefine = prepareFrontVarToDefine(context);
   const defineEnvVar: Dict<string> = {};
   for (const [key, val] of Object.entries(frontVarToDefine)) {
     defineEnvVar[`process.env.${key}`] = val;
   }
-  return defineEnvVar;
+  context.defineEnvVar = defineEnvVar;
 }
 
-function prepareFrontVarToDefine() {
-  const { appEnv, previewEnv } = readEnv();
+function prepareFrontVarToDefine(context: BuildContext) {
+  const { appEnv, previewEnv } = readEnv(context);
 
   // Extract environment variables to send to the React app
-  const frontDefineVar: Dict<string> = {
+  const frontVarToDefine: Dict<string> = {
     APP_ENV: JSON.stringify(appEnv),
     PREVIEW_ENV: JSON.stringify(previewEnv),
   };
   for (const [varName, value] of Object.entries(process.env)) {
     if (varName.startsWith('VITE_') || varName.startsWith('REACT_APP_')) {
-      frontDefineVar[varName] = JSON.stringify(value);
+      frontVarToDefine[varName] = JSON.stringify(value);
     }
   }
 
-  return frontDefineVar;
+  return frontVarToDefine;
 }
 
 async function editJsonFile(filePath: string, editor: (modulePath: any) => void) {

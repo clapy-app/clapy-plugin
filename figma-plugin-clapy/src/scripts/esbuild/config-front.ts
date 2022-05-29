@@ -1,19 +1,15 @@
 import * as cssModulesPlugin from 'esbuild-css-modules-plugin';
 import { readFile, writeFile } from 'fs/promises';
 
-import { Dict } from '../../common/sb-serialize.model';
-import { createESBuildConfig, pluginDir } from './build-prepare';
+import { BuildContext, createESBuildConfig, indexHtmlPath, pluginDir } from './build-prepare';
 
-const indexHtmlPath = `${pluginDir}/src/index.html`;
-const outDir = 'build';
-const outDirPath = `${pluginDir}/${outDir}`;
-
-export async function getConfigFront(defineEnvVar: Dict<string>) {
+export async function getConfigFront(context: BuildContext) {
+  const defineEnvVar = context.defineEnvVar;
   return createESBuildConfig({
     entryPoints: ['src/index.tsx'],
 
     bundle: true,
-    outfile: `${outDir}/index.js`,
+    outfile: `${context.outDir}/index.js`,
     target: 'es2017',
     logLevel: 'info',
 
@@ -38,7 +34,7 @@ export async function getConfigFront(defineEnvVar: Dict<string>) {
             ]);
 
             // Remove the ViteJS-specific script referencing the main
-            indexHtml = indexHtml.replace('<script type="module" src="index.tsx"></script>', '');
+            indexHtml = indexHtml.replace('<script type="module" src="[^"]+"></script>', '');
 
             indexHtml = insertAtSubStrIndex(indexHtml, '</head>', `<style>\n${indexCss}</style>\n`);
             indexHtml = insertAtSubStrIndex(
@@ -46,7 +42,7 @@ export async function getConfigFront(defineEnvVar: Dict<string>) {
               '</body>',
               `<script type="module">\n${indexJs}</script>\n</body>`,
             );
-            await writeFile(`${outDirPath}/index.html`, indexHtml);
+            await writeFile(`${context.outDirPath}/index.html`, indexHtml);
             console.log(`build ended with ${result.errors.length} errors`);
           });
         },

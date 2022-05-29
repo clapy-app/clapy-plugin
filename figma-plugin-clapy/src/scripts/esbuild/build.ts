@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 
-import { prepareFrontDefineVar, updateDistManifest } from './build-prepare';
+import { addFrontDefineVarToContext, BuildContext, updateDistManifest } from './build-prepare';
 import { getConfigBackend } from './config-backend';
 import { getConfigFront } from './config-front';
 
@@ -15,14 +15,16 @@ runBuild().catch((e: any) => {
 });
 
 async function runBuild() {
-  // Update the manifest to use the release plugin name and ID
-  await updateDistManifest();
+  const context: BuildContext = {};
 
-  const frontDefineVar = prepareFrontDefineVar();
+  // Update the manifest to use the release plugin name and ID
+  await updateDistManifest(context);
+
+  addFrontDefineVarToContext(context);
 
   const [resFront, resBack] = await Promise.all([
     esbuild.build({
-      ...(await getConfigFront(frontDefineVar)),
+      ...(await getConfigFront(context)),
       // Add production config
       watch: false,
       sourcemap: false,
@@ -32,7 +34,7 @@ async function runBuild() {
       // metafile: true,
     }),
     esbuild.build({
-      ...(await getConfigBackend(frontDefineVar)),
+      ...(await getConfigBackend(context)),
       // Add production config
       watch: false,
       sourcemap: false,
@@ -42,7 +44,7 @@ async function runBuild() {
       // metafile: true,
     }),
   ]);
-  
+
   // Requires metafile: true in configs above.
   // Analyze the json with https://www.bundle-buddy.com/esbuild
   // await writeFile(resolve(pluginDir, 'build', 'meta.json'), JSON.stringify(resFront.metafile, null, 2));
