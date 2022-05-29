@@ -10,7 +10,7 @@ export interface PerfContext {
 let context: PerfContext = makeNewContext();
 
 export function perfReset(logMessage?: string) {
-  if (logMessage) {
+  if (flags.measurePerf && logMessage) {
     console.log(logMessage);
   }
   context = makeNewContext();

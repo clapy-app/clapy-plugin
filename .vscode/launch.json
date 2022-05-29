@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug Backend local",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/backend-clapy",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["dev"],
+      "outputCapture": "std",
+      // "restart": true,
+      // "remoteRoot": "/app",
+      "localRoot": "${workspaceFolder}/backend-clapy",
+      // "preLaunchTask": "${defaultBuildTask}",
+    },
+    {
       "name": "Backend WSL debug",
       "type": "node",
       "request": "attach",
