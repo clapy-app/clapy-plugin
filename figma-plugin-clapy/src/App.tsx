@@ -3,7 +3,7 @@ import { FC, memo, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import classes from './App.module.scss';
+import classes from './App.module.css';
 import { track } from './common/analytics';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';

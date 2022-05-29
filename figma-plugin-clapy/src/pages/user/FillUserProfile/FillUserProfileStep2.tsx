@@ -1,4 +1,4 @@
-import { ArrowForward } from '@mui/icons-material';
+import ArrowForward from '@mui/icons-material/ArrowForward';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Button, MenuItem, SvgIcon, TextField } from '@mui/material';
 import { ChangeEvent, FC, memo, MouseEvent, useCallback, useRef, useState } from 'react';

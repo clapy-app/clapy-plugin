@@ -1,0 +1,18 @@
+.root {
+  height: 100%;
+  font-family: sans-serif;
+  background-color: #e5e5e5;
+  flex: 1;
+}
+
+.toasters {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  align-items: center;
+  transform: translateX(-50%);
+  gap: 8px;
+  pointer-events: none;
+  width: 340px;
+  flex-direction: column;
+}

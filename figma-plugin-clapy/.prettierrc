@@ -12,8 +12,13 @@
   "tabWidth": 2,
   "semi": true,
   "printWidth": 120,
-  "importOrder": ["^[./]"],
+  "importOrder": [
+    "^[./]"
+  ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
-  "importOrderCaseInsensitive": true
+  "importOrderCaseInsensitive": true,
+  "plugin": [
+    "importAssertions"
+  ]
 }

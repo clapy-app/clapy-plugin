@@ -23,5 +23,10 @@
       "typescript": "ts-node --transpile-only",
     },
     "references.preferredLocation": "view",
+    "search.exclude": {
+      "**/build": true,
+      "**/dist": true,
+      "**/old": true
+    },
   }
 }

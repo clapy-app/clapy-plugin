@@ -5,6 +5,7 @@ import styles from './PreviewMode.module.css';
 type WSRef = MutableRefObject<WebSocket | undefined>;
 
 const previewEnv = process.env.PREVIEW_ENV;
+console.log('previewEnv:', previewEnv);
 const isPreviewInBrowser = previewEnv === 'browser';
 const isPreviewInFigma = previewEnv === 'figma';
 

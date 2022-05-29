@@ -30,15 +30,15 @@ const prod = {
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
 
 // cast as string because we check them below and throw if undefined. So it's safe in the rest of the app.
-const auth0Domain = process.env.REACT_APP_AUTH0_DOMAIN as string;
-const auth0ClientId = process.env.REACT_APP_AUTH0_CLIENT_ID as string;
+const auth0Domain = process.env.VITE_AUTH0_DOMAIN as string;
+const auth0ClientId = process.env.VITE_AUTH0_CLIENT_ID as string;
 
-const isSsl = isTrue(process.env.REACT_APP_HASURA_SSL);
-const hasuraPort = `${process.env.REACT_APP_HASURA_PORT || ''}`;
+const isSsl = isTrue(process.env.VITE_HASURA_SSL);
+const hasuraPort = `${process.env.VITE_HASURA_PORT || ''}`;
 const portFragment =
   !hasuraPort || (isSsl && hasuraPort === '443') || (!isSsl && hasuraPort === '80') ? '' : `:${hasuraPort}`;
-const hasuraHttp = `${isSsl ? 'https' : 'http'}://${process.env.REACT_APP_HASURA_HOSTNAME}${portFragment}`;
-const hasuraWs = `${isSsl ? 'wss' : 'ws'}://${process.env.REACT_APP_HASURA_HOSTNAME}${portFragment}`;
+const hasuraHttp = `${isSsl ? 'https' : 'http'}://${process.env.VITE_HASURA_HOSTNAME}${portFragment}`;
+const hasuraWs = `${isSsl ? 'wss' : 'ws'}://${process.env.VITE_HASURA_HOSTNAME}${portFragment}`;
 
 export const env = {
   ...nonConfidentialEnv,

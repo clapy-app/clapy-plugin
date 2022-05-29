@@ -145,7 +145,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         }
 
         // Tmp code:
-        downloadFile(data as unknown as Blob, 'foo.zip');
+        downloadFile(data as unknown as Blob, 'Code export.zip');
       }
       // Dont put in Finally, there is a return above. Set to undefined is only if not successfully completed.
       setSandboxId(undefined);

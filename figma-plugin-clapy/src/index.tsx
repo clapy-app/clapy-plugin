@@ -6,7 +6,6 @@ import { Provider } from 'react-redux';
 import { App } from './App';
 import { PreviewMode } from './core/dev-preview-mode/PreviewMode';
 import { store } from './core/redux/store';
-import './core/theme/global.scss';
 import './resets.css';
 
 // Bug with React 18.0.0:

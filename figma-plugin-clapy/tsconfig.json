@@ -1,27 +1,47 @@
 {
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "lib": [
+        "es2020"
+      ],
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "target": "ES2020",
+      "esModuleInterop": false,
+      "allowSyntheticDefaultImports": true,
+    },
+  },
   "compilerOptions": {
     "target": "ES2017",
-    "module": "esnext",
+    // "lib": [
+    //   "es6"
+    // ],
+    "module": "ESNext",
     "moduleResolution": "node",
     "jsx": "react-jsx",
-    // "noEmit": true,
+    "noEmit": true,
     // "allowJs": true,
-    "esModuleInterop": true,
-    // "isolatedModules": true,
+    "allowJs": false,
+    "esModuleInterop": false, // used to be true
+    "isolatedModules": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "incremental": true,
-    "tsBuildInfoFile": "node_modules/.cache/tsconfig.tsbuildinfo",
+    // TODO - re-enable?
+    // "incremental": true,
+    // "tsBuildInfoFile": "node_modules/.cache/tsconfig.tsbuildinfo",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
+    "useDefineForClassFields": true,
     "removeComments": true,
-    "declaration": true,
-    "emitDecoratorMetadata": true,
+    // TODO - re-enable?
+    // "declaration": true,
+    // "experimentalDecorators": true,
+    // "emitDecoratorMetadata": true,
     "sourceMap": true,
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@figma",
-      "./src/typings"
+      "./src/typings",
     ],
     "strict": true,
     "strictNullChecks": true,
@@ -32,6 +52,22 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
   },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "build",
+    "dist",
+    "src/old",
+    "src/**/old/*"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
   // Comment after we're done
   // "include": [
   //   "src",

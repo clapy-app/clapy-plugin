@@ -16,8 +16,8 @@ x-backend:
   env_file: .env
   environment:
     ISDOCKER: 'true'
-    REACT_APP_HASURA_HOSTNAME: hasura
-    REACT_APP_HASURA_PORT: ${HASURA_DOCKER_PORT}
+    VITE_HASURA_HOSTNAME: hasura
+    VITE_HASURA_PORT: ${HASURA_DOCKER_PORT}
     POSTGRES_HOST: db
     POSTGRES_PORT_CONSUMER: ${POSTGRES_PORT_CONTAINER}
   depends_on:
@@ -51,7 +51,7 @@ services:
     image: hasura/graphql-engine:v2.4.0.cli-migrations-v3
     container_name: clapy_hasura
     ports:
-      - '${REACT_APP_HASURA_PORT}:${HASURA_DOCKER_PORT}'
+      - '${VITE_HASURA_PORT}:${HASURA_DOCKER_PORT}'
     depends_on:
       - "db"
     volumes:
@@ -68,7 +68,7 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
       HASURA_GRAPHQL_NO_OF_RETRIES: 1000
-      HASURA_GRAPHQL_JWT_SECRET: "{\"jwk_url\": \"https://${REACT_APP_AUTH0_DOMAIN}/.well-known/jwks.json\", \"type\": \"RS256\", \"audience\": \"${REACT_APP_AUTH0_AUDIENCE}\", \"issuer\": \"https://${REACT_APP_AUTH0_DOMAIN}/\"}"
+      HASURA_GRAPHQL_JWT_SECRET: "{\"jwk_url\": \"https://${VITE_AUTH0_DOMAIN}/.well-known/jwks.json\", \"type\": \"RS256\", \"audience\": \"${VITE_AUTH0_AUDIENCE}\", \"issuer\": \"https://${VITE_AUTH0_DOMAIN}/\"}"
   #    restart: on-failure
 
   backend:

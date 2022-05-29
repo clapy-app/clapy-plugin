@@ -7,10 +7,11 @@
 			"label": "Start dev env",
 			"detail": "Start all scripts to run the Figma plugin with a separate browser preview",
 			"dependsOn": [
-				"Figma plugin",
-				"Browser app (plugin dev)",
-				"Websocket app",
-				"Backend node",
+				// "Figma plugin",
+				"FP Plugin back",
+				"FP Plugin front",
+				"FP Websocket",
+				"Backend NodeJS",
 				// "Hasura console", 
 				// "Docker containers" // Already marked as dependency of Hasura console, not needed here.
 			],
@@ -23,33 +24,87 @@
 			}
 		},
 		{
-			"label": "Figma plugin",
-			"detail": "`npm run dev-with-browser:plugin` as VSCode task",
+			"label": "FP Plugin back",
 			"options": {
 				"cwd": "${workspaceFolder}/figma-plugin-clapy"
 			},
 			"type": "npm",
 			"script": "dev-with-browser:plugin",
-			"problemMatcher": [
-				"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
-			],
+			"problemMatcher": {
+				"source": "esbuild",
+				"applyTo": "allDocuments",
+				"pattern": [
+					{
+						"regexp": "^✘ ([ERROR]) (.+)$",
+						"code": 1,
+						"message": 2
+					},
+					{
+						"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
+						"file": 1,
+						"line": 2,
+						"column": 3
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^[watch] build started",
+					"endsPattern": "^build ended with"
+				}
+			},
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"
 			},
 			"group": "build"
 		},
+		// {
+		// 	"label": "Figma plugin",
+		// 	"detail": "`npm run dev-with-browser:plugin` as VSCode task",
+		// 	"options": {
+		// 		"cwd": "${workspaceFolder}/figma-plugin-clapy"
+		// 	},
+		// 	"type": "npm",
+		// 	"script": "dev-with-browser:plugin",
+		// 	"problemMatcher": [
+		// 		"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
+		// 	],
+		// 	"isBackground": true,
+		// 	"presentation": {
+		// 		"reveal": "never"
+		// 	},
+		// 	"group": "build"
+		// },
 		{
-			"label": "Browser app (plugin dev)",
+			"label": "FP Plugin front",
 			"detail": "`npm run dev-with-browser:browser` as VSCode task",
 			"options": {
 				"cwd": "${workspaceFolder}/figma-plugin-clapy"
 			},
 			"type": "npm",
 			"script": "dev-with-browser:browser",
-			"problemMatcher": [
-				"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
-			],
+			"problemMatcher": {
+				"source": "esbuild",
+				"applyTo": "allDocuments",
+				"pattern": [
+					{
+						"regexp": "^✘ ([ERROR]) (.+)$",
+						"code": 1,
+						"message": 2
+					},
+					{
+						"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
+						"file": 1,
+						"line": 2,
+						"column": 3
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^[watch] build started",
+					"endsPattern": "^  ready in "
+				}
+			},
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"
@@ -57,7 +112,7 @@
 			"group": "build"
 		},
 		{
-			"label": "Websocket app",
+			"label": "FP Websocket",
 			"detail": "`npm run dev-with-browser:server` as VSCode task",
 			"options": {
 				"cwd": "${workspaceFolder}/figma-plugin-clapy"
@@ -101,90 +156,93 @@
 			"group": "build"
 		},
 		{
-			"label": "Backend node",
+			"label": "Backend NodeJS",
 			"detail": "`npm run dev:debug` as VSCode task",
 			"options": {
 				"cwd": "${workspaceFolder}/backend-clapy"
 			},
 			"type": "npm",
 			"script": "dev:debug",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
-			},
-			"group": "build"
-		},
-		{
-			"label": "Backend node main only",
-			"detail": "`npm run dev:debug2` as VSCode task",
-			"options": {
-				"cwd": "${workspaceFolder}/backend-clapy"
-			},
-			"type": "npm",
-			"script": "dev:debug2",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
-			},
-			"group": "build"
-		},
-		{
-			"label": "Hasura console",
-			"detail": "`npm run console` as VSCode task",
-			"type": "npm",
-			"script": "console",
 			"dependsOn": [
 				"Docker containers"
 			],
-			// "problemMatcher": [
-			// 	"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
-			// ],
-			"problemMatcher": {
-				// "owner": "typescript",
-				"fileLocation": [
-					"autoDetect",
-					"${workspaceFolder}"
-				],
-				"source": "Hasura CLI",
-				"applyTo": "allDocuments",
-				"pattern": [
-					{
-						"regexp": "^([^:]+): (.+)$",
-						"file": 1,
-						"kind": "file",
-						"message": 2,
-					},
-				],
-				// "pattern": [
-				// 	{
-				// 		"regexp": "^([^:]+): (.+)$",
-				// 		"code": 1,
-				// 		"message": 2,
-				// 	},
-				// 	{
-				// 		"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
-				// 		// "message": 1,
-				// 		"file": 1,
-				// 		"line": 2,
-				// 		"column": 3,
-				// 	}
-				// ],
-				"background": {
-					"activeOnStart": true,
-					// "beginsPattern": "^(?:Failed to compile\\.|Compiled with warnings\\.|Compiled successfully!)$",
-					// "endsPattern": "^(?:Search for the keywords to learn more about each (warning|error)\\.|Note that the development build is not optimized\\.)$"
-					"beginsPattern": "^\\[nodemon\\] restarting due to changes\\.\\.\\.$",
-					"endsPattern": "^INFO console running at:"
-				}
-			},
+			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"
 			},
 			"group": "build"
 		},
+		// {
+		// 	"label": "Backend node main only",
+		// 	"detail": "`npm run dev:debug2` as VSCode task",
+		// 	"options": {
+		// 		"cwd": "${workspaceFolder}/backend-clapy"
+		// 	},
+		// 	"type": "npm",
+		// 	"script": "dev:debug2",
+		// 	"problemMatcher": "$tsc-watch",
+		// 	"isBackground": true,
+		// 	"presentation": {
+		// 		"reveal": "never"
+		// 	},
+		// 	"group": "build"
+		// },
+		// {
+		// 	"label": "Hasura console",
+		// 	"detail": "`npm run console` as VSCode task",
+		// 	"type": "npm",
+		// 	"script": "console",
+		// 	"dependsOn": [
+		// 		"Docker containers"
+		// 	],
+		// 	// "problemMatcher": [
+		// 	// 	"$ts-webpack-watch" /* , "$tslint-webpack-watch" */
+		// 	// ],
+		// 	"problemMatcher": {
+		// 		// "owner": "typescript",
+		// 		"fileLocation": [
+		// 			"autoDetect",
+		// 			"${workspaceFolder}"
+		// 		],
+		// 		"source": "Hasura CLI",
+		// 		"applyTo": "allDocuments",
+		// 		"pattern": [
+		// 			{
+		// 				"regexp": "^([^:]+): (.+)$",
+		// 				"file": 1,
+		// 				"kind": "file",
+		// 				"message": 2,
+		// 			},
+		// 		],
+		// 		// "pattern": [
+		// 		// 	{
+		// 		// 		"regexp": "^([^:]+): (.+)$",
+		// 		// 		"code": 1,
+		// 		// 		"message": 2,
+		// 		// 	},
+		// 		// 	{
+		// 		// 		"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
+		// 		// 		// "message": 1,
+		// 		// 		"file": 1,
+		// 		// 		"line": 2,
+		// 		// 		"column": 3,
+		// 		// 	}
+		// 		// ],
+		// 		"background": {
+		// 			"activeOnStart": true,
+		// 			// "beginsPattern": "^(?:Failed to compile\\.|Compiled with warnings\\.|Compiled successfully!)$",
+		// 			// "endsPattern": "^(?:Search for the keywords to learn more about each (warning|error)\\.|Note that the development build is not optimized\\.)$"
+		// 			"beginsPattern": "^\\[nodemon\\] restarting due to changes\\.\\.\\.$",
+		// 			"endsPattern": "^INFO console running at:"
+		// 		}
+		// 	},
+		// 	"isBackground": true,
+		// 	"presentation": {
+		// 		"reveal": "never"
+		// 	},
+		// 	"group": "build"
+		// },
 		{
 			"label": "Docker containers",
 			"detail": "`npm run up` as VSCode task",
