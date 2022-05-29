@@ -97,12 +97,25 @@
 						"file": 1,
 						"line": 2,
 						"column": 3
-					}
+					},
+					// Attempt for vite-plugin-checker
+					// {
+					// 	"regexp": "^ ERROR\\(TypeScript\\)  (.*)$",
+					// 	"message": 1
+					// },
+					// {
+					// 	"regexp": "^ FILE  ([^:]+):(\\d+):(\\d+)$",
+					// 	"file": 1,
+					// 	"line": 2,
+					// 	"column": 3
+					// },
 				],
 				"background": {
 					"activeOnStart": true,
 					"beginsPattern": "^[watch] build started",
 					"endsPattern": "^  ready in "
+					// Attempt for vite-plugin-checker
+					// "endsPattern": "\\[TypeScript\\] Found \\d+ errors?\\. Watching for file changes\\."
 				}
 			},
 			"isBackground": true,
