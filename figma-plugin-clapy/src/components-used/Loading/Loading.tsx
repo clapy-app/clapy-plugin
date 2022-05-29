@@ -1,5 +1,7 @@
-import { FC, memo } from 'react';
-import Lottie, { Options } from 'react-lottie';
+import type { FC } from 'react';
+import { memo } from 'react';
+import type { Options } from 'react-lottie';
+import Lottie from 'react-lottie';
 
 import animationData from '../../lotties/loading.json';
 

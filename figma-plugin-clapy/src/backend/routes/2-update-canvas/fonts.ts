@@ -1,5 +1,5 @@
 import { unquoteAndTrimString } from '../../../common/general-utils';
-import { Property } from '../../../common/sb-serialize.model';
+import type { Property } from '../../../common/sb-serialize.model';
 import { sizeWithUnitToPx } from './update-canvas-utils';
 
 const fontWeights = [

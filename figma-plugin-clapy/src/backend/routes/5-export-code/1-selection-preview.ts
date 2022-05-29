@@ -1,4 +1,4 @@
-import { NextFn } from '../../../common/app-models';
+import type { NextFn } from '../../../common/app-models';
 import { isBlendMixin } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 

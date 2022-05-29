@@ -1,5 +1,6 @@
 import Button from '@mui/material/Button';
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
 import classes from '../1-ImportSb.module.css';
 import { parseErrorForDisplay, useCallbackAsync2 } from '../../../common/front-utils';

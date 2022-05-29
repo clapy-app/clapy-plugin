@@ -1,18 +1,10 @@
-import { Property } from 'csstype';
+import type { Property } from 'csstype';
 
-import { RenderContext } from '../1-import-stories/import-model';
-import { Nil } from '../../../common/app-models';
+import type { RenderContext } from '../1-import-stories/import-model';
+import type { Nil } from '../../../common/app-models';
 import { entries } from '../../../common/general-utils';
-import {
-  CElementNode,
-  CNode,
-  CPseudoElementNode,
-  ELEMENT_NODE,
-  isCElementNode,
-  isCPseudoElementNode,
-  isCTextNode,
-  MyStyles,
-} from '../../../common/sb-serialize.model';
+import type { CElementNode, CNode, CPseudoElementNode, MyStyles } from '../../../common/sb-serialize.model';
+import { ELEMENT_NODE, isCElementNode, isCPseudoElementNode, isCTextNode } from '../../../common/sb-serialize.model';
 import { isGroup, isText } from '../../common/node-type-utils';
 import { cssToFontStyle } from './fonts';
 import {

@@ -1,4 +1,5 @@
-import { DependencyList, useCallback } from 'react';
+import type { DependencyList } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { ErrorAlert2, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';

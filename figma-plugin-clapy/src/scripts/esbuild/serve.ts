@@ -1,6 +1,7 @@
 import * as esbuild from 'esbuild';
 
-import { addFrontDefineVarToContext, BuildContext } from './build-prepare';
+import type { BuildContext } from './build-prepare';
+import { addFrontDefineVarToContext } from './build-prepare';
 import { getConfigBackend } from './config-backend';
 import { getConfigFront } from './config-front';
 

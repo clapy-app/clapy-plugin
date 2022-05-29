@@ -1,8 +1,9 @@
 import { isNonEmptyObject } from '../../../common/general-utils';
-import { SbStoriesWrapper } from '../../../common/sb-serialize.model';
+import type { SbStoriesWrapper } from '../../../common/sb-serialize.model';
 import { sanitizeSbUrl } from '../../../common/storybook-utils';
 import { env } from '../../../environment/env';
-import { createFrames, FrameCreated, getOrCreatePage, StoryEntries } from './3-import-sb-detail';
+import type { FrameCreated, StoryEntries } from './3-import-sb-detail';
+import { createFrames, getOrCreatePage } from './3-import-sb-detail';
 import { storiesSamples } from './import-model';
 
 export function getStoriesSamples() {

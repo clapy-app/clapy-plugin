@@ -1,4 +1,5 @@
-import { FC, memo, MouseEvent } from 'react';
+import type { FC, MouseEvent } from 'react';
+import { memo } from 'react';
 
 import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
 import { LogoutButton } from '../LogoutButton/LogoutButton';

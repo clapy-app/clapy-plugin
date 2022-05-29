@@ -7,7 +7,8 @@ import FormGroup from '@mui/material/FormGroup';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { FC, memo, useCallback, useRef, useState } from 'react';
+import type { FC } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
@@ -16,7 +17,7 @@ import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
 import { apiPost } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
-import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
+import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser, selectIsZipEnabled } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env';

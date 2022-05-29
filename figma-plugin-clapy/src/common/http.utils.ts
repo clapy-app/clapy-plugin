@@ -1,12 +1,7 @@
 import { _accessToken, _tokenType, getTokens, refreshTokens } from '../core/auth/auth-service';
 import { env } from '../environment/env';
-import {
-  apiGetUnauthenticated,
-  apiPostUnauthenticated,
-  ApiRequestConfig,
-  ApiResponse,
-  httpGetUnauthenticated,
-} from './unauthenticated-http.utils';
+import type { ApiRequestConfig, ApiResponse } from './unauthenticated-http.utils';
+import { apiGetUnauthenticated, apiPostUnauthenticated, httpGetUnauthenticated } from './unauthenticated-http.utils';
 
 const hasuraUri = `${env.hasuraHttp}/v1/graphql`;
 

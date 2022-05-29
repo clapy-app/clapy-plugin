@@ -1,5 +1,6 @@
 import { getCompNode } from '../1-import-stories/3-import-sb-detail';
-import { getPageById, isLayout, isMyComp, MyCompNode } from '../../common/node-type-utils';
+import type { MyCompNode } from '../../common/node-type-utils';
+import { getPageById, isLayout, isMyComp } from '../../common/node-type-utils';
 import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: string) {

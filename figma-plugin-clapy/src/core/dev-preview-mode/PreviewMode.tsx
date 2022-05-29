@@ -1,4 +1,5 @@
-import { FC, memo, MutableRefObject, useEffect, useRef, useState } from 'react';
+import type { FC, MutableRefObject } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import styles from './PreviewMode.module.css';
 

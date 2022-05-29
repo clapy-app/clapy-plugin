@@ -1,5 +1,6 @@
 import Tooltip from '@mui/material/Tooltip';
-import { FC, memo, useCallback } from 'react';
+import type { FC } from 'react';
+import { memo, useCallback } from 'react';
 
 import { logout } from '../../../core/auth/auth-service';
 import classes from './LogoutButton.module.css';

@@ -1,4 +1,5 @@
-import { FC, memo, useState } from 'react';
+import type { FC } from 'react';
+import { memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import classes from '../1-import-sb/1-ImportSb.module.scss';
@@ -7,7 +8,7 @@ import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { apiPost } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
-import { CSBResponse, ExportImageMap2 } from '../../../common/sb-serialize.model';
+import type { CSBResponse, ExportImageMap2 } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env';

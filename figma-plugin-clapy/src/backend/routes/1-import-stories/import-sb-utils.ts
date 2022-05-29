@@ -1,7 +1,8 @@
-import { ArgTypeUsed } from '../../../common/app-models';
-import { Args, ArgTypes } from '../../../common/sb-serialize.model';
+import type { ArgTypeUsed } from '../../../common/app-models';
+import type { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues } from '../../../common/storybook-utils';
-import { isComponentSet, isPage, MyCompNode } from '../../common/node-type-utils';
+import type { MyCompNode } from '../../common/node-type-utils';
+import { isComponentSet, isPage } from '../../common/node-type-utils';
 import { getLayoutStoryId } from './3-import-sb-detail';
 
 export function setStoryFrameProperties(

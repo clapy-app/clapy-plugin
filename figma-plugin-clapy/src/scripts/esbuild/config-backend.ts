@@ -1,4 +1,5 @@
-import { BuildContext, createESBuildConfig } from './build-prepare';
+import type { BuildContext } from './build-prepare';
+import { createESBuildConfig } from './build-prepare';
 
 export async function getConfigBackend(context: BuildContext) {
   const defineEnvVar = context.defineEnvVar;

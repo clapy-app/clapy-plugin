@@ -1,4 +1,4 @@
-import { Dispatch } from '@reduxjs/toolkit';
+import type { Dispatch } from '@reduxjs/toolkit';
 
 import { apiGet, apiPost } from '../../common/http.utils';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';

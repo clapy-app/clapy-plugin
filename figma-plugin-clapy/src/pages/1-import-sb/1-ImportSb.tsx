@@ -1,24 +1,15 @@
-import {
-  ChangeEventHandler,
-  FC,
-  memo,
-  MouseEventHandler,
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import type { ChangeEventHandler, FC, MouseEventHandler, MutableRefObject } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { ExportCode } from '../2-export-code/old/4-ExportCode';
-import { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
+import type { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
 import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
-import { SbStoriesWrapper } from '../../common/sb-serialize.model';
+import type { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
 import { Button } from '../../components-used/Button/Button';
 import { getTokens, login } from '../../core/auth/auth-service';

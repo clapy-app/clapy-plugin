@@ -1,7 +1,8 @@
 import * as cssModulesPlugin from 'esbuild-css-modules-plugin';
 import { readFile, writeFile } from 'fs/promises';
 
-import { BuildContext, createESBuildConfig, indexHtmlPath, pluginDir } from './build-prepare';
+import type { BuildContext } from './build-prepare';
+import { createESBuildConfig, indexHtmlPath, pluginDir } from './build-prepare';
 
 export async function getConfigFront(context: BuildContext) {
   const defineEnvVar = context.defineEnvVar;

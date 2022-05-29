@@ -1,7 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { RootState } from '../../core/redux/store';
-import { hasMissingMetaProfile, hasMissingMetaUsage, UserMetadata, UserMetaUsage } from './user-service';
+import type { RootState } from '../../core/redux/store';
+import type { UserMetadata, UserMetaUsage } from './user-service';
+import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service';
 
 export interface UserState {
   userMetadata?: UserMetadata;

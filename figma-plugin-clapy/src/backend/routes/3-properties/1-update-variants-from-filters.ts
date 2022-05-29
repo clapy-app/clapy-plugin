@@ -9,8 +9,8 @@ import {
 } from '../2-update-canvas/grid-utils';
 import { removeNode, resizeNode } from '../2-update-canvas/update-canvas-utils';
 import { appConfig } from '../../../common/app-config';
-import { ArgTypeObj, NewVariant } from '../../../common/app-models';
-import { Args, ArgTypes } from '../../../common/sb-serialize.model';
+import type { ArgTypeObj, NewVariant } from '../../../common/app-models';
+import type { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
 import { isComponentSet } from '../../common/node-type-utils';
 

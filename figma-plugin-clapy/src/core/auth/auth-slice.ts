@@ -1,8 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { Nil } from '../../common/app-models';
-import { RootState } from '../redux/store';
-import { AccessTokenDecoded } from './auth-service';
+import type { Nil } from '../../common/app-models';
+import type { RootState } from '../redux/store';
+import type { AccessTokenDecoded } from './auth-service';
 
 export interface AuthState {
   loading: boolean;

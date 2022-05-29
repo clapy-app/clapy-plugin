@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { AnyAction } from 'redux';
+import type { AnyAction } from 'redux';
 
-import { RootState } from './store';
+import type { RootState } from './store';
 
 // The store resides in a separate file with nothing else to help prevent circular dependencies.
 // Similarly, selectors have been moved out of slices. We could test later grouping them again to see if it causes

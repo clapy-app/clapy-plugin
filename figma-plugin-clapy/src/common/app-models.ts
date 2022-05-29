@@ -1,5 +1,5 @@
-import { _Routes, _Subscriptions } from '../backend/routes';
-import { Args, ArgTypes } from './sb-serialize.model';
+import type { _Routes, _Subscriptions } from '../backend/routes';
+import type { Args, ArgTypes } from './sb-serialize.model';
 
 export type ObjKey = string | number | symbol;
 

@@ -1,9 +1,9 @@
 import * as dotenv from 'dotenv';
-import { BuildOptions } from 'esbuild';
+import type { BuildOptions } from 'esbuild';
 import { readFile, writeFile } from 'fs/promises';
 import { resolve } from 'path';
 
-import { Dict } from '../../common/sb-serialize.model';
+import type { Dict } from '../../common/sb-serialize.model';
 
 export interface BuildContext {
   outDir?: string;

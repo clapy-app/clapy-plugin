@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, FC, memo } from 'react';
+import type { ButtonHTMLAttributes, FC } from 'react';
+import { memo } from 'react';
 
 import classes from './_TabButtonBase.module.css';
 

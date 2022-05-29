@@ -5,17 +5,17 @@ import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { flags } from '../../../common/app-config';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
-import {
+import type {
   ComponentNodeNoMethod,
   Dict,
   ExportImageEntry,
   ExportImagesFigma,
-  extractionBlacklist,
-  nodeDefaults,
   NodeWithDefaults,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
+import { extractionBlacklist, nodeDefaults } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
+import type { LayoutNode, ShapeNode } from '../../common/node-type-utils';
 import {
   isBaseFrameMixin,
   isBlendMixin,
@@ -30,8 +30,6 @@ import {
   isRectangle,
   isShapeExceptDivable,
   isText,
-  LayoutNode,
-  ShapeNode,
 } from '../../common/node-type-utils';
 import { exportNodeTokens } from './4-extract-tokens';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';

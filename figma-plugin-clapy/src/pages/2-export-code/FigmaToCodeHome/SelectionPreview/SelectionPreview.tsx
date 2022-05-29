@@ -1,9 +1,11 @@
-import { FC, memo } from 'react';
-import Lottie, { Options } from 'react-lottie';
+import type { FC } from 'react';
+import { memo } from 'react';
+import type { Options } from 'react-lottie';
+import Lottie from 'react-lottie';
 
 import successLottie from '../../../../lotties/gen-code-success.json';
 import loadingLottie from '../../../../lotties/generating-code.json';
-import { MyStates } from '../FigmaToCodeHome';
+import type { MyStates } from '../FigmaToCodeHome';
 import classes from './SelectionPreview.module.css';
 
 interface Props {

@@ -1,10 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import { apiGet } from '../common/http.utils';
-import { Dispatcher, useAppDispatch } from '../core/redux/hooks';
-import { RootState } from '../core/redux/store';
+import type { Dispatcher } from '../core/redux/hooks';
+import { useAppDispatch } from '../core/redux/hooks';
+import type { RootState } from '../core/redux/store';
 
 // -- RTK Query version
 // /!\ it seems to add a significant overhead in auto-completion. The extra typings may be too heavy and complex.

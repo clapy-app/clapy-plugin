@@ -1,4 +1,5 @@
-import { FC, memo, MouseEventHandler, useCallback, useRef, useState } from 'react';
+import type { FC, MouseEventHandler } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { handleError } from '../../common/error-utils';

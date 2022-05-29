@@ -1,4 +1,4 @@
-import {
+import type {
   ComponentNodeNoMethod,
   ExportImagesFigma,
   FrameNodeNoMethod,
@@ -7,7 +7,8 @@ import {
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import { getFigmaSelection } from '../../common/selection-utils';
-import { nodeToObject, SerializeContext } from './3-nodeToObject';
+import type { SerializeContext } from './3-nodeToObject';
+import { nodeToObject } from './3-nodeToObject';
 import { extractFigmaTokens } from './4-extract-tokens';
 
 export async function serializeSelectedNode() {

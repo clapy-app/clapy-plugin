@@ -25,6 +25,7 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'unused-imports/no-unused-imports': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error',
     'react-hooks/exhaustive-deps': [
       'warn',
       {

@@ -1,5 +1,5 @@
 import { warnNode } from '../../../common/error-utils';
-import { Dict } from '../../../common/sb-serialize.model';
+import type { Dict } from '../../../common/sb-serialize.model';
 import { isPage } from '../../common/node-type-utils';
 
 const enableFigmaTokens = true;

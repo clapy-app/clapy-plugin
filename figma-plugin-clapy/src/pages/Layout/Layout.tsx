@@ -1,4 +1,5 @@
-import { FC, memo, useEffect, useState } from 'react';
+import type { FC } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { LoginHome } from '../0-login/LoginHome/LoginHome';

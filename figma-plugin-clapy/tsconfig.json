@@ -57,11 +57,11 @@
   ],
   "exclude": [
     "node_modules",
-    "**/node_modules/*",
+    "**/node_modules",
     "build",
     "dist",
     "src/old",
-    "src/**/old/*"
+    "src/**/old"
   ],
   "references": [
     {
