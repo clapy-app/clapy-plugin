@@ -28,5 +28,6 @@
       "**/dist*": true,
       "**/old": true
     },
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
   }
 }

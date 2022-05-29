@@ -1,4 +1,4 @@
-import type { FC, MutableRefObject } from 'react';
+import type { FC, MutableRefObject, ReactNode } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
 
 import styles from './PreviewMode.module.css';
@@ -11,6 +11,11 @@ const isPreviewInBrowser = previewEnv === 'browser';
 const isPreviewInFigma = previewEnv === 'figma';
 
 export let wsReady = false;
+
+interface Props {
+  // Like PropsWithChildren<...>
+  children?: ReactNode;
+}
 
 /**
  * Allow to render the figma plugin in the browser and maintain the communiation with the plugin back-end through a websocket dev server.
@@ -29,7 +34,7 @@ export let wsReady = false;
  *   , document.getElementById('react-page'));
  * ```
  */
-export const PreviewMode: FC = memo(function PreviewMode({ children }) {
+export const PreviewMode: FC<Props> = memo(function PreviewMode({ children }) {
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket>();
 

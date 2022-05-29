@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { memo } from 'react';
 
 import { MailIcon } from './_ButtonBase/MailIcon';
@@ -7,7 +7,10 @@ import { BadgeGroup } from './BadgeGroup/BadgeGroup';
 import { Button } from './Button/Button';
 import classes from './ErrorAlert.module.css';
 
-interface Props {}
+interface Props {
+  // Like PropsWithChildren<...>
+  children?: ReactNode;
+}
 
 export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
   let { children } = props;
@@ -23,7 +26,7 @@ export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
 });
 
 interface Props2 {
-  closeToast: () => () => void;
+  closeToast: (e: React.MouseEvent<HTMLElement>) => void;
   emailLink: string;
 }
 
@@ -34,7 +37,7 @@ export const ErrorAlertButtons: FC<Props2> = memo(function ErrorAlertButtons(pro
       <Button icon={<MailIcon className={classes.icon} />} href={emailLink}>
         Report bug
       </Button>
-      <Button icon={<SlashIcon className={classes.icon} />} onClick={() => closeToast()}>
+      <Button icon={<SlashIcon className={classes.icon} />} onClick={closeToast}>
         Close
       </Button>
     </div>
