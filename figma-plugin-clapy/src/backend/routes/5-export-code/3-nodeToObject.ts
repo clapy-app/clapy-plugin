@@ -220,6 +220,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         }
 
         setProp(obj, 'type', 'VECTOR' as VectorNode['type']);
+        if (isComp) {
+          // The real condition is if we are in another file, which can happen when parsing the main component from an instance. If we can detect it, we should improve the condition to avoid copying nodes for components that are in the same file.
+          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+        }
         if (isShapeExceptDivable(nodeToExport)) {
           [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
           (nodeToExport as ShapeNode).effects = [];
@@ -360,7 +364,9 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         obj.mainComponent.parent = { id, name, type };
       }
       if (!context.components[id]) {
-        const compContext = context.nodeOfComp ? { ...context, nodeOfComp: undefined, isComp: true } : context;
+        const compContext = context.nodeOfComp
+          ? { ...context, nodeOfComp: undefined, isComp: true }
+          : { ...context, isComp: true };
         const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
           | ComponentNodeNoMethod
           | undefined;

@@ -40,7 +40,7 @@ export async function exportCode(
   uploadToCsb = true,
 ) {
   if (!extraConfig.output) extraConfig.output = 'csb';
-  extraConfig.useViteJS = extraConfig.output === 'zip';
+  extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
