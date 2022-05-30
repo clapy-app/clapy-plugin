@@ -119,6 +119,14 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       context = { ...context, nodeOfComp: node.mainComponent };
     }
     const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
+
+    // If we are in a component which instance is used to render the selection,
+    // and that component has a sub-instance, we ignore this sub-instance.
+    // The one in the selection tree will be read instead.
+    // if (isComp && isProcessableInst) {
+    //   return { id: node.id, type: node.type, name: node.name } as SceneNodeNoMethod;
+    // }
+
     if (isComp) skipParent = false;
     const isInInstance = !!nodeOfComp;
     if (!exportAsSvg && shouldGroupAsSVG(node)) {

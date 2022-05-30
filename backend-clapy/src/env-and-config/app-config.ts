@@ -12,6 +12,7 @@ export const flags = {
   writeClapyFiles: false,
   destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
   enableInstanceOverrides: false,
+  stripInstancesInComponents: false,
 };
 
 // What takes time:

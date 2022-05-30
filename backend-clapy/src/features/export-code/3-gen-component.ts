@@ -4,7 +4,7 @@ import ts, { Statement } from 'typescript';
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { flags } from '../../env-and-config/app-config';
 import { figmaToAstRec } from './4-gen-node';
-import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode } from './code.model';
+import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model';
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
 import {
@@ -52,6 +52,38 @@ export function getOrGenComponent(
   return moduleContext;
 }
 
+// Although it's quite verbose, we put the ModuleContext creation in a separate function, that is also called in 2-create-ts-compiler.ts for the root App.tsx component. It avoids mistakes when adding more content to the context.
+export function mkModuleContext(
+  projectContext: ProjectContext,
+  node: SceneNode2,
+  pageName: string | undefined,
+  compDir: string,
+  compName: string,
+  parentModuleContext: ModuleContext | undefined,
+  isRootComponent: boolean,
+  isComp: boolean,
+) {
+  const moduleContext: ModuleContext = {
+    projectContext,
+    node,
+    imports: [],
+    statements: [],
+    pageName,
+    compDir,
+    compName,
+    classNamesAlreadyUsed: new Set(),
+    subComponentNamesAlreadyUsed: new Set([compName]),
+    importsAlreadyAdded: new Map(),
+    cssRules: [],
+    inInteractiveElement: parentModuleContext?.inInteractiveElement || false,
+    isRootComponent,
+    isComponent: isComp,
+    classes: new Set(),
+    swappableInstances: new Set(),
+  };
+  return moduleContext;
+}
+
 function genComponent(
   parentModuleContext: ModuleContext,
   node: SceneNode2,
@@ -71,31 +103,22 @@ function genComponent(
   const compName = getComponentName(projectContext, node);
   const compDir = pageName ? `src/components/${pageName}/${compName}` : `src/components/${compName}`;
 
-  const moduleContext: ModuleContext = {
+  const moduleContext = mkModuleContext(
     projectContext,
     node,
-    imports: [],
-    statements: [],
-    pageName: pageName || compName,
+    pageName || compName,
     compDir,
     compName,
-    classNamesAlreadyUsed: new Set(),
-    subComponentNamesAlreadyUsed: new Set([compName]),
-    importsAlreadyAdded: new Map(),
-    cssRules: [],
-    inInteractiveElement: parentModuleContext?.inInteractiveElement || false,
+    parentModuleContext,
     isRootComponent,
-    isComponent: isComp,
-    classes: new Set(),
-  };
+    isComp,
+  );
 
   const { imports, statements } = moduleContext;
 
   const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
 
-  const classesArr = Array.from(moduleContext.classes);
-
-  createModuleCode(moduleContext, tsx, classesArr);
+  createModuleCode(moduleContext, tsx);
 
   if (isNonEmptyObject(css.children)) {
     cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
@@ -121,22 +144,28 @@ function genComponent(
 export function createModuleCode(
   moduleContext: ModuleContext,
   tsx: JsxOneOrMore | undefined,
-  classes: string[],
   prefixStatements: Statement[] = [],
 ) {
-  const { imports, statements, compName } = moduleContext;
+  const { imports, statements, compName, classes: classesSet } = moduleContext;
+
+  const classes = Array.from(classesSet);
 
   // Add React imports: import { FC, memo } from 'react';
 
   imports.push(
     mkNamedImportsDeclaration(
-      ['FC', 'memo', ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : [])],
+      [
+        'FC',
+        'memo',
+        ...(moduleContext.swappableInstances.size > 0 ? ['ReactNode'] : []),
+        ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : []),
+      ],
       'react',
     ),
   );
 
   // Add component Prop interface
-  statements.push(mkPropInterface(classes));
+  statements.push(mkPropInterface(moduleContext, classes));
 
   // Add the component
   statements.push(mkCompFunction(compName, classes, tsx, prefixStatements));

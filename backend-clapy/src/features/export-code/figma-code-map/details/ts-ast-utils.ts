@@ -3,7 +3,7 @@ import ts, { Statement } from 'typescript';
 
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, NodeContext, ProjectContext } from '../../code.model';
+import { JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../../code.model';
 import { isComponentSet, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
@@ -160,7 +160,9 @@ export function mkNamedImportsDeclaration(
   );
 }
 
-export function mkPropInterface(classes: string[]) {
+export function mkPropInterface(moduleContext: ModuleContext, classes: string[]) {
+  const { swappableInstances } = moduleContext;
+  const swapPropNames = Array.from(swappableInstances);
   return factory.createInterfaceDeclaration(
     undefined,
     undefined,
@@ -188,6 +190,25 @@ export function mkPropInterface(classes: string[]) {
                     factory.createIdentifier(name),
                     factory.createToken(ts.SyntaxKind.QuestionToken),
                     factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+      ...(!swapPropNames?.length
+        ? []
+        : [
+            factory.createPropertySignature(
+              undefined,
+              factory.createIdentifier('swap'),
+              factory.createToken(ts.SyntaxKind.QuestionToken),
+              factory.createTypeLiteralNode(
+                swapPropNames.map(name =>
+                  factory.createPropertySignature(
+                    undefined,
+                    factory.createIdentifier(name),
+                    factory.createToken(ts.SyntaxKind.QuestionToken),
+                    factory.createTypeReferenceNode(factory.createIdentifier('ReactNode'), undefined),
                   ),
                 ),
               ),
@@ -407,6 +428,21 @@ export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttri
     factory.createIdentifier(compName),
     undefined,
     factory.createJsxAttributes(extraAttributes || []),
+  );
+}
+
+export function mkSwapInstanceWrapper(swapName: string, compAst: ts.JsxSelfClosingElement) {
+  return factory.createJsxExpression(
+    undefined,
+    factory.createBinaryExpression(
+      factory.createPropertyAccessChain(
+        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier(swapName),
+      ),
+      factory.createToken(ts.SyntaxKind.BarBarToken),
+      compAst,
+    ),
   );
 }
 

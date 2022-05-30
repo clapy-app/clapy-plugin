@@ -36,10 +36,12 @@ import {
   addCssRule,
   genClassName,
   genComponentImportName,
+  genUniqueName,
   mkClassAttr,
   mkClassesAttribute,
   mkComponentUsage,
   mkNamedImportsDeclaration,
+  mkSwapInstanceWrapper,
   mkTag,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
@@ -71,7 +73,9 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     }
 
     // If component or instance, generate the code in a separate component file and reference it here.
-    if (isComponent(node) || isInstance(node)) {
+    const isComp = isComponent(node);
+    const isInst = isInstance(node);
+    if (isComp || isInst) {
       const componentContext = getOrGenComponent(moduleContext, node, context.parentNode);
 
       if (!flags.enableInstanceOverrides) {
@@ -94,7 +98,13 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       const classesAttr = mkClassesAttribute(instanceClasses);
       const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
-      return mkComponentUsage(componentContext.compName, attrs);
+      let compAst: ts.JsxSelfClosingElement | ts.JsxExpression = mkComponentUsage(componentContext.compName, attrs);
+      if (isInst) {
+        const swapName = genUniqueName(moduleContext.swappableInstances, componentContext.compName);
+        // Wrap in {props.swap?.${swapName} || ${compAst}}
+        compAst = mkSwapInstanceWrapper(swapName, compAst);
+      }
+      return compAst;
     }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);

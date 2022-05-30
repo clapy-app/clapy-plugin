@@ -6,14 +6,14 @@ import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
-import { createModuleCode, getOrGenComponent, printFileInProject } from './3-gen-component';
+import { createModuleCode, getOrGenComponent, mkModuleContext, printFileInProject } from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
 import { CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
-import { ComponentNode2, InstanceNode2 } from './create-ts-compiler/canvas-utils';
+import { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
@@ -44,7 +44,7 @@ export async function exportCode(
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
-    fillWithDefaults(comp, instancesInComp);
+    fillWithDefaults(comp, instancesInComp, true);
   }
   const compNodes = components.reduce((prev, cur) => {
     prev[cur.id] = cur;
@@ -96,15 +96,16 @@ export async function exportCode(
     extraConfig,
   };
 
-  const lightAppModuleContext = {
+  const lightAppModuleContext = mkModuleContext(
     projectContext,
-    imports: [] as unknown[],
-    statements: [] as unknown[],
-    pageName: undefined,
-    compDir: appCompDir,
-    compName: appCompName,
-    inInteractiveElement: false,
-  } as ModuleContext;
+    undefined as unknown as SceneNode2,
+    undefined,
+    appCompDir,
+    appCompName,
+    undefined,
+    false,
+    false,
+  );
   perfMeasure('c');
   const moduleContext = getOrGenComponent(lightAppModuleContext, root, parent, true);
   perfMeasure('d');
@@ -214,7 +215,7 @@ function addCompToAppRoot(
     prefixStatements = [mkSwitchThemeHandler()];
   }
 
-  createModuleCode(appModuleContext, appTsx, [], prefixStatements);
+  createModuleCode(appModuleContext, appTsx, prefixStatements);
 
   printFileInProject(appModuleContext);
 }

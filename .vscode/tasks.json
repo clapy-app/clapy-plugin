@@ -15,9 +15,8 @@
 				// Enable to run the webservice without debugger.
 				// Use launch (F11) instead for debugging.
 				// "Backend NodeJS",
-
 				// "Hasura console", 
-				"Docker containers", // Already marked as dependency of Hasura console, not needed here.
+				// "Docker containers", // Already marked as dependency of Hasura console, not needed here.
 			],
 			"presentation": {
 				"reveal": "never"
@@ -136,6 +135,9 @@
 			},
 			"type": "npm",
 			"script": "dev-with-browser:server",
+			"dependsOn": [
+				"Docker containers"
+			],
 			"problemMatcher": {
 				"owner": "typescript",
 				"fileLocation": [

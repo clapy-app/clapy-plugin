@@ -57,6 +57,7 @@ export interface ModuleContext {
   readonly inInteractiveElement?: boolean;
   readonly isRootComponent?: boolean;
   readonly classes: Set<string>;
+  readonly swappableInstances: Set<string>;
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
