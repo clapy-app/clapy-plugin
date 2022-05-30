@@ -110,7 +110,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     if (!isPage(node) && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
     }
-    const { skipChildren, skipInstance, skipParent } = options;
+    let { skipChildren, skipInstance, skipParent } = options;
     const isProcessableInst = isProcessableInstance(node, skipInstance);
     const nodeIsShape = isShapeExceptDivable(node);
     let exportAsSvg = nodeIsShape;
@@ -119,6 +119,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       context = { ...context, nodeOfComp: node.mainComponent };
     }
     const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
+    if (isComp) skipParent = false;
     const isInInstance = !!nodeOfComp;
     if (!exportAsSvg && shouldGroupAsSVG(node)) {
       exportAsSvg = true;
@@ -332,7 +333,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     }
 
     if (node.parent && !skipParent) {
-      obj.parent = { id: node.parent.id, type: node.parent.type };
+      obj.parent = { id: node.parent.id, type: node.parent.type, name: node.parent.name };
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
       const promises: ReturnType<typeof nodeToObjectRec>[] = [];

@@ -16,7 +16,7 @@
       // "restart": true,
       // "remoteRoot": "/app",
       "localRoot": "${workspaceFolder}/backend-clapy",
-      // "preLaunchTask": "${defaultBuildTask}",
+      "preLaunchTask": "${defaultBuildTask}",
     },
     {
       "name": "Backend WSL debug",

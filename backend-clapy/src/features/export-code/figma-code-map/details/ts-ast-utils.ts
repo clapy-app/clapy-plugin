@@ -3,8 +3,8 @@ import ts, { Statement } from 'typescript';
 
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, NodeContext } from '../../code.model';
-import { SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import { JsxOneOrMore, NodeContext, ProjectContext } from '../../code.model';
+import { isComponentSet, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -58,6 +58,11 @@ export function genComponentImportName(context: NodeContext) {
     baseName = `${baseName}Icon`;
   }
   return genUniqueName(context.moduleContext.subComponentNamesAlreadyUsed, baseName, true);
+}
+
+export function getComponentName(projectContext: ProjectContext, node: SceneNode2) {
+  const name = isComponentSet(node.parent) ? `${node.parent.name}_${node.name}` : node.name;
+  return genUniqueName(projectContext.compNamesAlreadyUsed, name, true);
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {

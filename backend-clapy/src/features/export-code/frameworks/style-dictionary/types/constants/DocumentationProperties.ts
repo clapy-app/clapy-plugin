@@ -1,4 +1,4 @@
-import { PropertyObject } from '@/types/properties';
+import { PropertyObject } from '../types/properties/PropertyObject';
 import { Properties } from './Properties';
 
 export const DocumentationProperties: PropertyObject[] = [

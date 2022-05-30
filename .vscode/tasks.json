@@ -11,12 +11,13 @@
 				"FP Plugin back",
 				"FP Plugin front",
 				"FP Websocket",
+				"Preview generated code",
 				// Enable to run the webservice without debugger.
-				// Use launch (Ctrl+F11) instead for debugging.
+				// Use launch (F11) instead for debugging.
 				// "Backend NodeJS",
 
 				// "Hasura console", 
-				// "Docker containers" // Already marked as dependency of Hasura console, not needed here.
+				"Docker containers", // Already marked as dependency of Hasura console, not needed here.
 			],
 			"presentation": {
 				"reveal": "never"
@@ -87,7 +88,7 @@
 			"type": "npm",
 			"script": "dev-with-browser:browser",
 			"problemMatcher": {
-				"source": "esbuild",
+				"source": "vitejs",
 				"applyTo": "allDocuments",
 				"pattern": [
 					{
@@ -260,6 +261,55 @@
 		// 	"group": "build"
 		// },
 		{
+			"label": "Preview generated code",
+			"detail": "`npm run preview` as VSCode task",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"type": "npm",
+			"script": "preview",
+			"problemMatcher": {
+				"source": "vitejs",
+				"applyTo": "allDocuments",
+				"pattern": [
+					{
+						"regexp": "^✘ ([ERROR]) (.+)$",
+						"code": 1,
+						"message": 2
+					},
+					{
+						"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
+						"file": 1,
+						"line": 2,
+						"column": 3
+					},
+					// Attempt for vite-plugin-checker
+					// {
+					// 	"regexp": "^ ERROR\\(TypeScript\\)  (.*)$",
+					// 	"message": 1
+					// },
+					// {
+					// 	"regexp": "^ FILE  ([^:]+):(\\d+):(\\d+)$",
+					// 	"file": 1,
+					// 	"line": 2,
+					// 	"column": 3
+					// },
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^[watch] build started",
+					"endsPattern": "^  ready in "
+					// Attempt for vite-plugin-checker
+					// "endsPattern": "\\[TypeScript\\] Found \\d+ errors?\\. Watching for file changes\\."
+				}
+			},
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": "build"
+		},
+		{
 			"label": "Docker containers",
 			"detail": "`npm run up` as VSCode task",
 			"type": "npm",
@@ -271,6 +321,6 @@
 				"reveal": "never"
 			},
 			"group": "build"
-		}
+		},
 	]
 }

@@ -8,7 +8,7 @@ import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode } from './code.mod
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
 import {
-  genUniqueName,
+  getComponentName,
   mkCompFunction,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
@@ -68,7 +68,7 @@ function genComponent(
   }
 
   const pageName = parentModuleContext.pageName;
-  const compName = genUniqueName(projectContext.compNamesAlreadyUsed, node.name, true);
+  const compName = getComponentName(projectContext, node);
   const compDir = pageName ? `src/components/${pageName}/${compName}` : `src/components/${compName}`;
 
   const moduleContext: ModuleContext = {
