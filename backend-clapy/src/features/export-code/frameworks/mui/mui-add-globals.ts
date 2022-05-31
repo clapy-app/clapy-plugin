@@ -23,7 +23,7 @@ export function addMUIProvidersImports(lightAppModuleContext: ModuleContext) {
     if (addBaseline) {
       namedImports.push('CssBaseline');
     }
-    imports.push(mkNamedImportsDeclaration(namedImports, '@mui/material'));
+    imports['@mui/material'] = mkNamedImportsDeclaration(namedImports, '@mui/material');
 
     statements.push(mkThemeVarCreation(lightAppModuleContext));
   }

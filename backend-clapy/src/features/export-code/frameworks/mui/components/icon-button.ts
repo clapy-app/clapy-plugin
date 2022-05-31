@@ -46,9 +46,9 @@ export const muiConfigIconButton: MUIConfig = {
     const fontSizeFigma = iconWrapper?.variantProperties?.['Size'] as keyof typeof iconFontSizeMapping | undefined;
     const fontSize = fontSizeFigma ? iconFontSizeMapping[fontSizeFigma] : undefined;
 
-    const [importAst, jsxAst] = iconInstanceToAst(iconSelected, fontSize);
+    const [iconVarName, importAst, jsxAst] = iconInstanceToAst(iconSelected, fontSize);
     if (!importAst || !jsxAst) return;
-    context.moduleContext.imports.push(importAst);
+    context.moduleContext.imports[iconVarName] = importAst;
     return jsxAst;
   },
 };

@@ -42,14 +42,31 @@ export function getOrGenComponent(
     comp = node;
   }
   if (!flags.enableInstanceOverrides || !comp) {
-    return genComponent(parentModuleContext, node, parent, isRootComponent);
+    const moduleContext = genComponent(parentModuleContext, node, parent, isRootComponent);
+    ensureComponentIsImported(parentModuleContext, moduleContext);
+    return moduleContext;
   }
   let moduleContext = components.get(comp.id);
   if (!moduleContext) {
     moduleContext = genComponent(parentModuleContext, comp, parent, isRootComponent);
     components.set(comp.id, moduleContext);
   }
+  ensureComponentIsImported(parentModuleContext, moduleContext);
   return moduleContext;
+}
+
+function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleContext: ModuleContext) {
+  const { compDir: callerCompDir, imports: callerImports } = parentModuleContext;
+  const { compDir, compName } = moduleContext;
+
+  let moduleSpecifier = `${relative(callerCompDir, compDir)}/${compName}`;
+  if (moduleSpecifier.startsWith('/')) {
+    moduleSpecifier = `.${moduleSpecifier}`;
+  } else if (!moduleSpecifier.startsWith('.')) {
+    moduleSpecifier = `./${moduleSpecifier}`;
+  }
+
+  callerImports[compName] = mkNamedImportsDeclaration([compName], moduleSpecifier);
 }
 
 // Although it's quite verbose, we put the ModuleContext creation in a separate function, that is also called in 2-create-ts-compiler.ts for the root App.tsx component. It avoids mistakes when adding more content to the context.
@@ -66,7 +83,7 @@ export function mkModuleContext(
   const moduleContext: ModuleContext = {
     projectContext,
     node,
-    imports: [],
+    imports: {},
     statements: [],
     pageName,
     compDir,
@@ -90,7 +107,7 @@ function genComponent(
   parent: ParentNode | Nil,
   isRootComponent = false,
 ) {
-  const { projectContext, compDir: callerCompDir, imports: callerImports } = parentModuleContext;
+  const { projectContext } = parentModuleContext;
   const { cssFiles } = projectContext;
 
   const isComp = isComponent(node);
@@ -122,19 +139,9 @@ function genComponent(
 
   if (isNonEmptyObject(css.children)) {
     cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
-    imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
+    const cssModuleModuleSpecifier = `./${compName}.module.css`;
+    imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
   }
-
-  let moduleSpecifier = `${relative(callerCompDir, compDir)}/${compName}`;
-  if (moduleSpecifier.startsWith('/')) {
-    moduleSpecifier = `.${moduleSpecifier}`;
-  } else if (!moduleSpecifier.startsWith('.')) {
-    moduleSpecifier = `./${moduleSpecifier}`;
-  }
-
-  // Then update the file consuming the component.
-  // TODO a bit weird to have it here, it's a side-effect we may not understand from outside this function ("auto-magic" import). To move out of this function?
-  callerImports.push(mkNamedImportsDeclaration([compName], moduleSpecifier));
 
   printFileInProject(moduleContext);
 
@@ -151,17 +158,14 @@ export function createModuleCode(
   const classes = Array.from(classesSet);
 
   // Add React imports: import { FC, memo } from 'react';
-
-  imports.push(
-    mkNamedImportsDeclaration(
-      [
-        'FC',
-        'memo',
-        ...(moduleContext.swappableInstances.size > 0 ? ['ReactNode'] : []),
-        ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : []),
-      ],
-      'react',
-    ),
+  imports['react'] = mkNamedImportsDeclaration(
+    [
+      'FC',
+      'memo',
+      ...(moduleContext.swappableInstances.size > 0 ? ['ReactNode'] : []),
+      ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : []),
+    ],
+    'react',
   );
 
   // Add component Prop interface
@@ -176,7 +180,7 @@ export function printFileInProject(moduleContext: ModuleContext) {
 
   const path = `${compDir}/${compName}.tsx`;
   const resultFile = factory.createSourceFile(
-    [...moduleContext.imports, ...moduleContext.statements],
+    [...Object.values(moduleContext.imports), ...moduleContext.statements],
     factory.createToken(ts.SyntaxKind.EndOfFileToken),
     ts.NodeFlags.None,
   );

@@ -194,7 +194,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       // console.log(svgContent);
 
       // Add import in file
-      moduleContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
+      moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`);
 
       const attributes = addNodeStyles(context, node, styles, isRoot);
 

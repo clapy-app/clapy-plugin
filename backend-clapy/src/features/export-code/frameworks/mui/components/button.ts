@@ -17,9 +17,9 @@ function iconValueFactory(figmaVal: string, node: InstanceNode2, context: NodeCo
   const content = unstyledButton?.children[0] as FrameNode2 | undefined;
   const maskedIcon = content?.children[isLeft ? 0 : 1] as FrameNode2 | undefined;
   const icon = maskedIcon?.children[0] as InstanceNode2 | undefined;
-  const [importAst, jsxAst] = iconInstanceToAst(icon);
+  const [iconVarName, importAst, jsxAst] = iconInstanceToAst(icon);
   if (!importAst || !jsxAst) return;
-  context.moduleContext.imports.push(importAst);
+  context.moduleContext.imports[iconVarName] = importAst;
   return jsxAst;
 }
 

@@ -37,11 +37,15 @@ export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNod
 export function addMuiImport(context: ModuleContext, config: MUIConfig) {
   const { imports, subComponentNamesAlreadyUsed, importsAlreadyAdded } = context;
   const importHashKey = `${config.name}__${config.moduleSpecifier}`;
+  // Potential debt to refactor later: we have importsAlreadyAdded to deduplicate imports,
+  // But later I have also turned imports into a Dict to deduplicate by import key.
+  // There is an overlap. importsAlreadyAdded may not be required, and if the imports dictionary is not enough, its concept may need to be strenghtened.
   if (!importsAlreadyAdded.has(importHashKey)) {
     // Rename import name if already in scope
     const name = genUniqueName(subComponentNamesAlreadyUsed, config.name, true);
-    imports.push(
-      mkNamedImportsDeclaration([name === config.name ? name : [config.name, name]], config.moduleSpecifier),
+    imports[importHashKey] = mkNamedImportsDeclaration(
+      [name === config.name ? name : [config.name, name]],
+      config.moduleSpecifier,
     );
     if (name !== config.name) {
       config = { ...config, name };
@@ -164,6 +168,7 @@ export function iconInstanceToAst(icon: InstanceNode2 | undefined, size?: 'small
   }
   const iconVarName = `${iconName}Icon`;
   return [
+    iconVarName,
     mkDefaultImportDeclaration(iconVarName, `@mui/icons-material/${iconName}`),
     factory.createJsxSelfClosingElement(
       factory.createIdentifier(iconVarName),

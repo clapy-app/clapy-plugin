@@ -176,12 +176,14 @@ function addCompToAppRoot(
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration && !isFTD) {
     const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
-    imports.push(mkSimpleImportDeclaration(`./${cssVariablesFile}`));
+    const cssVarModuleSpecifier = `./${cssVariablesFile}`;
+    imports[cssVarModuleSpecifier] = mkSimpleImportDeclaration(cssVarModuleSpecifier);
     cssFiles[cssVariablesPath] = cssVarsDeclaration;
   }
 
   // Add CSS classes import in TSX file
-  imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
+  const cssModuleModuleSpecifier = `./${compName}.module.css`;
+  imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
