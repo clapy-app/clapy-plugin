@@ -3,7 +3,7 @@ import ts, { Statement } from 'typescript';
 
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../../code.model';
+import { JsxOneOrMore, ModuleContext, NodeContext, ProjectContext, SwapAst } from '../../code.model';
 import { isComponentSet, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
@@ -464,6 +464,21 @@ export function mkClassesAttribute(classes: Dict<string>) {
           ),
         ),
         false,
+      ),
+    ),
+  );
+}
+
+export function mkSwapsAttribute(swaps: Dict<SwapAst>) {
+  const entries = Object.entries(swaps);
+  if (!entries.length) return undefined;
+  return factory.createJsxAttribute(
+    factory.createIdentifier('swap'),
+    factory.createJsxExpression(
+      undefined,
+      factory.createObjectLiteralExpression(
+        entries.map(([name, swapAst]) => factory.createPropertyAssignment(factory.createIdentifier(name), swapAst)),
+        true,
       ),
     ),
   );

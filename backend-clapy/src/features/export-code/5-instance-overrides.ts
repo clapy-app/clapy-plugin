@@ -3,8 +3,9 @@ import { DeclarationPlain } from 'css-tree';
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
+import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore } from './code.model';
+import { InstanceContext, JsxOneOrMore, SwapAst } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
@@ -13,9 +14,11 @@ import {
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
+  isComponent,
   isFlexNode,
   isFrame,
   isGroup,
+  isInstance,
   isText,
   isValidNode,
   isVector,
@@ -23,10 +26,18 @@ import {
   SceneNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
+import { printStandalone } from './create-ts-compiler/parsing.utils';
 import { stylesToList } from './css-gen/css-type-utils';
 import { instanceToCompIndexRemapper } from './figma-code-map/details/default-node';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
-import { addCssRule, genClassName, removeCssRule } from './figma-code-map/details/ts-ast-utils';
+import {
+  addCssRule,
+  genClassName,
+  mkClassAttr,
+  mkClassesAttribute,
+  mkComponentUsage,
+  removeCssRule,
+} from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2, isRoot = false) {
@@ -34,11 +45,51 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
     if (!node.visible) {
       return;
     }
-    const { parentNode } = context;
+    const { parentNode, moduleContext, componentContext, nodeOfComp } = context;
 
     let styles: Dict<DeclarationPlain> = {};
 
-    // TODO what if a node is another instance?
+    const isRootNode = componentContext.node === nodeOfComp;
+    const isComp = isComponent(node);
+    const isInst = isInstance(node);
+    if (!isRootNode && (isComp || isInst)) {
+      // TODO
+      // And if the instance is swapped?
+      // And if the instance is NOT swapped?
+      const componentContext = getOrGenComponent(moduleContext, node, parentNode);
+
+      // Get the styles/swaps for all instance overrides. Styles and swaps only, for all nodes. No need to generate any AST.
+      const instanceContext: InstanceContext = {
+        ...context,
+        instanceClasses: {},
+        instanceSwaps: {},
+        instanceAttributes: {},
+        componentContext,
+        nodeOfComp: componentContext.node,
+      };
+
+      // When checking overrides, in addition to classes, also check the swapped instances.
+      genInstanceOverrides(instanceContext, node, isRoot);
+
+      const { root, ...instanceClasses } = instanceContext.instanceClasses;
+
+      const classAttr = mkClassAttr(root);
+      const classesAttr = mkClassesAttribute(instanceClasses);
+      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
+
+      let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+
+      // In case we allow the parent component to override the swap of a child instance (too verbose? too much?):
+      // Surround instance usage with a syntax to swap with render props
+      // if (isInst) {
+      //   // Should we also check that we're in a component? To review with examples.
+      //   const swapName = genUniqueName(moduleContext.swappableInstances, componentContext.compName);
+      //   compAst = mkSwapInstanceWrapper(swapName, compAst);
+      // }
+
+      addSwapInstance(context, compAst);
+      return;
+    }
 
     if (!isValidNode(node) && !isGroup(node)) {
       warnNode(node, 'TODO Unsupported instance node');
@@ -176,6 +227,7 @@ function recurseOnChildren(
     nodeOfComp,
     componentContext,
     instanceClasses,
+    instanceSwaps,
     instanceAttributes,
   } = context;
   if (!isChildrenMixin(nodeOfComp)) {
@@ -202,6 +254,7 @@ function recurseOnChildren(
       parentContext: passParentToChildContext ? parentContext : context,
       componentContext,
       instanceClasses,
+      instanceSwaps,
       instanceAttributes,
       nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]],
     };
@@ -236,4 +289,24 @@ function addClassOverride(context: InstanceContext, className: string) {
     );
   }
   instanceClasses[nodeOfComp.className] = className;
+}
+
+function addSwapInstance(context: InstanceContext, swapAst: SwapAst) {
+  const { instanceSwaps, nodeOfComp } = context;
+  if (!nodeOfComp.swapName) {
+    throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
+  }
+  if (!swapAst) {
+    throw new Error(
+      `Component node ${nodeOfComp.name}: trying to set a nil swapName for overrides for swap ${nodeOfComp.swapName}`,
+    );
+  }
+  if (instanceSwaps[nodeOfComp.swapName]) {
+    throw new Error(
+      `Component node ${nodeOfComp.name}: trying to set swap ${nodeOfComp.swapName} with value ${printStandalone(
+        swapAst,
+      )}, but this swap entry is already set`,
+    );
+  }
+  instanceSwaps[nodeOfComp.swapName] = swapAst;
 }

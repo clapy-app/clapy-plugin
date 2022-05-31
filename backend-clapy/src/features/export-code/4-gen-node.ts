@@ -8,7 +8,7 @@ import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { genInstanceOverrides } from './5-instance-overrides';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, NodeContext } from './code.model';
+import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
@@ -42,6 +42,7 @@ import {
   mkComponentUsage,
   mkNamedImportsDeclaration,
   mkSwapInstanceWrapper,
+  mkSwapsAttribute,
   mkTag,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
@@ -76,7 +77,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     const isComp = isComponent(node);
     const isInst = isInstance(node);
     if (isComp || isInst) {
-      const componentContext = getOrGenComponent(moduleContext, node, context.parentNode);
+      const componentContext = getOrGenComponent(moduleContext, node, parentNode);
 
       if (!flags.enableInstanceOverrides) {
         return mkComponentUsage(componentContext.compName);
@@ -86,24 +87,37 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       const instanceContext: InstanceContext = {
         ...context,
         instanceClasses: {},
+        instanceSwaps: {},
         instanceAttributes: {},
         componentContext,
         nodeOfComp: componentContext.node,
       };
+
+      // When checking overrides, in addition to classes, we also check the swapped instances.
       genInstanceOverrides(instanceContext, node, isRoot);
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
-
       const classAttr = mkClassAttr(root);
       const classesAttr = mkClassesAttribute(instanceClasses);
-      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
-      let compAst: ts.JsxSelfClosingElement | ts.JsxExpression = mkComponentUsage(componentContext.compName, attrs);
+      const instanceSwaps = instanceContext.instanceSwaps;
+      const swapAttr = mkSwapsAttribute(instanceSwaps);
+
+      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
+      if (swapAttr) {
+        attrs.push(swapAttr);
+      }
+
+      let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+
+      // Surround instance usage with a syntax to swap with render props
       if (isInst) {
+        // Should we also check that we're in a component? To review with examples.
         const swapName = genUniqueName(moduleContext.swappableInstances, componentContext.compName);
-        // Wrap in {props.swap?.${swapName} || ${compAst}}
+        node.swapName = swapName;
         compAst = mkSwapInstanceWrapper(swapName, compAst);
       }
+
       return compAst;
     }
 

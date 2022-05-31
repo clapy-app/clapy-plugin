@@ -1,3 +1,5 @@
+import { env } from './env';
+
 export const appConfig = {};
 
 export const flags = {
@@ -11,7 +13,7 @@ export const flags = {
   useFilterDropShadow: true,
   writeClapyFiles: false,
   destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
-  enableInstanceOverrides: false,
+  enableInstanceOverrides: env.isDev,
   stripInstancesInComponents: false,
 };
 

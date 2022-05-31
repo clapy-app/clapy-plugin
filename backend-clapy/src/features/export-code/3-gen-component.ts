@@ -114,7 +114,7 @@ function genComponent(
     isComp,
   );
 
-  const { imports, statements } = moduleContext;
+  const { imports } = moduleContext;
 
   const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
 

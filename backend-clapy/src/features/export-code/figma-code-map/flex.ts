@@ -89,11 +89,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const isFlex = isFlexNode(node);
 
   const { parentStyles, outerLayoutOnly } = context;
-  const { nodePrimaryAxisHugContents, nodeCounterAxisHugContents, parentAndNodeHaveSameDirection } = applyWidth(
-    context,
-    node,
-    styles,
-  );
+  const { isParentVertical, nodePrimaryAxisHugContents, nodeCounterAxisHugContents, parentAndNodeHaveSameDirection } =
+    applyWidth(context, node, styles);
 
   const defaultIsVertical = nodeDefaults.FRAME.layoutMode === 'VERTICAL';
 
@@ -118,6 +115,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // If no parent rule, it means it's already stretch (the default one).
   if (node.layoutAlign === 'STRETCH' || (context.isRootNode && !parentCounterAxisHugContents)) {
     addStyle(context, node, styles, 'align-self', 'stretch');
+    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'auto');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
@@ -366,6 +364,8 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   }
   const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {
+    isParentVertical,
+    isNodeVertical,
     fixedWidth,
     widthFillContainer,
     fixedHeight,

@@ -76,9 +76,12 @@ export interface NodeContext {
   className?: string;
 }
 
+export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
+
 export interface InstanceContext extends NodeContext {
   // tagName and nodeNameLower may be useless
   instanceClasses: Dict<string>;
+  instanceSwaps: Dict<SwapAst>;
   instanceAttributes: Dict<string>;
   componentContext: ModuleContext;
   nodeOfComp: SceneNode2;

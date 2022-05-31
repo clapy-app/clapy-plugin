@@ -35,6 +35,7 @@ export function fillWithDefaults(
   node: SceneNodeNoMethod | PageNodeNoMethod | Nil,
   instancesInComp: InstanceNode2[],
   inComp?: boolean,
+  isPage?: boolean,
 ) {
   if (!node) return;
   const isInst = isInstanceFeatureDetection(node);
@@ -42,7 +43,7 @@ export function fillWithDefaults(
     // An instance inside a component (outside the selection): ignore it.
     // The instance in the selection will be used instead.
     return;
-  } else if (isInst) {
+  } else if (!isPage && isInst) {
     instancesInComp.push(node);
   } else {
     fillNodeWithDefaults(node, defaultsForNode(node));

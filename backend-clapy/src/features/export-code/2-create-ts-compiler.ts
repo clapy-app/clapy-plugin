@@ -50,7 +50,7 @@ export async function exportCode(
     prev[cur.id] = cur;
     return prev;
   }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>;
-  fillWithDefaults(p, instancesInComp);
+  fillWithDefaults(p, instancesInComp, false, true);
   for (const instance of instancesInComp) {
     fillWithComponent(instance, compNodes);
   }
