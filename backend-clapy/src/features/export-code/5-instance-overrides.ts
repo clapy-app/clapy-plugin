@@ -14,7 +14,6 @@ import {
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
-  isComponent,
   isFlexNode,
   isFrame,
   isGroup,
@@ -50,12 +49,17 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
     let styles: Dict<DeclarationPlain> = {};
 
     const isRootNode = componentContext.node === nodeOfComp;
-    const isComp = isComponent(node);
+    // There can't be a component inside a component (Figma makes it impossible),
+    // Nor a component inside an instance.
+    // const isComp = isComponent(node);
     const isInst = isInstance(node);
-    if (!isRootNode && (isComp || isInst)) {
-      // TODO
-      // And if the instance is swapped?
-      // And if the instance is NOT swapped?
+    const compNodeIsInstance = isInstance(nodeOfComp);
+    if (!isRootNode && isInst && !compNodeIsInstance) {
+      throw new Error(
+        'Instance in instance found, but the original parent component does not have an instance at the same location.',
+      );
+    }
+    if (!isRootNode && isInst && compNodeIsInstance && node.mainComponent!.id !== nodeOfComp.mainComponent!.id) {
       const componentContext = getOrGenComponent(moduleContext, node, parentNode);
 
       // Get the styles/swaps for all instance overrides. Styles and swaps only, for all nodes. No need to generate any AST.
@@ -68,7 +72,6 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
         nodeOfComp: componentContext.node,
       };
 
-      // When checking overrides, in addition to classes, also check the swapped instances.
       genInstanceOverrides(instanceContext, node, isRoot);
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
