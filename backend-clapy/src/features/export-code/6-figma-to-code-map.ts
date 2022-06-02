@@ -80,8 +80,8 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
 // Styles applying "outside" the component and/or impacting the component independently of how the component is designed
 function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   zindexFigmaToCode(context2, node, styles);
-  flexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);
+  flexFigmaToCode(context2, node, styles);
 }
 
 // Styles that are the responsibility of the component, typically the look and feel.

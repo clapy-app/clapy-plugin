@@ -76,7 +76,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     // If component or instance, generate the code in a separate component file and reference it here.
     const isComp = isComponent(node);
     const isInst = isInstance(node);
-    if (isComp || isInst) {
+    if (!isRoot && (isComp || isInst)) {
       const componentContext = getOrGenComponent(moduleContext, node, parentNode);
 
       if (!flags.enableInstanceOverrides) {

@@ -3,6 +3,7 @@ import ts, { Statement } from 'typescript';
 
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { flags } from '../../env-and-config/app-config';
+import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { figmaToAstRec } from './4-gen-node';
 import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model';
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
@@ -27,20 +28,7 @@ export function getOrGenComponent(
   const {
     projectContext: { compNodes, components },
   } = parentModuleContext;
-  const isComp = isComponent(node);
-  const isInst = isInstance(node);
-  let comp: ComponentNode2 | Nil;
-  if (isInst) {
-    comp = node.mainComponent;
-    if (comp) {
-      comp = compNodes[comp.id];
-      if (!comp) {
-        warnNode(node, 'Component source not found for instance. The instance will be treated as a frame.');
-      }
-    }
-  } else if (isComp) {
-    comp = node;
-  }
+  let comp = getComponentOrNil(compNodes, node);
   if (!flags.enableInstanceOverrides || !comp) {
     const moduleContext = genComponent(parentModuleContext, node, parent, isRootComponent);
     ensureComponentIsImported(parentModuleContext, moduleContext);
@@ -53,6 +41,24 @@ export function getOrGenComponent(
   }
   ensureComponentIsImported(parentModuleContext, moduleContext);
   return moduleContext;
+}
+
+function getComponentOrNil(compNodes: Dict<ComponentNode2>, node: SceneNode2) {
+  let comp: ComponentNode2 | Nil;
+
+  if (isInstance(node)) {
+    comp = node.mainComponent;
+    if (comp) {
+      comp = compNodes[comp.id];
+      if (!comp) {
+        warnNode(node, 'Component source not found for instance. The instance will be treated as a frame.');
+      }
+    }
+  } else if (isComponent(node)) {
+    comp = node;
+  }
+
+  return comp;
 }
 
 function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleContext: ModuleContext) {
@@ -111,10 +117,6 @@ function genComponent(
   const { cssFiles } = projectContext;
 
   const isComp = isComponent(node);
-  const isInst = isInstance(node);
-  if (isComp || isInst) {
-    node = { ...node, type: 'FRAME' as const };
-  }
 
   const pageName = parentModuleContext.pageName;
   const compName = getComponentName(projectContext, node);

@@ -24,6 +24,7 @@ export interface ProjectContext {
   readonly compNamesAlreadyUsed: Set<string>;
   readonly assetsAlreadyUsed: Set<string>;
   readonly fontWeightUsed: Map<string, Set<number>>;
+  /** @deprecated use `components` instead, then read the node */
   readonly compNodes: Dict<ComponentNode2>;
   readonly components: Map<FigmaId, ModuleContext>;
   readonly resources: CodeDict;
@@ -76,6 +77,10 @@ export interface NodeContext {
   outerLayoutOnly?: boolean;
   tranforms?: string[];
   className?: string;
+  overriddenContext?: NodeContext;
+  // Provided for instances (interface below). It is added here as an optional field so that
+  // when writing style, we can have a different behavior depending on the original component styles
+  nodeOfComp?: SceneNode2;
 }
 
 export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;

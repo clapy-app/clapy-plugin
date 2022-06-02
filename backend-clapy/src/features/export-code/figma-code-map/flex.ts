@@ -17,7 +17,7 @@ import {
   isVector,
   ValidNode,
 } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -89,8 +89,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const isFlex = isFlexNode(node);
 
   const { parentStyles, outerLayoutOnly } = context;
-  const { isParentVertical, nodePrimaryAxisHugContents, nodeCounterAxisHugContents, parentAndNodeHaveSameDirection } =
-    applyWidth(context, node, styles);
+  const {
+    isParentAutoLayout,
+    isParentVertical,
+    nodePrimaryAxisHugContents,
+    nodeCounterAxisHugContents,
+    parentAndNodeHaveSameDirection,
+  } = applyWidth(context, node, styles);
 
   const defaultIsVertical = nodeDefaults.FRAME.layoutMode === 'VERTICAL';
 
@@ -113,7 +118,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  if (node.layoutAlign === 'STRETCH' || (context.isRootNode && !parentCounterAxisHugContents)) {
+  if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || (context.isRootNode && !parentCounterAxisHugContents)) {
     addStyle(context, node, styles, 'align-self', 'stretch');
     addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'auto');
     // Stretch is the default
@@ -250,11 +255,6 @@ function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<Declara
         { paddingLeft: [paddingLeft, 'px'] },
       );
     }
-  } else {
-    // If no padding applied, check if a reset is required
-    // if (tagResets[context.tagName]?.padding) {
-    //   addStyle(context, node, styles, 'padding', 0);
-    // }
   }
 }
 
@@ -348,7 +348,10 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       width = node.strokeWeight;
     }
     addStyle(context, node, styles, 'width', [width, 'px']);
+  } else if (node.width === -1) {
+    resetStyleIfOverriding(context, node, styles, 'width');
   }
+
   if (shouldApplyMaxWidth) {
     addStyle(context, node, styles, 'max-width', [100, '%']);
   }
@@ -358,12 +361,15 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       height = node.strokeWeight;
     }
     addStyle(context, node, styles, 'height', [height, 'px']);
+  } else if (node.height === -1) {
+    resetStyleIfOverriding(context, node, styles, 'height');
   }
   if (shouldApplyMaxHeight) {
     addStyle(context, node, styles, 'max-height', [100, '%']);
   }
   const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {
+    isParentAutoLayout,
     isParentVertical,
     isNodeVertical,
     fixedWidth,

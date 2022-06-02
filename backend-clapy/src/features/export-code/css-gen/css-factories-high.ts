@@ -4,7 +4,7 @@ import { PropertiesHyphen } from 'csstype';
 import { isPlainObject } from 'lodash';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { MySingleToken, NodeContext } from '../code.model';
+import { NodeContext } from '../code.model';
 import { ValidNode } from '../create-ts-compiler/canvas-utils';
 import { round } from '../figma-code-map/details/utils-and-reset';
 import {
@@ -142,63 +142,8 @@ export function applyToken<T extends keyof PropertiesHyphen>(
   }
 }
 
-export function applyTokenGroup(
-  context: NodeContext,
-  node: ValidNode,
-  tokenNames: string | (string | [string, string])[] | undefined,
-) {
-  const varNames = getVarNamesFromTokenNames(context, node, tokenNames);
-  return buildCssValueWithVariables(varNames);
-}
-
 function varNameToCSSVar(varName: string | number) {
   return `var(--${varName})`;
-}
-
-type Variables = string | number | Array<Variables> | Dict<Variables>;
-
-function buildCssValueWithVariables<T extends Variables | undefined>(varNames: T): T {
-  if (!varNames) return varNames;
-  if (typeof varNames === 'string' || typeof varNames === 'number') {
-    return varNameToCSSVar(varNames) as T;
-  }
-  if (Array.isArray(varNames)) {
-    return varNames.map(varName => buildCssValueWithVariables(varName)) as T;
-  }
-  if (isPlainObject(varNames)) {
-    return Object.entries(varNames).reduce((obj, [key, val]) => {
-      (obj as any)[key] = key === 'type' ? val : buildCssValueWithVariables(val);
-      return obj;
-    }, {} as T);
-  }
-  throw new Error(`BUG Unsupported varNames value: ${JSON.stringify(varNames)}`);
-}
-
-// To refactor? It's very similar to getVarNameFromTokenNames below (that I actually copied to get started), but the workflow is slightly different. To test carefully.
-export function getVarNamesFromTokenNames(
-  context: NodeContext,
-  node: ValidNode,
-  tokenNames: string | (string | [string, string])[] | undefined,
-) {
-  const { varNamesMap, tokensRawMap } = context.moduleContext.projectContext;
-
-  if (!varNamesMap || !tokenNames || !tokensRawMap) return;
-  if (!Array.isArray(tokenNames)) {
-    tokenNames = [tokenNames];
-  }
-  for (let name of tokenNames) {
-    let subKey: string | undefined = undefined;
-    if (Array.isArray(name)) {
-      [name, subKey] = name;
-    }
-    let tokenName = (node as any)._tokens?.[name];
-    if (tokenName) {
-      if (subKey) {
-        tokenName = `${tokenName}.${subKey}`;
-      }
-      return prepareFullTokenNames(varNamesMap, tokensRawMap, tokenName);
-    }
-  }
 }
 
 function getVarNameFromTokenNames(
@@ -228,37 +173,6 @@ function getVarNameFromTokenNames(
   }
 }
 
-function prepareFullTokenNames(varNamesMap: Dict<string>, tokensRawMap: Dict<MySingleToken>, tokenName: string) {
-  if (!tokensRawMap[tokenName]) {
-    throw new Error(
-      `BUG tokensRawMap does not have the key ${tokenName}, which is unexpected because varNamesMap should have been checked before with this key.`,
-    );
-  }
-  const value = tokensRawMap[tokenName].value; // string, array or object
-  return _prepareFullTokenNames(varNamesMap, tokenName, value);
-  // Map the same structure, build the key then map to the corresponding variable(s) keeping the same structure
-}
-
-function _prepareFullTokenNames(
-  varNamesMap: Dict<string>,
-  key: string,
-  value: MySingleToken['value'] | string | number,
-): Variables {
-  if (varNamesMap[key]) {
-    return varNamesMap[key];
-  }
-  if (Array.isArray(value)) {
-    return value.map((v, i) => _prepareFullTokenNames(varNamesMap, `${key}.${i}`, v));
-  }
-  if (isPlainObject(value)) {
-    return Object.entries(value).reduce((obj, [k, v]) => {
-      obj[k] = k === 'type' ? v.value : _prepareFullTokenNames(varNamesMap, `${key}.${k}`, v);
-      return obj;
-    }, {} as Dict<Variables>);
-  }
-  throw new Error(`BUG unsupported token value type: ${JSON.stringify(value)}`);
-}
-
 /**
  * Include in T those types that are assignable to U
  */
@@ -286,4 +200,15 @@ export function addJss<T extends keyof TypographyStyle /* Include<keyof CSSStyle
       : `${round(val[0])}${val[1]}`,
   );
   (styles as any)[name] = style.length === 1 && typeof style[0] === 'number' ? style[0] : style.join('');
+}
+
+export function resetStyleIfOverriding(
+  context: NodeContext,
+  node: ValidNode,
+  styles: Dict<DeclarationPlain>,
+  name: keyof PropertiesHyphen,
+) {
+  if (!!context.nodeOfComp?.styles?.[name]) {
+    addStyle(context, node, styles, name, 'initial');
+  }
 }

@@ -3,7 +3,7 @@ import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (!styles.position) {
@@ -48,16 +48,21 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
 
     if (horizontal === 'MIN') {
       addStyle(context, node, styles, 'left', [left, 'px']);
+      resetStyleIfOverriding(context, node, styles, 'right');
     } else if (horizontal === 'MAX') {
       addStyle(context, node, styles, 'right', [right, 'px']);
+      resetStyleIfOverriding(context, node, styles, 'left');
     } else if (horizontal === 'CENTER') {
       addStyle(context, node, styles, 'left', [(left / parentWidth) * 100, '%']);
+      resetStyleIfOverriding(context, node, styles, 'right');
     } else if (horizontal === 'STRETCH') {
       addStyle(context, node, styles, 'left', [left, 'px']);
       addStyle(context, node, styles, 'right', [right, 'px']);
+      node.width = -1; // Auto-width
     } else if (horizontal === 'SCALE') {
       addStyle(context, node, styles, 'left', [(left / parentWidth) * 100, '%']);
       addStyle(context, node, styles, 'right', [(right / parentWidth) * 100, '%']);
+      node.width = -1; // Auto-width
     }
 
     const nodeY = parentIsGroup ? node.y - parentNode.y : node.y;
@@ -72,16 +77,21 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
 
     if (vertical === 'MIN') {
       addStyle(context, node, styles, 'top', [top, 'px']);
+      resetStyleIfOverriding(context, node, styles, 'bottom');
     } else if (vertical === 'MAX') {
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
+      resetStyleIfOverriding(context, node, styles, 'top');
+    } else if (vertical === 'CENTER') {
+      addStyle(context, node, styles, 'top', [(top / parentHeight) * 100, '%']);
+      resetStyleIfOverriding(context, node, styles, 'bottom');
     } else if (vertical === 'STRETCH') {
       addStyle(context, node, styles, 'top', [top, 'px']);
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
-    } else if (vertical === 'CENTER') {
-      addStyle(context, node, styles, 'top', [(top / parentHeight) * 100, '%']);
+      node.height = -1; // Auto-height
     } else if (vertical === 'SCALE') {
       addStyle(context, node, styles, 'top', [(top / parentHeight) * 100, '%']);
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
+      node.height = -1; // Auto-height
     }
   }
 }
