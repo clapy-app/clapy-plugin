@@ -58,11 +58,11 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     } else if (horizontal === 'STRETCH') {
       addStyle(context, node, styles, 'left', [left, 'px']);
       addStyle(context, node, styles, 'right', [right, 'px']);
-      node.width = -1; // Auto-width
+      node.autoWidth = true; // Auto-width
     } else if (horizontal === 'SCALE') {
       addStyle(context, node, styles, 'left', [(left / parentWidth) * 100, '%']);
       addStyle(context, node, styles, 'right', [(right / parentWidth) * 100, '%']);
-      node.width = -1; // Auto-width
+      node.autoWidth = true; // Auto-width
     }
 
     const nodeY = parentIsGroup ? node.y - parentNode.y : node.y;
@@ -87,11 +87,11 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     } else if (vertical === 'STRETCH') {
       addStyle(context, node, styles, 'top', [top, 'px']);
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
-      node.height = -1; // Auto-height
+      node.autoHeight = true; // Auto-height
     } else if (vertical === 'SCALE') {
       addStyle(context, node, styles, 'top', [(top / parentHeight) * 100, '%']);
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
-      node.height = -1; // Auto-height
+      node.autoHeight = true; // Auto-height
     }
   }
 }

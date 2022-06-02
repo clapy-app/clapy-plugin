@@ -348,7 +348,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       width = node.strokeWeight;
     }
     addStyle(context, node, styles, 'width', [width, 'px']);
-  } else if (node.width === -1) {
+  } else if (node.autoWidth) {
     resetStyleIfOverriding(context, node, styles, 'width');
   }
 
@@ -361,7 +361,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       height = node.strokeWeight;
     }
     addStyle(context, node, styles, 'height', [height, 'px']);
-  } else if (node.height === -1) {
+  } else if (node.autoHeight) {
     resetStyleIfOverriding(context, node, styles, 'height');
   }
   if (shouldApplyMaxHeight) {

@@ -71,6 +71,8 @@ interface GlobalExtender {
   className?: string;
   swapName?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
+  autoWidth?: boolean;
+  autoHeight?: boolean;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
