@@ -411,18 +411,22 @@ function shouldGroupAsSVG(node: SceneNode | PageNode) {
   // If only one child, don't group as SVG
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
   // if (!(node.children.length > 1)) return false;
-  // If one of the children is not a shape, don't group as SVG
+
+  // The rectangle is neutral. If mixed with shapes only, it allows grouping as SVG.
+  // If no other shapes, it should generate divs.
+  let foundNonRectangleShape = false;
+  // If one of the children is not a shape (or neutral), don't group as SVG
   for (const child of node.children) {
-    if (
-      !isShapeExceptDivable(child) &&
-      !isRectangleWithoutImage(child) &&
-      !(isGroup(child) && shouldGroupAsSVG(child))
-    ) {
+    const isShape0 = isShapeExceptDivable(child);
+    if (isShape0 && !foundNonRectangleShape) foundNonRectangleShape = true;
+    const isShape = isShape0 || isRectangleWithoutImage(child) || (isGroup(child) && shouldGroupAsSVG(child));
+    if (!isShape) {
       return false;
     }
   }
-  // Otherwise, group as SVG
-  return true;
+  // Otherwise, group as SVG if there is at least one shape (apart from neutrals).
+  // If neutrals only, render as HTML (div).
+  return foundNonRectangleShape;
 }
 
 function isRectangleWithoutImage(node: SceneNode): node is RectangleNode {
