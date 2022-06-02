@@ -41,8 +41,9 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2, isRoot = false) {
   try {
-    if (!node.visible) {
-      return;
+    if (!node.visible && context.moduleContext.isRootComponent) {
+      throw new Error('BUG? isRootComponent true in genInstanceOverrides.');
+      // return;
     }
     const { parentNode, moduleContext, componentContext, nodeOfComp } = context;
 

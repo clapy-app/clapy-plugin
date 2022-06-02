@@ -52,7 +52,7 @@ import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
 export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
   try {
-    if (!node.visible) {
+    if (!node.visible && context.moduleContext.isRootComponent) {
       return;
     }
 

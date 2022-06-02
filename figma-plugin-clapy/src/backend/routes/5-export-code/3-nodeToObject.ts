@@ -107,7 +107,7 @@ export async function nodeToObject<T extends SceneNode | PageNode>(
 
 async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context: SerializeContext, options: Options) {
   try {
-    if (!isPage(node) && !node.visible) {
+    if (!isPage(node) && !context.isComp && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
     }
     let { skipChildren, skipInstance, skipParent } = options;
@@ -204,7 +204,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       addStyle(gridStyles, node.gridStyleId);
     }
 
-    if (exportAsSvg && !isComp) {
+    if (exportAsSvg && !isInInstance) {
       let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {
@@ -348,7 +348,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
-        if (child.visible) {
+        if (child.visible || isComp) {
           if (nodeOfComp && instanceToCompIndexMap) {
             if (!isChildrenMixin(nodeOfComp)) {
               warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');

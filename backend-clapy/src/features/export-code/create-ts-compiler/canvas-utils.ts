@@ -128,7 +128,8 @@ export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
 
 export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNodeDerived {
   // Patch because BooleanOp are very likely to be converted into vectors. Vectors can be from BooleanOp, so we should ensure we only use available properties, or we need to be more specific.
-  return node?.type === 'VECTOR';
+  const isVectorDetected = !!(node as VectorNode2)?._svg;
+  return isVectorDetected || node?.type === 'VECTOR';
 }
 
 export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
@@ -148,15 +149,15 @@ export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is Comp
 }
 
 export function isFrame(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 {
-  return (node as BaseNode2)?.type === 'FRAME';
+  return (node as BaseNode2)?.type === 'FRAME' && !isVector(node);
 }
 
 export function isComponent(node: BaseNode2 | SceneNode2 | Nil): node is ComponentNode2 {
-  return node?.type === 'COMPONENT';
+  return node?.type === 'COMPONENT' && !isVector(node);
 }
 
 export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
-  return node?.type === 'INSTANCE';
+  return node?.type === 'INSTANCE' && !isVector(node);
 }
 
 export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
