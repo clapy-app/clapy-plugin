@@ -97,7 +97,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       genInstanceOverrides(instanceContext, node, isRoot);
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
-      const classAttr = mkClassAttr(root);
+      const classAttr = mkClassAttr(root, true);
       const classesAttr = mkClassesAttribute(instanceClasses);
 
       const instanceSwaps = instanceContext.instanceSwaps;

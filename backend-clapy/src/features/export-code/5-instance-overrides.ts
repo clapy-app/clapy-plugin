@@ -77,7 +77,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
 
-      const classAttr = mkClassAttr(root);
+      // Adding className overrides from props is probably required in a use case (with swaps?), but the use case is not clear yet. To enable once we have an example where we need it, to better understand if we are not adding a wrong or empty value.
+      const classAttr = mkClassAttr(root /* , true */);
       const classesAttr = mkClassesAttribute(instanceClasses);
       const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
