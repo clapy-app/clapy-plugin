@@ -34,9 +34,9 @@ import { stylesToList } from './css-gen/css-type-utils';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
-  genClassName,
   genComponentImportName,
-  genUniqueName,
+  getOrGenClassName,
+  getOrGenSwapName,
   mkClassAttr,
   mkClassesAttribute,
   mkComponentUsage,
@@ -50,13 +50,13 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
-export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
+export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
   try {
     if (!node.visible && context.moduleContext.isRootComponent) {
       return;
     }
 
-    const { parentNode, moduleContext } = context;
+    const { parentNode, moduleContext, isRootInComponent } = context;
 
     let styles: Dict<DeclarationPlain> = {};
 
@@ -68,7 +68,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
 
       // Add tag styles
       mapCommonStyles(context, node2, styles);
-      const attributes = addNodeStyles(context, node2, styles, isRoot);
+      const attributes = addNodeStyles(context, node2, styles);
 
       return mkMuiComponentAst(context, muiConfig, node2, attributes);
     }
@@ -76,7 +76,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     // If component or instance, generate the code in a separate component file and reference it here.
     const isComp = isComponent(node);
     const isInst = isInstance(node);
-    if (!isRoot && (isComp || isInst)) {
+    if (!isRootInComponent && (isComp || isInst)) {
       const componentContext = getOrGenComponent(moduleContext, node, parentNode);
 
       if (!flags.enableInstanceOverrides) {
@@ -91,10 +91,11 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
         instanceAttributes: {},
         componentContext,
         nodeOfComp: componentContext.node,
+        isRootInComponent: true,
       };
 
       // When checking overrides, in addition to classes, we also check the swapped instances.
-      genInstanceOverrides(instanceContext, node, isRoot);
+      genInstanceOverrides(instanceContext, node);
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
       const classAttr = mkClassAttr(root, true);
@@ -113,8 +114,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       // Surround instance usage with a syntax to swap with render props
       if (isInst) {
         // Should we also check that we're in a component? To review with examples.
-        const swapName = genUniqueName(moduleContext.swappableInstances, componentContext.compName);
-        node.swapName = swapName;
+        const swapName = getOrGenSwapName(moduleContext, componentContext, node);
         compAst = mkSwapInstanceWrapper(swapName, compAst);
       }
 
@@ -159,7 +159,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       if (!context.parentStyles || Object.keys(flexStyles).length) {
         Object.assign(styles, flexStyles);
         styles = postMapStyles(context, node, styles);
-        const className = genClassName(context, node, isRoot);
+        const className = getOrGenClassName(moduleContext, node);
         const styleDeclarations = stylesToList(styles);
         let attributes: ts.JsxAttribute[] = [];
         if (styleDeclarations.length) {
@@ -196,7 +196,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       // Add import in file
       moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`);
 
-      const attributes = addNodeStyles(context, node, styles, isRoot);
+      const attributes = addNodeStyles(context, node, styles);
 
       // Generate AST
       const ast = mkComponentUsage(svgPathVarName, attributes);
@@ -205,7 +205,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
       // Add tag styles
       mapTagStyles(context, node, styles);
 
-      const className = genClassName(context, node, isRoot);
+      const className = getOrGenClassName(moduleContext, node);
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
@@ -239,9 +239,10 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
   }
 }
 
-function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
+function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  const { moduleContext } = context;
   mapTagStyles(context, node, styles);
-  const className = genClassName(context, node, isRoot);
+  const className = getOrGenClassName(moduleContext, node);
   styles = postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   let attributes: ts.JsxAttribute[] = [];
@@ -306,6 +307,7 @@ function recurseOnChildren(
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
       parentStyles: passParentToChildContext ? parentStyles : styles,
       parentContext: passParentToChildContext ? parentContext : context,
+      isRootInComponent: false,
     };
     const childTsx = figmaToAstRec(contextForChildren, child);
     if (childTsx) {

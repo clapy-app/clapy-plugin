@@ -33,16 +33,20 @@ export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: Sc
   cssRules.splice(i, 1);
 }
 
-export function genClassName(context: NodeContext, node?: SceneNode2, isRoot?: boolean, defaultClassName = 'label') {
+export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode2, defaultClassName = 'label') {
+  if (node?.className) {
+    return node.className;
+  }
+  const isRootInComponent = node === moduleContext.node;
   // No node when working on text segments. But can we find better class names than 'label' for this case?
-  const baseName = isRoot ? 'root' : node?.name ? node.name : defaultClassName;
-  const className = genUniqueName(context.moduleContext.classNamesAlreadyUsed, baseName);
+  const baseName = isRootInComponent ? 'root' : node?.name ? node.name : defaultClassName;
+  const className = genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
   if (node && !node.className) {
     node.className = className;
-    if (!isRoot) {
+    if (!isRootInComponent) {
       // Beware, the below code is also run for instance overrides and text classes (6-figma-to-code-mapa.ts),
       // which might be undesired. To review with test cases.
-      context.moduleContext.classes.add(className);
+      moduleContext.classes.add(className);
     }
   }
   return className;
@@ -63,6 +67,19 @@ export function genComponentImportName(context: NodeContext) {
 export function getComponentName(projectContext: ProjectContext, node: SceneNode2) {
   const name = isComponentSet(node.parent) ? `${node.parent.name}_${node.name}` : node.name;
   return genUniqueName(projectContext.compNamesAlreadyUsed, name, true);
+}
+
+export function getOrGenSwapName(
+  parentComponentContext: ModuleContext,
+  childInstanceContext: ModuleContext,
+  node: SceneNode2,
+) {
+  if (node.swapName) {
+    return node.swapName;
+  }
+  const swapName = genUniqueName(parentComponentContext.swappableInstances, childInstanceContext.compName);
+  node.swapName = swapName;
+  return swapName;
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
@@ -447,6 +464,7 @@ export function mkSwapInstanceWrapper(swapName: string, compAst: ts.JsxSelfClosi
 }
 
 export function mkClassesAttribute(classes: Dict<string>) {
+  const addClassOverride = true;
   const entries = Object.entries(classes);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
@@ -457,10 +475,38 @@ export function mkClassesAttribute(classes: Dict<string>) {
         entries.map(([name, className]) =>
           factory.createPropertyAssignment(
             factory.createIdentifier(name),
-            factory.createPropertyAccessExpression(
-              factory.createIdentifier('classes'),
-              factory.createIdentifier(className),
-            ),
+
+            !addClassOverride
+              ? factory.createPropertyAccessExpression(
+                  factory.createIdentifier('classes'),
+                  factory.createIdentifier(className),
+                )
+              : factory.createTemplateExpression(factory.createTemplateHead('', ''), [
+                  factory.createTemplateSpan(
+                    factory.createPropertyAccessExpression(
+                      factory.createIdentifier('classes'),
+                      factory.createIdentifier(className),
+                    ),
+                    factory.createTemplateMiddle(' ', ' '),
+                  ),
+                  factory.createTemplateSpan(
+                    factory.createBinaryExpression(
+                      flags.destructureClassNames
+                        ? factory.createIdentifier(className)
+                        : factory.createPropertyAccessChain(
+                            factory.createPropertyAccessExpression(
+                              factory.createIdentifier('props'),
+                              factory.createIdentifier('classes'),
+                            ),
+                            factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                            factory.createIdentifier(className),
+                          ),
+                      factory.createToken(ts.SyntaxKind.BarBarToken),
+                      factory.createStringLiteral(''),
+                    ),
+                    factory.createTemplateTail('', ''),
+                  ),
+                ]),
           ),
         ),
         false,

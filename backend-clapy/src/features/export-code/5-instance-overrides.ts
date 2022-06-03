@@ -5,7 +5,7 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, SwapAst } from './code.model';
+import { InstanceContext, JsxOneOrMore, ModuleContext, SwapAst } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
@@ -31,7 +31,8 @@ import { instanceToCompIndexRemapper } from './figma-code-map/details/default-no
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
-  genClassName,
+  getOrGenClassName,
+  getOrGenSwapName,
   mkClassAttr,
   mkClassesAttribute,
   mkComponentUsage,
@@ -39,7 +40,7 @@ import {
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
 
-export function genInstanceOverrides(context: InstanceContext, node: SceneNode2, isRoot = false) {
+export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {
     if (!node.visible && context.moduleContext.isRootComponent) {
       throw new Error('BUG? isRootComponent true in genInstanceOverrides.');
@@ -62,6 +63,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
     }
     if (!isRootNode && isInst && compNodeIsInstance && node.mainComponent!.id !== nodeOfComp.mainComponent!.id) {
       const componentContext = getOrGenComponent(moduleContext, node, parentNode);
+      const originalSubComponentContext = getOrGenComponent(moduleContext, nodeOfComp, parentNode, false, true);
 
       // Get the styles/swaps for all instance overrides. Styles and swaps only, for all nodes. No need to generate any AST.
       const instanceContext: InstanceContext = {
@@ -71,14 +73,15 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
         instanceAttributes: {},
         componentContext,
         nodeOfComp: componentContext.node,
+        isRootInComponent: true,
       };
 
-      genInstanceOverrides(instanceContext, node, isRoot);
+      genInstanceOverrides(instanceContext, node);
 
       const { root, ...instanceClasses } = instanceContext.instanceClasses;
 
       // Adding className overrides from props is probably required in a use case (with swaps?), but the use case is not clear yet. To enable once we have an example where we need it, to better understand if we are not adding a wrong or empty value.
-      const classAttr = mkClassAttr(root /* , true */);
+      const classAttr = mkClassAttr(root, true);
       const classesAttr = mkClassesAttribute(instanceClasses);
       const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
@@ -92,7 +95,16 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
       //   compAst = mkSwapInstanceWrapper(swapName, compAst);
       // }
 
-      addSwapInstance(context, compAst);
+      const {
+        projectContext: { components },
+      } = moduleContext;
+      if (!originalSubComponentContext) {
+        throw new Error(
+          `BUG Original sub-component's context not found for component ID ${nodeOfComp.mainComponent!.id}.`,
+        );
+      }
+
+      addSwapInstance(context, originalSubComponentContext, compAst);
       return;
     }
 
@@ -126,7 +138,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
       if (!context.parentStyles || Object.keys(flexStyles).length) {
         Object.assign(styles, flexStyles);
         styles = postMapStyles(context, node, styles);
-        const className = genClassName(context, node, isRoot);
+        const className = getOrGenClassName(moduleContext, node);
         const styleDeclarations = stylesToList(styles);
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
@@ -141,12 +153,12 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2,
       // TODO something with the ast, likely add as attribute of the instance (render prop)
       //
     } else if (isVector(node)) {
-      return addNodeStyles(context, node, styles, isRoot);
+      return addNodeStyles(context, node, styles);
     } else if (isBlockNode(node)) {
       // Add tag styles
       mapTagStyles(context, node, styles);
 
-      const className = genClassName(context, node, isRoot);
+      const className = getOrGenClassName(moduleContext, node);
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
@@ -260,14 +272,16 @@ function recurseOnChildren(
       instanceSwaps,
       instanceAttributes,
       nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]],
+      isRootInComponent: false,
     };
     genInstanceOverrides(contextForChildren, child);
   }
 }
 
-function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
+function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  const { moduleContext } = context;
   mapTagStyles(context, node, styles);
-  const className = genClassName(context, node, isRoot);
+  const className = getOrGenClassName(moduleContext, node);
   styles = postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   if (styleDeclarations.length) {
@@ -277,39 +291,41 @@ function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<D
 }
 
 function addClassOverride(context: InstanceContext, className: string) {
-  const { instanceClasses, nodeOfComp } = context;
-  if (!nodeOfComp.className) {
+  const { instanceClasses, nodeOfComp, componentContext } = context;
+  const compClassName = getOrGenClassName(componentContext, nodeOfComp);
+  if (!compClassName) {
     throw new Error(`Component node ${nodeOfComp.name} has no className`);
   }
   if (!className) {
     throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set a nil className for overrides for classes ${nodeOfComp.className}`,
+      `Component node ${nodeOfComp.name}: trying to set a nil className for overrides for classes ${compClassName}`,
     );
   }
-  if (instanceClasses[nodeOfComp.className]) {
+  if (instanceClasses[compClassName]) {
     throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set classes ${nodeOfComp.className} with value ${className}, but this classes entry is already set`,
+      `Component node ${nodeOfComp.name}: trying to set classes ${compClassName} with value ${className}, but this classes entry is already set`,
     );
   }
-  instanceClasses[nodeOfComp.className] = className;
+  instanceClasses[compClassName] = className;
 }
 
-function addSwapInstance(context: InstanceContext, swapAst: SwapAst) {
-  const { instanceSwaps, nodeOfComp } = context;
-  if (!nodeOfComp.swapName) {
+function addSwapInstance(context: InstanceContext, subComponentContext: ModuleContext, swapAst: SwapAst) {
+  const { instanceSwaps, nodeOfComp, componentContext } = context;
+  const swapName = getOrGenSwapName(componentContext, subComponentContext, nodeOfComp);
+  if (!swapName) {
     throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
   }
   if (!swapAst) {
     throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set a nil swapAst for overrides for swap ${nodeOfComp.swapName}`,
+      `Component node ${nodeOfComp.name}: trying to set a nil swapAst for overrides for swap ${swapName}`,
     );
   }
-  if (instanceSwaps[nodeOfComp.swapName]) {
+  if (instanceSwaps[swapName]) {
     throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set swap ${nodeOfComp.swapName} with value ${printStandalone(
+      `Component node ${nodeOfComp.name}: trying to set swap ${swapName} with value ${printStandalone(
         swapAst,
       )}, but this swap entry is already set`,
     );
   }
-  instanceSwaps[nodeOfComp.swapName] = swapAst;
+  instanceSwaps[swapName] = swapAst;
 }

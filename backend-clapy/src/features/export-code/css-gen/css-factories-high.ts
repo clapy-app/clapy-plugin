@@ -208,7 +208,9 @@ export function resetStyleIfOverriding(
   styles: Dict<DeclarationPlain>,
   name: keyof PropertiesHyphen,
 ) {
-  if (!!context.nodeOfComp?.styles?.[name]) {
-    addStyle(context, node, styles, name, 'initial');
-  }
+  // MVP: always reset the CSS rules. Ideally, we should do it only if required vs the component.
+  // But with the new workflow, the instances are generated before the component, so we can't filter yet.
+  // if (!!context.nodeOfComp?.styles?.[name]) {
+  addStyle(context, node, styles, name, 'initial');
+  // }
 }

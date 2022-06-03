@@ -24,22 +24,28 @@ export function getOrGenComponent(
   node: SceneNode2,
   parent: ParentNode | Nil,
   isRootComponent = false,
+  skipAddImport = false,
 ) {
   const {
     projectContext: { compNodes, components },
   } = parentModuleContext;
   let comp = getComponentOrNil(compNodes, node);
   if (!flags.enableInstanceOverrides || !comp) {
-    const moduleContext = genComponent(parentModuleContext, node, parent, isRootComponent);
-    ensureComponentIsImported(parentModuleContext, moduleContext);
+    const moduleContext = createModuleContextForNode(parentModuleContext, node, parent, isRootComponent);
+    components.set(comp?.id || '_root', moduleContext);
+    if (!skipAddImport) {
+      ensureComponentIsImported(parentModuleContext, moduleContext);
+    }
     return moduleContext;
   }
   let moduleContext = components.get(comp.id);
   if (!moduleContext) {
-    moduleContext = genComponent(parentModuleContext, comp, parent, isRootComponent);
+    moduleContext = createModuleContextForNode(parentModuleContext, comp, parent, isRootComponent);
     components.set(comp.id, moduleContext);
   }
-  ensureComponentIsImported(parentModuleContext, moduleContext);
+  if (!skipAddImport) {
+    ensureComponentIsImported(parentModuleContext, moduleContext);
+  }
   return moduleContext;
 }
 
@@ -65,6 +71,8 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
   const { compDir: callerCompDir, imports: callerImports } = parentModuleContext;
   const { compDir, compName } = moduleContext;
 
+  if (callerImports[compName]) return;
+
   let moduleSpecifier = `${relative(callerCompDir, compDir)}/${compName}`;
   if (moduleSpecifier.startsWith('/')) {
     moduleSpecifier = `.${moduleSpecifier}`;
@@ -79,6 +87,7 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
 export function mkModuleContext(
   projectContext: ProjectContext,
   node: SceneNode2,
+  parent: ParentNode | Nil,
   pageName: string | undefined,
   compDir: string,
   compName: string,
@@ -89,6 +98,7 @@ export function mkModuleContext(
   const moduleContext: ModuleContext = {
     projectContext,
     node,
+    parent,
     imports: {},
     statements: [],
     pageName,
@@ -107,7 +117,7 @@ export function mkModuleContext(
   return moduleContext;
 }
 
-function genComponent(
+function createModuleContextForNode(
   parentModuleContext: ModuleContext,
   node: SceneNode2,
   parent: ParentNode | Nil,
@@ -125,6 +135,7 @@ function genComponent(
   const moduleContext = mkModuleContext(
     projectContext,
     node,
+    parent,
     pageName || compName,
     compDir,
     compName,
@@ -133,21 +144,27 @@ function genComponent(
     isComp,
   );
 
-  const { imports } = moduleContext;
-
-  const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
-
-  createModuleCode(moduleContext, tsx);
-
-  if (isNonEmptyObject(css.children)) {
-    cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
-    const cssModuleModuleSpecifier = `./${compName}.module.css`;
-    imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
-  }
-
-  printFileInProject(moduleContext);
-
   return moduleContext;
+}
+
+export function generateAllComponents(projectContext: ProjectContext) {
+  const { components } = projectContext;
+  for (const [_, moduleContext] of components) {
+    const { node, parent, compDir, compName, imports } = moduleContext;
+    const { cssFiles } = projectContext;
+
+    const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
+
+    createModuleCode(moduleContext, tsx);
+
+    if (isNonEmptyObject(css.children)) {
+      cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
+      const cssModuleModuleSpecifier = `./${compName}.module.css`;
+      imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
+    }
+
+    printFileInProject(moduleContext);
+  }
 }
 
 export function createModuleCode(
@@ -205,8 +222,9 @@ function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, pare
     parentStyles: null,
     parentContext: null,
     isRootNode: moduleContext.isRootComponent,
+    isRootInComponent: true,
   };
-  const tsx = figmaToAstRec(nodeContext, root, true);
+  const tsx = figmaToAstRec(nodeContext, root);
   const cssAst = mkStylesheetCss(moduleContext.cssRules);
   return [tsx, cssAst] as const;
 }

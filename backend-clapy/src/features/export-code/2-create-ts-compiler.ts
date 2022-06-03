@@ -6,7 +6,13 @@ import { Nil } from '../../common/general-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
-import { createModuleCode, getOrGenComponent, mkModuleContext, printFileInProject } from './3-gen-component';
+import {
+  createModuleCode,
+  generateAllComponents,
+  getOrGenComponent,
+  mkModuleContext,
+  printFileInProject,
+} from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
@@ -99,6 +105,7 @@ export async function exportCode(
   const lightAppModuleContext = mkModuleContext(
     projectContext,
     undefined as unknown as SceneNode2,
+    parent,
     undefined,
     appCompDir,
     appCompName,
@@ -108,6 +115,8 @@ export async function exportCode(
   );
   perfMeasure('c');
   const moduleContext = getOrGenComponent(lightAppModuleContext, root, parent, true);
+  perfMeasure('c2');
+  generateAllComponents(projectContext);
   perfMeasure('d');
 
   addCompToAppRoot(lightAppModuleContext, moduleContext, parent, cssVarsDeclaration);

@@ -16,7 +16,7 @@ import { cursorFigmaToCode } from './figma-code-map/cursor';
 import { escapeHTML } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
-  genClassName,
+  getOrGenClassName,
   mkClassAttr,
   mkHrefAttr,
   mkNoReferrerAttr,
@@ -141,6 +141,7 @@ function textNodeToAst(
   node: TextNode2,
   firstChildStylesRef: StylesRef,
 ) {
+  const { moduleContext } = context;
   const styles: Dict<DeclarationPlain> = {};
   const singleChild = node._textSegments?.length === 1;
 
@@ -153,7 +154,7 @@ function textNodeToAst(
 
   let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
   if (!singleChild) {
-    const className = genClassName(context);
+    const className = getOrGenClassName(moduleContext);
     addCssRule(context, className, stylesToList(styles));
     const classAttr = mkClassAttr(className);
     if (textSegment.hyperlink) {
@@ -182,6 +183,7 @@ export function mapTextStyles(
   node: TextNode2,
   styles: Dict<DeclarationPlain>,
 ): JsxOneOrMore | undefined {
+  const { moduleContext } = context;
   const textSegments: StyledTextSegment[] | undefined = node._textSegments;
   if (!textSegments) return;
   const firstChildStylesRef: StylesRef = {};
@@ -212,7 +214,7 @@ export function mapTextStyles(
       };
       // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
       addStyle(context, node, wrapperStyles, 'flex-shrink', 1);
-      const className = genClassName(context, undefined, undefined, 'labelWrapper');
+      const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
       addCssRule(context, className, stylesToList(wrapperStyles));
       classAttr = mkClassAttr(className);
     } else {
