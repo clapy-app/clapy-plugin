@@ -40,10 +40,12 @@ import {
   mkClassAttr,
   mkClassesAttribute,
   mkComponentUsage,
+  mkHidingsAttribute,
   mkNamedImportsDeclaration,
-  mkSwapInstanceWrapper,
+  mkSwapInstanceAndHideWrapper,
   mkSwapsAttribute,
   mkTag,
+  mkWrapHideAst,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
@@ -88,6 +90,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
         ...context,
         instanceClasses: {},
         instanceSwaps: {},
+        instanceHidings: new Set(),
         instanceAttributes: {},
         componentContext,
         nodeOfComp: componentContext.node,
@@ -101,21 +104,27 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       const classAttr = mkClassAttr(root, true);
       const classesAttr = mkClassesAttribute(instanceClasses);
 
-      const instanceSwaps = instanceContext.instanceSwaps;
-      const swapAttr = mkSwapsAttribute(instanceSwaps);
-
       const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
+
+      const { instanceSwaps, instanceHidings } = instanceContext;
+
+      const swapAttr = mkSwapsAttribute(instanceSwaps);
       if (swapAttr) {
         attrs.push(swapAttr);
       }
 
-      let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+      const hideAttr = mkHidingsAttribute(instanceHidings);
+      if (hideAttr) {
+        attrs.push(hideAttr);
+      }
+
+      let compAst: SwapAst | JsxOneOrMore = mkComponentUsage(componentContext.compName, attrs);
 
       // Surround instance usage with a syntax to swap with render props
       if (isInst) {
         // Should we also check that we're in a component? To review with examples.
         const swapName = getOrGenSwapName(moduleContext, componentContext, node);
-        compAst = mkSwapInstanceWrapper(swapName, compAst);
+        compAst = mkSwapInstanceAndHideWrapper(swapName, compAst, node);
       }
 
       return compAst;
@@ -175,7 +184,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
 
         // return txt;
       }
-      return ast;
+      return mkWrapHideAst(context, ast, node);
     } else if (isVector(node)) {
       const { projectContext } = moduleContext;
       let svgContent = readSvg(node);
@@ -200,7 +209,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
 
       // Generate AST
       const ast = mkComponentUsage(svgPathVarName, attributes);
-      return ast;
+      return mkWrapHideAst(context, ast, node);
     } else if (isBlockNode(node)) {
       // Add tag styles
       mapTagStyles(context, node, styles);
@@ -226,7 +235,8 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
         removeCssRule(context, cssRule, node);
       }
 
-      return mkTag(context.tagName, [...attributes, ...extraAttributes], children);
+      const ast2 = mkTag(context.tagName, [...attributes, ...extraAttributes], children);
+      return mkWrapHideAst(context, ast2, node);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate node with error below. Skipping the node.');

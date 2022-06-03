@@ -74,12 +74,17 @@ export function getOrGenSwapName(
   childInstanceContext: ModuleContext,
   node: SceneNode2,
 ) {
-  if (node.swapName) {
-    return node.swapName;
+  if (!node.swapName) {
+    node.swapName = genUniqueName(parentComponentContext.swappableInstances, childInstanceContext.compName);
   }
-  const swapName = genUniqueName(parentComponentContext.swappableInstances, childInstanceContext.compName);
-  node.swapName = swapName;
-  return swapName;
+  return node.swapName;
+}
+
+export function getOrGenHideProp(componentContext: ModuleContext, node: SceneNode2) {
+  if (!node.hideProp) {
+    node.hideProp = genUniqueName(componentContext.hideProps, node.name);
+  }
+  return node.hideProp;
 }
 
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
@@ -178,8 +183,9 @@ export function mkNamedImportsDeclaration(
 }
 
 export function mkPropInterface(moduleContext: ModuleContext, classes: string[]) {
-  const { swappableInstances } = moduleContext;
+  const { swappableInstances, hideProps } = moduleContext;
   const swapPropNames = Array.from(swappableInstances);
+  const hidePropsNames = Array.from(hideProps);
   return factory.createInterfaceDeclaration(
     undefined,
     undefined,
@@ -231,8 +237,42 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               ),
             ),
           ]),
+
+      ...(!hidePropsNames?.length
+        ? []
+        : [
+            factory.createPropertySignature(
+              undefined,
+              factory.createIdentifier('hide'),
+              factory.createToken(ts.SyntaxKind.QuestionToken),
+              factory.createTypeLiteralNode(
+                hidePropsNames.map(name =>
+                  factory.createPropertySignature(
+                    undefined,
+                    factory.createIdentifier(name),
+                    factory.createToken(ts.SyntaxKind.QuestionToken),
+                    factory.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword),
+                  ),
+                ),
+              ),
+            ),
+          ]),
     ],
   );
+}
+
+function jsxOneOrMoreToJsxExpression(tsx: JsxOneOrMore | undefined) {
+  if (tsx) {
+    if (Array.isArray(tsx)) {
+      return mkFragment(tsx);
+    } else if (ts.isJsxText(tsx)) {
+      return mkFragment([tsx]);
+    } else {
+      return tsx;
+    }
+  } else {
+    return ts.factory.createNull();
+  }
 }
 
 export function mkCompFunction(
@@ -241,18 +281,7 @@ export function mkCompFunction(
   tsx: JsxOneOrMore | undefined,
   prefixStatements: Statement[] = [],
 ) {
-  let returnedExpression: ts.Expression | undefined = undefined;
-  if (tsx) {
-    if (Array.isArray(tsx)) {
-      returnedExpression = mkFragment(tsx);
-    } else if (ts.isJsxText(tsx)) {
-      returnedExpression = mkFragment([tsx]);
-    } else {
-      returnedExpression = tsx;
-    }
-  } else {
-    returnedExpression = ts.factory.createNull();
-  }
+  let returnedExpression = jsxOneOrMoreToJsxExpression(tsx);
 
   return factory.createVariableStatement(
     [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -448,19 +477,59 @@ export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttri
   );
 }
 
-export function mkSwapInstanceWrapper(swapName: string, compAst: ts.JsxSelfClosingElement) {
-  return factory.createJsxExpression(
+export function mkSwapInstanceAndHideWrapper(swapName: string, compAst: ts.JsxSelfClosingElement, node: SceneNode2) {
+  const astAndSwapExpr = factory.createBinaryExpression(
+    factory.createPropertyAccessChain(
+      factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
+      factory.createToken(ts.SyntaxKind.QuestionDotToken),
+      factory.createIdentifier(swapName),
+    ),
+    factory.createToken(ts.SyntaxKind.BarBarToken),
+    compAst,
+  );
+
+  return node.hideProp
+    ? factory.createJsxExpression(
+        undefined,
+        factory.createBinaryExpression(
+          factory.createPrefixUnaryExpression(
+            ts.SyntaxKind.ExclamationToken,
+            factory.createPropertyAccessChain(
+              factory.createPropertyAccessExpression(
+                factory.createIdentifier('props'),
+                factory.createIdentifier('hide'),
+              ),
+              factory.createToken(ts.SyntaxKind.QuestionDotToken),
+              factory.createIdentifier(node.hideProp),
+            ),
+          ),
+          factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+          factory.createParenthesizedExpression(astAndSwapExpr),
+        ),
+      )
+    : factory.createJsxExpression(undefined, astAndSwapExpr);
+}
+
+export function mkWrapHideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
+  if (!node.hideProp) {
+    return ast;
+  }
+  const ast2 = factory.createJsxExpression(
     undefined,
     factory.createBinaryExpression(
-      factory.createPropertyAccessChain(
-        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
-        factory.createToken(ts.SyntaxKind.QuestionDotToken),
-        factory.createIdentifier(swapName),
+      factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.ExclamationToken,
+        factory.createPropertyAccessChain(
+          factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
+          factory.createToken(ts.SyntaxKind.QuestionDotToken),
+          factory.createIdentifier(node.hideProp),
+        ),
       ),
-      factory.createToken(ts.SyntaxKind.BarBarToken),
-      compAst,
+      factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      jsxOneOrMoreToJsxExpression(ast),
     ),
   );
+  return context.isRootInComponent ? mkFragment([ast2]) : ast2;
 }
 
 export function mkClassesAttribute(classes: Dict<string>) {
@@ -524,6 +593,23 @@ export function mkSwapsAttribute(swaps: Dict<SwapAst>) {
       undefined,
       factory.createObjectLiteralExpression(
         entries.map(([name, swapAst]) => factory.createPropertyAssignment(factory.createIdentifier(name), swapAst)),
+        true,
+      ),
+    ),
+  );
+}
+
+export function mkHidingsAttribute(hidings: Set<string>) {
+  if (!hidings.size) return undefined;
+  const values = Array.from(hidings);
+  return factory.createJsxAttribute(
+    factory.createIdentifier('hide'),
+    factory.createJsxExpression(
+      undefined,
+      factory.createObjectLiteralExpression(
+        values.map(hidingName =>
+          factory.createPropertyAssignment(factory.createIdentifier(hidingName), factory.createTrue()),
+        ),
         true,
       ),
     ),

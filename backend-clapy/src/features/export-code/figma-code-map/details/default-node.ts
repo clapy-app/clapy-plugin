@@ -77,7 +77,7 @@ export function fillWithComponent(
     fillNodeWithDefaults(node, nodeOfComp);
   }
   if (isChildrenMixin(node)) {
-    const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
+    const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
       let childNodeOfComp = nodeOfComp;
@@ -120,9 +120,10 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
  * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
  */
 export function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
-  if (!isChildrenMixin(nodeOfComp)) return undefined;
+  if (!isChildrenMixin(nodeOfComp)) return [undefined, undefined];
   const mapper: Dict<number> = {};
   let compStartIndex = 0;
+  const hiddenNodes: number[] = [];
   for (let i = 0; i < instance.children.length; i++) {
     const instanceChild = instance.children[i];
     const childId = instanceChild.id;
@@ -171,8 +172,17 @@ export function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp
       matchingIndex = compStartIndex;
     }
 
+    for (let j = compStartIndex; j < matchingIndex; j++) {
+      hiddenNodes.push(j);
+    }
+
     mapper[i] = matchingIndex;
     compStartIndex = matchingIndex + 1;
   }
-  return mapper;
+
+  for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+    hiddenNodes.push(j);
+  }
+
+  return [mapper, hiddenNodes] as const;
 }

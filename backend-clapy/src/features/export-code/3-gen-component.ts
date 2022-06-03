@@ -113,6 +113,7 @@ export function mkModuleContext(
     isComponent: isComp,
     classes: new Set(),
     swappableInstances: new Set(),
+    hideProps: new Set(),
   };
   return moduleContext;
 }

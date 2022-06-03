@@ -32,6 +32,7 @@ import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   getOrGenClassName,
+  getOrGenHideProp,
   getOrGenSwapName,
   mkClassAttr,
   mkClassesAttribute,
@@ -49,6 +50,10 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     const { parentNode, moduleContext, componentContext, nodeOfComp } = context;
 
     let styles: Dict<DeclarationPlain> = {};
+
+    if (!node.visible && !context.isRootInComponent) {
+      addHideNode(context, context.nodeOfComp);
+    }
 
     const isRootNode = componentContext.node === nodeOfComp;
     // There can't be a component inside a component (Figma makes it impossible),
@@ -243,6 +248,7 @@ function recurseOnChildren(
     componentContext,
     instanceClasses,
     instanceSwaps,
+    instanceHidings,
     instanceAttributes,
   } = context;
   if (!isChildrenMixin(nodeOfComp)) {
@@ -250,7 +256,7 @@ function recurseOnChildren(
     throw new Error('BUG Instance node has children, but the corresponding component node does not.');
   }
 
-  const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
+  const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
   if (!instanceToCompIndexMap) {
     warnNode(node, 'BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
     throw new Error('BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
@@ -270,11 +276,18 @@ function recurseOnChildren(
       componentContext,
       instanceClasses,
       instanceSwaps,
+      instanceHidings,
       instanceAttributes,
       nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]],
       isRootInComponent: false,
     };
     genInstanceOverrides(contextForChildren, child);
+  }
+  if (hiddenNodes) {
+    for (const nodeIndex of hiddenNodes) {
+      const child = nodeOfComp.children[nodeIndex];
+      addHideNode(context, child);
+    }
   }
 }
 
@@ -328,4 +341,18 @@ function addSwapInstance(context: InstanceContext, subComponentContext: ModuleCo
     );
   }
   instanceSwaps[swapName] = swapAst;
+}
+
+function addHideNode(context: InstanceContext, nodeOfComp: SceneNode2) {
+  const { instanceHidings, componentContext } = context;
+  const hideName = getOrGenHideProp(componentContext, nodeOfComp);
+  if (!hideName) {
+    throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
+  }
+  if (instanceHidings.has(hideName)) {
+    throw new Error(
+      `Component node ${nodeOfComp.name}: trying to add hideName ${hideName}, but this hide entry is already set`,
+    );
+  }
+  instanceHidings.add(hideName);
 }

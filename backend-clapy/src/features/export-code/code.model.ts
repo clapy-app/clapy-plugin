@@ -62,6 +62,7 @@ export interface ModuleContext {
   readonly isRootComponent?: boolean;
   readonly classes: Set<string>;
   readonly swappableInstances: Set<string>;
+  readonly hideProps: Set<string>;
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
@@ -91,6 +92,7 @@ export interface InstanceContext extends NodeContext {
   // tagName and nodeNameLower may be useless
   instanceClasses: Dict<string>;
   instanceSwaps: Dict<SwapAst>;
+  instanceHidings: Set<string>;
   instanceAttributes: Dict<string>;
   componentContext: ModuleContext;
   nodeOfComp: SceneNode2;

@@ -73,6 +73,7 @@ interface GlobalExtender {
   parent?: (BaseNode & ChildrenMixin) | null;
   autoWidth?: boolean;
   autoHeight?: boolean;
+  hideProp?: string;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
