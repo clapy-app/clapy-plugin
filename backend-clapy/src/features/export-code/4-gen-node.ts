@@ -12,6 +12,7 @@ import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from './code.mode
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
+  ComponentNode2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
@@ -35,6 +36,7 @@ import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   genComponentImportName,
+  getOrCreateCompContext,
   getOrGenClassName,
   getOrGenSwapName,
   mkClassAttr,
@@ -88,11 +90,8 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
       const instanceContext: InstanceContext = {
         ...context,
-        instanceClasses: {},
-        instanceSwaps: {},
-        instanceHidings: new Set(),
-        instanceAttributes: {},
         componentContext,
+        instanceNode: node as ComponentNode2 | InstanceNode2,
         nodeOfComp: componentContext.node,
         isRootInComponent: true,
       };
@@ -100,31 +99,33 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       // When checking overrides, in addition to classes, we also check the swapped instances.
       genInstanceOverrides(instanceContext, node);
 
-      const { root, ...instanceClasses } = instanceContext.instanceClasses;
-      const classAttr = mkClassAttr(root, true);
-      const classesAttr = mkClassesAttribute(instanceClasses);
+      const { instanceSwaps, instanceHidings, instanceClassesForStyles } = getOrCreateCompContext(node);
+      const { root, ...otherInstanceClasses } = instanceClassesForStyles;
+      if (!root) {
+        warnNode(node, 'No root class found in instanceClasses.');
+      }
 
-      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
+      const attrs = [];
 
-      const { instanceSwaps, instanceHidings } = instanceContext;
+      const classAttr = mkClassAttr(root as string | undefined, true);
+      if (classAttr) attrs.push(classAttr);
+
+      const classesAttr = mkClassesAttribute(otherInstanceClasses);
+      if (classesAttr) attrs.push(classesAttr);
 
       const swapAttr = mkSwapsAttribute(instanceSwaps);
-      if (swapAttr) {
-        attrs.push(swapAttr);
-      }
+      if (swapAttr) attrs.push(swapAttr);
 
       const hideAttr = mkHidingsAttribute(instanceHidings);
-      if (hideAttr) {
-        attrs.push(hideAttr);
-      }
+      if (hideAttr) attrs.push(hideAttr);
 
       let compAst: SwapAst | JsxOneOrMore = mkComponentUsage(componentContext.compName, attrs);
 
       // Surround instance usage with a syntax to swap with render props
       if (isInst) {
         // Should we also check that we're in a component? To review with examples.
-        const swapName = getOrGenSwapName(moduleContext, componentContext, node);
-        compAst = mkSwapInstanceAndHideWrapper(swapName, compAst, node);
+        const swapName = getOrGenSwapName(moduleContext, node);
+        compAst = mkSwapInstanceAndHideWrapper(context, swapName, compAst, node);
       }
 
       return compAst;

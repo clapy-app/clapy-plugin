@@ -3,7 +3,14 @@ import ts, { Statement } from 'typescript';
 
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, ModuleContext, NodeContext, ProjectContext, SwapAst } from '../../code.model';
+import {
+  CompContext,
+  InstanceContext,
+  JsxOneOrMore,
+  ModuleContext,
+  NodeContext,
+  ProjectContext,
+} from '../../code.model';
 import { isComponentSet, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
@@ -33,13 +40,34 @@ export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: Sc
   cssRules.splice(i, 1);
 }
 
-export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode2, defaultClassName = 'label') {
+export function getOrGenClassName(
+  moduleContext: ModuleContext,
+  node?: SceneNode2,
+  defaultClassName = 'label',
+  context?: InstanceContext,
+): string {
   if (node?.className) {
     return node.className;
   }
   const isRootInComponent = node === moduleContext.node;
+  if (context) {
+    const { instanceNode, nodeOfComp, componentContext } = context;
+    const { instanceClassesForStyles } = getOrCreateCompContext(instanceNode);
+    const compClassName = getOrGenClassName(componentContext, nodeOfComp);
+    if (instanceClassesForStyles[compClassName]) {
+      if (!isRootInComponent) {
+        // Beware, the below code is also run for instance overrides and text classes (6-figma-to-code-mapa.ts),
+        // which might be undesired. To review with test cases.
+        moduleContext.classes.add(instanceClassesForStyles[compClassName]);
+      }
+      return instanceClassesForStyles[compClassName];
+    }
+  }
   // No node when working on text segments. But can we find better class names than 'label' for this case?
-  const baseName = isRootInComponent ? 'root' : node?.name ? node.name : defaultClassName;
+  let baseName = isRootInComponent ? 'root' : node?.name ? node.name : defaultClassName;
+  if (baseName === 'root' && !node) {
+    baseName = 'subRoot';
+  }
   const className = genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
   if (node && !node.className) {
     node.className = className;
@@ -48,8 +76,44 @@ export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode
       // which might be undesired. To review with test cases.
       moduleContext.classes.add(className);
     }
+  } else if (!node && !moduleContext.classes.has(className)) {
+    // For style overrides, prop names are generated, not bound to a node, but they are still exposed
+    // in prop.classes.generatedClassName, so they need to be in the interface.
+    moduleContext.classes.add(className);
   }
   return className;
+}
+
+export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNode2, swapBaseName?: string) {
+  if (node?.swapName) {
+    return node.swapName;
+  }
+  if (!node?.name && !swapBaseName) {
+    throw new Error(
+      `Either a node with a name or a swapBaseName is required to generate a swapName on module ${componentContext.compName}`,
+    );
+  }
+  const swapName = genUniqueName(componentContext.swappableInstances, node?.name || swapBaseName!);
+  if (node) {
+    node.swapName = swapName;
+  }
+  return swapName;
+}
+
+export function getOrGenHideProp(componentContext: ModuleContext, node?: SceneNode2, hideBaseName?: string) {
+  if (node?.hideProp) {
+    return node.hideProp;
+  }
+  if (!node?.name && !hideBaseName) {
+    throw new Error(
+      `Either a node with a name or a hideBaseName is required to generate a hideProp on module ${componentContext.compName}`,
+    );
+  }
+  const hideProp = genUniqueName(componentContext.hideProps, node?.name || hideBaseName!);
+  if (node) {
+    node.hideProp = hideProp;
+  }
+  return hideProp;
 }
 
 export function genComponentImportName(context: NodeContext) {
@@ -69,24 +133,6 @@ export function getComponentName(projectContext: ProjectContext, node: SceneNode
   return genUniqueName(projectContext.compNamesAlreadyUsed, name, true);
 }
 
-export function getOrGenSwapName(
-  parentComponentContext: ModuleContext,
-  childInstanceContext: ModuleContext,
-  node: SceneNode2,
-) {
-  if (!node.swapName) {
-    node.swapName = genUniqueName(parentComponentContext.swappableInstances, childInstanceContext.compName);
-  }
-  return node.swapName;
-}
-
-export function getOrGenHideProp(componentContext: ModuleContext, node: SceneNode2) {
-  if (!node.hideProp) {
-    node.hideProp = genUniqueName(componentContext.hideProps, node.name);
-  }
-  return node.hideProp;
-}
-
 export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
   const sanitize = pascalCase ? pascalize : camelize;
   const sanitizedName = sanitize(baseName) || 'unnamed';
@@ -98,6 +144,19 @@ export function genUniqueName(usageCache: Set<string>, baseName: string, pascalC
   }
   usageCache.add(name);
   return name;
+}
+
+export function getOrCreateCompContext(node: SceneNode2) {
+  if (!node) throw new Error('Calling getOrCreateCompContext on an undefined node.');
+  if (!node._context) {
+    node._context = {
+      instanceClassesForStyles: {},
+      instanceClassesForProps: {},
+      instanceHidings: {},
+      instanceSwaps: {},
+    };
+  }
+  return node._context;
 }
 
 // https://stackoverflow.com/a/2970667/4053349
@@ -387,7 +446,11 @@ export function mkTag(tagName: string, classAttr: ts.JsxAttribute[] | null, chil
   );
 }
 
-export function mkClassAttr(classVarName: string, addClassOverride?: boolean) {
+export function mkClassAttr<T extends string | undefined>(
+  classVarName: T,
+  addClassOverride?: boolean,
+): T extends string ? ts.JsxAttribute : undefined {
+  if (!classVarName) return undefined as T extends string ? ts.JsxAttribute : undefined;
   const isRootClassName = classVarName === 'root';
   return factory.createJsxAttribute(
     factory.createIdentifier('className'),
@@ -430,7 +493,7 @@ export function mkClassAttr(classVarName: string, addClassOverride?: boolean) {
             ),
           ]),
     ),
-  );
+  ) as T extends string ? ts.JsxAttribute : undefined;
 }
 
 export function mkInputTypeAttr(value = 'checkbox') {
@@ -477,7 +540,12 @@ export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttri
   );
 }
 
-export function mkSwapInstanceAndHideWrapper(swapName: string, compAst: ts.JsxSelfClosingElement, node: SceneNode2) {
+export function mkSwapInstanceAndHideWrapper(
+  context: NodeContext,
+  swapName: string,
+  compAst: ts.JsxSelfClosingElement,
+  node: SceneNode2,
+) {
   const astAndSwapExpr = factory.createBinaryExpression(
     factory.createPropertyAccessChain(
       factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
@@ -488,7 +556,7 @@ export function mkSwapInstanceAndHideWrapper(swapName: string, compAst: ts.JsxSe
     compAst,
   );
 
-  return node.hideProp
+  const ast = node.hideProp
     ? factory.createJsxExpression(
         undefined,
         factory.createBinaryExpression(
@@ -508,6 +576,8 @@ export function mkSwapInstanceAndHideWrapper(swapName: string, compAst: ts.JsxSe
         ),
       )
     : factory.createJsxExpression(undefined, astAndSwapExpr);
+
+  return context.isRootInComponent ? mkFragment([ast]) : ast;
 }
 
 export function mkWrapHideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
@@ -584,7 +654,7 @@ export function mkClassesAttribute(classes: Dict<string>) {
   );
 }
 
-export function mkSwapsAttribute(swaps: Dict<SwapAst>) {
+export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
   const entries = Object.entries(swaps);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
@@ -592,23 +662,49 @@ export function mkSwapsAttribute(swaps: Dict<SwapAst>) {
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, swapAst]) => factory.createPropertyAssignment(factory.createIdentifier(name), swapAst)),
+        entries.map(([name, swapAst]) =>
+          factory.createPropertyAssignment(
+            factory.createIdentifier(name),
+            typeof swapAst === 'string'
+              ? factory.createPropertyAccessChain(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('props'),
+                    factory.createIdentifier('swap'),
+                  ),
+                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                  factory.createIdentifier(swapAst),
+                )
+              : swapAst,
+          ),
+        ),
         true,
       ),
     ),
   );
 }
 
-export function mkHidingsAttribute(hidings: Set<string>) {
-  if (!hidings.size) return undefined;
-  const values = Array.from(hidings);
+export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
+  const entries = Object.entries(hidings);
+  if (!entries.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('hide'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        values.map(hidingName =>
-          factory.createPropertyAssignment(factory.createIdentifier(hidingName), factory.createTrue()),
+        entries.map(([name, hideValue]) =>
+          factory.createPropertyAssignment(
+            factory.createIdentifier(name),
+            hideValue === true
+              ? factory.createTrue()
+              : factory.createPropertyAccessChain(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('props'),
+                    factory.createIdentifier('hide'),
+                  ),
+                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                  factory.createIdentifier(hideValue),
+                ),
+          ),
         ),
         true,
       ),

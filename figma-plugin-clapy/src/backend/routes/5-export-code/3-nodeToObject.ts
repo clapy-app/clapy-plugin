@@ -20,6 +20,7 @@ import {
   isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
+  isComponent,
   isComponentSet,
   isGroup,
   isInstance,
@@ -204,7 +205,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       addStyle(gridStyles, node.gridStyleId);
     }
 
-    if (exportAsSvg && !isInInstance) {
+    if (isInInstance || isInstance(node) || isComponent(node)) {
+      exportAsSvg = false;
+    }
+    if (exportAsSvg) {
       let nodeToExport = node as LayoutNode;
       let copyForExport: LayoutNode | undefined = undefined;
       try {

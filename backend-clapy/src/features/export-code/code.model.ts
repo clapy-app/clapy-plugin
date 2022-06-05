@@ -3,7 +3,14 @@ import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
-import { ComponentNode2, FlexNode, GroupNode2, PageNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
+import {
+  ComponentNode2,
+  FlexNode,
+  GroupNode2,
+  InstanceNode2,
+  PageNode2,
+  SceneNode2,
+} from './create-ts-compiler/canvas-utils';
 import { CssRootNode } from './css-gen/css-factories-low';
 import { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken';
 
@@ -86,16 +93,25 @@ export interface NodeContext {
   nodeOfComp?: SceneNode2;
 }
 
+export interface CompContext {
+  instanceClassesForStyles: Dict<string>; // TODO rename instanceClasses, and its usages
+  instanceClassesForProps: Dict<string>; // TODO delete
+  instanceHidings: Dict<true | string>;
+  instanceSwaps: Dict<SwapAst | string>;
+  mappingDone?: boolean;
+}
+
 export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
 
 export interface InstanceContext extends NodeContext {
   // tagName and nodeNameLower may be useless
-  instanceClasses: Dict<string>;
-  instanceSwaps: Dict<SwapAst>;
-  instanceHidings: Set<string>;
-  instanceAttributes: Dict<string>;
+  // nodeOfComp in parent component = on the instance node of the "parent", before we go through genInstanceOverrides()
+  instanceNode: ComponentNode2 | InstanceNode2;
   componentContext: ModuleContext;
   nodeOfComp: SceneNode2;
+  // When adding properties here, ensure you also update the InstanceContext creation in 4- and 5-instance-overrides.ts.
+  // TypeScript won't mark errors, because it inherits the previous context properties.
+  // (To change?)
 }
 
 export function isInstanceContext(context: NodeContext): context is InstanceContext {

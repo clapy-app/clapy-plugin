@@ -2,6 +2,8 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Nil } from '../../../common/general-utils';
 import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
+import { CompContext } from '../code.model';
+import { warnNode } from '../figma-code-map/details/utils-and-reset';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -74,6 +76,8 @@ interface GlobalExtender {
   autoWidth?: boolean;
   autoHeight?: boolean;
   hideProp?: string;
+  /** access it using getOrCreateCompContext() to ensure it is initialized */
+  _context?: CompContext;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
@@ -156,11 +160,27 @@ export function isFrame(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 
 }
 
 export function isComponent(node: BaseNode2 | SceneNode2 | Nil): node is ComponentNode2 {
-  return node?.type === 'COMPONENT' && !isVector(node);
+  const isComp = node?.type === 'COMPONENT';
+  // A component can't be a vector (prohibited by the extraction)
+  if (isComp && isVector(node)) {
+    warnNode(
+      node,
+      'Is both a component and a vector, which is supposed to be prohibited in the config extraction (plugin).',
+    );
+  }
+  return isComp;
 }
 
 export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
-  return node?.type === 'INSTANCE' && !isVector(node);
+  const isInst = node?.type === 'INSTANCE';
+  // An instance can't be a vector (prohibited by the extraction)
+  if (isInst && isVector(node)) {
+    warnNode(
+      node,
+      'Is both an instance and a vector, which is supposed to be prohibited in the config extraction (plugin).',
+    );
+  }
+  return isInst;
 }
 
 export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
@@ -198,7 +218,7 @@ export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSeg
 export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
 
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
-  return isFrame(node) || isComponent(node) || isInstance(node);
+  return (isFrame(node) || isComponent(node) || isInstance(node)) && !isVector(node);
 }
 
 // GroupNode doesn't have auto-layout

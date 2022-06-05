@@ -5,7 +5,7 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, ModuleContext, SwapAst } from './code.model';
+import { CompContext, InstanceContext, JsxOneOrMore, SwapAst } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
@@ -31,6 +31,7 @@ import { instanceToCompIndexRemapper } from './figma-code-map/details/default-no
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
+  getOrCreateCompContext,
   getOrGenClassName,
   getOrGenHideProp,
   getOrGenSwapName,
@@ -66,50 +67,52 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         'Instance in instance found, but the original parent component does not have an instance at the same location.',
       );
     }
-    if (!isRootNode && isInst && compNodeIsInstance && node.mainComponent!.id !== nodeOfComp.mainComponent!.id) {
-      const componentContext = getOrGenComponent(moduleContext, node, parentNode);
-      const originalSubComponentContext = getOrGenComponent(moduleContext, nodeOfComp, parentNode, false, true);
+    if (!isRootNode && isInst && compNodeIsInstance) {
+      const isOriginalInstance = node.mainComponent!.id === nodeOfComp.mainComponent!.id;
+      // If not original instance, it has been swapped. See special processing below.
+
+      const componentContext = getOrGenComponent(moduleContext, node, parentNode, false, isOriginalInstance);
 
       // Get the styles/swaps for all instance overrides. Styles and swaps only, for all nodes. No need to generate any AST.
       const instanceContext: InstanceContext = {
         ...context,
-        instanceClasses: {},
-        instanceSwaps: {},
-        instanceAttributes: {},
         componentContext,
         nodeOfComp: componentContext.node,
+        instanceNode: node,
         isRootInComponent: true,
       };
 
       genInstanceOverrides(instanceContext, node);
 
-      const { root, ...instanceClasses } = instanceContext.instanceClasses;
+      const compContext = getOrCreateCompContext(node /* nodeOfComp */);
+      const { instanceClassesForStyles, instanceSwaps, instanceHidings } = compContext;
 
-      // Adding className overrides from props is probably required in a use case (with swaps?), but the use case is not clear yet. To enable once we have an example where we need it, to better understand if we are not adding a wrong or empty value.
-      const classAttr = mkClassAttr(root, true);
-      const classesAttr = mkClassesAttribute(instanceClasses);
-      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
+      if (isOriginalInstance) {
+        const compContext = getOrCreateCompContext(nodeOfComp);
+        // TODO trouver un autre moyen que mappingDone, car en passant sur une 2è isntance, on pourrait avoir d'autres instanceHidings à mapper, mais aussi les mêmes à sauter.
+        if (!compContext.mappingDone) {
+          compContext.mappingDone = true;
+          mapClassesToParentInstanceProp(context, instanceClassesForStyles);
+          mapSwapToParentInstanceProp(context, instanceSwaps);
+          mapHideToParentInstanceProp(context, instanceHidings);
+        }
+      } else {
+        //-------------------------------------------------
+        // TODO some attribute to add for hiding in swapped instance?
+        //-------------------------------------------------
 
-      let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+        const { root, ...otherInstanceClasses } = instanceClassesForStyles;
 
-      // In case we allow the parent component to override the swap of a child instance (too verbose? too much?):
-      // Surround instance usage with a syntax to swap with render props
-      // if (isInst) {
-      //   // Should we also check that we're in a component? To review with examples.
-      //   const swapName = genUniqueName(moduleContext.swappableInstances, componentContext.compName);
-      //   compAst = mkSwapInstanceWrapper(swapName, compAst);
-      // }
+        // Adding className overrides from props is probably required in a use case (with swaps?), but the use case is not clear yet. To enable once we have an example where we need it, to better understand if we are not adding a wrong or empty value.
+        const classAttr = mkClassAttr(root, true);
+        const classesAttr = mkClassesAttribute(otherInstanceClasses);
+        const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
 
-      const {
-        projectContext: { components },
-      } = moduleContext;
-      if (!originalSubComponentContext) {
-        throw new Error(
-          `BUG Original sub-component's context not found for component ID ${nodeOfComp.mainComponent!.id}.`,
-        );
+        let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+
+        addSwapInstance(context, compAst);
       }
 
-      addSwapInstance(context, originalSubComponentContext, compAst);
       return;
     }
 
@@ -143,7 +146,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       if (!context.parentStyles || Object.keys(flexStyles).length) {
         Object.assign(styles, flexStyles);
         styles = postMapStyles(context, node, styles);
-        const className = getOrGenClassName(moduleContext, node);
+        const className = getOrGenClassName(moduleContext, node, undefined, context);
         const styleDeclarations = stylesToList(styles);
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
@@ -163,7 +166,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       // Add tag styles
       mapTagStyles(context, node, styles);
 
-      const className = getOrGenClassName(moduleContext, node);
+      const className = getOrGenClassName(moduleContext, node, undefined, context);
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
@@ -239,18 +242,8 @@ function recurseOnChildren(
   // For that case, we would need to recalculate maskedBy.
   // Later...
 
-  const {
-    parentNode,
-    parentStyles,
-    parentContext,
-    moduleContext,
-    nodeOfComp,
-    componentContext,
-    instanceClasses,
-    instanceSwaps,
-    instanceHidings,
-    instanceAttributes,
-  } = context;
+  const { parentNode, parentStyles, parentContext, moduleContext, instanceNode, nodeOfComp, componentContext } =
+    context;
   if (!isChildrenMixin(nodeOfComp)) {
     warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
     throw new Error('BUG Instance node has children, but the corresponding component node does not.');
@@ -266,7 +259,8 @@ function recurseOnChildren(
     if (child.skip) {
       continue;
     }
-    const contextForChildren: InstanceContext = {
+    const childNodeOfComp = nodeOfComp.children[instanceToCompIndexMap[i]];
+    const contextForChild: InstanceContext = {
       moduleContext,
       tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
       nodeNameLower: child.name.toLowerCase(),
@@ -274,14 +268,11 @@ function recurseOnChildren(
       parentStyles: passParentToChildContext ? parentStyles : styles,
       parentContext: passParentToChildContext ? parentContext : context,
       componentContext,
-      instanceClasses,
-      instanceSwaps,
-      instanceHidings,
-      instanceAttributes,
-      nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]],
+      instanceNode,
+      nodeOfComp: childNodeOfComp,
       isRootInComponent: false,
     };
-    genInstanceOverrides(contextForChildren, child);
+    genInstanceOverrides(contextForChild, child);
   }
   if (hiddenNodes) {
     for (const nodeIndex of hiddenNodes) {
@@ -294,7 +285,7 @@ function recurseOnChildren(
 function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const { moduleContext } = context;
   mapTagStyles(context, node, styles);
-  const className = getOrGenClassName(moduleContext, node);
+  const className = getOrGenClassName(moduleContext, node, undefined, context);
   styles = postMapStyles(context, node, styles);
   const styleDeclarations = stylesToList(styles);
   if (styleDeclarations.length) {
@@ -304,7 +295,8 @@ function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<D
 }
 
 function addClassOverride(context: InstanceContext, className: string) {
-  const { instanceClasses, nodeOfComp, componentContext } = context;
+  const { instanceNode, nodeOfComp, componentContext } = context;
+  const { instanceClassesForStyles } = getOrCreateCompContext(instanceNode);
   const compClassName = getOrGenClassName(componentContext, nodeOfComp);
   if (!compClassName) {
     throw new Error(`Component node ${nodeOfComp.name} has no className`);
@@ -314,17 +306,53 @@ function addClassOverride(context: InstanceContext, className: string) {
       `Component node ${nodeOfComp.name}: trying to set a nil className for overrides for classes ${compClassName}`,
     );
   }
-  if (instanceClasses[compClassName]) {
+  if (instanceClassesForStyles[compClassName] && instanceClassesForStyles[compClassName] !== className) {
     throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set classes ${compClassName} with value ${className}, but this classes entry is already set`,
+      `Component node ${nodeOfComp.name}: trying to set classes ${compClassName} with value ${className}, but this classes entry is already set and different from the class name we wanted to assign.`,
     );
   }
-  instanceClasses[compClassName] = className;
+  instanceClassesForStyles[compClassName] = className;
 }
 
-function addSwapInstance(context: InstanceContext, subComponentContext: ModuleContext, swapAst: SwapAst) {
-  const { instanceSwaps, nodeOfComp, componentContext } = context;
-  const swapName = getOrGenSwapName(componentContext, subComponentContext, nodeOfComp);
+/**
+ * Ensure the sub-instance we met apply swaps on the selected nodes (previous instance check) => sub-instance context
+ * AND that the parent instance exposes those swap capabilities => parent instance context
+ */
+function mapClassesToParentInstanceProp(
+  parentContext: InstanceContext,
+  childCompInstanceClasses: CompContext['instanceClassesForStyles'],
+) {
+  if (childCompInstanceClasses) {
+    for (const [classOverrideName, finalClassName] of Object.entries(childCompInstanceClasses)) {
+      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+      const classPropName = getOrGenClassName(componentContext, undefined, classOverrideName);
+
+      // In this component, link parent hide prop to child hide prop
+      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
+      const { instanceClassesForStyles: currentCompInstanceClasses } = getOrCreateCompContext(nodeOfComp);
+      if (currentCompInstanceClasses[classOverrideName]) {
+        throw new Error(
+          `[map1] Component node ${nodeOfComp.name}: trying to map classes ${classOverrideName} with value ${classPropName}, but this classes entry is already mapped or set`,
+        );
+      }
+      currentCompInstanceClasses[classOverrideName] = classPropName;
+
+      // Tell the parent that the grandchild has something to hide for this instance
+      const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
+      if (parentCompInstanceClasses[classPropName]) {
+        throw new Error(
+          `[map2] Component node ${instanceNode.name}: trying to map classes ${classPropName} with value ${finalClassName}, but this classes entry is already mapped or set`,
+        );
+      }
+      parentCompInstanceClasses[classPropName] = finalClassName;
+    }
+  }
+}
+
+function addSwapInstance(context: InstanceContext, swapAst: SwapAst) {
+  const { instanceNode, nodeOfComp, componentContext } = context;
+  const { instanceSwaps } = getOrCreateCompContext(instanceNode);
+  const swapName = getOrGenSwapName(componentContext, nodeOfComp);
   if (!swapName) {
     throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
   }
@@ -343,16 +371,64 @@ function addSwapInstance(context: InstanceContext, subComponentContext: ModuleCo
   instanceSwaps[swapName] = swapAst;
 }
 
+/**
+ * Ensure the sub-instance we met apply swaps on the selected nodes (previous instance check) => sub-instance context
+ * AND that the parent instance exposes those swap capabilities => parent instance context
+ */
+function mapSwapToParentInstanceProp(
+  parentContext: InstanceContext,
+  childCompInstanceSwaps: CompContext['instanceSwaps'],
+) {
+  if (childCompInstanceSwaps) {
+    for (const [swapBaseName, ast] of Object.entries(childCompInstanceSwaps)) {
+      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+      const swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
+
+      // In this component, link parent hide prop to child hide prop
+      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
+      const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
+      currentCompInstanceSwaps[swapBaseName] = swapName;
+
+      // Tell the parent that the grandchild has something to hide for this instance
+      const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
+      parentCompInstanceSwaps[swapName] = ast;
+    }
+  }
+}
+
 function addHideNode(context: InstanceContext, nodeOfComp: SceneNode2) {
-  const { instanceHidings, componentContext } = context;
+  const { instanceNode, componentContext } = context;
+  const { instanceHidings } = getOrCreateCompContext(instanceNode);
   const hideName = getOrGenHideProp(componentContext, nodeOfComp);
   if (!hideName) {
     throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
   }
-  if (instanceHidings.has(hideName)) {
-    throw new Error(
-      `Component node ${nodeOfComp.name}: trying to add hideName ${hideName}, but this hide entry is already set`,
-    );
+  if (!instanceHidings[hideName]) {
+    instanceHidings[hideName] = true;
   }
-  instanceHidings.add(hideName);
+}
+
+/**
+ * Ensure the sub-instance we met apply hiding on the selected nodes (previous instance check) => sub-instance context
+ * AND that the parent instance exposes those hiding capabilities => parent instance context
+ */
+function mapHideToParentInstanceProp(
+  parentContext: InstanceContext,
+  childCompInstanceHidings: CompContext['instanceHidings'],
+) {
+  if (childCompInstanceHidings) {
+    for (const [hideBaseName, hideValue] of Object.entries(childCompInstanceHidings)) {
+      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+      const hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
+
+      // In this component, link parent hide prop to child hide prop
+      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
+      const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
+      currentCompInstanceHidings[hideBaseName] = hideName;
+
+      // Tell the parent that the grandchild has something to hide for this instance
+      const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);
+      parentCompInstanceHidings[hideName] = hideValue;
+    }
+  }
 }
