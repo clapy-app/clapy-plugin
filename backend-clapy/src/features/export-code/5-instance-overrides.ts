@@ -44,16 +44,17 @@ import { warnNode } from './figma-code-map/details/utils-and-reset';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {
-    if (!node.visible && context.moduleContext.isRootComponent) {
-      throw new Error('BUG? isRootComponent true in genInstanceOverrides.');
-      // return;
-    }
     const { parentNode, moduleContext, componentContext, nodeOfComp } = context;
 
     let styles: Dict<DeclarationPlain> = {};
 
-    if (!node.visible && !context.isRootInComponent) {
-      addHideNode(context, context.nodeOfComp);
+    if (!node.visible && context.isRootInComponent) {
+      // It happens, we stop here. We may just need to ensure the instance node has a hideProp true on it.
+      return;
+    }
+    addHideNode(context, node, context.nodeOfComp);
+    if (!node.visible) {
+      return;
     }
 
     const isRootNode = componentContext.node === nodeOfComp;
@@ -93,9 +94,11 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         if (!compContext.mappingDone) {
           compContext.mappingDone = true;
           mapClassesToParentInstanceProp(context, instanceClassesForStyles);
-          mapSwapToParentInstanceProp(context, instanceSwaps);
-          mapHideToParentInstanceProp(context, instanceHidings);
         }
+        mapSwapToParentInstanceProp(context, instanceSwaps);
+        mapHideToParentInstanceProp(context, instanceHidings);
+
+        addSwapInstance(context, false);
       } else {
         //-------------------------------------------------
         // TODO some attribute to add for hiding in swapped instance?
@@ -274,12 +277,6 @@ function recurseOnChildren(
     };
     genInstanceOverrides(contextForChild, child);
   }
-  if (hiddenNodes) {
-    for (const nodeIndex of hiddenNodes) {
-      const child = nodeOfComp.children[nodeIndex];
-      addHideNode(context, child);
-    }
-  }
 }
 
 function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -349,26 +346,31 @@ function mapClassesToParentInstanceProp(
   }
 }
 
-function addSwapInstance(context: InstanceContext, swapAst: SwapAst) {
+function addSwapInstance(context: InstanceContext, swapAst: SwapAst | false) {
   const { instanceNode, nodeOfComp, componentContext } = context;
   const { instanceSwaps } = getOrCreateCompContext(instanceNode);
   const swapName = getOrGenSwapName(componentContext, nodeOfComp);
   if (!swapName) {
     throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
   }
-  if (!swapAst) {
+  if (swapAst == null) {
     throw new Error(
       `Component node ${nodeOfComp.name}: trying to set a nil swapAst for overrides for swap ${swapName}`,
     );
   }
-  if (instanceSwaps[swapName]) {
-    throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set swap ${swapName} with value ${printStandalone(
-        swapAst,
-      )}, but this swap entry is already set`,
-    );
+  if (typeof instanceSwaps[swapName] !== 'string') {
+    if (instanceSwaps[swapName]) {
+      throw new Error(
+        `Component node ${nodeOfComp.name}: trying to set swap ${swapName} with value ${
+          swapAst === false ? swapAst : printStandalone(swapAst)
+        }, but this swap entry is already set`,
+      );
+    }
+    instanceSwaps[swapName] = swapAst;
   }
-  instanceSwaps[swapName] = swapAst;
+  if (swapAst && instanceNode.mapSwapsToProps) {
+    instanceNode.mapSwapsToProps();
+  }
 }
 
 /**
@@ -382,21 +384,29 @@ function mapSwapToParentInstanceProp(
   if (childCompInstanceSwaps) {
     for (const [swapBaseName, ast] of Object.entries(childCompInstanceSwaps)) {
       const { instanceNode, componentContext, nodeOfComp } = parentContext;
-      const swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
 
-      // In this component, link parent hide prop to child hide prop
-      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
-      const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
-      currentCompInstanceSwaps[swapBaseName] = swapName;
+      nodeOfComp.mapSwapsToProps = () => {
+        if (nodeOfComp.swapsMapped) {
+          return;
+        }
+        nodeOfComp.swapsMapped = true;
 
-      // Tell the parent that the grandchild has something to hide for this instance
-      const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
-      parentCompInstanceSwaps[swapName] = ast;
+        const swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
+
+        const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
+        currentCompInstanceSwaps[swapBaseName] = swapName;
+
+        const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
+        parentCompInstanceSwaps[swapName] = ast;
+      };
+      if (ast) {
+        nodeOfComp.mapSwapsToProps();
+      }
     }
   }
 }
 
-function addHideNode(context: InstanceContext, nodeOfComp: SceneNode2) {
+function addHideNode(context: InstanceContext, node: SceneNode2, nodeOfComp: SceneNode2) {
   const { instanceNode, componentContext } = context;
   const { instanceHidings } = getOrCreateCompContext(instanceNode);
   const hideName = getOrGenHideProp(componentContext, nodeOfComp);
@@ -404,7 +414,11 @@ function addHideNode(context: InstanceContext, nodeOfComp: SceneNode2) {
     throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
   }
   if (!instanceHidings[hideName]) {
-    instanceHidings[hideName] = true;
+    instanceHidings[hideName] = !node.visible;
+  }
+  // See notes in mapHideToParentInstanceProp to understand what this function is.
+  if (!node.visible && instanceNode.mapHidesToProps) {
+    instanceNode.mapHidesToProps();
   }
 }
 
@@ -419,16 +433,32 @@ function mapHideToParentInstanceProp(
   if (childCompInstanceHidings) {
     for (const [hideBaseName, hideValue] of Object.entries(childCompInstanceHidings)) {
       const { instanceNode, componentContext, nodeOfComp } = parentContext;
-      const hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
 
-      // In this component, link parent hide prop to child hide prop
-      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
-      const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
-      currentCompInstanceHidings[hideBaseName] = hideName;
+      // Special hack. When checking a sub-instance for hide overrides, we may find nothing to hide, because that instances shows the element.
+      // But an intermediate component (which this sub-instance depends on) may hide it in Figma.
+      // When addHideNode finds, later, that the intermediate component actually hides the element, it means we need to get back to the mapping here and bind "hide" to a prop, to ensure it will remain visible with the bigger component.
+      // The function triggering the mapping, attached to the node, is dirty, but makes this retrospective possible.
+      // The notion of default value is mising for now. It could be either hideValue or the value from addHideNode() when it calls mapHidesToProps().
+      nodeOfComp.mapHidesToProps = () => {
+        if (nodeOfComp.hidesMapped) {
+          return;
+        }
+        nodeOfComp.hidesMapped = true;
 
-      // Tell the parent that the grandchild has something to hide for this instance
-      const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);
-      parentCompInstanceHidings[hideName] = hideValue;
+        const hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
+
+        // In this component, link parent hide prop to child hide prop
+        // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
+        const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
+        currentCompInstanceHidings[hideBaseName] = hideName;
+
+        // Tell the parent that the grandchild has something to hide for this instance
+        const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);
+        parentCompInstanceHidings[hideName] = hideValue;
+      };
+      if (hideValue) {
+        nodeOfComp.mapHidesToProps();
+      }
     }
   }
 }

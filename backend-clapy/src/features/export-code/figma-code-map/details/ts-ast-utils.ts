@@ -655,28 +655,31 @@ export function mkClassesAttribute(classes: Dict<string>) {
 }
 
 export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
-  const entries = Object.entries(swaps);
+  const entries = Object.entries(swaps).filter(([_, swapValue]) => swapValue !== false);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('swap'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, swapAst]) =>
-          factory.createPropertyAssignment(
+        entries.map(([name, swapValue]) => {
+          if (swapValue === false) {
+            throw new Error('[mkSwapsAttribute] false value should have been filtered before.');
+          }
+          return factory.createPropertyAssignment(
             factory.createIdentifier(name),
-            typeof swapAst === 'string'
+            typeof swapValue === 'string'
               ? factory.createPropertyAccessChain(
                   factory.createPropertyAccessExpression(
                     factory.createIdentifier('props'),
                     factory.createIdentifier('swap'),
                   ),
                   factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                  factory.createIdentifier(swapAst),
+                  factory.createIdentifier(swapValue),
                 )
-              : swapAst,
-          ),
-        ),
+              : swapValue,
+          );
+        }),
         true,
       ),
     ),
@@ -684,15 +687,24 @@ export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
 }
 
 export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
-  const entries = Object.entries(hidings);
+  // Possible improvements: default values are not managed, although it could. But for that, we need to first ensure the parent component passes well the hide value for the grandchild instance, then the intermediate component, mapping hide to its props, can apply a default value.
+  // The generated code could look like:
+  //    hide={{
+  //      btnTxt: props.hide?.btnTxt != null ? props.hide?.btnTxt : [defaultValue, true or false],
+  //    }}
+  // Even better (later?), we could add the notion of default values in the component props directly.
+  const entries = Object.entries(hidings).filter(([_, hideValue]) => hideValue !== false);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('hide'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, hideValue]) =>
-          factory.createPropertyAssignment(
+        entries.map(([name, hideValue]) => {
+          if (hideValue === false) {
+            throw new Error('[mkHidingsAttribute] false value should have been filtered before.');
+          }
+          return factory.createPropertyAssignment(
             factory.createIdentifier(name),
             hideValue === true
               ? factory.createTrue()
@@ -704,8 +716,8 @@ export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
                   factory.createToken(ts.SyntaxKind.QuestionDotToken),
                   factory.createIdentifier(hideValue),
                 ),
-          ),
-        ),
+          );
+        }),
         true,
       ),
     ),

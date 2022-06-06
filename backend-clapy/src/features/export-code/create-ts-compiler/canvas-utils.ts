@@ -76,6 +76,10 @@ interface GlobalExtender {
   autoWidth?: boolean;
   autoHeight?: boolean;
   hideProp?: string;
+  mapHidesToProps?: () => void;
+  hidesMapped?: boolean;
+  mapSwapsToProps?: () => void;
+  swapsMapped?: boolean;
   /** access it using getOrCreateCompContext() to ensure it is initialized */
   _context?: CompContext;
 }
@@ -156,6 +160,8 @@ export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is Comp
 }
 
 export function isFrame(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 {
+  // Components and instances are special frames. Does everything that happens to frame should also apply to components and instances in this project?
+  // If yes, we can change the condition below to also match component and instance types.
   return (node as BaseNode2)?.type === 'FRAME' && !isVector(node);
 }
 
@@ -193,7 +199,7 @@ export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node i
 }
 
 export interface ChildrenMixin2 {
-  readonly children: ReadonlyArray<SceneNode2>;
+  children: ReadonlyArray<SceneNode2>;
 }
 
 export function isChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): node is ChildrenMixin2 {

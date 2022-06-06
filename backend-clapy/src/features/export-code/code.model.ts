@@ -96,8 +96,8 @@ export interface NodeContext {
 export interface CompContext {
   instanceClassesForStyles: Dict<string>; // TODO rename instanceClasses, and its usages
   instanceClassesForProps: Dict<string>; // TODO delete
-  instanceHidings: Dict<true | string>;
-  instanceSwaps: Dict<SwapAst | string>;
+  instanceHidings: Dict<boolean | string>;
+  instanceSwaps: Dict<SwapAst | string | false>;
   mappingDone?: boolean;
 }
 

@@ -80,20 +80,22 @@ export function fillWithComponent(
     const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
-      let childNodeOfComp = nodeOfComp;
-      if (childNodeOfComp && instanceToCompIndexMap) {
-        if (!isChildrenMixin(childNodeOfComp)) {
-          warnNode(
-            child,
-            `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
-          );
-          throw new Error(
-            `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
-          );
+      if (child.visible) {
+        let childNodeOfComp = nodeOfComp;
+        if (childNodeOfComp && instanceToCompIndexMap) {
+          if (!isChildrenMixin(childNodeOfComp)) {
+            warnNode(
+              child,
+              `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
+            );
+            throw new Error(
+              `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
+            );
+          }
+          childNodeOfComp = childNodeOfComp.children[instanceToCompIndexMap[i]];
         }
-        childNodeOfComp = childNodeOfComp.children[instanceToCompIndexMap[i]];
+        fillWithComponent(child, compNodes, childNodeOfComp);
       }
-      fillWithComponent(child, compNodes, childNodeOfComp);
     }
   }
 }
@@ -119,70 +121,115 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
 /**
  * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
  */
-export function instanceToCompIndexRemapper(instance: ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
+export function instanceToCompIndexRemapper(
+  instance: { id: string } & ChildrenMixin2,
+  nodeOfComp: SceneNode2 | undefined,
+) {
   if (!isChildrenMixin(nodeOfComp)) return [undefined, undefined];
   const mapper: Dict<number> = {};
   let compStartIndex = 0;
   const hiddenNodes: number[] = [];
   for (let i = 0; i < instance.children.length; i++) {
-    const instanceChild = instance.children[i];
-    const childId = instanceChild.id;
-    const compId = childId.substring(childId.lastIndexOf(';') + 1);
+    const matchingCompIndex = getMatchingComponentIndex(instance, nodeOfComp, i, compStartIndex);
 
-    // First, try to match by ID
-    let matchingIndex = -1;
-    for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
-      const compChild = nodeOfComp.children[j];
-      if (compChild.id === compId) {
-        matchingIndex = j;
-        break;
-      }
-    }
-    // If no match, try to match by type + name
-    if (matchingIndex === -1) {
-      for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
-        const compChild = nodeOfComp.children[j];
-        if (compChild.type === instanceChild.type && compChild.name === instanceChild.name) {
-          matchingIndex = j;
-          break;
-        }
-      }
-    }
-    // If no match, take the first match by type
-    if (matchingIndex === -1) {
-      for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
-        const compChild = nodeOfComp.children[j];
-        if (compChild.type === instanceChild.type) {
-          matchingIndex = j;
-          break;
-        }
-      }
-    }
-    // If still no match, it's a bug. We fallback to the first child of the list, but may be wrong if the component has hidden elements.
-    if (matchingIndex === -1) {
-      // TODO improve
-      // warnNode(
-      //   instance as unknown as SceneNode2,
-      //   'No match found for child at index',
-      //   i,
-      //   'with the corresponding component',
-      //   nodeOfComp,
-      //   '- falling back to the next component child.',
-      // );
-      matchingIndex = compStartIndex;
+    for (let j = compStartIndex; j < matchingCompIndex; j++) {
+      appendInvisibleElement(instance, nodeOfComp, j);
+      mapper[j] = j;
+      ++i;
     }
 
-    for (let j = compStartIndex; j < matchingIndex; j++) {
-      hiddenNodes.push(j);
-    }
-
-    mapper[i] = matchingIndex;
-    compStartIndex = matchingIndex + 1;
+    mapper[i] = matchingCompIndex;
+    compStartIndex = matchingCompIndex + 1;
   }
 
   for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
-    hiddenNodes.push(j);
+    appendInvisibleElement(instance, nodeOfComp, j);
+    mapper[j] = j;
   }
 
   return [mapper, hiddenNodes] as const;
 }
+
+function appendInvisibleElement(
+  instance: { id: string } & ChildrenMixin2,
+  nodeOfComp: SceneNode2 & ChildrenMixin2,
+  instanceIndex: number,
+) {
+  const c = instance.children as Array<SceneNode2>;
+  const compChild = nodeOfComp.children[instanceIndex];
+  const { id, name, type } = compChild;
+  c.splice(instanceIndex, 0, { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2);
+}
+
+function getMatchingComponentIndex(
+  instance: ChildrenMixin2,
+  nodeOfComp: SceneNode2 & ChildrenMixin2,
+  instanceIndex: number,
+  compStartIndex: number,
+) {
+  const instanceChild = instance.children[instanceIndex];
+  const childId = instanceChild.id;
+  const compId = childId.substring(childId.lastIndexOf(';') + 1);
+
+  // First, try to match by ID
+  let matchingIndex = -1;
+  for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+    const compChild = nodeOfComp.children[j];
+    if (compChild.id === compId) {
+      matchingIndex = j;
+      break;
+    }
+  }
+  // If no match, try to match by type + name
+  if (matchingIndex === -1) {
+    for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+      const compChild = nodeOfComp.children[j];
+      if (compChild.type === instanceChild.type && compChild.name === instanceChild.name) {
+        matchingIndex = j;
+        break;
+      }
+    }
+  }
+  // If no match, take the first match by type
+  if (matchingIndex === -1) {
+    for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
+      const compChild = nodeOfComp.children[j];
+      if (compChild.type === instanceChild.type) {
+        matchingIndex = j;
+        break;
+      }
+    }
+  }
+  // If still no match, it's a bug. We fallback to the first child of the list, but may be wrong if the component has hidden elements.
+  if (matchingIndex === -1) {
+    // TODO improve
+    // warnNode(
+    //   instance as unknown as SceneNode2,
+    //   'No match found for child at index',
+    //   i,
+    //   'with the corresponding component',
+    //   nodeOfComp,
+    //   '- falling back to the next component child.',
+    // );
+    matchingIndex = compStartIndex;
+  }
+
+  return matchingIndex;
+}
+
+// const inst = { id: 'i', children: [{ id: 'i;b' }, { id: 'i;d' }] } as unknown as { id: string } & ChildrenMixin2;
+//
+// const comp = {
+//   children: [
+//     { id: 'a', name: 'A', type: 'FRAME' },
+//     { id: 'b', name: 'B', type: 'FRAME' },
+//     { id: 'c', name: 'C', type: 'FRAME' },
+//     { id: 'd', name: 'D', type: 'FRAME' },
+//     { id: 'e', name: 'E', type: 'FRAME' },
+//   ],
+// } as unknown as SceneNode2;
+// const [m] = instanceToCompIndexRemapper(inst, comp);
+// console.log('---------------');
+// console.log(inst);
+// console.log(m);
+// console.log('---------------');
