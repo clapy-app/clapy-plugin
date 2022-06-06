@@ -77,9 +77,7 @@ interface GlobalExtender {
   autoHeight?: boolean;
   hideProp?: string;
   mapHidesToProps?: () => void;
-  hidesMapped?: boolean;
   mapSwapsToProps?: () => void;
-  swapsMapped?: boolean;
   /** access it using getOrCreateCompContext() to ensure it is initialized */
   _context?: CompContext;
 }

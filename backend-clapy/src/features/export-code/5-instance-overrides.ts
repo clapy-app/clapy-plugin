@@ -383,11 +383,6 @@ function mapSwapToParentInstanceProp(
       const { instanceNode, componentContext, nodeOfComp } = parentContext;
 
       nodeOfComp.mapSwapsToProps = () => {
-        if (nodeOfComp.swapsMapped) {
-          return;
-        }
-        nodeOfComp.swapsMapped = true;
-
         const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
         let swapName: string;
         if (currentCompInstanceSwaps[swapBaseName]) {
@@ -403,7 +398,9 @@ function mapSwapToParentInstanceProp(
         }
 
         const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
-        parentCompInstanceSwaps[swapName] = ast;
+        if (!parentCompInstanceSwaps[swapName]) {
+          parentCompInstanceSwaps[swapName] = ast;
+        }
       };
       if (ast) {
         nodeOfComp.mapSwapsToProps();
@@ -446,11 +443,6 @@ function mapHideToParentInstanceProp(
       // The function triggering the mapping, attached to the node, is dirty, but makes this retrospective possible.
       // The notion of default value is mising for now. It could be either hideValue or the value from addHideNode() when it calls mapHidesToProps().
       nodeOfComp.mapHidesToProps = () => {
-        if (nodeOfComp.hidesMapped) {
-          return;
-        }
-        nodeOfComp.hidesMapped = true;
-
         const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
         let hideName: string;
         if (currentCompInstanceHidings[hideBaseName]) {
@@ -467,7 +459,9 @@ function mapHideToParentInstanceProp(
 
         // Tell the parent that the grandchild has something to hide for this instance
         const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);
-        parentCompInstanceHidings[hideName] = hideValue;
+        if (!parentCompInstanceHidings[hideName]) {
+          parentCompInstanceHidings[hideName] = hideValue;
+        }
       };
       if (hideValue) {
         nodeOfComp.mapHidesToProps();
