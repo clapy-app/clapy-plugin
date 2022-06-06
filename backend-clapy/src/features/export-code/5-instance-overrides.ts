@@ -31,13 +31,11 @@ import { instanceToCompIndexRemapper } from './figma-code-map/details/default-no
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
+  createComponentUsageWithAttributes,
   getOrCreateCompContext,
   getOrGenClassName,
   getOrGenHideProp,
   getOrGenSwapName,
-  mkClassAttr,
-  mkClassesAttribute,
-  mkComponentUsage,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
@@ -86,28 +84,16 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       genInstanceOverrides(instanceContext, node);
 
       const compContext = getOrCreateCompContext(node /* nodeOfComp */);
-      const { instanceClassesForStyles, instanceSwaps, instanceHidings } = compContext;
 
       if (isOriginalInstance) {
-        const compContext = getOrCreateCompContext(nodeOfComp);
+        const { instanceClassesForStyles, instanceSwaps, instanceHidings } = compContext;
         mapClassesToParentInstanceProp(context, instanceClassesForStyles);
         mapSwapToParentInstanceProp(context, instanceSwaps);
         mapHideToParentInstanceProp(context, instanceHidings);
 
         addSwapInstance(context, false);
       } else {
-        //-------------------------------------------------
-        // TODO some attribute to add for hiding in swapped instance?
-        //-------------------------------------------------
-
-        const { root, ...otherInstanceClasses } = instanceClassesForStyles;
-
-        // Adding className overrides from props is probably required in a use case (with swaps?), but the use case is not clear yet. To enable once we have an example where we need it, to better understand if we are not adding a wrong or empty value.
-        const classAttr = mkClassAttr(root, true);
-        const classesAttr = mkClassesAttribute(otherInstanceClasses);
-        const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
-
-        let compAst: SwapAst = mkComponentUsage(componentContext.compName, attrs);
+        const compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
 
         addSwapInstance(context, compAst);
       }
@@ -149,7 +135,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         const styleDeclarations = stylesToList(styles);
         if (styleDeclarations.length) {
           addCssRule(context, className, styleDeclarations);
-          addClassOverride(context, className);
+          addClassOverride(context, node, className);
         }
       } else {
         styles = postMapStyles(context, node, styles);
@@ -183,7 +169,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         removeCssRule(context, cssRule, node);
       }
 
-      addClassOverride(context, className);
+      addClassOverride(context, node, className);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate instance override for component node with error below. Skipping the node.');
@@ -283,14 +269,14 @@ function addNodeStyles(context: InstanceContext, node: ValidNode, styles: Dict<D
   const styleDeclarations = stylesToList(styles);
   if (styleDeclarations.length) {
     addCssRule(context, className, styleDeclarations);
-    addClassOverride(context, className);
+    addClassOverride(context, node, className);
   }
 }
 
-function addClassOverride(context: InstanceContext, className: string) {
+function addClassOverride(context: InstanceContext, node: SceneNode2, className: string) {
   const { instanceNode, nodeOfComp, componentContext } = context;
   const { instanceClassesForStyles } = getOrCreateCompContext(instanceNode);
-  const compClassName = getOrGenClassName(componentContext, nodeOfComp);
+  const compClassName = getOrGenClassName(componentContext, nodeOfComp, node.name);
   if (!compClassName) {
     throw new Error(`Component node ${nodeOfComp.name} has no className`);
   }
@@ -323,19 +309,36 @@ function mapClassesToParentInstanceProp(
       let classPropName: string;
       if (currentCompInstanceClasses[classOverrideName]) {
         classPropName = currentCompInstanceClasses[classOverrideName];
-      } else {
-        classPropName = getOrGenClassName(componentContext, undefined, classOverrideName);
-        currentCompInstanceClasses[classOverrideName] = classPropName;
-      }
 
-      // Tell the parent that the grandchild has something to hide for this instance
-      const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
-      if (parentCompInstanceClasses[classPropName]) {
-        throw new Error(
-          `[map2] Component node ${instanceNode.name}: trying to map classes ${classPropName} with value ${finalClassName}, but this classes entry is already mapped or set`,
+        const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
+        // This throws when a sub-component has its own default styles, because we don't manage well default values for now. Only the first class will be applied, so default style overrides on subcomponents can be missing.
+        // parentCompInstanceClasses may already have classPropName referenced previously to have the class passed as prop, to let the parent override it. Then we may want to apply a class matching default styles (overrides).
+        //
+        // if (parentCompInstanceClasses[classPropName] && parentCompInstanceClasses[classPropName] !== finalClassName) {
+        //   throw new Error(
+        //     `[map1] Component node ${instanceNode.name}: trying to map classes ${classPropName} with value ${finalClassName}, but this classes entry is already mapped or set`,
+        //   );
+        // }
+        if (!parentCompInstanceClasses[classPropName]) {
+          parentCompInstanceClasses[classPropName] = finalClassName;
+        }
+      } else {
+        classPropName = getOrGenClassName(
+          componentContext,
+          undefined,
+          classOverrideName === 'root' ? nodeOfComp.name : classOverrideName,
         );
+        currentCompInstanceClasses[classOverrideName] = classPropName;
+
+        // Tell the parent that the grandchild has something to hide for this instance
+        const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
+        if (parentCompInstanceClasses[classPropName]) {
+          throw new Error(
+            `[map2] Component node ${instanceNode.name}: trying to map classes ${classPropName} with value ${finalClassName}, but this classes entry is already mapped or set`,
+          );
+        }
+        parentCompInstanceClasses[classPropName] = finalClassName;
       }
-      parentCompInstanceClasses[classPropName] = finalClassName;
     }
   }
 }

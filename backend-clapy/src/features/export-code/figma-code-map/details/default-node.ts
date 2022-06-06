@@ -80,7 +80,7 @@ export function fillWithComponent(
     const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
-      if (child.visible) {
+      if (child.visible || child.visible == null) {
         let childNodeOfComp = nodeOfComp;
         if (childNodeOfComp && instanceToCompIndexMap) {
           if (!isChildrenMixin(childNodeOfComp)) {

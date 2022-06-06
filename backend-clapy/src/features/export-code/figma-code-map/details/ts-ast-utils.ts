@@ -192,6 +192,34 @@ function prefixIfNumber(varName: string) {
   return varName.match(/^\d/) ? `_${varName}` : varName;
 }
 
+export function createComponentUsageWithAttributes(
+  compContext: CompContext,
+  componentModuleContext: ModuleContext,
+  node: SceneNode2,
+) {
+  const { instanceSwaps, instanceHidings, instanceClassesForStyles } = compContext;
+  const { root, ...otherInstanceClasses } = instanceClassesForStyles;
+  if (!root) {
+    warnNode(node, 'No root class found in instanceClasses.');
+  }
+
+  const attrs = [];
+
+  const classAttr = mkClassAttr(root as string | undefined, true);
+  if (classAttr) attrs.push(classAttr);
+
+  const classesAttr = mkClassesAttribute(otherInstanceClasses);
+  if (classesAttr) attrs.push(classesAttr);
+
+  const swapAttr = mkSwapsAttribute(instanceSwaps);
+  if (swapAttr) attrs.push(swapAttr);
+
+  const hideAttr = mkHidingsAttribute(instanceHidings);
+  if (hideAttr) attrs.push(hideAttr);
+
+  return mkComponentUsage(componentModuleContext.compName, attrs);
+}
+
 // AST generation functions
 
 export function mkSimpleImportDeclaration(moduleSpecifier: string) {

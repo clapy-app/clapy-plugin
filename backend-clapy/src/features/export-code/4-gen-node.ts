@@ -35,17 +35,15 @@ import { stylesToList } from './css-gen/css-type-utils';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
+  createComponentUsageWithAttributes,
   genComponentImportName,
   getOrCreateCompContext,
   getOrGenClassName,
   getOrGenSwapName,
   mkClassAttr,
-  mkClassesAttribute,
   mkComponentUsage,
-  mkHidingsAttribute,
   mkNamedImportsDeclaration,
   mkSwapInstanceAndHideWrapper,
-  mkSwapsAttribute,
   mkTag,
   mkWrapHideAst,
   removeCssRule,
@@ -99,36 +97,19 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       // When checking overrides, in addition to classes, we also check the swapped instances.
       genInstanceOverrides(instanceContext, node);
 
-      const { instanceSwaps, instanceHidings, instanceClassesForStyles } = getOrCreateCompContext(node);
-      const { root, ...otherInstanceClasses } = instanceClassesForStyles;
-      if (!root) {
-        warnNode(node, 'No root class found in instanceClasses.');
-      }
+      const compContext = getOrCreateCompContext(node);
 
-      const attrs = [];
-
-      const classAttr = mkClassAttr(root as string | undefined, true);
-      if (classAttr) attrs.push(classAttr);
-
-      const classesAttr = mkClassesAttribute(otherInstanceClasses);
-      if (classesAttr) attrs.push(classesAttr);
-
-      const swapAttr = mkSwapsAttribute(instanceSwaps);
-      if (swapAttr) attrs.push(swapAttr);
-
-      const hideAttr = mkHidingsAttribute(instanceHidings);
-      if (hideAttr) attrs.push(hideAttr);
-
-      let compAst: SwapAst | JsxOneOrMore = mkComponentUsage(componentContext.compName, attrs);
+      let compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
 
       // Surround instance usage with a syntax to swap with render props
+      let compAst2: SwapAst | JsxOneOrMore = compAst;
       if (isInst) {
         // Should we also check that we're in a component? To review with examples.
         const swapName = getOrGenSwapName(moduleContext, node);
-        compAst = mkSwapInstanceAndHideWrapper(context, swapName, compAst, node);
+        compAst2 = mkSwapInstanceAndHideWrapper(context, swapName, compAst, node);
       }
 
-      return compAst;
+      return compAst2;
     }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
