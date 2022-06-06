@@ -458,7 +458,7 @@ function mapHideToParentInstanceProp(
           }
           hideName = currentCompInstanceHidings[hideBaseName] as string;
         } else {
-          hideName = getOrGenSwapName(componentContext, undefined, hideBaseName);
+          hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
           currentCompInstanceHidings[hideBaseName] = hideName;
         }
 

@@ -1,3 +1,4 @@
+import { StyleSheetPlain } from 'css-tree';
 import { relative } from 'path';
 import ts, { Statement } from 'typescript';
 
@@ -125,7 +126,6 @@ function createModuleContextForNode(
   isRootComponent = false,
 ) {
   const { projectContext } = parentModuleContext;
-  const { cssFiles } = projectContext;
 
   const isComp = isComponent(node);
 
@@ -148,13 +148,30 @@ function createModuleContextForNode(
   return moduleContext;
 }
 
+interface CompReadyToWrite {
+  moduleContext: ModuleContext;
+  tsx: JsxOneOrMore | undefined;
+  css: StyleSheetPlain;
+}
+
 export function generateAllComponents(projectContext: ProjectContext) {
   const { components } = projectContext;
+  const compReadyToWrite: CompReadyToWrite[] = [];
   for (const [_, moduleContext] of components) {
-    const { node, parent, compDir, compName, imports } = moduleContext;
-    const { cssFiles } = projectContext;
+    const { node, parent } = moduleContext;
 
     const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
+
+    compReadyToWrite.push({
+      moduleContext,
+      tsx,
+      css,
+    });
+  }
+
+  for (const { moduleContext, tsx, css } of compReadyToWrite) {
+    const { compDir, compName, imports } = moduleContext;
+    const { cssFiles } = projectContext;
 
     createModuleCode(moduleContext, tsx);
 
