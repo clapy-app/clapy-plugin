@@ -415,7 +415,7 @@ function mapSwapToParentInstanceProp(
 function addHideNode(context: InstanceContext, node: SceneNode2, nodeOfComp: SceneNode2) {
   const { instanceNode, componentContext } = context;
   const { instanceHidings } = getOrCreateCompContext(instanceNode);
-  const hideName = getOrGenHideProp(componentContext, nodeOfComp);
+  const hideName = getOrGenHideProp(componentContext, nodeOfComp, undefined, node.visible);
   if (!hideName) {
     throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
   }

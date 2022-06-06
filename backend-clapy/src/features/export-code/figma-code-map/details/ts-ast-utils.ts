@@ -100,7 +100,12 @@ export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNo
   return swapName;
 }
 
-export function getOrGenHideProp(componentContext: ModuleContext, node?: SceneNode2, hideBaseName?: string) {
+export function getOrGenHideProp(
+  componentContext: ModuleContext,
+  node?: SceneNode2,
+  hideBaseName?: string,
+  skipPersist?: boolean,
+) {
   if (node?.hideProp) {
     return node.hideProp;
   }
@@ -110,7 +115,7 @@ export function getOrGenHideProp(componentContext: ModuleContext, node?: SceneNo
     );
   }
   const hideProp = genUniqueName(componentContext.hideProps, node?.name || hideBaseName!);
-  if (node) {
+  if (node && !skipPersist) {
     node.hideProp = hideProp;
   }
   return hideProp;
