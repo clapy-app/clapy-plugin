@@ -90,11 +90,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
       if (isOriginalInstance) {
         const compContext = getOrCreateCompContext(nodeOfComp);
-        // TODO trouver un autre moyen que mappingDone, car en passant sur une 2è isntance, on pourrait avoir d'autres instanceHidings à mapper, mais aussi les mêmes à sauter.
-        if (!compContext.mappingDone) {
-          compContext.mappingDone = true;
-          mapClassesToParentInstanceProp(context, instanceClassesForStyles);
-        }
+        mapClassesToParentInstanceProp(context, instanceClassesForStyles);
         mapSwapToParentInstanceProp(context, instanceSwaps);
         mapHideToParentInstanceProp(context, instanceHidings);
 
@@ -322,17 +318,15 @@ function mapClassesToParentInstanceProp(
   if (childCompInstanceClasses) {
     for (const [classOverrideName, finalClassName] of Object.entries(childCompInstanceClasses)) {
       const { instanceNode, componentContext, nodeOfComp } = parentContext;
-      const classPropName = getOrGenClassName(componentContext, undefined, classOverrideName);
 
-      // In this component, link parent hide prop to child hide prop
-      // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
       const { instanceClassesForStyles: currentCompInstanceClasses } = getOrCreateCompContext(nodeOfComp);
+      let classPropName: string;
       if (currentCompInstanceClasses[classOverrideName]) {
-        throw new Error(
-          `[map1] Component node ${nodeOfComp.name}: trying to map classes ${classOverrideName} with value ${classPropName}, but this classes entry is already mapped or set`,
-        );
+        classPropName = currentCompInstanceClasses[classOverrideName];
+      } else {
+        classPropName = getOrGenClassName(componentContext, undefined, classOverrideName);
+        currentCompInstanceClasses[classOverrideName] = classPropName;
       }
-      currentCompInstanceClasses[classOverrideName] = classPropName;
 
       // Tell the parent that the grandchild has something to hide for this instance
       const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
@@ -391,10 +385,19 @@ function mapSwapToParentInstanceProp(
         }
         nodeOfComp.swapsMapped = true;
 
-        const swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
-
         const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
-        currentCompInstanceSwaps[swapBaseName] = swapName;
+        let swapName: string;
+        if (currentCompInstanceSwaps[swapBaseName]) {
+          if (typeof currentCompInstanceSwaps[swapBaseName] !== 'string') {
+            throw new Error(
+              '[mapSwapToParentInstanceProp] existing currentCompInstanceSwaps[swapBaseName] is not a string',
+            );
+          }
+          swapName = currentCompInstanceSwaps[swapBaseName] as string;
+        } else {
+          swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
+          currentCompInstanceSwaps[swapBaseName] = swapName;
+        }
 
         const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
         parentCompInstanceSwaps[swapName] = ast;
@@ -445,12 +448,19 @@ function mapHideToParentInstanceProp(
         }
         nodeOfComp.hidesMapped = true;
 
-        const hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
-
-        // In this component, link parent hide prop to child hide prop
-        // = add `hide={{[hideBaseName]: props.hide?.[hideName]}}` on the instance
         const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
-        currentCompInstanceHidings[hideBaseName] = hideName;
+        let hideName: string;
+        if (currentCompInstanceHidings[hideBaseName]) {
+          if (typeof currentCompInstanceHidings[hideBaseName] !== 'string') {
+            throw new Error(
+              '[mapHideToParentInstanceProp] existing currentCompInstanceHidings[hideBaseName] is not a string',
+            );
+          }
+          hideName = currentCompInstanceHidings[hideBaseName] as string;
+        } else {
+          hideName = getOrGenSwapName(componentContext, undefined, hideBaseName);
+          currentCompInstanceHidings[hideBaseName] = hideName;
+        }
 
         // Tell the parent that the grandchild has something to hide for this instance
         const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);

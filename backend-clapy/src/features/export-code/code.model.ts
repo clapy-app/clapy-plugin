@@ -93,11 +93,14 @@ export interface NodeContext {
   nodeOfComp?: SceneNode2;
 }
 
+export type HidingValue = boolean | string;
+export type SwapValue = SwapAst | string | false;
+
 export interface CompContext {
   instanceClassesForStyles: Dict<string>; // TODO rename instanceClasses, and its usages
   instanceClassesForProps: Dict<string>; // TODO delete
-  instanceHidings: Dict<boolean | string>;
-  instanceSwaps: Dict<SwapAst | string | false>;
+  instanceHidings: Dict<HidingValue>;
+  instanceSwaps: Dict<SwapValue>;
   mappingDone?: boolean;
 }
 
