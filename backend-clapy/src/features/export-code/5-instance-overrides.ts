@@ -1,4 +1,5 @@
 import { DeclarationPlain } from 'css-tree';
+import equal from 'fast-deep-equal';
 
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
@@ -32,10 +33,12 @@ import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   createComponentUsageWithAttributes,
+  createTextAst,
   getOrCreateCompContext,
   getOrGenClassName,
   getOrGenHideProp,
   getOrGenSwapName,
+  getOrGenTextOverrideProp,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
@@ -50,7 +53,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       // It happens, we stop here. We may just need to ensure the instance node has a hideProp true on it.
       return;
     }
-    addHideNode(context, node, context.nodeOfComp);
+    addHideNode(context, node);
     if (!node.visible) {
       return;
     }
@@ -86,16 +89,17 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       const compContext = getOrCreateCompContext(node /* nodeOfComp */);
 
       if (isOriginalInstance) {
-        const { instanceClassesForStyles, instanceSwaps, instanceHidings } = compContext;
+        const { instanceClassesForStyles, instanceSwaps, instanceHidings, instanceTextOverrides } = compContext;
         mapClassesToParentInstanceProp(context, instanceClassesForStyles);
         mapSwapToParentInstanceProp(context, instanceSwaps);
         mapHideToParentInstanceProp(context, instanceHidings);
+        mapTextOverrideToParentInstanceProp(context, instanceTextOverrides);
 
-        addSwapInstance(context, false);
+        addSwapInstance(context, node, false);
       } else {
         const compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
 
-        addSwapInstance(context, compAst);
+        addSwapInstance(context, node, compAst);
       }
 
       return;
@@ -118,6 +122,15 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
+      if (!isText(nodeOfComp)) {
+        throw new Error(`BUG? Instance node ${node.name} is text but component node ${nodeOfComp.name} is not.`);
+      }
+      if (!equal(node._textSegments, nodeOfComp._textSegments)) {
+        const ast = createTextAst(context, node, styles);
+        if (ast) {
+          addTextOverride(context, node, ast);
+        }
+      }
       // Add text styles
       let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
       if (!ast) {
@@ -343,10 +356,10 @@ function mapClassesToParentInstanceProp(
   }
 }
 
-function addSwapInstance(context: InstanceContext, swapAst: SwapAst | false) {
+function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst | false) {
   const { instanceNode, nodeOfComp, componentContext } = context;
   const { instanceSwaps } = getOrCreateCompContext(instanceNode);
-  const swapName = getOrGenSwapName(componentContext, nodeOfComp);
+  const swapName = getOrGenSwapName(componentContext, nodeOfComp, node.name);
   if (!swapName) {
     throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
   }
@@ -409,10 +422,10 @@ function mapSwapToParentInstanceProp(
   }
 }
 
-function addHideNode(context: InstanceContext, node: SceneNode2, nodeOfComp: SceneNode2) {
-  const { instanceNode, componentContext } = context;
+function addHideNode(context: InstanceContext, node: SceneNode2) {
+  const { instanceNode, componentContext, nodeOfComp } = context;
   const { instanceHidings } = getOrCreateCompContext(instanceNode);
-  const hideName = getOrGenHideProp(componentContext, nodeOfComp, undefined, node.visible);
+  const hideName = getOrGenHideProp(componentContext, nodeOfComp, node.name, node.visible);
   if (!hideName) {
     throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
   }
@@ -465,6 +478,62 @@ function mapHideToParentInstanceProp(
       };
       if (hideValue) {
         nodeOfComp.mapHidesToProps();
+      }
+    }
+  }
+}
+
+function addTextOverride(context: InstanceContext, node: SceneNode2, text: JsxOneOrMore) {
+  const { instanceNode, componentContext, nodeOfComp } = context;
+  const { instanceTextOverrides } = getOrCreateCompContext(instanceNode);
+  const textOverrideName = getOrGenTextOverrideProp(componentContext, nodeOfComp, node.name);
+  if (!textOverrideName) {
+    throw new Error(`Component node ${nodeOfComp.name} has no textOverrideName`);
+  }
+  if (text == null) {
+    throw new Error(
+      `Component node ${nodeOfComp.name}: trying to set a nil text for overrides for swap ${textOverrideName}`,
+    );
+  }
+  if (!instanceTextOverrides[textOverrideName]) {
+    instanceTextOverrides[textOverrideName] = text;
+  }
+  // See notes in mapHideToParentInstanceProp to understand what this function is.
+  if (text && instanceNode.mapTextOverridesToProps) {
+    instanceNode.mapTextOverridesToProps();
+  }
+}
+
+/**
+ * Ensure the sub-instance we met apply text override on the selected nodes (previous instance check) => sub-instance context
+ * AND that the parent instance exposes those text override capabilities => parent instance context
+ */
+function mapTextOverrideToParentInstanceProp(
+  parentContext: InstanceContext,
+  childCompInstanceTextOverrides: CompContext['instanceTextOverrides'],
+) {
+  if (childCompInstanceTextOverrides) {
+    for (const [textOverrideBaseName, textOverrideValue] of Object.entries(childCompInstanceTextOverrides)) {
+      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+
+      nodeOfComp.mapTextOverridesToProps = () => {
+        const { instanceTextOverrides: currentCompInstanceTextOverrides } = getOrCreateCompContext(nodeOfComp);
+        let textOverrideName: string;
+        if (currentCompInstanceTextOverrides[textOverrideBaseName]) {
+          textOverrideName = currentCompInstanceTextOverrides[textOverrideBaseName] as string;
+        } else {
+          textOverrideName = getOrGenTextOverrideProp(componentContext, undefined, textOverrideBaseName);
+          currentCompInstanceTextOverrides[textOverrideBaseName] = textOverrideName;
+        }
+
+        // Tell the parent that the grandchild has text to override for this instance
+        const { instanceTextOverrides: parentCompInstanceTextOverrides } = getOrCreateCompContext(instanceNode);
+        if (!parentCompInstanceTextOverrides[textOverrideName]) {
+          parentCompInstanceTextOverrides[textOverrideName] = textOverrideValue;
+        }
+      };
+      if (textOverrideValue) {
+        nodeOfComp.mapTextOverridesToProps();
       }
     }
   }

@@ -115,6 +115,7 @@ export function mkModuleContext(
     classes: new Set(),
     swappableInstances: new Set(),
     hideProps: new Set(),
+    textOverrideProps: new Set(),
   };
   return moduleContext;
 }
@@ -199,7 +200,7 @@ export function createModuleCode(
     [
       'FC',
       'memo',
-      ...(moduleContext.swappableInstances.size > 0 ? ['ReactNode'] : []),
+      ...(moduleContext.swappableInstances.size > 0 || moduleContext.textOverrideProps.size > 0 ? ['ReactNode'] : []),
       ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : []),
     ],
     'react',

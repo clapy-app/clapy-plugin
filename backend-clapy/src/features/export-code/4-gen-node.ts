@@ -7,7 +7,7 @@ import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { genInstanceOverrides } from './5-instance-overrides';
-import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
+import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map';
 import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
@@ -36,6 +36,7 @@ import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
   createComponentUsageWithAttributes,
+  createTextAst,
   genComponentImportName,
   getOrCreateCompContext,
   getOrGenClassName,
@@ -45,7 +46,7 @@ import {
   mkNamedImportsDeclaration,
   mkSwapInstanceAndHideWrapper,
   mkTag,
-  mkWrapHideAst,
+  mkWrapHideAndTextOverrideAst,
   removeCssRule,
 } from './figma-code-map/details/ts-ast-utils';
 import { warnNode } from './figma-code-map/details/utils-and-reset';
@@ -137,36 +138,8 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
-      // Add text styles
-      let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-      if (!ast) {
-        warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
-        return;
-      }
-
-      const flexStyles: Dict<DeclarationPlain> = {};
-      mapTagStyles(context, node, flexStyles);
-
-      if (!context.parentStyles || Object.keys(flexStyles).length) {
-        Object.assign(styles, flexStyles);
-        styles = postMapStyles(context, node, styles);
-        const className = getOrGenClassName(moduleContext, node);
-        const styleDeclarations = stylesToList(styles);
-        let attributes: ts.JsxAttribute[] = [];
-        if (styleDeclarations.length) {
-          addCssRule(context, className, styleDeclarations);
-          attributes.push(mkClassAttr(className, true));
-        }
-        ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
-      } else {
-        styles = postMapStyles(context, node, styles);
-        Object.assign(context.parentStyles, styles);
-        // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
-        // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
-
-        // return txt;
-      }
-      return mkWrapHideAst(context, ast, node);
+      const ast = createTextAst(context, node, styles);
+      return ast ? mkWrapHideAndTextOverrideAst(context, ast, node) : undefined;
     } else if (isVector(node)) {
       const { projectContext } = moduleContext;
       let svgContent = readSvg(node);
@@ -191,7 +164,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
 
       // Generate AST
       const ast = mkComponentUsage(svgPathVarName, attributes);
-      return mkWrapHideAst(context, ast, node);
+      return mkWrapHideAndTextOverrideAst(context, ast, node);
     } else if (isBlockNode(node)) {
       // Add tag styles
       mapTagStyles(context, node, styles);
@@ -218,7 +191,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       }
 
       const ast2 = mkTag(context.tagName, [...attributes, ...extraAttributes], children);
-      return mkWrapHideAst(context, ast2, node);
+      return mkWrapHideAndTextOverrideAst(context, ast2, node);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate node with error below. Skipping the node.');

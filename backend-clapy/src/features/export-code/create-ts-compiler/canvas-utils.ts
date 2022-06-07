@@ -70,14 +70,17 @@ interface GlobalExtender {
   maskedBy?: Masker;
   skip?: boolean;
   styles?: Dict<DeclarationPlain>;
+  // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.
   className?: string;
   swapName?: string;
+  hideProp?: string;
+  textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
   autoWidth?: boolean;
   autoHeight?: boolean;
-  hideProp?: string;
   mapHidesToProps?: () => void;
   mapSwapsToProps?: () => void;
+  mapTextOverridesToProps?: () => void;
   /** access it using getOrCreateCompContext() to ensure it is initialized */
   _context?: CompContext;
 }

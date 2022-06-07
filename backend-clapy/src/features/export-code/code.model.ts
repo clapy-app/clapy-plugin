@@ -70,6 +70,7 @@ export interface ModuleContext {
   readonly classes: Set<string>;
   readonly swappableInstances: Set<string>;
   readonly hideProps: Set<string>;
+  readonly textOverrideProps: Set<string>;
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
@@ -95,12 +96,14 @@ export interface NodeContext {
 
 export type HidingValue = boolean | string;
 export type SwapValue = SwapAst | string | false;
+export type TextOValue = JsxOneOrMore | string | false;
 
 export interface CompContext {
   instanceClassesForStyles: Dict<string>; // TODO rename instanceClasses, and its usages
   instanceClassesForProps: Dict<string>; // TODO delete
   instanceHidings: Dict<HidingValue>;
   instanceSwaps: Dict<SwapValue>;
+  instanceTextOverrides: Dict<TextOValue>;
   mappingDone?: boolean;
 }
 

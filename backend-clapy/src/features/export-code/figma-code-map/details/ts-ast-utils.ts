@@ -1,6 +1,7 @@
 import { DeclarationPlain, RulePlain } from 'css-tree';
 import ts, { Statement } from 'typescript';
 
+import { mapTagStyles, mapTextStyles, postMapStyles } from '../../6-figma-to-code-map';
 import { flags } from '../../../../env-and-config/app-config';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
 import {
@@ -11,7 +12,7 @@ import {
   NodeContext,
   ProjectContext,
 } from '../../code.model';
-import { isComponentSet, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import { isComponentSet, SceneNode2, TextNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -19,6 +20,7 @@ import {
   mkSelectorCss,
   mkSelectorListCss,
 } from '../../css-gen/css-factories-low';
+import { stylesToList } from '../../css-gen/css-type-utils';
 import { warnNode } from './utils-and-reset';
 
 const { factory } = ts;
@@ -127,6 +129,26 @@ export function getOrGenHideProp(
   return hideProp;
 }
 
+export function getOrGenTextOverrideProp(
+  componentContext: ModuleContext,
+  node?: SceneNode2,
+  textOverrideBaseName?: string,
+) {
+  if (node?.textOverrideProp) {
+    return node.textOverrideProp;
+  }
+  if (!node?.name && !textOverrideBaseName) {
+    throw new Error(
+      `Either a node with a name or a textOverrideBaseName is required to generate a textOverrideProp on module ${componentContext.compName}`,
+    );
+  }
+  const textOverrideProp = genUniqueName(componentContext.textOverrideProps, node?.name || textOverrideBaseName!);
+  if (node) {
+    node.textOverrideProp = textOverrideProp;
+  }
+  return textOverrideProp;
+}
+
 export function genComponentImportName(context: NodeContext) {
   // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
   let baseName =
@@ -165,6 +187,7 @@ export function getOrCreateCompContext(node: SceneNode2) {
       instanceClassesForProps: {},
       instanceHidings: {},
       instanceSwaps: {},
+      instanceTextOverrides: {},
     };
   }
   return node._context;
@@ -208,7 +231,7 @@ export function createComponentUsageWithAttributes(
   componentModuleContext: ModuleContext,
   node: SceneNode2,
 ) {
-  const { instanceSwaps, instanceHidings, instanceClassesForStyles } = compContext;
+  const { instanceSwaps, instanceHidings, instanceClassesForStyles, instanceTextOverrides } = compContext;
   const { root, ...otherInstanceClasses } = instanceClassesForStyles;
   if (!root) {
     warnNode(node, 'No root class found in instanceClasses.');
@@ -228,7 +251,45 @@ export function createComponentUsageWithAttributes(
   const hideAttr = mkHidingsAttribute(instanceHidings);
   if (hideAttr) attrs.push(hideAttr);
 
+  const textOverrideAttr = mkTextOverridesAttribute(instanceTextOverrides);
+  if (textOverrideAttr) attrs.push(textOverrideAttr);
+
   return mkComponentUsage(componentModuleContext.compName, attrs);
+}
+
+export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
+  const { moduleContext } = context;
+
+  // Add text styles
+  let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
+  if (!ast) {
+    warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
+    return;
+  }
+
+  const flexStyles: Dict<DeclarationPlain> = {};
+  mapTagStyles(context, node, flexStyles);
+
+  if (!context.parentStyles || Object.keys(flexStyles).length) {
+    Object.assign(styles, flexStyles);
+    styles = postMapStyles(context, node, styles);
+    const className = getOrGenClassName(moduleContext, node);
+    const styleDeclarations = stylesToList(styles);
+    let attributes: ts.JsxAttribute[] = [];
+    if (styleDeclarations.length) {
+      addCssRule(context, className, styleDeclarations);
+      attributes.push(mkClassAttr(className, true));
+    }
+    ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
+  } else {
+    styles = postMapStyles(context, node, styles);
+    Object.assign(context.parentStyles, styles);
+    // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
+    // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
+
+    // return txt;
+  }
+  return ast;
 }
 
 // AST generation functions
@@ -281,9 +342,10 @@ export function mkNamedImportsDeclaration(
 }
 
 export function mkPropInterface(moduleContext: ModuleContext, classes: string[]) {
-  const { swappableInstances, hideProps } = moduleContext;
+  const { swappableInstances, hideProps, textOverrideProps } = moduleContext;
   const swapPropNames = Array.from(swappableInstances);
-  const hidePropsNames = Array.from(hideProps);
+  const hidePropNames = Array.from(hideProps);
+  const textOverridePropNames = Array.from(textOverrideProps);
   return factory.createInterfaceDeclaration(
     undefined,
     undefined,
@@ -335,8 +397,7 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               ),
             ),
           ]),
-
-      ...(!hidePropsNames?.length
+      ...(!hidePropNames?.length
         ? []
         : [
             factory.createPropertySignature(
@@ -344,7 +405,7 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               factory.createIdentifier('hide'),
               factory.createToken(ts.SyntaxKind.QuestionToken),
               factory.createTypeLiteralNode(
-                hidePropsNames.map(name =>
+                hidePropNames.map(name =>
                   factory.createPropertySignature(
                     undefined,
                     factory.createIdentifier(name),
@@ -355,11 +416,32 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               ),
             ),
           ]),
+      ...(!textOverridePropNames?.length
+        ? []
+        : [
+            factory.createPropertySignature(
+              undefined,
+              factory.createIdentifier('text'),
+              factory.createToken(ts.SyntaxKind.QuestionToken),
+              factory.createTypeLiteralNode(
+                textOverridePropNames.map(name =>
+                  factory.createPropertySignature(
+                    undefined,
+                    factory.createIdentifier(name),
+                    factory.createToken(ts.SyntaxKind.QuestionToken),
+                    factory.createTypeReferenceNode(factory.createIdentifier('ReactNode'), undefined),
+                  ),
+                ),
+              ),
+            ),
+          ]),
     ],
   );
 }
 
-function jsxOneOrMoreToJsxExpression(tsx: JsxOneOrMore | undefined) {
+function jsxOneOrMoreToJsxExpression(
+  tsx: JsxOneOrMore | ts.ConditionalExpression | ts.ParenthesizedExpression | undefined,
+) {
   if (tsx) {
     if (Array.isArray(tsx)) {
       return mkFragment(tsx);
@@ -469,7 +551,17 @@ export function mkCompFunction(
   );
 }
 
-export function mkFragment(children: ts.JsxChild[]) {
+function mkWrapExpressionFragment(node: JsxOneOrMore | ts.ParenthesizedExpression | ts.ConditionalExpression) {
+  if (!Array.isArray(node) && (ts.isParenthesizedExpression(node) || ts.isConditionalExpression(node))) {
+    return factory.createJsxExpression(undefined, node);
+  }
+  return node;
+}
+
+export function mkFragment(children: ts.JsxChild | ts.JsxChild[]) {
+  if (!Array.isArray(children)) {
+    children = [children];
+  }
   return factory.createJsxFragment(factory.createJsxOpeningFragment(), children, factory.createJsxJsxClosingFragment());
 }
 
@@ -619,11 +711,36 @@ export function mkSwapInstanceAndHideWrapper(
   return context.isRootInComponent ? mkFragment([ast]) : ast;
 }
 
-export function mkWrapHideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
+function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore, node: SceneNode2) {
+  if (!node.textOverrideProp) {
+    return ast;
+  }
+  return factory.createConditionalExpression(
+    factory.createBinaryExpression(
+      factory.createPropertyAccessChain(
+        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('text')),
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier(node.textOverrideProp),
+      ),
+      factory.createToken(ts.SyntaxKind.ExclamationEqualsToken),
+      factory.createNull(),
+    ),
+    factory.createToken(ts.SyntaxKind.QuestionToken),
+    factory.createPropertyAccessChain(
+      factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('text')),
+      factory.createToken(ts.SyntaxKind.QuestionDotToken),
+      factory.createIdentifier(node.textOverrideProp),
+    ),
+    factory.createToken(ts.SyntaxKind.ColonToken),
+    jsxOneOrMoreToJsxExpression(ast),
+  );
+}
+
+function mkWrapHideExprFragment(ast: JsxOneOrMore | ts.ConditionalExpression, node: SceneNode2) {
   if (!node.hideProp) {
     return ast;
   }
-  const ast2 = factory.createJsxExpression(
+  return factory.createJsxExpression(
     undefined,
     factory.createBinaryExpression(
       factory.createPrefixUnaryExpression(
@@ -638,7 +755,14 @@ export function mkWrapHideAst(context: NodeContext, ast: JsxOneOrMore, node: Sce
       jsxOneOrMoreToJsxExpression(ast),
     ),
   );
-  return context.isRootInComponent ? mkFragment([ast2]) : ast2;
+}
+
+export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
+  const astTmp = mkWrapTextOverrideExprFragment(ast, node);
+  const ast2 = mkWrapHideExprFragment(astTmp, node);
+  if (ast === ast2) return ast;
+  const ast3: JsxOneOrMore = mkWrapExpressionFragment(ast2);
+  return context.isRootInComponent ? mkFragment(ast3) : ast3;
 }
 
 export function mkClassesAttribute(classes: Dict<string>) {
@@ -755,6 +879,39 @@ export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
                   factory.createToken(ts.SyntaxKind.QuestionDotToken),
                   factory.createIdentifier(hideValue),
                 ),
+          );
+        }),
+        true,
+      ),
+    ),
+  );
+}
+
+export function mkTextOverridesAttribute(textOverrides: CompContext['instanceTextOverrides']) {
+  // Possible improvements: default values (cf other overrides like hidings)
+  const entries = Object.entries(textOverrides).filter(([_, textOverrideValue]) => textOverrideValue !== false);
+  if (!entries.length) return undefined;
+  return factory.createJsxAttribute(
+    factory.createIdentifier('text'),
+    factory.createJsxExpression(
+      undefined,
+      factory.createObjectLiteralExpression(
+        entries.map(([name, textOverrideValue]) => {
+          if (textOverrideValue === false) {
+            throw new Error('[mkTextOverridesAttribute] false value should have been filtered before.');
+          }
+          return factory.createPropertyAssignment(
+            factory.createIdentifier(name),
+            typeof textOverrideValue === 'string'
+              ? factory.createPropertyAccessChain(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('props'),
+                    factory.createIdentifier('text'),
+                  ),
+                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                  factory.createIdentifier(textOverrideValue),
+                )
+              : jsxOneOrMoreToJsxExpression(textOverrideValue),
           );
         }),
         true,
