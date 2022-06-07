@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 
 import { env } from '../../env-and-config/env';
-import { handleError } from '../../utils';
+import { handleError, warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
@@ -299,9 +299,10 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, className:
     );
   }
   if (instanceClassesForStyles[compClassName] && instanceClassesForStyles[compClassName] !== className) {
-    throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set classes ${compClassName} with value ${className}, but this classes entry is already set and different from the class name we wanted to assign.`,
+    warnOrThrow(
+      `Component node ${nodeOfComp.name}: trying to set classes ${compClassName} with value ${className}, but this classes entry is already set with a different value: ${instanceClassesForStyles[compClassName]}.`,
     );
+    return;
   }
   instanceClassesForStyles[compClassName] = className;
 }
@@ -346,9 +347,10 @@ function mapClassesToParentInstanceProp(
         // Tell the parent that the grandchild has something to hide for this instance
         const { instanceClassesForStyles: parentCompInstanceClasses } = getOrCreateCompContext(instanceNode);
         if (parentCompInstanceClasses[classPropName]) {
-          throw new Error(
+          warnOrThrow(
             `[map2] Component node ${instanceNode.name}: trying to map classes ${classPropName} with value ${finalClassName}, but this classes entry is already mapped or set`,
           );
+          return;
         }
         parentCompInstanceClasses[classPropName] = finalClassName;
       }
@@ -370,11 +372,12 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
   }
   if (typeof instanceSwaps[swapName] !== 'string') {
     if (instanceSwaps[swapName]) {
-      throw new Error(
+      warnOrThrow(
         `Component node ${nodeOfComp.name}: trying to set swap ${swapName} with value ${
           swapAst === false ? swapAst : printStandalone(swapAst)
         }, but this swap entry is already set`,
       );
+      return;
     }
     instanceSwaps[swapName] = swapAst;
   }
@@ -400,9 +403,10 @@ function mapSwapToParentInstanceProp(
         let swapName: string;
         if (currentCompInstanceSwaps[swapBaseName]) {
           if (typeof currentCompInstanceSwaps[swapBaseName] !== 'string') {
-            throw new Error(
+            warnOrThrow(
               '[mapSwapToParentInstanceProp] existing currentCompInstanceSwaps[swapBaseName] is not a string',
             );
+            return;
           }
           swapName = currentCompInstanceSwaps[swapBaseName] as string;
         } else {
@@ -460,9 +464,10 @@ function mapHideToParentInstanceProp(
         let hideName: string;
         if (currentCompInstanceHidings[hideBaseName]) {
           if (typeof currentCompInstanceHidings[hideBaseName] !== 'string') {
-            throw new Error(
+            warnOrThrow(
               '[mapHideToParentInstanceProp] existing currentCompInstanceHidings[hideBaseName] is not a string',
             );
+            return;
           }
           hideName = currentCompInstanceHidings[hideBaseName] as string;
         } else {

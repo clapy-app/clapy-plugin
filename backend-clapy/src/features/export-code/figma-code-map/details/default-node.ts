@@ -158,7 +158,9 @@ function appendInvisibleElement(
   const c = instance.children as Array<SceneNode2>;
   const compChild = nodeOfComp.children[instanceIndex];
   const { id, name, type } = compChild;
-  c.splice(instanceIndex, 0, { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2);
+  let node = { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2;
+  fillNodeWithDefaults(node, defaultsForNode(node));
+  c.splice(instanceIndex, 0, node);
 }
 
 function getMatchingComponentIndex(

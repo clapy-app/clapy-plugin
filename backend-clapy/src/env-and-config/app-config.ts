@@ -15,6 +15,7 @@ export const flags = {
   destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
   enableInstanceOverrides: env.isDev,
   stripInstancesInComponents: false,
+  throwOnWarnings: false /* env.isDev */,
 };
 
 // What takes time:
