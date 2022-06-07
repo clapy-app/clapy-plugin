@@ -24,8 +24,14 @@ import { warnNode } from './utils-and-reset';
 const { factory } = ts;
 
 export function addCssRule(context: NodeContext, className: string, styles: DeclarationPlain[] = []) {
+  const isInstanceContext = !!(context as InstanceContext).instanceNode;
+  const increaseSpecificity = isInstanceContext;
+  const classSelector = mkClassSelectorCss(className);
   const { cssRules } = context.moduleContext;
-  const cssRule = mkRuleCss(mkSelectorListCss([mkSelectorCss([mkClassSelectorCss(className)])]), mkBlockCss(styles));
+  const cssRule = mkRuleCss(
+    mkSelectorListCss([mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector])]),
+    mkBlockCss(styles),
+  );
   cssRules.push(cssRule);
   return cssRule;
 }
