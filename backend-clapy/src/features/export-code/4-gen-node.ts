@@ -35,13 +35,13 @@ import { stylesToList } from './css-gen/css-type-utils';
 import { readSvg } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
+  createClassAttrForNode,
   createComponentUsageWithAttributes,
   createTextAst,
   genComponentImportName,
   getOrCreateCompContext,
   getOrGenClassName,
   getOrGenSwapName,
-  mkClassAttr,
   mkComponentUsage,
   mkNamedImportsDeclaration,
   mkSwapInstanceAndHideWrapper,
@@ -86,12 +86,17 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
         return mkComponentUsage(componentContext.compName);
       }
 
+      const instanceNode = node as ComponentNode2 | InstanceNode2;
       // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
       const instanceContext: InstanceContext = {
         ...context,
         componentContext,
-        instanceNode: node as ComponentNode2 | InstanceNode2,
         nodeOfComp: componentContext.node,
+        intermediateInstanceNodeOfComps: [instanceNode],
+        intermediateComponentContexts: [moduleContext, componentContext],
+        intermediateNodes: [node, componentContext.node],
+        instanceNode,
+        instanceNodeOfComp: instanceNode,
         isRootInComponent: true,
       };
 
@@ -185,7 +190,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       let attributes: ts.JsxAttribute[] = [];
       if (styleDeclarations.length) {
         cssRule.block.children.push(...styleDeclarations);
-        attributes.push(mkClassAttr(className, true));
+        attributes.push(createClassAttrForNode(node));
       } else {
         removeCssRule(context, cssRule, node);
       }
@@ -213,7 +218,7 @@ function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<Decla
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
     addCssRule(context, className, styleDeclarations);
-    attributes.push(mkClassAttr(className, true));
+    attributes.push(createClassAttrForNode(node));
   }
   return attributes;
 }

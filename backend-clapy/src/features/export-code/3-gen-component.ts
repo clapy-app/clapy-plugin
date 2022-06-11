@@ -106,6 +106,7 @@ export function mkModuleContext(
     compDir,
     compName,
     classNamesAlreadyUsed: new Set(),
+    classOverrides: {},
     subComponentNamesAlreadyUsed: new Set([compName]),
     importsAlreadyAdded: new Map(),
     cssRules: [],

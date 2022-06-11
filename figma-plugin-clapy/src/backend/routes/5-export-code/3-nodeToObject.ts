@@ -205,75 +205,79 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       addStyle(gridStyles, node.gridStyleId);
     }
 
-    if (isInInstance || isInstance(node) || isComponent(node)) {
+    // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
+    // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
+    if (isInstance(node) || isComponent(node)) {
       exportAsSvg = false;
     }
     if (exportAsSvg) {
-      let nodeToExport = node as LayoutNode;
-      let copyForExport: LayoutNode | undefined = undefined;
-      try {
-        if (isBlend) {
-          // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
-          // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
-          // inside instances of components.
-          if ((nodeToExport as BlendMixin).isMask) {
-            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-            (nodeToExport as BlendMixin).isMask = false;
-            if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
-              // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
-              // Well, images with transparency would be useful. Later.
-              nodeToExport.fills = [
-                {
-                  type: 'SOLID',
-                  color: { r: 0, g: 0, b: 0 },
-                },
-              ];
+      setProp(obj, 'type', 'VECTOR' as VectorNode['type']);
+      // If we are in an instance, we don't need to export the SVG. For now, it is assumed to be the same as the component's SVG. It will be copied from the component.
+      // In reality, there could be overrides in Figma (e.g. fills) on parts that are included in the exported SVG. Such overrides won't be captured. To capture them, we need to reexport as SVG on all instances, or if a change is detected vs the component.
+      if (!isInInstance) {
+        let nodeToExport = node as LayoutNode;
+        let copyForExport: LayoutNode | undefined = undefined;
+        try {
+          if (isBlend) {
+            // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
+            // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
+            // inside instances of components.
+            if ((nodeToExport as BlendMixin).isMask) {
+              [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+              (nodeToExport as BlendMixin).isMask = false;
+              if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
+                // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
+                // Well, images with transparency would be useful. Later.
+                nodeToExport.fills = [
+                  {
+                    type: 'SOLID',
+                    color: { r: 0, g: 0, b: 0 },
+                  },
+                ];
+              }
             }
           }
-        }
 
-        setProp(obj, 'type', 'VECTOR' as VectorNode['type']);
-        if (isComp) {
-          // The real condition is if we are in another file, which can happen when parsing the main component from an instance. If we can detect it, we should improve the condition to avoid copying nodes for components that are in the same file.
-          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-        }
-        if (isBlendMixin(nodeToExport) && nodeToExport.effects?.length) {
-          [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-          (nodeToExport as ShapeNode).effects = [];
-          (nodeToExport as ShapeNode).effectStyleId = '';
-        }
-        if (!isPage(node)) {
-          const { rotation } = parseTransformationMatrix(node.absoluteTransform);
-          // console.log('absolute rotation:', rotation);
-          if (rotation !== 0) {
+          if (isComp) {
+            // The real condition is if we are in another file, which can happen when parsing the main component from an instance. If we can detect it, we should improve the condition to avoid copying nodes for components that are in the same file.
             [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-            // nodeToExport.rotation -= rotation;
           }
-        }
-        if (isGroup(nodeToExport)) {
-          // Interesting properties like constraints are in the children nodes. Let's make a copy.
-          setProp(obj, 'constraints', (nodeToExport.children[0] as ConstraintMixin)?.constraints);
-        }
+          if (isBlendMixin(nodeToExport) && nodeToExport.effects?.length) {
+            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+            (nodeToExport as ShapeNode).effects = [];
+            (nodeToExport as ShapeNode).effectStyleId = '';
+          }
+          if (!isPage(node)) {
+            const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+            if (rotation !== 0) {
+              [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+            }
+          }
+          if (isGroup(nodeToExport)) {
+            // Interesting properties like constraints are in the children nodes. Let's make a copy.
+            setProp(obj, 'constraints', (nodeToExport.children[0] as ConstraintMixin)?.constraints);
+          }
 
-        // Change all stroke positions to center to fix the bad SVG export bug
-        fixStrokeAlign(nodeToExport);
+          // Change all stroke positions to center to fix the bad SVG export bug
+          fixStrokeAlign(nodeToExport);
 
-        // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
-        // But ideally, we should do:
-        // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
+          // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
+          // But ideally, we should do:
+          // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
-        try {
-          setProp(
-            obj,
-            '_svg',
-            utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ })),
-          );
-        } catch (error) {
-          warnNode(node, 'Failed to export node as SVG, ignoring.');
-          console.error(error);
+          try {
+            setProp(
+              obj,
+              '_svg',
+              utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ })),
+            );
+          } catch (error) {
+            warnNode(node, 'Failed to export node as SVG, ignoring.');
+            console.error(error);
+          }
+        } finally {
+          removeNode(copyForExport);
         }
-      } finally {
-        removeNode(copyForExport);
       }
     } else if (!isTxt && isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
       // Fills can be mixed if node is Text. Ignore it, text segments are already processed earlier.

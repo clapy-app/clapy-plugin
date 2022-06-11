@@ -33,16 +33,7 @@
       "preLaunchTask": "${defaultBuildTask}",
     },
     {
-      "name": "Backend WSL debug",
-      "type": "node",
-      "request": "attach",
-      "restart": true,
-      // "remoteRoot": "/app",
-      "localRoot": "${workspaceFolder}/backend-clapy",
-      // "preLaunchTask": "${defaultBuildTask}",
-    },
-    {
-      "name": "Docker: Attach to Node",
+      "name": "Debug Backend docker",
       "type": "node",
       "request": "attach",
       "restart": true,

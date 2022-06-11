@@ -67,11 +67,13 @@ type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Frame
   SpecificExtender;
 
 interface GlobalExtender {
+  nodeOfComp?: SceneNode2;
   maskedBy?: Masker;
   skip?: boolean;
   styles?: Dict<DeclarationPlain>;
   // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.
   className?: string;
+  classOverride?: boolean;
   swapName?: string;
   hideProp?: string;
   textOverrideProp?: string;

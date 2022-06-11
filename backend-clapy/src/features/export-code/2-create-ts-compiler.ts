@@ -16,7 +16,7 @@ import {
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
+import { BaseStyleOverride, CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
@@ -24,7 +24,7 @@ import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-c
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
 import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
 import {
-  mkClassAttr,
+  mkClassAttr2,
   mkComponentUsage,
   mkDefaultImportDeclaration,
   mkSimpleImportDeclaration,
@@ -232,11 +232,14 @@ function addCompToAppRoot(
 }
 
 function mkAppCompTsx(childComponentName: string) {
+  const overrideNode: BaseStyleOverride = {
+    overrideValue: 'root',
+  };
   return factory.createJsxElement(
     factory.createJsxOpeningElement(
       factory.createIdentifier('div'),
       undefined,
-      factory.createJsxAttributes([mkClassAttr('root', true)]),
+      factory.createJsxAttributes([mkClassAttr2(overrideNode)]),
     ),
     [mkComponentUsage(childComponentName)],
     factory.createJsxClosingElement(factory.createIdentifier('div')),

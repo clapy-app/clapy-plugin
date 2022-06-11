@@ -3,14 +3,17 @@ import ts, { Statement } from 'typescript';
 
 import { mapTagStyles, mapTextStyles, postMapStyles } from '../../6-figma-to-code-map';
 import { flags } from '../../../../env-and-config/app-config';
+import { env } from '../../../../env-and-config/env';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
 import {
+  BaseStyleOverride,
   CompContext,
   InstanceContext,
   JsxOneOrMore,
   ModuleContext,
   NodeContext,
   ProjectContext,
+  StyleOverride,
 } from '../../code.model';
 import { isComponentSet, SceneNode2, TextNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
@@ -38,6 +41,15 @@ export function addCssRule(context: NodeContext, className: string, styles: Decl
   return cssRule;
 }
 
+export function updateCssRuleClassName(context: NodeContext, cssRule: RulePlain, className: string) {
+  const isInstanceContext = !!(context as InstanceContext).instanceNode;
+  const increaseSpecificity = isInstanceContext;
+  const classSelector = mkClassSelectorCss(className);
+  cssRule.prelude = mkSelectorListCss([
+    mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector]),
+  ]);
+}
+
 export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: SceneNodeNoMethod) {
   const { cssRules } = context.moduleContext;
   const i = cssRules.indexOf(cssRule);
@@ -48,29 +60,12 @@ export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: Sc
   cssRules.splice(i, 1);
 }
 
-export function getOrGenClassName(
-  moduleContext: ModuleContext,
-  node?: SceneNode2,
-  defaultClassName = 'label',
-  context?: InstanceContext,
-): string {
+export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode2, defaultClassName = 'label'): string {
   if (node?.className) {
     return node.className;
   }
+  // It may be equivalent to `isComponent(node)`, but for safety, I keep the legacy test. We can refactor later, and test when the app is stable.
   const isRootInComponent = node === moduleContext.node;
-  if (context) {
-    const { instanceNode, nodeOfComp, componentContext } = context;
-    const { instanceClassesForStyles } = getOrCreateCompContext(instanceNode);
-    const compClassName = getOrGenClassName(componentContext, nodeOfComp);
-    if (instanceClassesForStyles[compClassName]) {
-      if (!isRootInComponent) {
-        // Beware, the below code is also run for instance overrides and text classes (6-figma-to-code-mapa.ts),
-        // which might be undesired. To review with test cases.
-        moduleContext.classes.add(instanceClassesForStyles[compClassName]);
-      }
-      return instanceClassesForStyles[compClassName];
-    }
-  }
   // No node when working on text segments. But can we find better class names than 'label' for this case?
   let baseName = isRootInComponent ? 'root' : node?.name ? node.name : defaultClassName;
   if (baseName === 'root' && !node) {
@@ -86,7 +81,7 @@ export function getOrGenClassName(
     }
   } else if (!node && !moduleContext.classes.has(className)) {
     // For style overrides, prop names are generated, not bound to a node, but they are still exposed
-    // in prop.classes.generatedClassName, so they need to be in the interface.
+    // in prop.classes.[generatedClassName], so they need to be in the interface.
     moduleContext.classes.add(className);
   }
   return className;
@@ -183,8 +178,7 @@ export function getOrCreateCompContext(node: SceneNode2) {
   if (!node) throw new Error('Calling getOrCreateCompContext on an undefined node.');
   if (!node._context) {
     node._context = {
-      instanceClassesForStyles: {},
-      instanceClassesForProps: {},
+      instanceStyleOverrides: {},
       instanceHidings: {},
       instanceSwaps: {},
       instanceTextOverrides: {},
@@ -231,18 +225,28 @@ export function createComponentUsageWithAttributes(
   componentModuleContext: ModuleContext,
   node: SceneNode2,
 ) {
-  const { instanceSwaps, instanceHidings, instanceClassesForStyles, instanceTextOverrides } = compContext;
-  const { root, ...otherInstanceClasses } = instanceClassesForStyles;
-  if (!root) {
-    warnNode(node, 'No root class found in instanceClasses.');
-  }
+  const { instanceSwaps, instanceHidings, instanceStyleOverrides, instanceTextOverrides } = compContext;
 
   const attrs = [];
 
-  const classAttr = mkClassAttr(root as string | undefined, true);
+  const classOverridesArr = Object.values(instanceStyleOverrides);
+  let rootClassOverride: StyleOverride | undefined;
+  let otherClassOverrides: StyleOverride[] = [];
+  for (const ov of classOverridesArr) {
+    if (ov.node.nodeOfComp?.className === 'root') {
+      rootClassOverride = ov;
+    } else {
+      otherClassOverrides.push(ov);
+    }
+  }
+  if (!rootClassOverride) {
+    warnNode(node, 'No root class found in instanceClasses.');
+  }
+
+  const classAttr = mkClassAttr2(rootClassOverride);
   if (classAttr) attrs.push(classAttr);
 
-  const classesAttr = mkClassesAttribute(otherInstanceClasses);
+  const classesAttr = mkClassesAttribute2(componentModuleContext, otherClassOverrides);
   if (classesAttr) attrs.push(classesAttr);
 
   const swapAttr = mkSwapsAttribute(instanceSwaps);
@@ -278,7 +282,7 @@ export function createTextAst(context: NodeContext, node: TextNode2, styles: Dic
     let attributes: ts.JsxAttribute[] = [];
     if (styleDeclarations.length) {
       addCssRule(context, className, styleDeclarations);
-      attributes.push(mkClassAttr(className, true));
+      attributes.push(createClassAttrForNode(node));
     }
     ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
   } else {
@@ -290,6 +294,19 @@ export function createTextAst(context: NodeContext, node: TextNode2, styles: Dic
     // return txt;
   }
   return ast;
+}
+
+export function createClassAttrForNode(node: SceneNode2) {
+  const overrideNode: BaseStyleOverride = {
+    overrideValue: node.className,
+    propValue: node.classOverride ? node.className : undefined,
+  };
+  return mkClassAttr2(overrideNode);
+}
+
+export function createClassAttrForClassNoOverride(className: string | undefined) {
+  const overrideNode: BaseStyleOverride = { overrideValue: className };
+  return mkClassAttr2(overrideNode);
 }
 
 // AST generation functions
@@ -342,7 +359,8 @@ export function mkNamedImportsDeclaration(
 }
 
 export function mkPropInterface(moduleContext: ModuleContext, classes: string[]) {
-  const { swappableInstances, hideProps, textOverrideProps } = moduleContext;
+  const { classOverrides, swappableInstances, hideProps, textOverrideProps } = moduleContext;
+  const classes2 = Object.values(classOverrides);
   const swapPropNames = Array.from(swappableInstances);
   const hidePropNames = Array.from(hideProps);
   const textOverridePropNames = Array.from(textOverrideProps);
@@ -359,7 +377,7 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
         factory.createToken(ts.SyntaxKind.QuestionToken),
         factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
       ),
-      ...(!classes?.length
+      ...(!classes2?.length
         ? []
         : [
             factory.createPropertySignature(
@@ -367,10 +385,10 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               factory.createIdentifier('classes'),
               factory.createToken(ts.SyntaxKind.QuestionToken),
               factory.createTypeLiteralNode(
-                classes.map(name =>
+                classes2.map(classOverride =>
                   factory.createPropertySignature(
                     undefined,
-                    factory.createIdentifier(name),
+                    factory.createIdentifier(classOverride.propName),
                     factory.createToken(ts.SyntaxKind.QuestionToken),
                     factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                   ),
@@ -577,56 +595,6 @@ export function mkTag(tagName: string, classAttr: ts.JsxAttribute[] | null, chil
   );
 }
 
-export function mkClassAttr<T extends string | undefined>(
-  classVarName: T,
-  addClassOverride?: boolean,
-): T extends string ? ts.JsxAttribute : undefined {
-  if (!classVarName) return undefined as T extends string ? ts.JsxAttribute : undefined;
-  const isRootClassName = classVarName === 'root';
-  return factory.createJsxAttribute(
-    factory.createIdentifier('className'),
-    factory.createJsxExpression(
-      undefined,
-      !addClassOverride
-        ? factory.createPropertyAccessExpression(
-            factory.createIdentifier('classes'),
-            factory.createIdentifier(classVarName),
-          )
-        : factory.createTemplateExpression(factory.createTemplateHead('', ''), [
-            factory.createTemplateSpan(
-              factory.createPropertyAccessExpression(
-                factory.createIdentifier('classes'),
-                factory.createIdentifier(classVarName),
-              ),
-              factory.createTemplateMiddle(' ', ' '),
-            ),
-            factory.createTemplateSpan(
-              factory.createBinaryExpression(
-                flags.destructureClassNames
-                  ? factory.createIdentifier(isRootClassName ? 'className' : classVarName)
-                  : isRootClassName
-                  ? factory.createPropertyAccessExpression(
-                      factory.createIdentifier('props'),
-                      factory.createIdentifier('className'),
-                    )
-                  : factory.createPropertyAccessChain(
-                      factory.createPropertyAccessExpression(
-                        factory.createIdentifier('props'),
-                        factory.createIdentifier('classes'),
-                      ),
-                      factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                      factory.createIdentifier(classVarName),
-                    ),
-                factory.createToken(ts.SyntaxKind.BarBarToken),
-                factory.createStringLiteral(''),
-              ),
-              factory.createTemplateTail('', ''),
-            ),
-          ]),
-    ),
-  ) as T extends string ? ts.JsxAttribute : undefined;
-}
-
 export function mkInputTypeAttr(value = 'checkbox') {
   return factory.createJsxAttribute(factory.createIdentifier('type'), factory.createStringLiteral(value));
 }
@@ -765,56 +733,113 @@ export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOr
   return context.isRootInComponent ? mkFragment(ast3) : ast3;
 }
 
-export function mkClassesAttribute(classes: Dict<string>) {
-  const addClassOverride = true;
-  const entries = Object.entries(classes);
-  if (!entries.length) return undefined;
-  return factory.createJsxAttribute(
-    factory.createIdentifier('classes'),
-    factory.createJsxExpression(
-      undefined,
-      factory.createObjectLiteralExpression(
-        entries.map(([name, className]) =>
-          factory.createPropertyAssignment(
-            factory.createIdentifier(name),
+export function mkClassAttr2<T extends BaseStyleOverride | undefined>(
+  overrideNode: T,
+): T extends BaseStyleOverride ? ts.JsxAttribute : undefined {
+  if (!overrideNode) return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
+  const classExpr = mkClassExpression(overrideNode);
+  if (!classExpr) {
+    return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
+  }
 
-            !addClassOverride
-              ? factory.createPropertyAccessExpression(
-                  factory.createIdentifier('classes'),
-                  factory.createIdentifier(className),
-                )
-              : factory.createTemplateExpression(factory.createTemplateHead('', ''), [
-                  factory.createTemplateSpan(
-                    factory.createPropertyAccessExpression(
-                      factory.createIdentifier('classes'),
-                      factory.createIdentifier(className),
-                    ),
-                    factory.createTemplateMiddle(' ', ' '),
-                  ),
-                  factory.createTemplateSpan(
-                    factory.createBinaryExpression(
-                      flags.destructureClassNames
-                        ? factory.createIdentifier(className)
-                        : factory.createPropertyAccessChain(
-                            factory.createPropertyAccessExpression(
-                              factory.createIdentifier('props'),
-                              factory.createIdentifier('classes'),
-                            ),
-                            factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                            factory.createIdentifier(className),
-                          ),
-                      factory.createToken(ts.SyntaxKind.BarBarToken),
-                      factory.createStringLiteral(''),
-                    ),
-                    factory.createTemplateTail('', ''),
-                  ),
-                ]),
+  return factory.createJsxAttribute(
+    factory.createIdentifier('className'),
+    factory.createJsxExpression(undefined, classExpr),
+  ) as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
+}
+
+function mkClassExpression(overrideNode: BaseStyleOverride) {
+  const { overrideValue, propValue /* , isRoot */ } = overrideNode;
+  if (!overrideValue && !propValue) {
+    throw new Error(
+      `BUG Missing both overrideValue and propValue when writing overrides for node ${
+        (overrideNode as any).node?.name
+      }.`,
+    );
+  }
+  const isRoot = overrideValue === 'root' || propValue === 'root';
+  const readFromPropTemplateSpans: ts.TemplateSpan[] = [];
+  if (propValue) {
+    readFromPropTemplateSpans.push(
+      factory.createTemplateSpan(
+        factory.createBinaryExpression(
+          factory.createPropertyAccessChain(
+            factory.createPropertyAccessExpression(
+              factory.createIdentifier('props'),
+              factory.createIdentifier('classes'),
+            ),
+            factory.createToken(ts.SyntaxKind.QuestionDotToken),
+            factory.createIdentifier(propValue),
           ),
+          factory.createToken(ts.SyntaxKind.BarBarToken),
+          factory.createStringLiteral(''),
         ),
-        false,
+        isRoot ? factory.createTemplateMiddle(' ', ' ') : factory.createTemplateTail('', ''),
       ),
-    ),
-  );
+    );
+    if (isRoot) {
+      readFromPropTemplateSpans.push(
+        factory.createTemplateSpan(
+          factory.createBinaryExpression(
+            factory.createPropertyAccessExpression(
+              factory.createIdentifier('props'),
+              factory.createIdentifier('className'),
+            ),
+            factory.createToken(ts.SyntaxKind.BarBarToken),
+            factory.createStringLiteral(''),
+          ),
+          factory.createTemplateTail('', ''),
+        ),
+      );
+    }
+  }
+
+  const readFromClasses = !overrideValue
+    ? undefined
+    : factory.createPropertyAccessExpression(
+        factory.createIdentifier('classes'),
+        factory.createIdentifier(overrideValue),
+      );
+
+  return !overrideValue
+    ? factory.createTemplateExpression(factory.createTemplateHead('', ''), readFromPropTemplateSpans!)
+    : !propValue
+    ? readFromClasses!
+    : factory.createTemplateExpression(factory.createTemplateHead('', ''), [
+        factory.createTemplateSpan(readFromClasses!, factory.createTemplateMiddle(' ', ' ')),
+        ...(!readFromPropTemplateSpans ? [] : readFromPropTemplateSpans),
+      ]);
+}
+
+export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOverrides: StyleOverride[]) {
+  const entries = Object.values(otherClassOverrides);
+  if (!entries.length) return undefined;
+  try {
+    return factory.createJsxAttribute(
+      factory.createIdentifier('classes'),
+      factory.createJsxExpression(
+        undefined,
+        factory.createObjectLiteralExpression(
+          entries.map(styleOverride => {
+            const { node, propName, overrideValue, propValue } = styleOverride;
+            const classExpr = mkClassExpression({
+              propValue,
+              overrideValue,
+            });
+            if (!classExpr) {
+              throw new Error('[mkClassesAttribute] Failed to generate classExpr, see logs.');
+            }
+
+            return factory.createPropertyAssignment(factory.createIdentifier(propName), classExpr);
+          }),
+          false,
+        ),
+      ),
+    );
+  } catch (error) {
+    if (env.isDev) throw error;
+    return undefined;
+  }
 }
 
 export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {

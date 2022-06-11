@@ -13,6 +13,7 @@ import {
   FrameNode2,
   InstanceNode2,
   isChildrenMixin,
+  isInstance,
   isInstanceFeatureDetection,
   SceneNode2,
 } from '../../create-ts-compiler/canvas-utils';
@@ -129,6 +130,11 @@ export function instanceToCompIndexRemapper(
   const mapper: Dict<number> = {};
   let compStartIndex = 0;
   const hiddenNodes: number[] = [];
+
+  // TODO refactor to simplify and run faster:
+  // loop on component nodes. And for each hidden node, append one in the instance as we do below.
+  // The worst case complexity would go from n² to n.
+  // And none of the ouputs are required anymore (to test once the code generation is stable).
   for (let i = 0; i < instance.children.length; i++) {
     const matchingCompIndex = getMatchingComponentIndex(instance, nodeOfComp, i, compStartIndex);
 
@@ -160,6 +166,9 @@ function appendInvisibleElement(
   const { id, name, type } = compChild;
   let node = { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2;
   fillNodeWithDefaults(node, defaultsForNode(node));
+  if (isInstance(node) && isInstance(compChild)) {
+    node.mainComponent = compChild.mainComponent;
+  }
   c.splice(instanceIndex, 0, node);
 }
 

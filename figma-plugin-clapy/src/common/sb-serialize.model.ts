@@ -16,6 +16,9 @@ export type ObjKey = string | number | symbol;
 export type Dict2<Key extends ObjKey, Value> = Partial<{
   [key in Key]: Value;
 }>;
+export type Dict3<Key extends ObjKey, Value> = {
+  [key in Key]: Value;
+};
 
 export type Intersect<T, U> = Extract<T, U>;
 

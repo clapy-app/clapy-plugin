@@ -16,8 +16,8 @@ import { cursorFigmaToCode } from './figma-code-map/cursor';
 import { escapeHTML } from './figma-code-map/details/process-nodes-utils';
 import {
   addCssRule,
+  createClassAttrForClassNoOverride,
   getOrGenClassName,
-  mkClassAttr,
   mkHrefAttr,
   mkNoReferrerAttr,
   mkTag,
@@ -156,7 +156,7 @@ function textNodeToAst(
   if (!singleChild) {
     const className = getOrGenClassName(moduleContext);
     addCssRule(context, className, stylesToList(styles));
-    const classAttr = mkClassAttr(className);
+    const classAttr = createClassAttrForClassNoOverride(className);
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {
         // hyperlink of type NODE not handled for now
@@ -216,7 +216,7 @@ export function mapTextStyles(
       addStyle(context, node, wrapperStyles, 'flex-shrink', 1);
       const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
       addCssRule(context, className, stylesToList(wrapperStyles));
-      classAttr = mkClassAttr(className);
+      classAttr = createClassAttrForClassNoOverride(className);
     } else {
       warnNode(
         node,
