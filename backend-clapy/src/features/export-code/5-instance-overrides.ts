@@ -364,7 +364,11 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
     return;
   }
 
-  for (let i = 1; i < context.intermediateNodes.length /* - 1 */; i++) {
+  // Mark the component tag so that the className also gets a value from props (code to generate later).
+  nodeOfComp.classOverride = true;
+
+  // And nodes of the various intermediate components/instances are updated to pass the property from the top-level instance down to the most inner component, as class props overriding styles.
+  for (let i = 1; i < context.intermediateNodes.length; i++) {
     const intermediateNode = context.intermediateNodes[i];
     if (!intermediateNode) {
       break;
@@ -380,50 +384,41 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
     componentContext.classOverrides[indexBy] = { propName };
 
     // Update the parent instance to pass the override as prop to the instance.
+    // A couple of sanity checks are done to help capturing bugs when developing.
     let parentInstanceNode = context.intermediateInstanceNodeOfComps[i - 1];
     let parentOverrideValue = context.intermediateNodes[i - 1]?.className;
     const { instanceStyleOverrides } = getOrCreateCompContext(parentInstanceNode);
-    if (instanceStyleOverrides[indexBy]) {
+
+    if (instanceStyleOverrides[indexBy] && instanceStyleOverrides[indexBy].propName !== propName) {
       warnOrThrow(
-        `BUG [addClassOverride] The instance ${context.instanceNode.name} already has a class override value set to override the class of the node ${indexByNode.name}. Existing value: ${instanceStyleOverrides[indexBy].overrideValue}, new value: ${parentOverrideValue}`,
+        `BUG [getOrSetStyleOverride] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${instanceStyleOverrides[indexBy].propName}, new one: ${propName}`,
       );
     }
-    const styleOverride = getOrSetStyleOverride(instanceStyleOverrides, node, nodeOfComp, intermediateNode, propName);
+
+    if (!instanceStyleOverrides[indexBy]) {
+      instanceStyleOverrides[indexBy] = {
+        isRootNodeOverride: nodeOfComp.className === 'root',
+        intermediateNode,
+        propName,
+      };
+    }
+    const styleOverride = instanceStyleOverrides[indexBy];
     if (i === 1) {
+      if (styleOverride.overrideValue && styleOverride.overrideValue !== parentOverrideValue) {
+        warnOrThrow(
+          `BUG [addClassOverride] The instance ${context.instanceNode.name} already has a class overrideValue set to override the class of the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.overrideValue}, new value: ${parentOverrideValue}`,
+        );
+      }
       styleOverride.overrideValue = parentOverrideValue;
     } else {
+      if (styleOverride.propValue && styleOverride.propValue !== parentOverrideValue) {
+        warnOrThrow(
+          `BUG [addClassOverride2] The instance ${context.instanceNode.name} already has a class propValue set to override the class of the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.propValue}, new value: ${parentOverrideValue}`,
+        );
+      }
       styleOverride.propValue = parentOverrideValue;
     }
   }
-
-  // Mark the component tag so that the className also gets a value from props (code to generate later).
-  nodeOfComp.classOverride = true;
-}
-
-// TODO merge with above?
-function getOrSetStyleOverride(
-  instanceStyleOverrides: CompContext['instanceStyleOverrides'],
-  node: SceneNode2,
-  nodeOfComp: SceneNode2, // TODO delete?
-  intermediateNode: SceneNode2,
-  propName: string,
-) {
-  const indexByNode = intermediateNode;
-  const indexBy = indexByNode.id;
-  if (instanceStyleOverrides[indexBy] && instanceStyleOverrides[indexBy].propName !== propName) {
-    warnOrThrow(
-      `BUG [getOrSetStyleOverride] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${instanceStyleOverrides[indexBy].propName}, new one: ${propName}`,
-    );
-  }
-  if (!instanceStyleOverrides[indexBy]) {
-    instanceStyleOverrides[indexBy] = {
-      node,
-      nodeOfComp,
-      intermediateNode,
-      propName,
-    };
-  }
-  return instanceStyleOverrides[indexBy];
 }
 
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst | false) {

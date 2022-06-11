@@ -67,22 +67,10 @@ export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode
   // It may be equivalent to `isComponent(node)`, but for safety, I keep the legacy test. We can refactor later, and test when the app is stable.
   const isRootInComponent = node === moduleContext.node;
   // No node when working on text segments. But can we find better class names than 'label' for this case?
-  let baseName = isRootInComponent ? 'root' : node?.name ? node.name : defaultClassName;
-  if (baseName === 'root' && !node) {
-    baseName = 'subRoot';
-  }
-  const className = genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
+  let baseName = node?.name ? node.name : defaultClassName;
+  const className = isRootInComponent ? 'root' : genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
   if (node && !node.className) {
     node.className = className;
-    if (!isRootInComponent) {
-      // Beware, the below code is also run for instance overrides and text classes (6-figma-to-code-mapa.ts),
-      // which might be undesired. To review with test cases.
-      moduleContext.classes.add(className);
-    }
-  } else if (!node && !moduleContext.classes.has(className)) {
-    // For style overrides, prop names are generated, not bound to a node, but they are still exposed
-    // in prop.classes.[generatedClassName], so they need to be in the interface.
-    moduleContext.classes.add(className);
   }
   return className;
 }
@@ -233,7 +221,7 @@ export function createComponentUsageWithAttributes(
   let rootClassOverride: StyleOverride | undefined;
   let otherClassOverrides: StyleOverride[] = [];
   for (const ov of classOverridesArr) {
-    if (ov.node.nodeOfComp?.className === 'root') {
+    if (ov.isRootNodeOverride) {
       rootClassOverride = ov;
     } else {
       otherClassOverrides.push(ov);
@@ -358,9 +346,9 @@ export function mkNamedImportsDeclaration(
   );
 }
 
-export function mkPropInterface(moduleContext: ModuleContext, classes: string[]) {
+export function mkPropInterface(moduleContext: ModuleContext) {
   const { classOverrides, swappableInstances, hideProps, textOverrideProps } = moduleContext;
-  const classes2 = Object.values(classOverrides);
+  const classes = Object.values(classOverrides);
   const swapPropNames = Array.from(swappableInstances);
   const hidePropNames = Array.from(hideProps);
   const textOverridePropNames = Array.from(textOverrideProps);
@@ -377,7 +365,7 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
         factory.createToken(ts.SyntaxKind.QuestionToken),
         factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
       ),
-      ...(!classes2?.length
+      ...(!classes?.length
         ? []
         : [
             factory.createPropertySignature(
@@ -385,7 +373,7 @@ export function mkPropInterface(moduleContext: ModuleContext, classes: string[])
               factory.createIdentifier('classes'),
               factory.createToken(ts.SyntaxKind.QuestionToken),
               factory.createTypeLiteralNode(
-                classes2.map(classOverride =>
+                classes.map(classOverride =>
                   factory.createPropertySignature(
                     undefined,
                     factory.createIdentifier(classOverride.propName),
@@ -474,11 +462,13 @@ function jsxOneOrMoreToJsxExpression(
 }
 
 export function mkCompFunction(
+  moduleContext: ModuleContext,
   fnName: string,
-  classes: string[],
   tsx: JsxOneOrMore | undefined,
   prefixStatements: Statement[] = [],
 ) {
+  const { classOverrides } = moduleContext;
+  const classes = Object.values(classOverrides);
   let returnedExpression = jsxOneOrMoreToJsxExpression(tsx);
 
   return factory.createVariableStatement(
@@ -537,7 +527,7 @@ export function mkCompFunction(
                                               factory.createBindingElement(
                                                 undefined,
                                                 undefined,
-                                                factory.createIdentifier(cl),
+                                                factory.createIdentifier(cl.propName),
                                                 undefined,
                                               ),
                                             ),
@@ -821,7 +811,7 @@ export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOver
         undefined,
         factory.createObjectLiteralExpression(
           entries.map(styleOverride => {
-            const { node, propName, overrideValue, propValue } = styleOverride;
+            const { propName, overrideValue, propValue } = styleOverride;
             const classExpr = mkClassExpression({
               propValue,
               overrideValue,

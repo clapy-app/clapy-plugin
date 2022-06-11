@@ -61,7 +61,6 @@ export interface ModuleContext {
   readonly pageName: string | undefined;
   readonly compDir: string;
   readonly compName: string;
-  /** @deprecated to remove? */
   readonly classNamesAlreadyUsed: Set<string>;
   // In a component, lists the nodes for which a prop can override the class. It is used to generate the list of props in the component source.
   readonly classOverrides: Dict3<FigmaId, CompClassOverride>;
@@ -74,7 +73,6 @@ export interface ModuleContext {
   // Let's follow it up at component level, and review with future use cases.
   readonly inInteractiveElement?: boolean;
   readonly isRootComponent?: boolean;
-  readonly classes: Set<string>;
   readonly swappableInstances: Set<string>;
   readonly hideProps: Set<string>;
   readonly textOverrideProps: Set<string>;
@@ -114,8 +112,7 @@ export interface BaseStyleOverride {
 // This interface can be cleaned up after we ensured we don't need some of the nodes.
 // They are useful for debugging, though.
 export interface StyleOverride extends BaseStyleOverride {
-  node: SceneNode2; // instance node
-  nodeOfComp?: SceneNode2; // To delete?
+  isRootNodeOverride: boolean;
   intermediateNode: SceneNode2;
   propName: string;
 }

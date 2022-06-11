@@ -105,7 +105,7 @@ export function mkModuleContext(
     pageName,
     compDir,
     compName,
-    classNamesAlreadyUsed: new Set(),
+    classNamesAlreadyUsed: new Set(['root']),
     classOverrides: {},
     subComponentNamesAlreadyUsed: new Set([compName]),
     importsAlreadyAdded: new Map(),
@@ -113,7 +113,6 @@ export function mkModuleContext(
     inInteractiveElement: parentModuleContext?.inInteractiveElement || false,
     isRootComponent,
     isComponent: isComp,
-    classes: new Set(),
     swappableInstances: new Set(),
     hideProps: new Set(),
     textOverrideProps: new Set(),
@@ -192,9 +191,7 @@ export function createModuleCode(
   tsx: JsxOneOrMore | undefined,
   prefixStatements: Statement[] = [],
 ) {
-  const { imports, statements, compName, classes: classesSet } = moduleContext;
-
-  const classes = Array.from(classesSet);
+  const { imports, statements, compName } = moduleContext;
 
   // Add React imports: import { FC, memo } from 'react';
   imports['react'] = mkNamedImportsDeclaration(
@@ -208,10 +205,10 @@ export function createModuleCode(
   );
 
   // Add component Prop interface
-  statements.push(mkPropInterface(moduleContext, classes));
+  statements.push(mkPropInterface(moduleContext));
 
   // Add the component
-  statements.push(mkCompFunction(compName, classes, tsx, prefixStatements));
+  statements.push(mkCompFunction(moduleContext, compName, tsx, prefixStatements));
 }
 
 export function printFileInProject(moduleContext: ModuleContext) {
