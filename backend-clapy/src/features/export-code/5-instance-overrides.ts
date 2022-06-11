@@ -1,6 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 
+import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { handleError, warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
@@ -107,11 +108,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         // And in the parent component:
         // ... <Comp hide={{ subCompIcon: true }} />
         const { instanceSwaps, instanceHidings, instanceTextOverrides } = compContext;
-        mapSwapToParentInstanceProp(context, instanceSwaps);
         mapHideToParentInstanceProp(context, instanceHidings);
         mapTextOverrideToParentInstanceProp(context, instanceTextOverrides);
-
-        addSwapInstance(context, node, false);
       } else {
         // If swapped, the new component is referenced, with overrides applied in props.
         // When getting this new component context, it was added to the list of components in the app. Its source code will be generated separately.
@@ -167,7 +165,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           const className = getOrGenClassName(moduleContext, node);
           getOrGenClassName(componentContext, nodeOfComp);
           addCssRule(context, className, styleDeclarations);
-          addClassOverride(context, node, nodeOfComp);
+          addClassOverride(context, node);
         }
       } else {
         styles = postMapStyles(context, node, styles);
@@ -198,7 +196,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         getOrGenClassName(componentContext, nodeOfComp);
         updateCssRuleClassName(context, cssRule, className);
         cssRule.block.children.push(...styleDeclarations);
-        addClassOverride(context, node, nodeOfComp);
+        addClassOverride(context, node);
       } else {
         removeCssRule(context, cssRule, node);
       }
@@ -296,6 +294,9 @@ function recurseOnChildren(
         warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
         throw new Error('BUG Instance node has children, but the corresponding component node does not.');
       }
+      if (!intermediateNode || node.isSwapped) {
+        return undefined;
+      }
       const childIntermediateNode = intermediateNode.children[instanceToCompIndexMap[i]];
       const childIsInstance = isInstance(child);
       const intermediateChildIsInstance = isInstance(childIntermediateNode);
@@ -311,10 +312,10 @@ function recurseOnChildren(
       if (childIsInstance && intermediateChildIsInstance) {
         const isOriginalInstance = child.mainComponent!.id === childIntermediateNode.mainComponent!.id; // = not swapped in Figma
         if (!isOriginalInstance) {
-          return undefined;
+          child.isSwapped = true;
         }
       }
-      return intermediateNode.children[instanceToCompIndexMap[i]];
+      return childIntermediateNode;
     });
     const contextForChild: InstanceContext = {
       moduleContext,
@@ -350,11 +351,12 @@ function addNodeStyles(
     const className = getOrGenClassName(moduleContext, node);
     getOrGenClassName(componentContext, nodeOfComp);
     addCssRule(context, className, styleDeclarations);
-    addClassOverride(context, node, nodeOfComp);
+    addClassOverride(context, node);
   }
 }
 
-function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp: SceneNode2) {
+function addClassOverride(context: InstanceContext, node: SceneNode2) {
+  const { nodeOfComp } = context;
   if (!node.className) {
     warnOrThrow(`Applying addClassOverride on node ${node.name}, but node.className is undefined.`);
     return;
@@ -363,6 +365,9 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
     warnOrThrow(`Applying addClassOverride on node ${node.name}, but nodeOfComp.className is undefined.`);
     return;
   }
+
+  // context.intermediateNodes[0] === node
+  const overrideValue = context.intermediateNodes[0]?.className;
 
   // Mark the component tag so that the className also gets a value from props (code to generate later).
   nodeOfComp.classOverride = true;
@@ -374,24 +379,24 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
       break;
     }
     const componentContext = context.intermediateComponentContexts[i];
-    const indexByNode = intermediateNode;
-    const indexBy = indexByNode.id;
 
     // generate prop name
     const propName = getOrGenClassName(componentContext, intermediateNode); // intermediateNode.className
 
+    const indexByNode = intermediateNode;
+    const indexBy = env.isDev && flags.indexOverrideByNodeId ? indexByNode.id : propName;
+
     // Add the component prop in the interface
-    componentContext.classOverrides[indexBy] = { propName };
+    componentContext.classOverrides.add(propName);
 
     // Update the parent instance to pass the override as prop to the instance.
     // A couple of sanity checks are done to help capturing bugs when developing.
     let parentInstanceNode = context.intermediateInstanceNodeOfComps[i - 1];
-    let parentOverrideValue = context.intermediateNodes[i - 1]?.className;
     const { instanceStyleOverrides } = getOrCreateCompContext(parentInstanceNode);
 
     if (instanceStyleOverrides[indexBy] && instanceStyleOverrides[indexBy].propName !== propName) {
       warnOrThrow(
-        `BUG [getOrSetStyleOverride] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${instanceStyleOverrides[indexBy].propName}, new one: ${propName}`,
+        `BUG [addClassOverride1] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${instanceStyleOverrides[indexBy].propName}, new one: ${propName}`,
       );
     }
 
@@ -404,16 +409,29 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
     }
     const styleOverride = instanceStyleOverrides[indexBy];
     if (i === 1) {
-      if (styleOverride.overrideValue && styleOverride.overrideValue !== parentOverrideValue) {
+      if (!overrideValue) {
         warnOrThrow(
-          `BUG [addClassOverride] The instance ${context.instanceNode.name} already has a class overrideValue set to override the class of the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.overrideValue}, new value: ${parentOverrideValue}`,
+          `BUG [addClassOverride2] The instance ${context.intermediateNodes[0]?.name} has no overrideValue (${overrideValue}).`,
         );
       }
-      styleOverride.overrideValue = parentOverrideValue;
+      if (styleOverride.overrideValue && styleOverride.overrideValue !== overrideValue) {
+        warnOrThrow(
+          `BUG [addClassOverride3] The instance ${parentInstanceNode.name} already has an overrideValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.overrideValue}, new value: ${overrideValue}`,
+        );
+      }
+      styleOverride.overrideValue = overrideValue;
     } else {
+      let parentOverrideValue = context.intermediateNodes[i - 1]?.className;
+      if (!overrideValue) {
+        warnOrThrow(
+          `BUG [addClassOverride2] The instance ${
+            context.intermediateNodes[i - 1]?.name
+          } has no overrideValue (${overrideValue}).`,
+        );
+      }
       if (styleOverride.propValue && styleOverride.propValue !== parentOverrideValue) {
         warnOrThrow(
-          `BUG [addClassOverride2] The instance ${context.instanceNode.name} already has a class propValue set to override the class of the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.propValue}, new value: ${parentOverrideValue}`,
+          `BUG [addClassOverride4] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${styleOverride.propValue}, new value: ${parentOverrideValue}`,
         );
       }
       styleOverride.propValue = parentOverrideValue;
@@ -421,70 +439,73 @@ function addClassOverride(context: InstanceContext, node: SceneNode2, nodeOfComp
   }
 }
 
-function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst | false) {
+function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
   const { instanceNode, nodeOfComp, componentContext } = context;
-  const { instanceSwaps } = getOrCreateCompContext(instanceNode);
-  const swapName = getOrGenSwapName(componentContext, nodeOfComp, node.name);
-  if (!swapName) {
-    throw new Error(`Component node ${nodeOfComp.name} has no swapName`);
-  }
-  if (swapAst == null) {
-    throw new Error(
-      `Component node ${nodeOfComp.name}: trying to set a nil swapAst for overrides for swap ${swapName}`,
-    );
-  }
-  if (typeof instanceSwaps[swapName] !== 'string') {
-    if (instanceSwaps[swapName]) {
-      warnOrThrow(
-        `Component node ${nodeOfComp.name}: trying to set swap ${swapName} with value ${
-          swapAst === false ? swapAst : printStandalone(swapAst)
-        }, but this swap entry is already set`,
-      );
-      return;
+  // Mark the component tag so that a potential swap from prop is possible on this node (code to generate later).
+  getOrGenSwapName(componentContext, nodeOfComp);
+
+  const overrideValue = swapAst;
+
+  // TODO required?
+  // getOrGenSwapName(componentContext, node);
+
+  // And nodes of the various intermediate components/instances are updated to pass the property from the top-level instance down to the most inner component, as swap props.
+  for (let i = 1; i < context.intermediateNodes.length; i++) {
+    const intermediateNode = context.intermediateNodes[i];
+    if (!intermediateNode) {
+      break;
     }
-    instanceSwaps[swapName] = swapAst;
-  }
-  if (swapAst && instanceNode.mapSwapsToProps) {
-    instanceNode.mapSwapsToProps();
-  }
-}
+    const componentContext = context.intermediateComponentContexts[i];
 
-/**
- * Ensure the sub-instance we met apply swaps on the selected nodes (previous instance check) => sub-instance context
- * AND that the parent instance exposes those swap capabilities => parent instance context
- */
-function mapSwapToParentInstanceProp(
-  parentContext: InstanceContext,
-  childCompInstanceSwaps: CompContext['instanceSwaps'],
-) {
-  if (childCompInstanceSwaps) {
-    for (const [swapBaseName, ast] of Object.entries(childCompInstanceSwaps)) {
-      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+    // generate prop name
+    const propName = getOrGenSwapName(componentContext, intermediateNode);
 
-      nodeOfComp.mapSwapsToProps = () => {
-        const { instanceSwaps: currentCompInstanceSwaps } = getOrCreateCompContext(nodeOfComp);
-        let swapName: string;
-        if (currentCompInstanceSwaps[swapBaseName]) {
-          if (typeof currentCompInstanceSwaps[swapBaseName] !== 'string') {
-            warnOrThrow(
-              '[mapSwapToParentInstanceProp] existing currentCompInstanceSwaps[swapBaseName] is not a string',
-            );
-            return;
-          }
-          swapName = currentCompInstanceSwaps[swapBaseName] as string;
-        } else {
-          swapName = getOrGenSwapName(componentContext, undefined, swapBaseName);
-          currentCompInstanceSwaps[swapBaseName] = swapName;
-        }
+    const indexByNode = intermediateNode;
+    const indexBy = env.isDev && flags.indexOverrideByNodeId ? indexByNode.id : propName;
 
-        const { instanceSwaps: parentCompInstanceSwaps } = getOrCreateCompContext(instanceNode);
-        if (!parentCompInstanceSwaps[swapName]) {
-          parentCompInstanceSwaps[swapName] = ast;
-        }
+    // Add the component prop in the interface
+    componentContext.swaps.add(propName);
+
+    // Update the parent instance to pass the override as prop to the instance.
+    // A couple of sanity checks are done to help capturing bugs when developing.
+    let parentInstanceNode = context.intermediateInstanceNodeOfComps[i - 1];
+    const { instanceSwaps } = getOrCreateCompContext(parentInstanceNode);
+
+    if (instanceSwaps[indexBy] && instanceSwaps[indexBy].propName !== propName) {
+      warnOrThrow(
+        `BUG [addSwapInstance1] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${instanceSwaps[indexBy].propName}, new one: ${propName}`,
+      );
+    }
+
+    if (!instanceSwaps[indexBy]) {
+      instanceSwaps[indexBy] = {
+        isRootNodeOverride: false,
+        intermediateNode,
+        propName,
       };
-      if (ast) {
-        nodeOfComp.mapSwapsToProps();
+    }
+    const swapOverride = instanceSwaps[indexBy];
+    if (i === 1) {
+      if (swapOverride.overrideValue && swapOverride.overrideValue !== overrideValue) {
+        warnOrThrow(
+          `BUG [addSwapInstance2] The instance ${
+            parentInstanceNode.name
+          } already has an overrideValue set to override the node ${
+            indexByNode.name
+          }, but the value is different. Existing value: ${swapOverride.overrideValue}, new value: ${printStandalone(
+            overrideValue,
+          )}`,
+        );
       }
+      swapOverride.overrideValue = overrideValue;
+    } else {
+      let parentOverrideValue = context.intermediateNodes[i - 1]?.swapName;
+      if (swapOverride.propValue && swapOverride.propValue !== parentOverrideValue) {
+        warnOrThrow(
+          `BUG [addSwapInstance3] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${swapOverride.propValue}, new value: ${parentOverrideValue}`,
+        );
+      }
+      swapOverride.propValue = parentOverrideValue;
     }
   }
 }

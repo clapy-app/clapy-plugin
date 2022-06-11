@@ -46,7 +46,7 @@ export interface ProjectContext {
   readonly extraConfig: ExtraConfig;
 }
 
-interface CompClassOverride {
+interface OverrideFromProp {
   propName: string;
 }
 
@@ -63,7 +63,8 @@ export interface ModuleContext {
   readonly compName: string;
   readonly classNamesAlreadyUsed: Set<string>;
   // In a component, lists the nodes for which a prop can override the class. It is used to generate the list of props in the component source.
-  readonly classOverrides: Dict3<FigmaId, CompClassOverride>;
+  readonly classOverrides: Set<string>;
+  readonly swaps: Set<string>;
   readonly subComponentNamesAlreadyUsed: Set<string>;
   readonly importsAlreadyAdded: Map<string, string>;
   readonly cssRules: CssRootNode[];
@@ -73,7 +74,6 @@ export interface ModuleContext {
   // Let's follow it up at component level, and review with future use cases.
   readonly inInteractiveElement?: boolean;
   readonly isRootComponent?: boolean;
-  readonly swappableInstances: Set<string>;
   readonly hideProps: Set<string>;
   readonly textOverrideProps: Set<string>;
 }
@@ -100,22 +100,28 @@ export interface NodeContext {
 }
 
 export type HidingValue = boolean | string;
-export type SwapValue = SwapAst | string | false;
 export type TextOValue = JsxOneOrMore | string | false;
 type InstanceNodeId = string;
 
-export interface BaseStyleOverride {
-  overrideValue?: string;
+export interface BaseFigmaOverride<T> {
+  overrideValue?: T;
   propValue?: string;
 }
 
 // This interface can be cleaned up after we ensured we don't need some of the nodes.
 // They are useful for debugging, though.
-export interface StyleOverride extends BaseStyleOverride {
+export interface FigmaOverride<T> extends BaseFigmaOverride<T> {
   isRootNodeOverride: boolean;
   intermediateNode: SceneNode2;
   propName: string;
 }
+
+export type StyleOverride = FigmaOverride<string>;
+export type BaseStyleOverride = BaseFigmaOverride<string>;
+
+export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
+export type SwapOverride = FigmaOverride<SwapAst>;
+export type BaseSwapOverride = BaseFigmaOverride<string>;
 
 export interface OverrideProps {
   instanceNodeOfComp: SceneNode2; // For debug only - to remove later?
@@ -126,7 +132,7 @@ export interface CompContext {
   // Lists the override values for the nodes inside the instance. Will be used to pass the value to the corresponding prop when writing the code (props on instance). It is a dictionary to deduplicate by target node ID. (same as deduplicating by class, but safer to identify bugs when developing)
   instanceStyleOverrides: Dict3<InstanceNodeId, StyleOverride>;
   instanceHidings: Dict<HidingValue>;
-  instanceSwaps: Dict<SwapValue>;
+  instanceSwaps: Dict<SwapOverride>;
   instanceTextOverrides: Dict<TextOValue>;
   mappingDone?: boolean;
 }
@@ -136,8 +142,6 @@ export interface IntermediateComponent {
   // instance node for this component
   node: SceneNode2;
 }
-
-export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
 
 export interface InstanceContext extends NodeContext {
   // tagName and nodeNameLower may be useless

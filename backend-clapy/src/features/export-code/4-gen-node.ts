@@ -41,7 +41,6 @@ import {
   genComponentImportName,
   getOrCreateCompContext,
   getOrGenClassName,
-  getOrGenSwapName,
   mkComponentUsage,
   mkNamedImportsDeclaration,
   mkSwapInstanceAndHideWrapper,
@@ -111,8 +110,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       let compAst2: SwapAst | JsxOneOrMore = compAst;
       if (isInst) {
         // Should we also check that we're in a component? To review with examples.
-        const swapName = getOrGenSwapName(moduleContext, node);
-        compAst2 = mkSwapInstanceAndHideWrapper(context, swapName, compAst, node);
+        compAst2 = mkSwapInstanceAndHideWrapper(context, compAst, node);
       }
 
       return compAst2;

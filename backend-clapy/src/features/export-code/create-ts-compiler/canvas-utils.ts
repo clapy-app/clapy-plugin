@@ -75,6 +75,7 @@ interface GlobalExtender {
   className?: string;
   classOverride?: boolean;
   swapName?: string;
+  isSwapped?: boolean;
   hideProp?: string;
   textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;

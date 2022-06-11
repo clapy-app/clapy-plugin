@@ -8,6 +8,7 @@ import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serial
 import {
   BaseStyleOverride,
   CompContext,
+  FigmaOverride,
   InstanceContext,
   JsxOneOrMore,
   ModuleContext,
@@ -67,9 +68,9 @@ export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode
   // It may be equivalent to `isComponent(node)`, but for safety, I keep the legacy test. We can refactor later, and test when the app is stable.
   const isRootInComponent = node === moduleContext.node;
   // No node when working on text segments. But can we find better class names than 'label' for this case?
-  let baseName = node?.name ? node.name : defaultClassName;
+  const baseName = node?.name || defaultClassName;
   const className = isRootInComponent ? 'root' : genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
-  if (node && !node.className) {
+  if (node) {
     node.className = className;
   }
   return className;
@@ -84,7 +85,8 @@ export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNo
       `Either a node with a name or a swapBaseName is required to generate a swapName on module ${componentContext.compName}`,
     );
   }
-  const swapName = genUniqueName(componentContext.swappableInstances, node?.name || swapBaseName!);
+  const baseName = node?.name || swapBaseName!;
+  const swapName = genUniqueName(componentContext.swaps, baseName);
   if (node) {
     node.swapName = swapName;
   }
@@ -285,16 +287,16 @@ export function createTextAst(context: NodeContext, node: TextNode2, styles: Dic
 }
 
 export function createClassAttrForNode(node: SceneNode2) {
-  const overrideNode: BaseStyleOverride = {
+  const overrideEntry: BaseStyleOverride = {
     overrideValue: node.className,
     propValue: node.classOverride ? node.className : undefined,
   };
-  return mkClassAttr2(overrideNode);
+  return mkClassAttr2(overrideEntry);
 }
 
 export function createClassAttrForClassNoOverride(className: string | undefined) {
-  const overrideNode: BaseStyleOverride = { overrideValue: className };
-  return mkClassAttr2(overrideNode);
+  const overrideEntry: BaseStyleOverride = { overrideValue: className };
+  return mkClassAttr2(overrideEntry);
 }
 
 // AST generation functions
@@ -347,9 +349,9 @@ export function mkNamedImportsDeclaration(
 }
 
 export function mkPropInterface(moduleContext: ModuleContext) {
-  const { classOverrides, swappableInstances, hideProps, textOverrideProps } = moduleContext;
-  const classes = Object.values(classOverrides);
-  const swapPropNames = Array.from(swappableInstances);
+  const { classOverrides, swaps, hideProps, textOverrideProps } = moduleContext;
+  const classes = Array.from(classOverrides);
+  const swapsArr = Array.from(swaps);
   const hidePropNames = Array.from(hideProps);
   const textOverridePropNames = Array.from(textOverrideProps);
   return factory.createInterfaceDeclaration(
@@ -376,7 +378,7 @@ export function mkPropInterface(moduleContext: ModuleContext) {
                 classes.map(classOverride =>
                   factory.createPropertySignature(
                     undefined,
-                    factory.createIdentifier(classOverride.propName),
+                    factory.createIdentifier(classOverride),
                     factory.createToken(ts.SyntaxKind.QuestionToken),
                     factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                   ),
@@ -384,7 +386,7 @@ export function mkPropInterface(moduleContext: ModuleContext) {
               ),
             ),
           ]),
-      ...(!swapPropNames?.length
+      ...(!swapsArr?.length
         ? []
         : [
             factory.createPropertySignature(
@@ -392,10 +394,10 @@ export function mkPropInterface(moduleContext: ModuleContext) {
               factory.createIdentifier('swap'),
               factory.createToken(ts.SyntaxKind.QuestionToken),
               factory.createTypeLiteralNode(
-                swapPropNames.map(name =>
+                swapsArr.map(swap =>
                   factory.createPropertySignature(
                     undefined,
-                    factory.createIdentifier(name),
+                    factory.createIdentifier(swap),
                     factory.createToken(ts.SyntaxKind.QuestionToken),
                     factory.createTypeReferenceNode(factory.createIdentifier('ReactNode'), undefined),
                   ),
@@ -468,7 +470,7 @@ export function mkCompFunction(
   prefixStatements: Statement[] = [],
 ) {
   const { classOverrides } = moduleContext;
-  const classes = Object.values(classOverrides);
+  const classes = Array.from(classOverrides);
   let returnedExpression = jsxOneOrMoreToJsxExpression(tsx);
 
   return factory.createVariableStatement(
@@ -527,7 +529,7 @@ export function mkCompFunction(
                                               factory.createBindingElement(
                                                 undefined,
                                                 undefined,
-                                                factory.createIdentifier(cl.propName),
+                                                factory.createIdentifier(cl),
                                                 undefined,
                                               ),
                                             ),
@@ -631,42 +633,40 @@ export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttri
 
 export function mkSwapInstanceAndHideWrapper(
   context: NodeContext,
-  swapName: string,
   compAst: ts.JsxSelfClosingElement,
   node: SceneNode2,
 ) {
-  const astAndSwapExpr = factory.createBinaryExpression(
-    factory.createPropertyAccessChain(
-      factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
-      factory.createToken(ts.SyntaxKind.QuestionDotToken),
-      factory.createIdentifier(swapName),
-    ),
-    factory.createToken(ts.SyntaxKind.BarBarToken),
-    compAst,
-  );
-
-  const ast = node.hideProp
-    ? factory.createJsxExpression(
-        undefined,
-        factory.createBinaryExpression(
-          factory.createPrefixUnaryExpression(
-            ts.SyntaxKind.ExclamationToken,
-            factory.createPropertyAccessChain(
-              factory.createPropertyAccessExpression(
-                factory.createIdentifier('props'),
-                factory.createIdentifier('hide'),
-              ),
-              factory.createToken(ts.SyntaxKind.QuestionDotToken),
-              factory.createIdentifier(node.hideProp),
-            ),
-          ),
-          factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-          factory.createParenthesizedExpression(astAndSwapExpr),
+  let ast: ts.JsxSelfClosingElement | ts.Expression = compAst;
+  let ast2: ts.JsxSelfClosingElement | ts.JsxExpression = compAst;
+  if (node.swapName) {
+    ast = factory.createBinaryExpression(
+      factory.createPropertyAccessChain(
+        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier(node.swapName),
+      ),
+      factory.createToken(ts.SyntaxKind.BarBarToken),
+      ast,
+    );
+  }
+  if (node.hideProp) {
+    ast = factory.createBinaryExpression(
+      factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.ExclamationToken,
+        factory.createPropertyAccessChain(
+          factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
+          factory.createToken(ts.SyntaxKind.QuestionDotToken),
+          factory.createIdentifier(node.hideProp),
         ),
-      )
-    : factory.createJsxExpression(undefined, astAndSwapExpr);
-
-  return context.isRootInComponent ? mkFragment([ast]) : ast;
+      ),
+      factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ast,
+    );
+  }
+  if (node.swapName || node.hideProp) {
+    ast2 = factory.createJsxExpression(undefined, ast);
+  }
+  return context.isRootInComponent ? mkFragment([ast2]) : ast2;
 }
 
 function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore, node: SceneNode2) {
@@ -724,10 +724,10 @@ export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOr
 }
 
 export function mkClassAttr2<T extends BaseStyleOverride | undefined>(
-  overrideNode: T,
+  overrideEntry: T,
 ): T extends BaseStyleOverride ? ts.JsxAttribute : undefined {
-  if (!overrideNode) return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
-  const classExpr = mkClassExpression(overrideNode);
+  if (!overrideEntry) return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
+  const classExpr = mkClassExpression(overrideEntry);
   if (!classExpr) {
     return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
   }
@@ -738,13 +738,13 @@ export function mkClassAttr2<T extends BaseStyleOverride | undefined>(
   ) as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
 }
 
-function mkClassExpression(overrideNode: BaseStyleOverride) {
-  const { overrideValue, propValue /* , isRoot */ } = overrideNode;
+function mkClassExpression(overrideEntry: BaseStyleOverride) {
+  const { overrideValue, propValue } = overrideEntry;
   if (!overrideValue && !propValue) {
     throw new Error(
-      `BUG Missing both overrideValue and propValue when writing overrides for node ${
-        (overrideNode as any).node?.name
-      }.`,
+      `[mkClassExpression] BUG Missing both overrideValue and propValue when writing overrides for node ${
+        (overrideEntry as FigmaOverride<any>).intermediateNode?.name
+      }, prop ${(overrideEntry as FigmaOverride<any>).propName}.`,
     );
   }
   const isRoot = overrideValue === 'root' || propValue === 'root';
@@ -811,11 +811,8 @@ export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOver
         undefined,
         factory.createObjectLiteralExpression(
           entries.map(styleOverride => {
-            const { propName, overrideValue, propValue } = styleOverride;
-            const classExpr = mkClassExpression({
-              propValue,
-              overrideValue,
-            });
+            const { propName } = styleOverride;
+            const classExpr = mkClassExpression(styleOverride);
             if (!classExpr) {
               throw new Error('[mkClassesAttribute] Failed to generate classExpr, see logs.');
             }
@@ -833,29 +830,35 @@ export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOver
 }
 
 export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
-  const entries = Object.entries(swaps).filter(([_, swapValue]) => swapValue !== false);
-  if (!entries.length) return undefined;
+  const swapsArr = Object.values(swaps);
+  if (!swapsArr.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('swap'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, swapValue]) => {
-          if (swapValue === false) {
-            throw new Error('[mkSwapsAttribute] false value should have been filtered before.');
+        swapsArr.map(overrideEntry => {
+          const { propName, overrideValue, propValue } = overrideEntry;
+          if (!overrideValue && !propValue) {
+            throw new Error(
+              `[mkSwapsAttribute] BUG Missing both overrideValue and propValue when writing overrides for node ${
+                (overrideEntry as FigmaOverride<any>).intermediateNode?.name
+              }, prop ${(overrideEntry as FigmaOverride<any>).propName}.`,
+            );
+            // overrideEntry may not be a FigmaOverride, but the base version only, so propName and intermediateNode are not guaranteed to exist. But if they do, they bring useful information for the error message.
           }
           return factory.createPropertyAssignment(
-            factory.createIdentifier(name),
-            typeof swapValue === 'string'
+            factory.createIdentifier(propName),
+            propValue
               ? factory.createPropertyAccessChain(
                   factory.createPropertyAccessExpression(
                     factory.createIdentifier('props'),
                     factory.createIdentifier('swap'),
                   ),
                   factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                  factory.createIdentifier(swapValue),
+                  factory.createIdentifier(propValue),
                 )
-              : swapValue,
+              : overrideValue!,
           );
         }),
         true,
