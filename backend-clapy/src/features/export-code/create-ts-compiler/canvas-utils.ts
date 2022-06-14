@@ -75,7 +75,7 @@ interface GlobalExtender {
   className?: string;
   classOverride?: boolean;
   swapName?: string;
-  isSwapped?: boolean;
+  swapOfNode?: InstanceNode2;
   hideProp?: string;
   textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
@@ -208,6 +208,13 @@ export interface ChildrenMixin2 {
 
 export function isChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): node is ChildrenMixin2 {
   return !!(node as ChildrenMixin2)?.children;
+}
+
+// Assertion in control flow analysis
+export function assertChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): asserts node is ChildrenMixin2 {
+  if (!(node as ChildrenMixin2)?.children) {
+    throw new Error(node ? `node ${(node as BaseNode2).name} is not a ChildrenMixin` : `node is nil`);
+  }
 }
 
 // Has isMask property

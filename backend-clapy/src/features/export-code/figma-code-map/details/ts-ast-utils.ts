@@ -16,7 +16,7 @@ import {
   ProjectContext,
   StyleOverride,
 } from '../../code.model';
-import { isComponentSet, SceneNode2, TextNode2 } from '../../create-ts-compiler/canvas-utils';
+import { isComponentSet, isInstance, SceneNode2, TextNode2 } from '../../create-ts-compiler/canvas-utils';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -249,6 +249,24 @@ export function createComponentUsageWithAttributes(
   if (textOverrideAttr) attrs.push(textOverrideAttr);
 
   return mkComponentUsage(componentModuleContext.compName, attrs);
+}
+
+export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 | undefined) {
+  if (!node) {
+    throw new Error(`BUG [checkIsOriginalInstance] node is undefined.`);
+  }
+  if (!nextNode) {
+    throw new Error(`BUG [checkIsOriginalInstance] nextNode is undefined.`);
+  }
+  const nodeIsInstance = isInstance(node);
+  const nextNodeIsInstance = isInstance(nextNode);
+  //
+  if (nodeIsInstance !== nextNodeIsInstance) {
+    throw new Error(
+      `BUG nodeIsInstance: ${nodeIsInstance} but nextNodeIsInstance: ${nextNodeIsInstance}, althought they are supposed to be the same.`,
+    );
+  }
+  return !nodeIsInstance || !nextNodeIsInstance || node.mainComponent!.id === nextNode.mainComponent!.id; // = not swapped in Figma
 }
 
 export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
