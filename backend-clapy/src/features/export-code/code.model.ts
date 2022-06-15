@@ -160,6 +160,13 @@ export interface InstanceContext extends NodeContext {
   // When adding properties here, ensure you also update the InstanceContext creation in 4- and 5-instance-overrides.ts.
   // TypeScript won't mark errors, because it inherits the previous context properties.
   // (To change?)
+  swapContext?: SwapContext | undefined;
+}
+
+export interface SwapContext {
+  intermediateInstanceNodeOfComp: ComponentNode2 | InstanceNode2;
+  intermediateComponentContext: ModuleContext;
+  intermediateNode: SceneNode2 | undefined;
 }
 
 export function isInstanceContext(context: NodeContext): context is InstanceContext {

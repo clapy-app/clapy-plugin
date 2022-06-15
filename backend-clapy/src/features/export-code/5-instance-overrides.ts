@@ -7,7 +7,7 @@ import { handleError, warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
 import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { CompContext, InstanceContext, JsxOneOrMore, SwapAst } from './code.model';
+import { CompContext, InstanceContext, JsxOneOrMore, SwapAst, SwapContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   assertChildrenMixin,
@@ -304,12 +304,18 @@ function recurseOnChildren(
     let childIntermediateNodes: (SceneNode2 | undefined)[];
     let childIntermediateInstanceNodeOfComps = intermediateInstanceNodeOfComps;
     let childIntermediateComponentContexts = intermediateComponentContexts;
+    let swapContext: SwapContext | undefined = undefined;
     if (!isOriginalInstance) {
       // nextCompChildNode is the swapped node, will be used in addSwapInstance to generate the right props and usages.
       child.swapOfNode = nextCompChildNode as InstanceNode2; // checkIsOriginalInstance guarantees it's an instance
       childIntermediateNodes = [child];
       childIntermediateInstanceNodeOfComps = [];
       childIntermediateComponentContexts = [intermediateComponentContexts[0]];
+      swapContext = {
+        intermediateNode: nextCompChildNode,
+        intermediateInstanceNodeOfComp: intermediateInstanceNodeOfComps[0],
+        intermediateComponentContext: intermediateComponentContexts[1],
+      };
     } else {
       // Replace intermediate nodes with the child at the same location:
       childIntermediateNodes = intermediateNodes.map(intermediateNode => {
@@ -339,6 +345,7 @@ function recurseOnChildren(
       intermediateComponentContexts: childIntermediateComponentContexts,
       intermediateNodes: childIntermediateNodes,
       isRootInComponent: false,
+      swapContext,
     };
     genInstanceOverrides(contextForChild, child);
   }
@@ -446,19 +453,19 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
   }
 }
 
-// TODO Card 1 swap override: missing btn 3 star swap
+// TODO Card, swap prop sur SampleButtonAlone : n'utilise pas la valeur reçue en prop de Card.
+// TODO SampleButtonAlone a une `classes` ellipseInit qui ne devrait pas être ici (mais dans l'ellipse ?)
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
-  let {
-    intermediateNodes,
-    intermediateComponentContexts,
-    intermediateInstanceNodeOfComps,
-    componentContext,
-    instanceNode,
-  } = context;
+  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
+  if (!swapContext) {
+    throw new Error(`BUG [addSwapInstance] swapContext is undefined. But it should be defined in recurseOnChildren.`);
+  }
+  const { intermediateNode, intermediateComponentContext, intermediateInstanceNodeOfComp } = swapContext;
+
   // Mark the component tag so that a potential swap from prop is possible on this node (code to generate later).
-  intermediateNodes = [...intermediateNodes, node.swapOfNode];
-  intermediateComponentContexts = [...intermediateComponentContexts, componentContext];
-  intermediateInstanceNodeOfComps = [...intermediateInstanceNodeOfComps, instanceNode];
+  intermediateNodes = [...intermediateNodes, intermediateNode];
+  intermediateComponentContexts = [...intermediateComponentContexts, intermediateComponentContext];
+  intermediateInstanceNodeOfComps = [...intermediateInstanceNodeOfComps, intermediateInstanceNodeOfComp];
 
   const overrideValue = swapAst;
 
