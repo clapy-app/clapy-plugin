@@ -83,16 +83,18 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
         const componentContext = getOrGenComponent(moduleContext, node, parentNode, false, isOriginalInstance);
 
+        const nodeOfComp2 = isOriginalInstance ? nodeOfComp : node;
+
         const instanceNode = node;
         const instanceContext: InstanceContext = {
           ...context,
           componentContext,
           nodeOfComp: componentContext.node,
-          intermediateInstanceNodeOfComps: [...context.intermediateInstanceNodeOfComps, nodeOfComp],
+          intermediateInstanceNodeOfComps: [...context.intermediateInstanceNodeOfComps, nodeOfComp2],
           intermediateComponentContexts: [...context.intermediateComponentContexts, componentContext],
           intermediateNodes: [...context.intermediateNodes, componentContext.node],
           instanceNode,
-          instanceNodeOfComp: nodeOfComp,
+          instanceNodeOfComp: nodeOfComp2,
           isRootInComponent: true,
         };
 
@@ -102,7 +104,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         // Here, overriden nodes have been listed in the compContext by genInstanceOverrides() above.
 
         if (isOriginalInstance) {
-          const compContext = getOrCreateCompContext(nodeOfComp);
+          const compContext = getOrCreateCompContext(nodeOfComp2);
           // Old comment, to remove once all map* functions have been removed.
           // the functions adding overrides take care of this part. They should be commented well.
           // ------
@@ -306,7 +308,7 @@ function recurseOnChildren(
       // nextCompChildNode is the swapped node, will be used in addSwapInstance to generate the right props and usages.
       child.swapOfNode = nextCompChildNode as InstanceNode2; // checkIsOriginalInstance guarantees it's an instance
       childIntermediateNodes = [child];
-      childIntermediateInstanceNodeOfComps = [child as InstanceNode2];
+      childIntermediateInstanceNodeOfComps = [];
       childIntermediateComponentContexts = [intermediateComponentContexts[0]];
     } else {
       // Replace intermediate nodes with the child at the same location:
@@ -444,6 +446,7 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
   }
 }
 
+// TODO Card 1 swap override: missing btn 3 star swap
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
   let {
     intermediateNodes,
@@ -455,8 +458,7 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
   // Mark the component tag so that a potential swap from prop is possible on this node (code to generate later).
   intermediateNodes = [...intermediateNodes, node.swapOfNode];
   intermediateComponentContexts = [...intermediateComponentContexts, componentContext];
-  intermediateInstanceNodeOfComps.pop();
-  intermediateInstanceNodeOfComps.push(instanceNode);
+  intermediateInstanceNodeOfComps = [...intermediateInstanceNodeOfComps, instanceNode];
 
   const overrideValue = swapAst;
 
@@ -476,7 +478,7 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
 
     // Update the parent instance to pass the override as prop to the instance.
     // A couple of sanity checks are done to help capturing bugs when developing.
-    let parentInstanceNode = context.intermediateInstanceNodeOfComps[i - 1];
+    let parentInstanceNode = intermediateInstanceNodeOfComps[i - 1];
     const { instanceSwaps } = getOrCreateCompContext(parentInstanceNode);
 
     if (instanceSwaps[indexBy] && instanceSwaps[indexBy].propName !== propName) {
