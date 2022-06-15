@@ -100,9 +100,9 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         genInstanceOverrides(instanceContext, node);
 
         // Here, overriden nodes have been listed in the compContext by genInstanceOverrides() above.
-        const compContext = getOrCreateCompContext(nodeOfComp);
 
         if (isOriginalInstance) {
+          const compContext = getOrCreateCompContext(nodeOfComp);
           // Old comment, to remove once all map* functions have been removed.
           // the functions adding overrides take care of this part. They should be commented well.
           // ------
@@ -116,6 +116,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           mapHideToParentInstanceProp(context, instanceHidings);
           mapTextOverrideToParentInstanceProp(context, instanceTextOverrides);
         } else {
+          const compContext = getOrCreateCompContext(node);
           // If swapped, the new component is referenced, with overrides applied in props.
           // When getting this new component context, it was added to the list of components in the app. Its source code will be generated separately.
           const compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
@@ -299,10 +300,14 @@ function recurseOnChildren(
     const nextCompChildNode = nextCompNode.children[instanceToCompIndexMap[i]];
     const isOriginalInstance = checkIsOriginalInstance(child, nextCompChildNode);
     let childIntermediateNodes: (SceneNode2 | undefined)[];
+    let childIntermediateInstanceNodeOfComps = intermediateInstanceNodeOfComps;
+    let childIntermediateComponentContexts = intermediateComponentContexts;
     if (!isOriginalInstance) {
       // nextCompChildNode is the swapped node, will be used in addSwapInstance to generate the right props and usages.
       child.swapOfNode = nextCompChildNode as InstanceNode2; // checkIsOriginalInstance guarantees it's an instance
       childIntermediateNodes = [child];
+      childIntermediateInstanceNodeOfComps = [child as InstanceNode2];
+      childIntermediateComponentContexts = [intermediateComponentContexts[0]];
     } else {
       // Replace intermediate nodes with the child at the same location:
       childIntermediateNodes = intermediateNodes.map(intermediateNode => {
@@ -328,8 +333,8 @@ function recurseOnChildren(
       instanceNode,
       instanceNodeOfComp,
       nodeOfComp: childNodeOfComp,
-      intermediateInstanceNodeOfComps,
-      intermediateComponentContexts,
+      intermediateInstanceNodeOfComps: childIntermediateInstanceNodeOfComps,
+      intermediateComponentContexts: childIntermediateComponentContexts,
       intermediateNodes: childIntermediateNodes,
       isRootInComponent: false,
     };
@@ -440,14 +445,20 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
 }
 
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
-  let { intermediateNodes } = context;
+  let {
+    intermediateNodes,
+    intermediateComponentContexts,
+    intermediateInstanceNodeOfComps,
+    componentContext,
+    instanceNode,
+  } = context;
   // Mark the component tag so that a potential swap from prop is possible on this node (code to generate later).
   intermediateNodes = [...intermediateNodes, node.swapOfNode];
+  intermediateComponentContexts = [...intermediateComponentContexts, componentContext];
+  intermediateInstanceNodeOfComps.pop();
+  intermediateInstanceNodeOfComps.push(instanceNode);
 
   const overrideValue = swapAst;
-
-  // TODO required?
-  // getOrGenSwapName(componentContext, node);
 
   // And nodes of the various intermediate components/instances are updated to pass the property from the top-level instance down to the most inner component, as swap props.
   for (let i = 1; i < intermediateNodes.length; i++) {
@@ -455,7 +466,7 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
     if (!intermediateNode) {
       break;
     }
-    const componentContext = context.intermediateComponentContexts[i];
+    const componentContext = intermediateComponentContexts[i];
 
     // generate prop name + add to the interface
     const propName = getOrGenSwapName(componentContext, intermediateNode);
