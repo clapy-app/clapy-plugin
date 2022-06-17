@@ -865,19 +865,25 @@ export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
             );
             // overrideEntry may not be a FigmaOverride, but the base version only, so propName and intermediateNode are not guaranteed to exist. But if they do, they bring useful information for the error message.
           }
-          return factory.createPropertyAssignment(
-            factory.createIdentifier(propName),
-            propValue
-              ? factory.createPropertyAccessChain(
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('props'),
-                    factory.createIdentifier('swap'),
-                  ),
-                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                  factory.createIdentifier(propValue),
-                )
-              : overrideValue!,
-          );
+
+          const propExpr = propValue
+            ? factory.createPropertyAccessChain(
+                factory.createPropertyAccessExpression(
+                  factory.createIdentifier('props'),
+                  factory.createIdentifier('swap'),
+                ),
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier(propValue),
+              )
+            : undefined;
+
+          const ast = !propValue
+            ? overrideValue!
+            : !overrideValue
+            ? propExpr!
+            : factory.createBinaryExpression(propExpr!, factory.createToken(ts.SyntaxKind.BarBarToken), overrideValue);
+
+          return factory.createPropertyAssignment(factory.createIdentifier(propName), ast);
         }),
         true,
       ),

@@ -164,9 +164,9 @@ export interface InstanceContext extends NodeContext {
 }
 
 export interface SwapContext {
-  intermediateInstanceNodeOfComp: ComponentNode2 | InstanceNode2;
-  intermediateComponentContext: ModuleContext;
-  intermediateNode: SceneNode2 | undefined;
+  intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'];
+  intermediateComponentContexts: InstanceContext['intermediateComponentContexts'];
+  intermediateNodes: InstanceContext['intermediateNodes'];
 }
 
 export function isInstanceContext(context: NodeContext): context is InstanceContext {

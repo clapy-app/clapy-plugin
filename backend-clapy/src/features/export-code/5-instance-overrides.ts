@@ -312,21 +312,13 @@ function recurseOnChildren(
       childIntermediateInstanceNodeOfComps = [];
       childIntermediateComponentContexts = [intermediateComponentContexts[0]];
       swapContext = {
-        intermediateNode: nextCompChildNode,
-        intermediateInstanceNodeOfComp: intermediateInstanceNodeOfComps[0],
-        intermediateComponentContext: intermediateComponentContexts[1],
+        intermediateNodes: toChildrenAtPosition(intermediateNodes.slice(1), i),
+        intermediateInstanceNodeOfComps: intermediateInstanceNodeOfComps,
+        intermediateComponentContexts: intermediateComponentContexts.slice(1),
       };
     } else {
       // Replace intermediate nodes with the child at the same location:
-      childIntermediateNodes = intermediateNodes.map(intermediateNode => {
-        // intermediateNode is undefined if an instance was swapped with another.
-        if (!isChildrenMixin(intermediateNode)) {
-          warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
-          throw new Error('BUG Instance node has children, but the corresponding component node does not.');
-        }
-        const childIntermediateNode = intermediateNode.children[instanceToCompIndexMap[i]];
-        return childIntermediateNode;
-      });
+      childIntermediateNodes = toChildrenAtPosition(intermediateNodes, i);
     }
 
     const childNodeOfComp = nodeOfComp.children[instanceToCompIndexMap[i]];
@@ -460,12 +452,14 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
   if (!swapContext) {
     throw new Error(`BUG [addSwapInstance] swapContext is undefined. But it should be defined in recurseOnChildren.`);
   }
-  const { intermediateNode, intermediateComponentContext, intermediateInstanceNodeOfComp } = swapContext;
 
   // Mark the component tag so that a potential swap from prop is possible on this node (code to generate later).
-  intermediateNodes = [...intermediateNodes, intermediateNode];
-  intermediateComponentContexts = [...intermediateComponentContexts, intermediateComponentContext];
-  intermediateInstanceNodeOfComps = [...intermediateInstanceNodeOfComps, intermediateInstanceNodeOfComp];
+  intermediateNodes = [...intermediateNodes, ...swapContext.intermediateNodes];
+  intermediateComponentContexts = [...intermediateComponentContexts, ...swapContext.intermediateComponentContexts];
+  intermediateInstanceNodeOfComps = [
+    ...intermediateInstanceNodeOfComps,
+    ...swapContext.intermediateInstanceNodeOfComps,
+  ];
 
   const overrideValue = swapAst;
 
@@ -643,4 +637,16 @@ function mapTextOverrideToParentInstanceProp(
       }
     }
   }
+}
+
+function toChildrenAtPosition(intermediateNodes: InstanceContext['intermediateNodes'], position: number) {
+  return intermediateNodes.map(intermediateNode => {
+    // intermediateNode is undefined if an instance was swapped with another.
+    if (!isChildrenMixin(intermediateNode)) {
+      // warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+      throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+    }
+    const childIntermediateNode = intermediateNode.children[position /* instanceToCompIndexMap[position] */];
+    return childIntermediateNode;
+  });
 }
