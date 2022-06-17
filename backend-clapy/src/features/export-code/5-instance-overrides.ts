@@ -11,6 +11,7 @@ import { CompContext, InstanceContext, JsxOneOrMore, SwapAst, SwapContext } from
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   assertChildrenMixin,
+  assertInstance,
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
@@ -83,7 +84,12 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
         const componentContext = getOrGenComponent(moduleContext, node, parentNode, false, isOriginalInstance);
 
-        const nodeOfComp2 = isOriginalInstance ? nodeOfComp : node;
+        const nodeOfComp2 = !isOriginalInstance
+          ? node
+          : node.foundIntermediateSwap
+          ? (context.intermediateNodes[context.intermediateNodes.length - 1] as InstanceNode2)
+          : nodeOfComp;
+        assertInstance(nodeOfComp2);
 
         const instanceNode = node;
         const instanceContext: InstanceContext = {
@@ -289,7 +295,7 @@ function recurseOnChildren(
     warnNode(node, 'BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
     throw new Error('BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
   }
-  const nextCompNode = context.intermediateNodes[1];
+  const nextCompNode = intermediateNodes[1];
   if (!nextCompNode) {
     throw new Error(`BUG [recurseOnChildren] nextNode is undefined.`);
   }
@@ -312,13 +318,38 @@ function recurseOnChildren(
       childIntermediateInstanceNodeOfComps = [];
       childIntermediateComponentContexts = [intermediateComponentContexts[0]];
       swapContext = {
-        intermediateNodes: toChildrenAtPosition(intermediateNodes.slice(1), i),
+        intermediateNodes: mapToChildrenAtPosition(intermediateNodes.slice(1), i),
         intermediateInstanceNodeOfComps: intermediateInstanceNodeOfComps,
         intermediateComponentContexts: intermediateComponentContexts.slice(1),
       };
     } else {
       // Replace intermediate nodes with the child at the same location:
-      childIntermediateNodes = toChildrenAtPosition(intermediateNodes, i);
+      childIntermediateNodes = mapToChildrenAtPosition(intermediateNodes, i);
+      // If the node is a swap in an intermediate component, we need to adjust the intermediate nodes and related data, so that style override props are passed to the swap instance directly, not going through the node receiving the swap.
+      let foundSwap = -1;
+      for (let i = 1; i < childIntermediateNodes.length; i++) {
+        const prevIntermediateNode = childIntermediateNodes[i - 1];
+        if (!prevIntermediateNode) {
+          throw new Error(`BUG [recurseOnChildren] prevIntermediateNode is undefined.`);
+        }
+
+        const nextIntermediateNode = childIntermediateNodes[i];
+        if (!nextIntermediateNode) {
+          throw new Error(`BUG [recurseOnChildren] nextIntermediateNode is undefined.`);
+        }
+
+        const isOriginalInstance = checkIsOriginalInstance(prevIntermediateNode, nextIntermediateNode);
+        if (!isOriginalInstance) {
+          foundSwap = i;
+          break;
+        }
+      }
+      if (foundSwap !== -1) {
+        childIntermediateNodes = childIntermediateNodes.slice(0, foundSwap);
+        childIntermediateInstanceNodeOfComps = childIntermediateInstanceNodeOfComps.slice(0, foundSwap - 1);
+        childIntermediateComponentContexts = childIntermediateComponentContexts.slice(0, foundSwap);
+        child.foundIntermediateSwap = true;
+      }
     }
 
     const childNodeOfComp = nodeOfComp.children[instanceToCompIndexMap[i]];
@@ -445,8 +476,9 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
   }
 }
 
-// TODO Card, swap prop sur SampleButtonAlone : n'utilise pas la valeur reçue en prop de Card.
-// TODO SampleButtonAlone a une `classes` ellipseInit qui ne devrait pas être ici (mais dans l'ellipse ?)
+// TODO Certains boutons et une ellipse ont la mauvaise couleur
+// TODO flex: 1; (et peut-être d'autres règles ?) ne s'appliquent pas à certains boutons
+// TODO texte pas tjrs bien caché
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
   if (!swapContext) {
@@ -639,7 +671,7 @@ function mapTextOverrideToParentInstanceProp(
   }
 }
 
-function toChildrenAtPosition(intermediateNodes: InstanceContext['intermediateNodes'], position: number) {
+function mapToChildrenAtPosition(intermediateNodes: InstanceContext['intermediateNodes'], position: number) {
   return intermediateNodes.map(intermediateNode => {
     // intermediateNode is undefined if an instance was swapped with another.
     if (!isChildrenMixin(intermediateNode)) {

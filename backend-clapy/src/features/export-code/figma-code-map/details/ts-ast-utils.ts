@@ -260,7 +260,6 @@ export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 |
   }
   const nodeIsInstance = isInstance(node);
   const nextNodeIsInstance = isInstance(nextNode);
-  //
   if (nodeIsInstance !== nextNodeIsInstance) {
     throw new Error(
       `BUG nodeIsInstance: ${nodeIsInstance} but nextNodeIsInstance: ${nextNodeIsInstance}, althought they are supposed to be the same.`,

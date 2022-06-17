@@ -76,6 +76,7 @@ interface GlobalExtender {
   classOverride?: boolean;
   swapName?: string;
   swapOfNode?: InstanceNode2;
+  foundIntermediateSwap?: boolean;
   hideProp?: string;
   textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
@@ -193,6 +194,13 @@ export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is Instance
   return isInst;
 }
 
+// Assertion in control flow analysis
+export function assertInstance(node: BaseNode2 | SceneNode2 | Nil): asserts node is InstanceNode2 {
+  if (!isInstance(node)) {
+    throw new Error(node ? `node ${(node as BaseNode2).name} is not an Instance` : `node is nil`);
+  }
+}
+
 export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
   // For cases like fill with default values where we need to recognize what was originally an instance, even if we changed the type, e.g. to SVG.
   return !!(node as InstanceNode2).mainComponent || node?.type === 'INSTANCE';
@@ -212,7 +220,7 @@ export function isChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): node is
 
 // Assertion in control flow analysis
 export function assertChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): asserts node is ChildrenMixin2 {
-  if (!(node as ChildrenMixin2)?.children) {
+  if (!isChildrenMixin(node)) {
     throw new Error(node ? `node ${(node as BaseNode2).name} is not a ChildrenMixin` : `node is nil`);
   }
 }
