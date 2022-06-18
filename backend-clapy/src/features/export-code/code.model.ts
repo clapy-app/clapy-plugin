@@ -111,7 +111,6 @@ export interface BaseFigmaOverride<T> {
 // This interface can be cleaned up after we ensured we don't need some of the nodes.
 // They are useful for debugging, though.
 export interface FigmaOverride<T> extends BaseFigmaOverride<T> {
-  isRootNodeOverride: boolean;
   intermediateNode: SceneNode2;
   propName: string;
 }

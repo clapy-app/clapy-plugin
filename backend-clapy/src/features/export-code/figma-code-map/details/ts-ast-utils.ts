@@ -223,7 +223,7 @@ export function createComponentUsageWithAttributes(
   let rootClassOverride: StyleOverride | undefined;
   let otherClassOverrides: StyleOverride[] = [];
   for (const ov of classOverridesArr) {
-    if (ov.isRootNodeOverride) {
+    if (ov.propName === 'root') {
       rootClassOverride = ov;
     } else {
       otherClassOverrides.push(ov);

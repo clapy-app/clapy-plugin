@@ -398,10 +398,6 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
     warnOrThrow(`Applying addClassOverride on node ${node.name}, but node.className is undefined.`);
     return;
   }
-  if (!nodeOfComp.className) {
-    warnOrThrow(`Applying addClassOverride on node ${node.name}, but nodeOfComp.className is undefined.`);
-    return;
-  }
 
   // intermediateNodes[0] === node
   const overrideValue = intermediateNodes[0]?.className;
@@ -439,7 +435,6 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
 
     if (!instanceStyleOverrides[indexBy]) {
       instanceStyleOverrides[indexBy] = {
-        isRootNodeOverride: nodeOfComp.className === 'root',
         intermediateNode,
         propName,
       };
@@ -476,8 +471,6 @@ function addClassOverride(context: InstanceContext, node: SceneNode2) {
   }
 }
 
-// TODO Certains boutons et une ellipse ont la mauvaise couleur
-// TODO flex: 1; (et peut-être d'autres règles ?) ne s'appliquent pas à certains boutons
 // TODO texte pas tjrs bien caché
 function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
@@ -522,7 +515,6 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
 
     if (!instanceSwaps[indexBy]) {
       instanceSwaps[indexBy] = {
-        isRootNodeOverride: false,
         intermediateNode,
         propName,
       };
