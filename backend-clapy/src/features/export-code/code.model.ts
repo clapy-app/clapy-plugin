@@ -2,7 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
-import { Dict, Dict3, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
+import { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
 import {
   ComponentNode2,
   FlexNode,
@@ -129,7 +129,7 @@ export interface OverrideProps {
 
 export interface CompContext {
   // Lists the override values for the nodes inside the instance. Will be used to pass the value to the corresponding prop when writing the code (props on instance). It is a dictionary to deduplicate by target node ID. (same as deduplicating by class, but safer to identify bugs when developing)
-  instanceStyleOverrides: Dict3<InstanceNodeId, StyleOverride>;
+  instanceStyleOverrides: Dict<StyleOverride>;
   instanceHidings: Dict<HidingValue>;
   instanceSwaps: Dict<SwapOverride>;
   instanceTextOverrides: Dict<TextOValue>;
