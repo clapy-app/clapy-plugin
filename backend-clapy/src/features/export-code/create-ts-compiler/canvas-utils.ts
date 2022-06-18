@@ -68,6 +68,7 @@ type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Frame
 
 interface GlobalExtender {
   nodeOfComp?: SceneNode2;
+  isRootInComponent?: boolean;
   maskedBy?: Masker;
   skip?: boolean;
   styles?: Dict<DeclarationPlain>;
@@ -78,6 +79,7 @@ interface GlobalExtender {
   swapOfNode?: InstanceNode2;
   foundIntermediateSwap?: boolean;
   hideProp?: string;
+  hideOverrideValue?: boolean;
   textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
   autoWidth?: boolean;

@@ -4,6 +4,7 @@ import ts, { Statement } from 'typescript';
 
 import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { flags } from '../../env-and-config/app-config';
+import { warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { figmaToAstRec } from './4-gen-node';
 import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model';
@@ -145,6 +146,7 @@ function createModuleContextForNode(
     isRootComponent,
     isComp,
   );
+  node.isRootInComponent = true;
 
   return moduleContext;
 }
@@ -241,6 +243,9 @@ function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, pare
     isRootNode: moduleContext.isRootComponent,
     isRootInComponent: true,
   };
+  if (!root.isRootInComponent) {
+    warnOrThrow('BUG missing isRootInComponent flag?');
+  }
   const tsx = figmaToAstRec(nodeContext, root);
   const cssAst = mkStylesheetCss(moduleContext.cssRules);
   return [tsx, cssAst] as const;

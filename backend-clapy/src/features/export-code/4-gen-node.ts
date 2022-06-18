@@ -38,6 +38,7 @@ import {
   createClassAttrForNode,
   createComponentUsageWithAttributes,
   createTextAst,
+  fillIsRootInComponent,
   genComponentImportName,
   getOrCreateCompContext,
   getOrGenClassName,
@@ -59,6 +60,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
     }
 
     const { parentNode, moduleContext, isRootInComponent } = context;
+    fillIsRootInComponent(moduleContext, node);
 
     let styles: Dict<DeclarationPlain> = {};
 

@@ -39,6 +39,7 @@ import {
   checkIsOriginalInstance,
   createComponentUsageWithAttributes,
   createTextAst,
+  fillIsRootInComponent,
   getOrCreateCompContext,
   getOrGenClassName,
   getOrGenHideProp,
@@ -53,6 +54,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
   try {
     const { parentNode, moduleContext, componentContext, nodeOfComp, isRootInComponent } = context;
     node.nodeOfComp = nodeOfComp;
+    fillIsRootInComponent(moduleContext, node);
 
     let styles: Dict<DeclarationPlain> = {};
 
@@ -60,7 +62,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       // It happens, we stop here. We may just need to ensure the instance node has a hideProp true on it.
       return;
     }
-    addHideNode(context, node);
+    addHideOverride(context, node);
     if (!node.visible) {
       return;
     }
@@ -179,7 +181,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           const className = getOrGenClassName(moduleContext, node);
           getOrGenClassName(componentContext, nodeOfComp);
           addCssRule(context, className, styleDeclarations);
-          addClassOverride(context, node);
+          addStyleOverride(context, node);
         }
       } else {
         styles = postMapStyles(context, node, styles);
@@ -210,7 +212,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         getOrGenClassName(componentContext, nodeOfComp);
         updateCssRuleClassName(context, cssRule, className);
         cssRule.block.children.push(...styleDeclarations);
-        addClassOverride(context, node);
+        addStyleOverride(context, node);
       } else {
         removeCssRule(context, cssRule, node);
       }
@@ -240,7 +242,7 @@ function addNodeStyles(
     const className = getOrGenClassName(moduleContext, node);
     getOrGenClassName(componentContext, nodeOfComp);
     addCssRule(context, className, styleDeclarations);
-    addClassOverride(context, node);
+    addStyleOverride(context, node);
   }
 }
 
@@ -403,7 +405,7 @@ function mapToChildrenAtPosition(intermediateNodes: InstanceContext['intermediat
   });
 }
 
-function addClassOverride(context: InstanceContext, node: SceneNode2) {
+function addStyleOverride(context: InstanceContext, node: SceneNode2) {
   const { nodeOfComp, intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
 
   // intermediateNodes[0] === node
@@ -465,10 +467,23 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
   );
 }
 
-function addHideNode(context: InstanceContext, node: SceneNode2) {
-  const { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
+function addHideOverride(context: InstanceContext, node: SceneNode2) {
+  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
+  const lastIntermediateNode = intermediateNodes[intermediateNodes.length - 1];
+
+  if (lastIntermediateNode?.isRootInComponent) {
+    intermediateNodes = intermediateNodes.slice(0, -1);
+  }
+
+  if (!(intermediateNodes.length >= 2) || intermediateNodes[0]?.visible === intermediateNodes[1]?.visible) {
+    return;
+  }
 
   const overrideValue = !node.visible;
+  if (!lastIntermediateNode) {
+    throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
+  }
+  lastIntermediateNode.hideOverrideValue = overrideValue;
 
   addOverrides(
     intermediateNodes,
@@ -576,35 +591,35 @@ function addOverrides(
         propName,
       };
     }
-    const swapOverride = overrideField[indexBy];
+    const overrideEntry = overrideField[indexBy];
     if (i === 1) {
-      if (swapOverride.overrideValue && swapOverride.overrideValue !== overrideValue) {
+      if (overrideEntry.overrideValue != null && overrideEntry.overrideValue !== overrideValue) {
         warnOrThrow(
           `BUG [addOverrides3] The instance ${
             parentInstanceNode.name
           } already has an overrideValue set to override the node ${
             indexByNode.name
-          }, but the value is different. Existing value: ${swapOverride.overrideValue}, new value: ${
+          }, but the value is different. Existing value: ${overrideEntry.overrideValue}, new value: ${
             typeof overrideValue === 'string' || typeof overrideValue === 'boolean'
               ? overrideValue
               : printStandalone(overrideValue)
           }`,
         );
       }
-      swapOverride.overrideValue = overrideValue;
+      overrideEntry.overrideValue = overrideValue;
     } else {
       let parentOverrideValue = intermediateNodes[i - 1]?.[nodeFieldForOverrideValue];
-      if (!parentOverrideValue) {
+      if (parentOverrideValue == null) {
         warnOrThrow(
           `BUG [addOverrides4] The instance ${intermediateNodes[i - 1]?.name} has no overrideValue (${overrideValue}).`,
         );
       }
-      if (swapOverride.propValue && swapOverride.propValue !== parentOverrideValue) {
+      if (overrideEntry.propValue && overrideEntry.propValue !== parentOverrideValue) {
         warnOrThrow(
-          `BUG [addOverrides5] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${swapOverride.propValue}, new value: ${parentOverrideValue}`,
+          `BUG [addOverrides5] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${overrideEntry.propValue}, new value: ${parentOverrideValue}`,
         );
       }
-      swapOverride.propValue = parentOverrideValue;
+      overrideEntry.propValue = parentOverrideValue;
     }
   }
 }

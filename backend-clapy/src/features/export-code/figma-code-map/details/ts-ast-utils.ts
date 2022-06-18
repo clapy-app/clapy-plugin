@@ -4,6 +4,7 @@ import ts, { Statement } from 'typescript';
 import { mapTagStyles, mapTextStyles, postMapStyles } from '../../6-figma-to-code-map';
 import { flags } from '../../../../env-and-config/app-config';
 import { env } from '../../../../env-and-config/env';
+import { warnOrThrow } from '../../../../utils';
 import { Dict, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
 import {
   BaseStyleOverride,
@@ -59,6 +60,11 @@ export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: Sc
     return;
   }
   cssRules.splice(i, 1);
+}
+
+export function fillIsRootInComponent(moduleContext: ModuleContext, node: SceneNode2) {
+  // It may be equivalent to `isComponent(node)`, but for safety, I keep the legacy test. We can refactor later, and test when the app is stable.
+  node.isRootInComponent = node === moduleContext.node;
 }
 
 export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode2, defaultClassName = 'label'): string {
@@ -464,9 +470,7 @@ export function mkPropInterface(moduleContext: ModuleContext) {
   );
 }
 
-function jsxOneOrMoreToJsxExpression(
-  tsx: JsxOneOrMore | ts.ConditionalExpression | ts.ParenthesizedExpression | undefined,
-) {
+function jsxOneOrMoreToJsxExpression(tsx: JsxOneOrMore | ts.Expression | undefined) {
   if (tsx) {
     if (Array.isArray(tsx)) {
       return mkFragment(tsx);
@@ -578,8 +582,13 @@ export function mkCompFunction(
   );
 }
 
-function mkWrapExpressionFragment(node: JsxOneOrMore | ts.ParenthesizedExpression | ts.ConditionalExpression) {
-  if (!Array.isArray(node) && (ts.isParenthesizedExpression(node) || ts.isConditionalExpression(node))) {
+function mkWrapExpressionFragment(
+  node: JsxOneOrMore | ts.ParenthesizedExpression | ts.ConditionalExpression | ts.BinaryExpression,
+) {
+  if (
+    !Array.isArray(node) &&
+    (ts.isParenthesizedExpression(node) || ts.isConditionalExpression(node) || ts.isBinaryExpression(node))
+  ) {
     return factory.createJsxExpression(undefined, node);
   }
   return node;
@@ -666,20 +675,7 @@ export function mkSwapInstanceAndHideWrapper(
       ast,
     );
   }
-  if (node.hideProp) {
-    ast = factory.createBinaryExpression(
-      factory.createPrefixUnaryExpression(
-        ts.SyntaxKind.ExclamationToken,
-        factory.createPropertyAccessChain(
-          factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
-          factory.createToken(ts.SyntaxKind.QuestionDotToken),
-          factory.createIdentifier(node.hideProp),
-        ),
-      ),
-      factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-      ast,
-    );
-  }
+  ast = mkWrapHideExprFragment(ast, node);
   if (node.swapName || node.hideProp) {
     ast2 = factory.createJsxExpression(undefined, ast);
   }
@@ -711,25 +707,33 @@ function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore, node: SceneNode2) {
   );
 }
 
-function mkWrapHideExprFragment(ast: JsxOneOrMore | ts.ConditionalExpression, node: SceneNode2) {
+function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression>(ast: T, node: SceneNode2) {
   if (!node.hideProp) {
     return ast;
   }
-  return factory.createJsxExpression(
-    undefined,
-    factory.createBinaryExpression(
-      factory.createPrefixUnaryExpression(
-        ts.SyntaxKind.ExclamationToken,
-        factory.createPropertyAccessChain(
-          factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
-          factory.createToken(ts.SyntaxKind.QuestionDotToken),
-          factory.createIdentifier(node.hideProp),
-        ),
-      ),
-      factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-      jsxOneOrMoreToJsxExpression(ast),
-    ),
+  if (node.hideOverrideValue == null) {
+    warnOrThrow(`Node ${node.name} is missing hideOverrideValue although it has a hideProp.`);
+    node.hideOverrideValue = true;
+  }
+  const hidePropVar = factory.createPropertyAccessChain(
+    factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
+    factory.createToken(ts.SyntaxKind.QuestionDotToken),
+    factory.createIdentifier(node.hideProp),
   );
+  const checkHideExpr =
+    node.hideOverrideValue === false
+      ? factory.createBinaryExpression(
+          hidePropVar,
+          factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+          factory.createFalse(),
+        )
+      : factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken, hidePropVar);
+  const ast2 = factory.createBinaryExpression(
+    checkHideExpr,
+    factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    jsxOneOrMoreToJsxExpression(ast),
+  );
+  return ast2;
 }
 
 export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
