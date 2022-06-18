@@ -120,8 +120,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           // }
           // And in the parent component:
           // ... <Comp hide={{ subCompIcon: true }} />
-          const { instanceSwaps, instanceHidings, instanceTextOverrides } = compContext;
-          mapHideToParentInstanceProp(context, instanceHidings);
+          const { instanceTextOverrides } = compContext;
           mapTextOverrideToParentInstanceProp(context, instanceTextOverrides);
         } else {
           const compContext = getOrCreateCompContext(node);
@@ -467,65 +466,19 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
 }
 
 function addHideNode(context: InstanceContext, node: SceneNode2) {
-  const { instanceNode, componentContext, nodeOfComp } = context;
-  const { instanceHidings } = getOrCreateCompContext(instanceNode);
-  const hideName = getOrGenHideProp(componentContext, nodeOfComp, node.name, node.visible);
-  if (!hideName) {
-    throw new Error(`Component node ${nodeOfComp.name} has no hideName`);
-  }
-  if (!instanceHidings[hideName]) {
-    instanceHidings[hideName] = !node.visible;
-  }
-  // See notes in mapHideToParentInstanceProp to understand what this function is.
-  if (!node.visible && instanceNode.mapHidesToProps) {
-    instanceNode.mapHidesToProps();
-  }
-}
+  const { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
 
-/**
- * Ensure the sub-instance we met apply hiding on the selected nodes (previous instance check) => sub-instance context
- * AND that the parent instance exposes those hiding capabilities => parent instance context
- */
-function mapHideToParentInstanceProp(
-  parentContext: InstanceContext,
-  childCompInstanceHidings: CompContext['instanceHidings'],
-) {
-  if (childCompInstanceHidings) {
-    for (const [hideBaseName, hideValue] of Object.entries(childCompInstanceHidings)) {
-      const { instanceNode, componentContext, nodeOfComp } = parentContext;
+  const overrideValue = !node.visible;
 
-      // Special hack. When checking a sub-instance for hide overrides, we may find nothing to hide, because that instances shows the element.
-      // But an intermediate component (which this sub-instance depends on) may hide it in Figma.
-      // When addHideNode finds, later, that the intermediate component actually hides the element, it means we need to get back to the mapping here and bind "hide" to a prop, to ensure it will remain visible with the bigger component.
-      // The function triggering the mapping, attached to the node, is dirty, but makes this retrospective possible.
-      // The notion of default value is mising for now. It could be either hideValue or the value from addHideNode() when it calls mapHidesToProps().
-      nodeOfComp.mapHidesToProps = () => {
-        const { instanceHidings: currentCompInstanceHidings } = getOrCreateCompContext(nodeOfComp);
-        let hideName: string;
-        if (currentCompInstanceHidings[hideBaseName]) {
-          if (typeof currentCompInstanceHidings[hideBaseName] !== 'string') {
-            warnOrThrow(
-              '[mapHideToParentInstanceProp] existing currentCompInstanceHidings[hideBaseName] is not a string',
-            );
-            return;
-          }
-          hideName = currentCompInstanceHidings[hideBaseName] as string;
-        } else {
-          hideName = getOrGenHideProp(componentContext, undefined, hideBaseName);
-          currentCompInstanceHidings[hideBaseName] = hideName;
-        }
-
-        // Tell the parent that the grandchild has something to hide for this instance
-        const { instanceHidings: parentCompInstanceHidings } = getOrCreateCompContext(instanceNode);
-        if (!parentCompInstanceHidings[hideName]) {
-          parentCompInstanceHidings[hideName] = hideValue;
-        }
-      };
-      if (hideValue) {
-        nodeOfComp.mapHidesToProps();
-      }
-    }
-  }
+  addOverrides(
+    intermediateNodes,
+    intermediateComponentContexts,
+    intermediateInstanceNodeOfComps,
+    overrideValue,
+    (componentContext, intermediateNode) => getOrGenHideProp(componentContext, intermediateNode),
+    'instanceHidings',
+    'hideProp',
+  );
 }
 
 function addTextOverride(context: InstanceContext, node: SceneNode2, text: JsxOneOrMore) {
@@ -588,15 +541,15 @@ function addOverrides(
   intermediateNodes: InstanceContext['intermediateNodes'],
   intermediateComponentContexts: InstanceContext['intermediateComponentContexts'],
   intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'],
-  overrideValue: SwapAst | string,
+  overrideValue: SwapAst | string | boolean,
   genAndRegisterPropName: (componentContext: ModuleContext, intermediateNode: SceneNode2) => string,
-  compContextField: 'instanceStyleOverrides' | 'instanceSwaps',
-  nodeFieldForOverrideValue: 'className' | 'swapName' /* keyof SceneNode2 */,
+  compContextField: 'instanceStyleOverrides' | 'instanceSwaps' | 'instanceHidings',
+  nodeFieldForOverrideValue: 'className' | 'swapName' | 'hideProp',
 ) {
   for (let i = 1; i < intermediateNodes.length; i++) {
     const intermediateNode = intermediateNodes[i];
     if (!intermediateNode) {
-      throw new Error(`BUG [addSwapInstance0] intermediateNode is nil`);
+      throw new Error(`BUG [addOverrides1] intermediateNode is nil`);
     }
     const componentContext = intermediateComponentContexts[i];
 
@@ -613,7 +566,7 @@ function addOverrides(
 
     if (overrideField[indexBy] && overrideField[indexBy].propName !== propName) {
       warnOrThrow(
-        `BUG [addSwapInstance1] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${overrideField[indexBy].propName}, new one: ${propName}`,
+        `BUG [addOverrides2] Trying to assign a different propName on node ${indexByNode.name}. Existing propName: ${overrideField[indexBy].propName}, new one: ${propName}`,
       );
     }
 
@@ -627,12 +580,14 @@ function addOverrides(
     if (i === 1) {
       if (swapOverride.overrideValue && swapOverride.overrideValue !== overrideValue) {
         warnOrThrow(
-          `BUG [addSwapInstance2] The instance ${
+          `BUG [addOverrides3] The instance ${
             parentInstanceNode.name
           } already has an overrideValue set to override the node ${
             indexByNode.name
           }, but the value is different. Existing value: ${swapOverride.overrideValue}, new value: ${
-            typeof overrideValue === 'string' ? overrideValue : printStandalone(overrideValue)
+            typeof overrideValue === 'string' || typeof overrideValue === 'boolean'
+              ? overrideValue
+              : printStandalone(overrideValue)
           }`,
         );
       }
@@ -641,14 +596,12 @@ function addOverrides(
       let parentOverrideValue = intermediateNodes[i - 1]?.[nodeFieldForOverrideValue];
       if (!parentOverrideValue) {
         warnOrThrow(
-          `BUG [addClassOverride2] The instance ${
-            intermediateNodes[i - 1]?.name
-          } has no overrideValue (${overrideValue}).`,
+          `BUG [addOverrides4] The instance ${intermediateNodes[i - 1]?.name} has no overrideValue (${overrideValue}).`,
         );
       }
       if (swapOverride.propValue && swapOverride.propValue !== parentOverrideValue) {
         warnOrThrow(
-          `BUG [addSwapInstance3] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${swapOverride.propValue}, new value: ${parentOverrideValue}`,
+          `BUG [addOverrides5] The instance ${parentInstanceNode.name} already has a propValue set to override the node ${indexByNode.name}, but the value is different. Existing value: ${swapOverride.propValue}, new value: ${parentOverrideValue}`,
         );
       }
       swapOverride.propValue = parentOverrideValue;

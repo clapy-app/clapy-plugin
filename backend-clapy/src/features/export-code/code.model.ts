@@ -99,9 +99,7 @@ export interface NodeContext {
   nodeOfComp?: SceneNode2;
 }
 
-export type HidingValue = boolean | string;
 export type TextOValue = JsxOneOrMore | string | false;
-type InstanceNodeId = string;
 
 export interface BaseFigmaOverride<T> {
   overrideValue?: T;
@@ -120,7 +118,10 @@ export type BaseStyleOverride = BaseFigmaOverride<string>;
 
 export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
 export type SwapOverride = FigmaOverride<SwapAst>;
-export type BaseSwapOverride = BaseFigmaOverride<string>;
+export type BaseSwapOverride = BaseFigmaOverride<SwapAst>;
+
+export type HideOverride = FigmaOverride<boolean>;
+export type BaseHideOverride = BaseFigmaOverride<boolean>;
 
 export interface OverrideProps {
   instanceNodeOfComp: SceneNode2; // For debug only - to remove later?
@@ -130,7 +131,7 @@ export interface OverrideProps {
 export interface CompContext {
   // Lists the override values for the nodes inside the instance. Will be used to pass the value to the corresponding prop when writing the code (props on instance). It is a dictionary to deduplicate by target node ID. (same as deduplicating by class, but safer to identify bugs when developing)
   instanceStyleOverrides: Dict<StyleOverride>;
-  instanceHidings: Dict<HidingValue>;
+  instanceHidings: Dict<HideOverride>;
   instanceSwaps: Dict<SwapOverride>;
   instanceTextOverrides: Dict<TextOValue>;
   mappingDone?: boolean;

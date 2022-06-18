@@ -897,30 +897,49 @@ export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
   //      btnTxt: props.hide?.btnTxt != null ? props.hide?.btnTxt : [defaultValue, true or false],
   //    }}
   // Even better (later?), we could add the notion of default values in the component props directly.
-  const entries = Object.entries(hidings).filter(([_, hideValue]) => hideValue !== false);
+  const entries = Object.values(hidings);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('hide'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, hideValue]) => {
-          if (hideValue === false) {
-            throw new Error('[mkHidingsAttribute] false value should have been filtered before.');
+        entries.map(overrideEntry => {
+          const { propName, overrideValue, propValue } = overrideEntry;
+          if (overrideValue == null && propValue == null) {
+            throw new Error(
+              `[mkHidingsAttribute] BUG Missing both overrideValue and propValue when writing overrides for node ${
+                (overrideEntry as FigmaOverride<any>).intermediateNode?.name
+              }, prop ${(overrideEntry as FigmaOverride<any>).propName}.`,
+            );
+            // overrideEntry may not be a FigmaOverride, but the base version only, so propName and intermediateNode are not guaranteed to exist. But if they do, they bring useful information for the error message.
           }
-          return factory.createPropertyAssignment(
-            factory.createIdentifier(name),
-            hideValue === true
-              ? factory.createTrue()
-              : factory.createPropertyAccessChain(
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('props'),
-                    factory.createIdentifier('hide'),
-                  ),
-                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                  factory.createIdentifier(hideValue),
+
+          const propExpr = propValue
+            ? factory.createPropertyAccessChain(
+                factory.createPropertyAccessExpression(
+                  factory.createIdentifier('props'),
+                  factory.createIdentifier('hide'),
                 ),
-          );
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier(propValue),
+              )
+            : undefined;
+
+          const overrideValueAst =
+            overrideValue == null ? undefined : overrideValue ? factory.createTrue() : factory.createFalse();
+
+          const ast = !propValue
+            ? overrideValueAst!
+            : overrideValue == null
+            ? propExpr!
+            : factory.createBinaryExpression(
+                propExpr!,
+                factory.createToken(ts.SyntaxKind.BarBarToken),
+                overrideValueAst!,
+              );
+
+          return factory.createPropertyAssignment(factory.createIdentifier(propName), ast);
         }),
         true,
       ),
