@@ -4,11 +4,17 @@ import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (!node.effects?.length) return;
+  if (!node.effects?.length /* || (!node.visibleFills?.length && !node.visibleStrokes?.length) */) {
+    resetStyleIfOverriding(context, node, styles, 'text-shadow');
+    resetStyleIfOverriding(context, node, styles, 'box-shadow');
+    resetStyleIfOverriding(context, node, styles, 'filter');
+    resetStyleIfOverriding(context, node, styles, 'backdrop-filter');
+    return;
+  }
   const nodeIsText = isText(node);
 
   const textShadowStyles: string[] = [];
@@ -83,15 +89,23 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
 
   if (textShadowStyles.length) {
     addStyle(context, node, styles, 'text-shadow', textShadowStyles.join(', '));
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'text-shadow');
   }
   if (boxShadowStyles.length) {
     addStyle(context, node, styles, 'box-shadow', boxShadowStyles.join(', '));
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'box-shadow');
   }
   if (filters.length) {
     addStyle(context, node, styles, 'filter', filters.join(' '));
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'filter');
   }
   if (backdropFilters.length) {
     addStyle(context, node, styles, 'backdrop-filter', backdropFilters.join(' '));
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'backdrop-filter');
   }
 }
 

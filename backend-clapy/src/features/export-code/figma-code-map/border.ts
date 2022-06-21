@@ -2,17 +2,38 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { isGroup, isLine, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
+import {
+  BooleanOperationNode2,
+  GroupNode2,
+  isGroup,
+  isLine,
+  isText,
+  isVector,
+  ValidNode,
+  VectorNodeDerived,
+} from '../create-ts-compiler/canvas-utils';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
 
+export function prepareBorders(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
+  if (doesNotHaveBorders(node)) {
+    // Ignore borders for Vectors. They are already included in the SVG.
+    return;
+  }
+  node.visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
+}
+
+function doesNotHaveBorders(node: ValidNode): node is VectorNodeDerived | GroupNode2 | BooleanOperationNode2 {
+  return isVector(node) || isGroup(node);
+}
+
 export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
-  if (isVector(node) || isGroup(node)) {
+  if (doesNotHaveBorders(node)) {
     // Ignore borders for Vectors. They are already included in the SVG.
     return;
   }
 
-  const visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
+  const visibleStrokes = node.visibleStrokes!;
 
   if (isText(node)) {
     // stroke has a different meaning on text. We will handle it later.
@@ -138,6 +159,19 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
     } else {
       warnNode(node, 'TODO Unsupported non solid border');
     }
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'outline');
+    resetStyleIfOverriding(context, node, styles, 'outline-offset');
+    resetStyleIfOverriding(context, node, styles, 'border');
+    resetStyleIfOverriding(context, node, styles, 'border-top');
+    resetStyleIfOverriding(context, node, styles, 'border-right');
+    resetStyleIfOverriding(context, node, styles, 'border-bottom');
+    resetStyleIfOverriding(context, node, styles, 'border-left');
+    resetStyleIfOverriding(context, node, styles, 'margin');
+    resetStyleIfOverriding(context, node, styles, 'margin-top');
+    resetStyleIfOverriding(context, node, styles, 'margin-right');
+    resetStyleIfOverriding(context, node, styles, 'margin-bottom');
+    resetStyleIfOverriding(context, node, styles, 'margin-left');
   }
 
   return;

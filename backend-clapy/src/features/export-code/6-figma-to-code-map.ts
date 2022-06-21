@@ -7,8 +7,8 @@ import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
 import { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
 import { addStyle } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
-import { backgroundFigmaToCode } from './figma-code-map/background';
-import { borderFigmaToCode } from './figma-code-map/border';
+import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background';
+import { borderFigmaToCode, prepareBorders } from './figma-code-map/border';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
 import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
 import { colorFigmaToCode } from './figma-code-map/color';
@@ -86,6 +86,8 @@ function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict
 
 // Styles that are the responsibility of the component, typically the look and feel.
 function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  prepareBorders(context, node, styles);
+  prepareBackgrounds(context, node, styles);
   borderFigmaToCode(context, node, styles);
   borderRadiusFigmaToCode(context, node, styles);
   backgroundFigmaToCode(context, node, styles);

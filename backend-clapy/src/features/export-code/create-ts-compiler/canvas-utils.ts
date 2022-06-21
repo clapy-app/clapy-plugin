@@ -89,6 +89,8 @@ interface GlobalExtender {
   mapTextOverridesToProps?: () => void;
   /** access it using getOrCreateCompContext() to ensure it is initialized */
   _context?: CompContext;
+  visibleStrokes?: FrameNode2['strokes'];
+  visibleFills?: Paint[];
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
