@@ -118,10 +118,10 @@ export type BaseStyleOverride = BaseFigmaOverride<string>;
 
 export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
 export type SwapOverride = FigmaOverride<SwapAst>;
-export type BaseSwapOverride = BaseFigmaOverride<SwapAst>;
 
 export type HideOverride = FigmaOverride<boolean>;
-export type BaseHideOverride = BaseFigmaOverride<boolean>;
+
+export type TextOverride = FigmaOverride<JsxOneOrMore>;
 
 export interface OverrideProps {
   instanceNodeOfComp: SceneNode2; // For debug only - to remove later?
@@ -133,8 +133,7 @@ export interface CompContext {
   instanceStyleOverrides: Dict<StyleOverride>;
   instanceHidings: Dict<HideOverride>;
   instanceSwaps: Dict<SwapOverride>;
-  instanceTextOverrides: Dict<TextOValue>;
-  mappingDone?: boolean;
+  instanceTextOverrides: Dict<TextOverride>;
 }
 
 export interface IntermediateComponent {

@@ -99,12 +99,7 @@ export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNo
   return swapName;
 }
 
-export function getOrGenHideProp(
-  componentContext: ModuleContext,
-  node?: SceneNode2,
-  hideBaseName?: string,
-  skipPersist?: boolean,
-) {
+export function getOrGenHideProp(componentContext: ModuleContext, node?: SceneNode2, hideBaseName?: string) {
   if (node?.hideProp) {
     return node.hideProp;
   }
@@ -113,8 +108,9 @@ export function getOrGenHideProp(
       `Either a node with a name or a hideBaseName is required to generate a hideProp on module ${componentContext.compName}`,
     );
   }
-  const hideProp = genUniqueName(componentContext.hideProps, node?.name || hideBaseName!);
-  if (node && !skipPersist) {
+  const baseName = node?.name || hideBaseName!;
+  const hideProp = genUniqueName(componentContext.hideProps, baseName);
+  if (node) {
     node.hideProp = hideProp;
   }
   return hideProp;
@@ -133,7 +129,8 @@ export function getOrGenTextOverrideProp(
       `Either a node with a name or a textOverrideBaseName is required to generate a textOverrideProp on module ${componentContext.compName}`,
     );
   }
-  const textOverrideProp = genUniqueName(componentContext.textOverrideProps, node?.name || textOverrideBaseName!);
+  const baseName = node?.name || textOverrideBaseName!;
+  const textOverrideProp = genUniqueName(componentContext.textOverrideProps, baseName);
   if (node) {
     node.textOverrideProp = textOverrideProp;
   }
@@ -850,6 +847,7 @@ export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOver
   }
 }
 
+// Those mk* overrides methods can be refactored. They share a common structure.
 export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
   const swapsArr = Object.values(swaps);
   if (!swapsArr.length) return undefined;
@@ -880,11 +878,17 @@ export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
               )
             : undefined;
 
+          const overrideValueAst = overrideValue;
+
           const ast = !propValue
-            ? overrideValue!
+            ? overrideValueAst!
             : !overrideValue
             ? propExpr!
-            : factory.createBinaryExpression(propExpr!, factory.createToken(ts.SyntaxKind.BarBarToken), overrideValue);
+            : factory.createBinaryExpression(
+                propExpr!,
+                factory.createToken(ts.SyntaxKind.BarBarToken),
+                overrideValueAst!,
+              );
 
           return factory.createPropertyAssignment(factory.createIdentifier(propName), ast);
         }),
@@ -953,30 +957,48 @@ export function mkHidingsAttribute(hidings: CompContext['instanceHidings']) {
 
 export function mkTextOverridesAttribute(textOverrides: CompContext['instanceTextOverrides']) {
   // Possible improvements: default values (cf other overrides like hidings)
-  const entries = Object.entries(textOverrides).filter(([_, textOverrideValue]) => textOverrideValue !== false);
+  const entries = Object.values(textOverrides);
   if (!entries.length) return undefined;
   return factory.createJsxAttribute(
     factory.createIdentifier('text'),
     factory.createJsxExpression(
       undefined,
       factory.createObjectLiteralExpression(
-        entries.map(([name, textOverrideValue]) => {
-          if (textOverrideValue === false) {
-            throw new Error('[mkTextOverridesAttribute] false value should have been filtered before.');
+        entries.map(overrideEntry => {
+          const { propName, overrideValue, propValue } = overrideEntry;
+          if (overrideValue == null && propValue == null) {
+            throw new Error(
+              `[mkTextOverridesAttribute] BUG Missing both overrideValue and propValue when writing overrides for node ${
+                (overrideEntry as FigmaOverride<any>).intermediateNode?.name
+              }, prop ${(overrideEntry as FigmaOverride<any>).propName}.`,
+            );
+            // overrideEntry may not be a FigmaOverride, but the base version only, so propName and intermediateNode are not guaranteed to exist. But if they do, they bring useful information for the error message.
           }
-          return factory.createPropertyAssignment(
-            factory.createIdentifier(name),
-            typeof textOverrideValue === 'string'
-              ? factory.createPropertyAccessChain(
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('props'),
-                    factory.createIdentifier('text'),
-                  ),
-                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                  factory.createIdentifier(textOverrideValue),
-                )
-              : jsxOneOrMoreToJsxExpression(textOverrideValue),
-          );
+
+          const propExpr = propValue
+            ? factory.createPropertyAccessChain(
+                factory.createPropertyAccessExpression(
+                  factory.createIdentifier('props'),
+                  factory.createIdentifier('text'),
+                ),
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier(propValue),
+              )
+            : undefined;
+
+          const overrideValueAst = jsxOneOrMoreToJsxExpression(overrideValue);
+
+          const ast = !propValue
+            ? overrideValueAst!
+            : overrideValue == null
+            ? propExpr!
+            : factory.createBinaryExpression(
+                propExpr!,
+                factory.createToken(ts.SyntaxKind.BarBarToken),
+                overrideValueAst!,
+              );
+
+          return factory.createPropertyAssignment(factory.createIdentifier(propName), ast);
         }),
         true,
       ),
