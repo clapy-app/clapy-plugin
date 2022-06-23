@@ -13,7 +13,7 @@ import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui
 
 const { factory } = ts;
 
-export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNode2) {
+export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNode2): MUIConfig | false {
   const {
     moduleContext: { projectContext },
   } = context;

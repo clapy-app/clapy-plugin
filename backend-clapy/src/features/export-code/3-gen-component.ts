@@ -6,7 +6,7 @@ import { isNonEmptyObject, Nil } from '../../common/general-utils';
 import { flags } from '../../env-and-config/app-config';
 import { warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { figmaToAstRec } from './4-gen-node';
+import { genNodeAst, prepareNode } from './4-gen-node';
 import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model';
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
@@ -127,11 +127,6 @@ export function mkModuleContext(
     hideProps: new Set(),
     textOverrideProps: new Set(),
   };
-  if (!skipNodeRendering) {
-    const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
-    moduleContext.generatedTsAst = tsx;
-    moduleContext.generatedCssAst = css;
-  }
   return moduleContext;
 }
 
@@ -161,6 +156,7 @@ function createModuleContextForNode(
     isComp,
   );
   node.isRootInComponent = true;
+  prepareRootNode(moduleContext, node, parent);
 
   return moduleContext;
 }
@@ -173,27 +169,9 @@ interface CompReadyToWrite {
 
 export function generateAllComponents(projectContext: ProjectContext) {
   const { components } = projectContext;
-  const compReadyToWrite: CompReadyToWrite[] = [];
   for (const [_, moduleContext] of components) {
-    // const { node, parent } = moduleContext;
-    //
-    // const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
-    const { generatedTsAst, generatedCssAst } = moduleContext;
-    if (!generatedTsAst) {
-      throw new Error(`generatedTsAst in module ${moduleContext.compName} is undefined.`);
-    }
-    if (!generatedCssAst) {
-      throw new Error(`generatedCssAst in module ${moduleContext.compName} is undefined.`);
-    }
+    const [tsx, css] = genAstFromRootNode(moduleContext);
 
-    compReadyToWrite.push({
-      moduleContext,
-      tsx: generatedTsAst,
-      css: generatedCssAst,
-    });
-  }
-
-  for (const { moduleContext, tsx, css } of compReadyToWrite) {
     const { compDir, compName, imports } = moduleContext;
     const { cssFiles } = projectContext;
 
@@ -253,12 +231,17 @@ export function printFileInProject(moduleContext: ModuleContext) {
   projectContext.tsFiles[path] = result;
 }
 
-export function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
+function prepareRootNode(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
   const nodeContext = createNodeContext(moduleContext, root, parent);
   if (!root.isRootInComponent) {
     warnOrThrow('BUG missing isRootInComponent flag?');
   }
-  const tsx = figmaToAstRec(nodeContext, root);
+  prepareNode(nodeContext, root);
+}
+
+function genAstFromRootNode(moduleContext: ModuleContext) {
+  const { node } = moduleContext;
+  const tsx = genNodeAst(node);
   const cssAst = mkStylesheetCss(moduleContext.cssRules);
   return [tsx, cssAst] as const;
 }
@@ -275,4 +258,5 @@ export function createNodeContext(moduleContext: ModuleContext, root: SceneNode2
     isRootInComponent: true,
   };
   return nodeContext;
+  //
 }

@@ -287,10 +287,10 @@ export function createTextAst(context: NodeContext, node: TextNode2, styles: Dic
   if (!context.parentStyles || Object.keys(flexStyles).length) {
     Object.assign(styles, flexStyles);
     styles = postMapStyles(context, node, styles);
-    const className = getOrGenClassName(moduleContext, node);
     const styleDeclarations = stylesToList(styles);
     let attributes: ts.JsxAttribute[] = [];
     if (styleDeclarations.length) {
+      const className = getOrGenClassName(moduleContext, node);
       addCssRule(context, className, styleDeclarations);
       attributes.push(createClassAttrForNode(node));
     }

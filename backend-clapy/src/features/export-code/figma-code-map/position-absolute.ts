@@ -93,6 +93,7 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
       node.autoHeight = true; // Auto-height
     }
+    // TODO check
     // } else {
     //   resetStyleIfOverriding(context, node, styles, 'position');
     //   resetStyleIfOverriding(context, node, styles, 'top');

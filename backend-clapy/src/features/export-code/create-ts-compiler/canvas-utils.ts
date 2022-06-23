@@ -1,8 +1,10 @@
 import { DeclarationPlain } from 'css-tree';
+import ts from 'typescript';
 
 import { Nil } from '../../../common/general-utils';
 import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
-import { CompContext } from '../code.model';
+import { CompContext, ModuleContext, NodeContext } from '../code.model';
+import { MUIConfig } from '../frameworks/mui/mui-config';
 import { warnNode } from '../gen-node-utils/utils-and-reset';
 
 export function getPageById(pageId: string) {
@@ -62,6 +64,10 @@ export interface Masker {
   y: number;
 }
 
+interface TextExtender {
+  styles?: Dict<DeclarationPlain>;
+}
+
 type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
   GlobalExtender &
   SpecificExtender;
@@ -70,8 +76,6 @@ interface GlobalExtender {
   nodeOfComp?: SceneNode2;
   isRootInComponent?: boolean;
   maskedBy?: Masker;
-  skip?: boolean;
-  styles?: Dict<DeclarationPlain>;
   // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.
   className?: string;
   classOverride?: boolean;
@@ -87,10 +91,21 @@ interface GlobalExtender {
   mapHidesToProps?: () => void;
   mapSwapsToProps?: () => void;
   mapTextOverridesToProps?: () => void;
+  nodeContext?: NodeContext;
   /** access it using getOrCreateCompContext() to ensure it is initialized */
   _context?: CompContext;
   visibleStrokes?: FrameNode2['strokes'];
   visibleFills?: Paint[];
+  // Attributes useful for AST generation
+  styles?: Dict<DeclarationPlain>;
+  skip?: boolean;
+  muiConfig?: MUIConfig | false; // For MUI instances
+  componentContext?: ModuleContext; // For instance nodes
+  noLayoutWithChildren?: boolean; // For groups to skip styling and directly process children
+  textInlineWrapperStyles?: Dict<DeclarationPlain>; // For text nodes
+  textSkipStyles?: boolean; // For text nodes
+  svgPathVarName?: string; // For SVG nodes
+  extraAttributes?: ts.JsxAttribute[];
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
@@ -107,7 +122,7 @@ export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode> & ChildrenMixin2;
 export type LineNode2 = ExtendNodeType<LineNode>;
 export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode> & ChildrenMixin2;
-export type TextSegment2 = StyledTextSegment;
+export type TextSegment2 = StyledTextSegment & TextExtender;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';

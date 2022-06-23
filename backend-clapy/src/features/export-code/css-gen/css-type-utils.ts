@@ -58,9 +58,5 @@ function getRuleFirstSelector(node: Rule) {
 }
 
 export function stylesToList(styles: Dict<DeclarationPlain>): DeclarationPlain[] {
-  const stylesList: DeclarationPlain[] = [];
-  for (const style of Object.values(styles)) {
-    stylesList.push(style);
-  }
-  return stylesList;
+  return Object.values(styles);
 }

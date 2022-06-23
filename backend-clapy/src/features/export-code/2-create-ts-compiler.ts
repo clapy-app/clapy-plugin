@@ -27,7 +27,7 @@ import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-ad
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
 import { genStyles } from './frameworks/style-dictionary/gen-styles';
 import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
-import { genCompUsageAstWithOverrides } from './gen-node-utils/3-gen-comp-utils';
+import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils';
 import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node';
 import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils';
 
@@ -112,10 +112,16 @@ export async function exportCode(
   );
   perfMeasure('c');
   const lightAppNodeContext = createNodeContext(lightAppModuleContext, root, parent);
-  const [moduleContext, compAst] = genCompUsageAstWithOverrides(lightAppNodeContext, root, true);
   perfMeasure('c2');
+  const componentContext = prepareCompUsageWithOverrides(lightAppNodeContext, root, true);
+  perfMeasure('c3');
   generateAllComponents(projectContext);
   perfMeasure('d');
+  if (!(root as SceneNode2).componentContext) {
+    (root as SceneNode2).componentContext = componentContext;
+  }
+  const compAst = genCompUsage(root);
+  perfMeasure('d2');
 
   addCompToAppRoot(lightAppModuleContext, parent, cssVarsDeclaration, compAst);
   perfMeasure('e');
@@ -142,7 +148,7 @@ export async function exportCode(
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     perfMeasure('k');
-    await writeToDisk(csbFiles, moduleContext, extraConfig.isClapyFile); // Takes time with many files
+    await writeToDisk(csbFiles, (root as SceneNode2).componentContext!, extraConfig.isClapyFile); // Takes time with many files
     perfMeasure('l');
   }
   if (Object.keys(csbFiles).length > 500) {

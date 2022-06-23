@@ -1,7 +1,7 @@
 import { getOrGenComponent } from '../3-gen-component';
 import { genInstanceOverrides } from '../5-instance-overrides';
 import { flags } from '../../../env-and-config/app-config';
-import { CompAst, InstanceContext, JsxOneOrMore, ModuleContext, NodeContext, SwapAst } from '../code.model';
+import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from '../code.model';
 import { ComponentNode2, InstanceNode2, isInstance, SceneNode2 } from '../create-ts-compiler/canvas-utils';
 import {
   createComponentUsageWithAttributes,
@@ -10,13 +10,10 @@ import {
   mkSwapInstanceAndHideWrapper,
 } from './ts-ast-utils';
 
+// TODO check
 // TODO utiliser cette fonction sur le noeud root, en différenciant les cas comp/instance vs autre.
 // Dans 2-... si pas une instance, il y a moins de choses à faire ci-dessous
-export function genCompUsageAstWithOverrides(
-  context: NodeContext,
-  node: SceneNode2,
-  isRootComponent = false,
-): readonly [ModuleContext, CompAst] {
+export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneNode2, isRootComponent = false) {
   const { parentNode, moduleContext } = context;
   const isInst = isInstance(node);
 
@@ -24,8 +21,10 @@ export function genCompUsageAstWithOverrides(
   const componentContext = getOrGenComponent(moduleContext, node, parentNode, isRootComponent);
 
   if (!flags.enableInstanceOverrides || !isInst) {
-    return [componentContext, mkComponentUsage(componentContext.compName)] as const;
+    return componentContext;
   }
+
+  node.componentContext = componentContext;
 
   const instanceNode = node as ComponentNode2 | InstanceNode2;
   // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
@@ -44,13 +43,40 @@ export function genCompUsageAstWithOverrides(
   // When checking overrides, in addition to classes, we also check the swapped instances.
   genInstanceOverrides(instanceContext, node);
 
-  const compContext = getOrCreateCompContext(node);
+  return componentContext;
+}
 
+export function genCompUsage(node: SceneNode2) {
+  if (isInstance(node)) {
+    return genInstanceAst(node);
+  } else {
+    return genInstanceLikeAst(node);
+  }
+}
+
+function genInstanceAst(node: InstanceNode2) {
+  const { nodeContext: context, componentContext } = node;
+  if (!componentContext) {
+    throw new Error(
+      `node ${node.name} should be an instance with componentContext attribute. But componentContext is undefined.`,
+    );
+  }
+  if (!context) {
+    throw new Error(`nodeContext is undefined in node ${node.name}.`);
+  }
+  const compContext = getOrCreateCompContext(node);
   let compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
 
   // Surround instance usage with a syntax to swap with render props
   let compAst2: SwapAst | JsxOneOrMore = compAst;
   compAst2 = mkSwapInstanceAndHideWrapper(context, compAst, node);
+  return compAst2;
+}
 
-  return [componentContext, compAst2] as const;
+function genInstanceLikeAst(node: SceneNode2) {
+  const { nodeContext: context, componentContext } = node;
+  if (!componentContext) {
+    throw new Error(`[genInstanceLikeAst] node ${node.name} has no componentContext.`);
+  }
+  return mkComponentUsage(componentContext.compName);
 }

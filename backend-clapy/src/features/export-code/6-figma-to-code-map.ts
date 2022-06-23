@@ -2,6 +2,7 @@ import { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 import ts from 'typescript';
 
+import { warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
 import { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
@@ -56,10 +57,11 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, node, styles);
   if (isInstanceContext(context)) {
-    // 2) On the instance, only keep the styles different from the component.
-    // console.log(context.nodeOfComp.name, '<=', node.name);
+    // On the instance, only keep the styles different from the component.
     const compStyles = context.nodeOfComp.styles;
-    // console.log('Comp styles:', context.nodeOfComp.styles, '-- inst:', styles);
+    if (!compStyles) {
+      warnOrThrow(`node ${context.nodeOfComp.name} has no styles attached when checking its instance.`);
+    }
     if (compStyles) {
       const instanceStyles: Dict<DeclarationPlain> = {};
       for (const [ruleName, astValue] of Object.entries(styles)) {
@@ -70,10 +72,8 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
       }
       return instanceStyles;
     }
-  } else if (context.moduleContext.isComponent) {
-    // 1) save the component styles for 2) above.
-    node.styles = styles;
   }
+  node.styles = styles;
   return styles;
 }
 
@@ -100,7 +100,7 @@ function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<Decl
   return context;
 }
 
-function mapTextSegmentStyles(
+export function mapTextSegmentStyles(
   context: NodeContext,
   textSegment: TextSegment2,
   styles: Dict<DeclarationPlain>,
