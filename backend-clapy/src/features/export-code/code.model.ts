@@ -3,6 +3,7 @@ import ts from 'typescript';
 
 import { Nil } from '../../common/general-utils';
 import { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
+import { figmaToAstRootNode } from './3-gen-component';
 import {
   ComponentNode2,
   FlexNode,
@@ -76,6 +77,8 @@ export interface ModuleContext {
   readonly isRootComponent?: boolean;
   readonly hideProps: Set<string>;
   readonly textOverrideProps: Set<string>;
+  generatedTsAst?: ReturnType<typeof figmaToAstRootNode>[0];
+  generatedCssAst?: ReturnType<typeof figmaToAstRootNode>[1];
 }
 
 export type ParentNode = FlexNode | GroupNode2 | PageNode2;
@@ -100,6 +103,8 @@ export interface NodeContext {
 }
 
 export type TextOValue = JsxOneOrMore | string | false;
+
+export type CompAst = ts.JsxExpression | ts.JsxSelfClosingElement | ts.JsxFragment;
 
 export interface BaseFigmaOverride<T> {
   overrideValue?: T;

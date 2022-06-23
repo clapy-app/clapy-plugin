@@ -8,7 +8,7 @@ import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
 import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
 import { addJss, addStyle } from '../css-gen/css-factories-high';
 import { addMUIFonts } from '../frameworks/mui/mui-add-globals';
-import { parseFontStyle, replaceFontWeightWithLabel } from './details/fonts-utils';
+import { parseFontStyle, replaceFontWeightWithLabel } from '../gen-node-utils/fonts-utils';
 
 // Duplicate of below function with slight changes.
 // Always update both or refactor to centralize.

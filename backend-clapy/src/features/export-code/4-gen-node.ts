@@ -1,18 +1,14 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
-import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { getOrGenComponent } from './3-gen-component';
-import { genInstanceOverrides } from './5-instance-overrides';
 import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from './code.model';
+import { NodeContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
   ChildrenMixin2,
-  ComponentNode2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
@@ -32,25 +28,23 @@ import {
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { stylesToList } from './css-gen/css-type-utils';
-import { readSvg } from './figma-code-map/details/process-nodes-utils';
+import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
+import { genCompUsageAstWithOverrides } from './gen-node-utils/3-gen-comp-utils';
+import { readSvg } from './gen-node-utils/process-nodes-utils';
 import {
   addCssRule,
   createClassAttrForNode,
-  createComponentUsageWithAttributes,
   createTextAst,
   fillIsRootInComponent,
   genComponentImportName,
-  getOrCreateCompContext,
   getOrGenClassName,
   mkComponentUsage,
   mkNamedImportsDeclaration,
-  mkSwapInstanceAndHideWrapper,
   mkTag,
   mkWrapHideAndTextOverrideAst,
   removeCssRule,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
-import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
+} from './gen-node-utils/ts-ast-utils';
+import { warnNode } from './gen-node-utils/utils-and-reset';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 
 export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
@@ -77,45 +71,11 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       return mkMuiComponentAst(context, muiConfig, node2, attributes);
     }
 
-    // If component or instance, generate the code in a separate component file and reference it here.
     const isComp = isComponent(node);
     const isInst = isInstance(node);
     if (!isRootInComponent && (isComp || isInst)) {
-      const componentContext = getOrGenComponent(moduleContext, node, parentNode);
-
-      if (!flags.enableInstanceOverrides) {
-        return mkComponentUsage(componentContext.compName);
-      }
-
-      const instanceNode = node as ComponentNode2 | InstanceNode2;
-      // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
-      const instanceContext: InstanceContext = {
-        ...context,
-        componentContext,
-        nodeOfComp: componentContext.node,
-        intermediateInstanceNodeOfComps: [instanceNode],
-        intermediateComponentContexts: [moduleContext, componentContext],
-        intermediateNodes: [node, componentContext.node],
-        instanceNode,
-        instanceNodeOfComp: instanceNode,
-        isRootInComponent: true,
-      };
-
-      // When checking overrides, in addition to classes, we also check the swapped instances.
-      genInstanceOverrides(instanceContext, node);
-
-      const compContext = getOrCreateCompContext(node);
-
-      let compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
-
-      // Surround instance usage with a syntax to swap with render props
-      let compAst2: SwapAst | JsxOneOrMore = compAst;
-      if (isInst) {
-        // Should we also check that we're in a component? To review with examples.
-        compAst2 = mkSwapInstanceAndHideWrapper(context, compAst, node);
-      }
-
-      return compAst2;
+      const [_, ast] = genCompUsageAstWithOverrides(context, node);
+      return ast;
     }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
@@ -174,6 +134,7 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2) {
       // Add tag styles
       mapTagStyles(context, node, styles);
 
+      // TODO refactor, follow the same schema as 5-... to avoid generating useless classes when no style declaration.
       const className = getOrGenClassName(moduleContext, node);
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.

@@ -32,8 +32,8 @@ import {
 } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import { stylesToList } from './css-gen/css-type-utils';
-import { instanceToCompIndexRemapper } from './figma-code-map/details/default-node';
-import { readSvg } from './figma-code-map/details/process-nodes-utils';
+import { instanceToCompIndexRemapper } from './gen-node-utils/default-node';
+import { readSvg } from './gen-node-utils/process-nodes-utils';
 import {
   addCssRule,
   checkIsOriginalInstance,
@@ -47,8 +47,8 @@ import {
   getOrGenTextOverrideProp,
   removeCssRule,
   updateCssRuleClassName,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
+} from './gen-node-utils/ts-ast-utils';
+import { warnNode } from './gen-node-utils/utils-and-reset';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {

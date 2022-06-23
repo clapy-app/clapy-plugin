@@ -3,7 +3,7 @@ import ts from 'typescript';
 
 import { env } from '../../../../env-and-config/env';
 import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { figmaColorToCssHex } from '../../figma-code-map/details/utils-and-reset';
+import { figmaColorToCssHex } from '../../gen-node-utils/utils-and-reset';
 
 const { factory } = ts;
 

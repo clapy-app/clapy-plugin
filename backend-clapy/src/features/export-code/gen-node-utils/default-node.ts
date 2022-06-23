@@ -1,12 +1,12 @@
-import { Nil } from '../../../../common/general-utils';
-import { flags } from '../../../../env-and-config/app-config';
+import { Nil } from '../../../common/general-utils';
+import { flags } from '../../../env-and-config/app-config';
 import {
   Dict,
   FrameNodeNoMethod,
   nodeDefaults,
   PageNodeNoMethod,
   SceneNodeNoMethod,
-} from '../../../sb-serialize-preview/sb-serialize.model';
+} from '../../sb-serialize-preview/sb-serialize.model';
 import {
   ChildrenMixin2,
   ComponentNode2,
@@ -16,7 +16,7 @@ import {
   isInstance,
   isInstanceFeatureDetection,
   SceneNode2,
-} from '../../create-ts-compiler/canvas-utils';
+} from '../create-ts-compiler/canvas-utils';
 import { warnNode } from './utils-and-reset';
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNode2>[]): FrameNodeNoMethod {

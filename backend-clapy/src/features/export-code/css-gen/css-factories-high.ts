@@ -6,7 +6,7 @@ import { isPlainObject } from 'lodash';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { ValidNode } from '../create-ts-compiler/canvas-utils';
-import { round } from '../figma-code-map/details/utils-and-reset';
+import { round } from '../gen-node-utils/utils-and-reset';
 import {
   CssOperators,
   cssOperators,

@@ -1,4 +1,4 @@
-import { VectorNodeDerived } from '../../create-ts-compiler/canvas-utils';
+import { VectorNodeDerived } from '../create-ts-compiler/canvas-utils';
 
 const svgWidthHeightRegex = /^<svg width="\d+" height="\d+"/;
 

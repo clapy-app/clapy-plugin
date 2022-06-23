@@ -7,7 +7,7 @@ import {
   genUniqueName,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
-} from '../../figma-code-map/details/ts-ast-utils';
+} from '../../gen-node-utils/ts-ast-utils';
 import { muiComponents } from './mui-all-components';
 import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
 

@@ -22,7 +22,7 @@ import {
 } from 'css-tree';
 
 import { csstree } from '../create-ts-compiler/csstree';
-import { round } from '../figma-code-map/details/utils-and-reset';
+import { round } from '../gen-node-utils/utils-and-reset';
 
 export function cssAstToString(css: CssNodePlain) {
   // Clone because fromPlainObject changes the original object, which is not desired when comparing the instance and component styles.

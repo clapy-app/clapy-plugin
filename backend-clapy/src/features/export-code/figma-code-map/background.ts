@@ -16,7 +16,7 @@ import {
   VectorNodeDerived,
 } from '../create-ts-compiler/canvas-utils';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset';
 import { addOpacity } from './opacity';
 
 export function prepareBackgrounds(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {

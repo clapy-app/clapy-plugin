@@ -4,8 +4,8 @@ import ts from 'typescript';
 import { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { FrameNode2, isFlexNode, isText, SceneNode2 } from '../create-ts-compiler/canvas-utils';
-import { addHugContents, makeDefaultNode } from '../figma-code-map/details/default-node';
-import { mkInputTypeAttr } from '../figma-code-map/details/ts-ast-utils';
+import { addHugContents, makeDefaultNode } from '../gen-node-utils/default-node';
+import { mkInputTypeAttr } from '../gen-node-utils/ts-ast-utils';
 
 const { factory } = ts;
 

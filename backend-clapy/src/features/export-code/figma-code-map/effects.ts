@@ -5,7 +5,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (!node.effects?.length /* || (!node.visibleFills?.length && !node.visibleStrokes?.length) */) {

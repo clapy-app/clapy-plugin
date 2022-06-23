@@ -6,8 +6,22 @@ import { ModuleContext, NodeContext, ParentNode } from '../code.model';
 import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { addStyle } from './css-factories-high';
-import { mkBlockCss, mkClassSelectorCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from './css-factories-low';
-import { isDeclarationListOrThrow, isRootRule, isRule, isStyleSheet, stylesToList } from './css-type-utils';
+import {
+  mkBlockCss,
+  mkClassSelectorCss,
+  mkRuleCss,
+  mkSelectorCss,
+  mkSelectorListCss,
+  mkStylesheetCss,
+} from './css-factories-low';
+import {
+  assertStyleSheet,
+  isDeclarationListOrThrow,
+  isRootRule,
+  isRule,
+  isStyleSheet,
+  stylesToList,
+} from './css-type-utils';
 
 export function addRulesToAppCss(context: ModuleContext, appCss: string, parentNode: ParentNode | Nil) {
   if (!isValidNode(parentNode)) {
@@ -38,6 +52,10 @@ export function addRulesToAppCss(context: ModuleContext, appCss: string, parentN
       child.block.children.appendList(block2.children as List<Declaration>);
     }
   }
+
+  const cssRulesAsList = csstree.fromPlainObject(mkStylesheetCss(context.cssRules));
+  assertStyleSheet(cssRulesAsList);
+  node.children.appendList(cssRulesAsList.children);
 
   if (context.projectContext.extraConfig.isFTD) {
     // Add demo patch

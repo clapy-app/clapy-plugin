@@ -8,32 +8,28 @@ import { env } from '../../env-and-config/env';
 import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
 import {
   createModuleCode,
+  createNodeContext,
   generateAllComponents,
-  getOrGenComponent,
   mkModuleContext,
   printFileInProject,
 } from './3-gen-component';
 import { writeSVGReactComponents } from './7-write-svgr';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { BaseStyleOverride, CodeDict, ModuleContext, ParentNode, ProjectContext } from './code.model';
+import { BaseStyleOverride, CodeDict, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model';
 import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
 import { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
 import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
-import { fillWithComponent, fillWithDefaults } from './figma-code-map/details/default-node';
-import {
-  mkClassAttr2,
-  mkComponentUsage,
-  mkDefaultImportDeclaration,
-  mkSimpleImportDeclaration,
-} from './figma-code-map/details/ts-ast-utils';
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
 import { genStyles } from './frameworks/style-dictionary/gen-styles';
 import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
+import { genCompUsageAstWithOverrides } from './gen-node-utils/3-gen-comp-utils';
+import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node';
+import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils';
 
 const { factory } = ts;
 
@@ -110,16 +106,18 @@ export async function exportCode(
     appCompDir,
     appCompName,
     undefined,
+    true,
     false,
-    false,
+    true,
   );
   perfMeasure('c');
-  const moduleContext = getOrGenComponent(lightAppModuleContext, root, parent, true);
+  const lightAppNodeContext = createNodeContext(lightAppModuleContext, root, parent);
+  const [moduleContext, compAst] = genCompUsageAstWithOverrides(lightAppNodeContext, root, true);
   perfMeasure('c2');
   generateAllComponents(projectContext);
   perfMeasure('d');
 
-  addCompToAppRoot(lightAppModuleContext, moduleContext, parent, cssVarsDeclaration);
+  addCompToAppRoot(lightAppModuleContext, parent, cssVarsDeclaration, compAst);
   perfMeasure('e');
 
   await writeSVGReactComponents(projectContext);
@@ -166,9 +164,9 @@ export async function exportCode(
 
 function addCompToAppRoot(
   appModuleContext: ModuleContext,
-  childModuleContext: ModuleContext,
   parentNode: ParentNode | Nil,
   cssVarsDeclaration: string | Nil,
+  compAst: CompAst,
 ) {
   const {
     compDir,
@@ -204,7 +202,7 @@ function addCompToAppRoot(
 
   // The component import is added inside genComponent itself (with a TODO to refactor)
 
-  let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(childModuleContext.compName);
+  let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(compAst);
   appTsx = addMUIProviders(appModuleContext, appTsx);
 
   let prefixStatements: Statement[] | undefined = undefined;
@@ -231,7 +229,7 @@ function addCompToAppRoot(
   printFileInProject(appModuleContext);
 }
 
-function mkAppCompTsx(childComponentName: string) {
+function mkAppCompTsx(compAst: CompAst) {
   const overrideNode: BaseStyleOverride = {
     overrideValue: 'root',
   };
@@ -241,7 +239,7 @@ function mkAppCompTsx(childComponentName: string) {
       undefined,
       factory.createJsxAttributes([mkClassAttr2(overrideNode)]),
     ),
-    [mkComponentUsage(childComponentName)],
+    [compAst],
     factory.createJsxClosingElement(factory.createIdentifier('div')),
   );
 }

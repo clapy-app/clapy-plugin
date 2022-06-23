@@ -1,5 +1,5 @@
-import { PageNodeNoMethod, SceneNodeNoMethod } from '../../../sb-serialize-preview/sb-serialize.model';
-import { isStyledTextSegment, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import { PageNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
+import { isStyledTextSegment, SceneNode2 } from '../create-ts-compiler/canvas-utils';
 
 export function warnNode(node: SceneNodeNoMethod | SceneNode2 | StyledTextSegment | PageNodeNoMethod, ...msg: any[]) {
   if (isStyledTextSegment(node)) {

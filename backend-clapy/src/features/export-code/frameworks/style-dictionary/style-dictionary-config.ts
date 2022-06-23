@@ -3,7 +3,7 @@ import StyleDictionary, { formatHelpers, Formatter } from 'style-dictionary';
 import { DesignTokens } from 'style-dictionary/types/DesignToken';
 import { FormatterArguments } from 'style-dictionary/types/Format';
 
-import { hexToCSSRgb } from '../../figma-code-map/details/utils-and-reset';
+import { hexToCSSRgb } from '../../gen-node-utils/utils-and-reset';
 import { TokenBoxshadowValue } from './types/types/values';
 
 export const postTransforms: StyleDictionary.Named<StyleDictionary.Transform>[] = [];

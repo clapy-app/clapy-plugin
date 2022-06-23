@@ -1,8 +1,8 @@
 import ts from 'typescript';
 
 import { ModuleContext, ProjectContext } from '../../code.model';
-import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
 import { getSetInMap } from '../../figma-code-map/font';
+import { mkNamedImportsDeclaration } from '../../gen-node-utils/ts-ast-utils';
 import { mkThemeVarCreation } from './mui-theme';
 
 const { factory } = ts;

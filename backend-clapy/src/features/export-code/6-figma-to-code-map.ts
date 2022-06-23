@@ -13,17 +13,6 @@ import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
 import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
 import { colorFigmaToCode } from './figma-code-map/color';
 import { cursorFigmaToCode } from './figma-code-map/cursor';
-import { escapeHTML } from './figma-code-map/details/process-nodes-utils';
-import {
-  addCssRule,
-  createClassAttrForClassNoOverride,
-  getOrGenClassName,
-  mkHrefAttr,
-  mkNoReferrerAttr,
-  mkTag,
-  mkTargetBlankAttr,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
 import { effectsFigmaToCode } from './figma-code-map/effects';
 import { flexFigmaToCode } from './figma-code-map/flex';
 import { fontFigmaToCode } from './figma-code-map/font';
@@ -34,6 +23,17 @@ import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute'
 import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches';
 import { postTransform, transformFigmaToCode } from './figma-code-map/transform';
 import { zindexFigmaToCode } from './figma-code-map/zindex';
+import { escapeHTML } from './gen-node-utils/process-nodes-utils';
+import {
+  addCssRule,
+  createClassAttrForClassNoOverride,
+  getOrGenClassName,
+  mkHrefAttr,
+  mkNoReferrerAttr,
+  mkTag,
+  mkTargetBlankAttr,
+} from './gen-node-utils/ts-ast-utils';
+import { warnNode } from './gen-node-utils/utils-and-reset';
 
 const { factory } = ts;
 

@@ -13,7 +13,7 @@ import {
   VectorNodeDerived,
 } from '../create-ts-compiler/canvas-utils';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, warnNode } from './details/utils-and-reset';
+import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset';
 
 export function prepareBorders(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {

@@ -1,7 +1,7 @@
 import ts from 'typescript';
 
 import { InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { warnNode } from '../../../figma-code-map/details/utils-and-reset';
+import { warnNode } from '../../../gen-node-utils/utils-and-reset';
 import { MUIConfig, VariantProps } from '../mui-config';
 import { typoMappingConfig } from '../mui-theme-typography';
 

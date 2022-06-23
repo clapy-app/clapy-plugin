@@ -16,8 +16,8 @@ import {
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
   mkPropInterface,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
+} from './gen-node-utils/ts-ast-utils';
+import { warnNode } from './gen-node-utils/utils-and-reset';
 
 const { factory } = ts;
 
@@ -32,6 +32,9 @@ export function getOrGenComponent(
     projectContext: { compNodes, components },
   } = parentModuleContext;
   let comp = getComponentOrNil(compNodes, node);
+  if (!isRootComponent && !comp) {
+    warnOrThrow(`Node ${node.name} is not the root node, but it isn't a component or an instance.`);
+  }
   if (!flags.enableInstanceOverrides || !comp) {
     const moduleContext = createModuleContextForNode(parentModuleContext, node, parent, isRootComponent);
     components.set(comp?.id || '_root', moduleContext);
@@ -40,6 +43,7 @@ export function getOrGenComponent(
     }
     return moduleContext;
   }
+  assertDefined(comp);
   let moduleContext = components.get(comp.id);
   if (!moduleContext) {
     moduleContext = createModuleContextForNode(parentModuleContext, comp, parent, isRootComponent);
@@ -49,6 +53,10 @@ export function getOrGenComponent(
     ensureComponentIsImported(parentModuleContext, moduleContext);
   }
   return moduleContext;
+}
+
+function assertDefined(variable: any): asserts variable {
+  return;
 }
 
 function getComponentOrNil(compNodes: Dict<ComponentNode2>, node: SceneNode2) {
@@ -96,6 +104,7 @@ export function mkModuleContext(
   parentModuleContext: ModuleContext | undefined,
   isRootComponent: boolean,
   isComp: boolean,
+  skipNodeRendering = false,
 ) {
   const moduleContext: ModuleContext = {
     projectContext,
@@ -118,6 +127,11 @@ export function mkModuleContext(
     hideProps: new Set(),
     textOverrideProps: new Set(),
   };
+  if (!skipNodeRendering) {
+    const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
+    moduleContext.generatedTsAst = tsx;
+    moduleContext.generatedCssAst = css;
+  }
   return moduleContext;
 }
 
@@ -161,14 +175,21 @@ export function generateAllComponents(projectContext: ProjectContext) {
   const { components } = projectContext;
   const compReadyToWrite: CompReadyToWrite[] = [];
   for (const [_, moduleContext] of components) {
-    const { node, parent } = moduleContext;
-
-    const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
+    // const { node, parent } = moduleContext;
+    //
+    // const [tsx, css] = figmaToAstRootNode(moduleContext, node, parent);
+    const { generatedTsAst, generatedCssAst } = moduleContext;
+    if (!generatedTsAst) {
+      throw new Error(`generatedTsAst in module ${moduleContext.compName} is undefined.`);
+    }
+    if (!generatedCssAst) {
+      throw new Error(`generatedCssAst in module ${moduleContext.compName} is undefined.`);
+    }
 
     compReadyToWrite.push({
       moduleContext,
-      tsx,
-      css,
+      tsx: generatedTsAst,
+      css: generatedCssAst,
     });
   }
 
@@ -232,7 +253,17 @@ export function printFileInProject(moduleContext: ModuleContext) {
   projectContext.tsFiles[path] = result;
 }
 
-function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
+export function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
+  const nodeContext = createNodeContext(moduleContext, root, parent);
+  if (!root.isRootInComponent) {
+    warnOrThrow('BUG missing isRootInComponent flag?');
+  }
+  const tsx = figmaToAstRec(nodeContext, root);
+  const cssAst = mkStylesheetCss(moduleContext.cssRules);
+  return [tsx, cssAst] as const;
+}
+
+export function createNodeContext(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
   const nodeContext: NodeContext = {
     moduleContext,
     tagName: 'div', // Default value
@@ -243,10 +274,5 @@ function figmaToAstRootNode(moduleContext: ModuleContext, root: SceneNode2, pare
     isRootNode: moduleContext.isRootComponent,
     isRootInComponent: true,
   };
-  if (!root.isRootInComponent) {
-    warnOrThrow('BUG missing isRootInComponent flag?');
-  }
-  const tsx = figmaToAstRec(nodeContext, root);
-  const cssAst = mkStylesheetCss(moduleContext.cssRules);
-  return [tsx, cssAst] as const;
+  return nodeContext;
 }

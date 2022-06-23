@@ -7,6 +7,12 @@ export function isStyleSheet(node: CssNode): node is StyleSheet {
   return node.type === 'StyleSheet';
 }
 
+export function assertStyleSheet(node: CssNode): asserts node is StyleSheet {
+  if (node.type !== 'StyleSheet') {
+    throw new Error(`Node is not StyleSheet: ${JSON.stringify(node)}`);
+  }
+}
+
 export function isRule(node: CssNode): node is Rule {
   return node.type === 'Rule';
 }

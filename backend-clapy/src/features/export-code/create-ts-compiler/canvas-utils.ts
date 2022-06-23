@@ -3,7 +3,7 @@ import { DeclarationPlain } from 'css-tree';
 import { Nil } from '../../../common/general-utils';
 import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
 import { CompContext } from '../code.model';
-import { warnNode } from '../figma-code-map/details/utils-and-reset';
+import { warnNode } from '../gen-node-utils/utils-and-reset';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;

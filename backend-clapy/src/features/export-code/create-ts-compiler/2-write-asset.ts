@@ -1,5 +1,5 @@
 import { NodeContext } from '../code.model';
-import { genUniqueName } from '../figma-code-map/details/ts-ast-utils';
+import { genUniqueName } from '../gen-node-utils/ts-ast-utils';
 import { BaseNode2 } from './canvas-utils';
 import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths';
 
