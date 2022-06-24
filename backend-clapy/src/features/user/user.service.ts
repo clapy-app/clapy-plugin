@@ -11,7 +11,6 @@ var auth0Management = new ManagementClient({
   clientSecret: auth0BackendClientSecret,
   scope: 'read:users update:users',
 });
-///
 
 export async function getAuth0User(userId: string | undefined) {
   if (!userId) throw new UnauthorizedException();
