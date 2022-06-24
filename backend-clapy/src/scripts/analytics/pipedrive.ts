@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { writeFile } from 'fs/promises';
 
 import { wait } from '../../common/general-utils';
 import { env } from '../../env-and-config/env';
@@ -88,26 +88,6 @@ export const updateANumberOfusers = async (nombreOfUsersToTest: number) => {
   }
   console.log(inexistantPipeDriveUsers);
   const dictstring = JSON.stringify(inexistantPipeDriveUsers);
-  fs.writeFile(analyticsDirInSrc + '/inexistant-PipeDriveUsers.json', dictstring, e => {
-    console.log(e);
-  });
+  await writeFile(analyticsDirInSrc + '/inexistant-PipeDriveUsers.json', dictstring);
 };
 updateANumberOfusers(users.length);
-// export async function runPipedriveSample() {
-//   try {
-//     // const auth0Id = 'google-oauth2|111991569392093871714'; // Guilherme
-//     const auth0Id = 'google-oauth2|105573232794317486965'; // Antoine gmail perso (auth0 dev)
-//     // const auth0Id = 'Updated Auth0 ID';
-
-//     ////// Auth0
-
-//     const auth0User = await getAuth0User(auth0Id);
-//     console.log(auth0User);
-
-//     await upsertPipedrivePersonByAuth0Id(auth0User);
-//   } catch (error: any) {
-//     error = error?.context?.body?.error || error;
-//     if (typeof error === 'string') error = new Error(error);
-//     throw error;
-//   }
-// }

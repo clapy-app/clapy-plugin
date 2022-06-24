@@ -27,8 +27,8 @@ const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
     user.totalTimeCodeGenerationWasInterrupted = filtredAnalyticsGenStarted.length - filtredAnalyticsCompleted.length;
   }
   for (let i = 0; i < filtredAnalyticsCompleted.length; i++) {
-    const DatesUserWasOn = filtredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
-    user.numberOfDaysActive = new Set(DatesUserWasOn).size;
+    const datesUserWasOn = filtredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
+    user.numberOfDaysActive = new Set(datesUserWasOn).size;
   }
   if (Array.isArray(user.generatedUrls)) {
     user.generatedUrls = user.generatedUrls.join(';');
@@ -42,13 +42,13 @@ export async function mainAnalytics() {
   // loop through analytics prepare users Variable.
   for (const analytic of analytics) {
     const { 'Auth0 ID': auth0Id } = analytic;
-    if (auth0Id != null && !users[auth0Id]) {
+    if (!users[auth0Id]) {
       users[auth0Id] = {
         key: auth0Id,
         analytics: [],
       };
     }
-    if (auth0Id != null) users[auth0Id].analytics.push(analytic);
+    users[auth0Id].analytics.push(analytic);
   }
 
   for (const user of Object.values(users)) {
