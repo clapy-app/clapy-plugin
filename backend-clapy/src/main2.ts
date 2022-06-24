@@ -9,7 +9,7 @@ import { round } from './features/export-code/gen-node-utils/utils-and-reset';
 async function main() {
   perfReset('Starting...');
 
-  //  Send to codesandbox
+  // Send to codesandbox
   await new CodeController().exportCode(devFigmaConfig, false);
 
   // await insertTrackings();

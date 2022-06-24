@@ -64,18 +64,13 @@ export function dateDiffInDays(a: Date, b: Date) {
 
 export function prepareData(analytics: Analytic[]) {
   for (const analytic of analytics) {
-    try {
-      // Details is initially a string that we unserialize.
-      if (analytic.Details) {
-        analytic.Details = JSON.parse(analytic.Details as unknown as string);
-      }
-      // Created At: string to Date
-      if (analytic['Created At']) {
-        analytic['Created At'] = new Date(analytic['Created At'] as unknown as string);
-      }
-    } catch (error) {
-      console.error('Invalid Details:');
-      console.error(analytic.Details);
+    // Details is initially a string that we unserialize.
+    if (analytic.Details) {
+      analytic.Details = JSON.parse(analytic.Details as unknown as string);
+    }
+    // Created At: string to Date
+    if (analytic['Created At']) {
+      analytic['Created At'] = new Date(analytic['Created At'] as unknown as string);
     }
   }
 }

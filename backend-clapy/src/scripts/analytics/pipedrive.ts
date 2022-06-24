@@ -5,10 +5,10 @@ import { env } from '../../env-and-config/env';
 import { backendDir } from '../../root';
 import { User, Users } from './shared-variables';
 
-const pipedrive = require('pipedrive');
 // Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
 // API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons
 // Tutorials and other documentation (e.g. rate limit): https://pipedrive.readme.io/docs/updating-a-person
+const pipedrive = require('pipedrive');
 
 const FgRed = '\x1b[31m';
 const FgGreen = '\x1b[32m';
