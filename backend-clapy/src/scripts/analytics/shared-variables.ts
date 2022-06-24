@@ -79,7 +79,7 @@ export function prepareData(analytics: Analytic[]) {
     }
   }
 }
-export async function init() {
+export async function initAnalytics() {
   const analyticsDirInSrc = `${backendDir}/src/scripts/analytics`;
   const jsonFile = await firstJsonFile(analyticsDirInSrc);
   const jsonPath = `${analyticsDirInSrc}/${jsonFile}`;

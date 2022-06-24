@@ -1,7 +1,7 @@
-import { Analytic, dateDiffInDays, Dict, excludedUsers, init, sortObjectByKey } from './shared-variables';
+import { Analytic, dateDiffInDays, Dict, excludedUsers, initAnalytics, sortObjectByKey } from './shared-variables';
 
 (async function main() {
-  const analytics = await init();
+  const analytics = await initAnalytics();
 
   // Threshold
   const numberOfReuse = 2;

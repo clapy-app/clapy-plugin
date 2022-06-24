@@ -6,6 +6,9 @@ import { backendDir } from '../../root';
 import { User, Users } from './shared-variables';
 
 const pipedrive = require('pipedrive');
+// Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
+// API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons
+// Tutorials and other documentation (e.g. rate limit): https://pipedrive.readme.io/docs/updating-a-person
 
 const FgRed = '\x1b[31m';
 const FgGreen = '\x1b[32m';
@@ -23,50 +26,39 @@ const F = {
   lastTimePluginWasLunched: 'a26d0c888c9def4f09b443b4915bc8bf4a558f5b',
   generatedUrls: 'b76d108a74d97d1251bdfe7a414ed8ba37262828',
 };
-// Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
-// API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons
-// Tutorials and other documentation (e.g. rate limit): https://pipedrive.readme.io/docs/updating-a-person
 
 const apiClient = pipedrive.ApiClient.instance;
 let apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = env.pipedriveApiKey;
 const personsApi = new pipedrive.PersonsApi();
 
-const searchPerson = async (key: string) => {
-  try {
-    let term = key;
-    let opts = {
-      fields: 'custom_fields',
-      exactMatch: true,
-      start: 0,
-      limit: 1,
-    };
-    const personResp = await personsApi.searchPersons(term, opts);
-    const person = personResp.data.items[0]?.item;
-    return person;
-  } catch (e) {
-    console.error(e);
-  }
-};
-const pushCorrectData = async (person: any, user: User) => {
-  try {
-    const personObj = {
-      [F.lastTimeCodeWasGenerated]: user.lastTimeCodeWasGenerated,
-      [F.lastTimePluginWasLunched]: user.lastTimePluginWasLunched,
-      [F.generatedUrls]: user.generatedUrls,
-      [F.numberOfCodeGenerations]: user.numberOfCodeGenerations,
-      [F.numberOfDaysActive]: user.numberOfDaysActive,
-      [F.totalTimeCodeGenerationWasInterrupted]: user.totalTimeCodeGenerationWasInterrupted,
-    };
-    let opts = pipedrive.UpdatePerson.constructFromObject(personObj);
-    const updateResp = await personsApi.updatePerson(person.id, opts);
-    return updateResp;
-  } catch (e) {
-    console.error(e);
-  }
-};
+async function searchPerson(key: string) {
+  let term = key;
+  let opts = {
+    fields: 'custom_fields',
+    exactMatch: true,
+    start: 0,
+    limit: 1,
+  };
+  const personResp = await personsApi.searchPersons(term, opts);
+  const person = personResp.data.items[0]?.item;
+  return person;
+}
+async function pushCorrectData(person: any, user: User) {
+  const personObj = {
+    [F.lastTimeCodeWasGenerated]: user.lastTimeCodeWasGenerated,
+    [F.lastTimePluginWasLunched]: user.lastTimePluginWasLunched,
+    [F.generatedUrls]: user.generatedUrls,
+    [F.numberOfCodeGenerations]: user.numberOfCodeGenerations,
+    [F.numberOfDaysActive]: user.numberOfDaysActive,
+    [F.totalTimeCodeGenerationWasInterrupted]: user.totalTimeCodeGenerationWasInterrupted,
+  };
+  let opts = pipedrive.UpdatePerson.constructFromObject(personObj);
+  const updateResp = await personsApi.updatePerson(person.id, opts);
+  return updateResp;
+}
 
-export const updateANumberOfusers = async (nombreOfUsersToTest: number) => {
+async function updateANumberOfusers(nombreOfUsersToTest: number) {
   let inexistantPipeDriveUsers = [];
   let usersToEdit = [];
   let counter = 0;
@@ -89,5 +81,5 @@ export const updateANumberOfusers = async (nombreOfUsersToTest: number) => {
   console.log(inexistantPipeDriveUsers);
   const dictstring = JSON.stringify(inexistantPipeDriveUsers);
   await writeFile(analyticsDirInSrc + '/inexistant-PipeDriveUsers.json', dictstring);
-};
+}
 updateANumberOfusers(users.length);

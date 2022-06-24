@@ -9,8 +9,6 @@ import { round } from './features/export-code/gen-node-utils/utils-and-reset';
 async function main() {
   perfReset('Starting...');
 
-  // await runPipedriveSample();
-
   //  Send to codesandbox
   await new CodeController().exportCode(devFigmaConfig, false);
 

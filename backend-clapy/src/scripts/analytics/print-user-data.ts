@@ -1,33 +1,33 @@
 import fs from 'fs';
 
-import { Analytic, init, User, Users } from './shared-variables';
+import { Analytic, initAnalytics, User, Users } from './shared-variables';
 
 const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
-  const filtredAnalyticsOpened = analytics.filter(analytic => analytic.Action === 'open-plugin');
-  const filtredAnalyticsGenStarted = analytics.filter(
+  const filteredAnalyticsOpened = analytics.filter(analytic => analytic.Action === 'open-plugin');
+  const filteredAnalyticsGenStarted = analytics.filter(
     analytic => analytic.Status == 'start' && analytic.Action == 'gen-code',
   );
-  const filtredAnalyticsCompleted = analytics.filter(
+  const filteredAnalyticsCompleted = analytics.filter(
     analytic => analytic.Status == 'completed' && analytic.Action == 'gen-code',
   );
 
-  user.numberOfCodeGenerations = filtredAnalyticsCompleted.length;
+  user.numberOfCodeGenerations = filteredAnalyticsCompleted.length;
 
-  if (filtredAnalyticsOpened.length > 0) {
-    user.lastTimePluginWasLunched = filtredAnalyticsOpened[filtredAnalyticsOpened.length - 1]['Created At']
+  if (filteredAnalyticsOpened.length > 0) {
+    user.lastTimePluginWasLunched = filteredAnalyticsOpened[filteredAnalyticsOpened.length - 1]['Created At']
       .toISOString()
       .substring(0, 10);
   }
-  if (filtredAnalyticsCompleted.length > 0) {
-    user.lastTimeCodeWasGenerated = filtredAnalyticsCompleted[filtredAnalyticsCompleted.length - 1]['Created At']
+  if (filteredAnalyticsCompleted.length > 0) {
+    user.lastTimeCodeWasGenerated = filteredAnalyticsCompleted[filteredAnalyticsCompleted.length - 1]['Created At']
       .toISOString()
       .substring(0, 10);
   }
-  if (filtredAnalyticsGenStarted.length > 0 && filtredAnalyticsCompleted.length > 0) {
-    user.totalTimeCodeGenerationWasInterrupted = filtredAnalyticsGenStarted.length - filtredAnalyticsCompleted.length;
+  if (filteredAnalyticsGenStarted.length > 0 && filteredAnalyticsCompleted.length > 0) {
+    user.totalTimeCodeGenerationWasInterrupted = filteredAnalyticsGenStarted.length - filteredAnalyticsCompleted.length;
   }
-  for (let i = 0; i < filtredAnalyticsCompleted.length; i++) {
-    const datesUserWasOn = filtredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
+  for (let i = 0; i < filteredAnalyticsCompleted.length; i++) {
+    const datesUserWasOn = filteredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
     user.numberOfDaysActive = new Set(datesUserWasOn).size;
   }
   if (Array.isArray(user.generatedUrls)) {
@@ -36,12 +36,13 @@ const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
 };
 
 export async function mainAnalytics() {
-  const analytics = await init();
+  const analytics = await initAnalytics();
   let users: Users = {};
 
   // loop through analytics prepare users Variable.
   for (const analytic of analytics) {
     const { 'Auth0 ID': auth0Id } = analytic;
+    if (auth0Id == null) continue;
     if (!users[auth0Id]) {
       users[auth0Id] = {
         key: auth0Id,
