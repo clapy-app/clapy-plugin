@@ -1,6 +1,7 @@
 node_modules
 yarn-error.log
-
+# OS 
+.DS_Store
 # Env
 /.env
 /credentials/*

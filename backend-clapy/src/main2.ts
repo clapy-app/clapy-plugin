@@ -1,8 +1,6 @@
 import { waitInfinite } from './common/general-utils';
 import { perfReset, perfTotal } from './common/perf-utils';
-import { CodeController } from './features/export-code/1-code-controller';
-import { devFigmaConfig } from './features/export-code/dev-figma-config';
-import { round } from './features/export-code/gen-node-utils/utils-and-reset';
+import { round } from './features/export-code/figma-code-map/details/utils-and-reset';
 
 // To work on features outside the webservice, and keep live reload.
 
@@ -12,7 +10,8 @@ async function main() {
   // await runPipedriveSample();
 
   // Send to codesandbox
-  await new CodeController().exportCode(devFigmaConfig, false);
+  // await new CodeController().exportCode(devFigmaConfig, false);
+  //await updateANumberOfusers(906);
 
   // await insertTrackings();
 

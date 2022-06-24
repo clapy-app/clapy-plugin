@@ -29,5 +29,10 @@
       "**/old": true
     },
     "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+    "cSpell.words": [
+      "clapy",
+      "metabase",
+      "pipedrive"
+    ],
   }
 }

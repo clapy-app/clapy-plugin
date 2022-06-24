@@ -11,10 +11,16 @@ var auth0Management = new ManagementClient({
   clientSecret: auth0BackendClientSecret,
   scope: 'read:users update:users',
 });
+///
 
 export async function getAuth0User(userId: string | undefined) {
   if (!userId) throw new UnauthorizedException();
-  return auth0Management.getUser({ id: userId });
+  try {
+    return await auth0Management.getUser({ id: userId });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
