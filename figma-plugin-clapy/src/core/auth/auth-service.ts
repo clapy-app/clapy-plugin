@@ -231,7 +231,7 @@ async function waitForAuthorizationCode(readToken: string, authWindow: Window | 
     if (authoCode) {
       return authoCode;
     }
-    await wait(500);
+    await wait(1000);
   }
 }
 

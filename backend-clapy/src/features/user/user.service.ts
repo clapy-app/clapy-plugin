@@ -14,7 +14,7 @@ var auth0Management = new ManagementClient({
 
 export async function getAuth0User(userId: string | undefined) {
   if (!userId) throw new UnauthorizedException();
-  return auth0Management.getUser({ id: userId });
+  return await auth0Management.getUser({ id: userId });
 }
 
 export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
