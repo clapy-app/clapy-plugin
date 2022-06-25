@@ -3,17 +3,22 @@ import { DeclarationPlain } from 'css-tree';
 import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset';
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (!node.effects?.length /* || (!node.visibleFills?.length && !node.visibleStrokes?.length) */) {
+  if (!node.effects?.length) {
     resetStyleIfOverriding(context, node, styles, 'text-shadow');
     resetStyleIfOverriding(context, node, styles, 'box-shadow');
     resetStyleIfOverriding(context, node, styles, 'filter');
     resetStyleIfOverriding(context, node, styles, 'backdrop-filter');
     return;
+  }
+  const noBackgroundNoBorder = !node.visibleFills?.length && !node.visibleStrokes?.length;
+  if (noBackgroundNoBorder) {
+    resetStyleIfOverriding(context, node, styles, 'box-shadow');
+    resetStyleIfOverriding(context, node, styles, 'backdrop-filter');
   }
   const nodeIsText = isText(node);
 
@@ -67,11 +72,13 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
         // + supports the spread parameter
         // - it keeps a rectangle form instead of following the children shape
         // drop-shadow: the opposite
-        // Let's use box-shadow if inset or with a spread, otherwise drop-shadow.
+        // Let's use box-shadow if inset or with a spread or not a SVG, otherwise drop-shadow.
         if (nodeIsText) {
           textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
-        } else if (insetPrefix || spread || !flags.useFilterDropShadow) {
-          boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
+        } else if (insetPrefix || spread || !flags.useFilterDropShadow || !isVector(node)) {
+          if (!noBackgroundNoBorder) {
+            boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
+          }
         } else {
           filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
         }
@@ -79,7 +86,7 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
         let { radius } = effect;
         radius = convertRadius(radius);
         filters.push(`blur(${radius}px)`);
-      } else if (effect.type === 'BACKGROUND_BLUR') {
+      } else if (effect.type === 'BACKGROUND_BLUR' && !noBackgroundNoBorder) {
         let { radius } = effect;
         radius = convertRadius(radius);
         backdropFilters.push(`blur(${radius}px)`);
