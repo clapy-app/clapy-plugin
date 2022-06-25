@@ -1,11 +1,12 @@
 import { TypographyStyle } from '@mui/material';
-import { DeclarationPlain } from 'css-tree';
+import { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
 import { PropertiesHyphen } from 'csstype';
+import equal from 'fast-deep-equal';
 import { isPlainObject } from 'lodash';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { ValidNode } from '../create-ts-compiler/canvas-utils';
+import { isInstanceContext, NodeContext } from '../code.model';
+import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { round } from '../gen-node-utils/utils-and-reset';
 import {
   CssOperators,
@@ -90,7 +91,7 @@ export function addStyle<T extends keyof PropertiesHyphen>(
     }
   }
 
-  styles[name] = mkDeclarationCss(
+  const newStyle = mkDeclarationCss(
     name,
     mkValueCss(
       values.map(val => {
@@ -116,6 +117,11 @@ export function addStyle<T extends keyof PropertiesHyphen>(
       }),
     ),
   );
+
+  const inheritedStyle = getInheritedNodeStyle(context, name);
+  if (isText(node) || !equal(newStyle, inheritedStyle)) {
+    styles[name] = newStyle;
+  }
 }
 
 export function applyToken<T extends keyof PropertiesHyphen>(
@@ -202,15 +208,70 @@ export function addJss<T extends keyof TypographyStyle /* Include<keyof CSSStyle
   (styles as any)[name] = style.length === 1 && typeof style[0] === 'number' ? style[0] : style.join('');
 }
 
-export function resetStyleIfOverriding(
+/**
+ *
+ * @param context
+ * @param node
+ * @param styles
+ * @param name
+ * @param value A value to add a condition to reset. If `value` is defined, the rule `name` is reset only if the inherited CSS rule found has the value `value`. The filter only works if `value` is of type Raw in the CSS AST.
+ */
+export function resetStyleIfOverriding<T extends keyof PropertiesHyphen>(
   context: NodeContext,
   node: ValidNode,
   styles: Dict<DeclarationPlain>,
   name: keyof PropertiesHyphen,
+  value?: StyleValue<T>,
 ) {
-  // MVP: always reset the CSS rules. Ideally, we should do it only if required vs the component.
-  // But with the new workflow, the instances are generated before the component, so we can't filter yet.
-  // if (!!context.nodeOfComp?.styles?.[name]) {
-  addStyle(context, node, styles, name, 'initial');
-  // }
+  if (intermediateNodesDefinedThisStyle(context, name, value)) {
+    addStyle(context, node, styles, name, 'initial');
+  }
+}
+
+function intermediateNodesDefinedThisStyle<T extends keyof PropertiesHyphen>(
+  context: NodeContext,
+  name: keyof PropertiesHyphen,
+  value?: StyleValue<T>,
+) {
+  const style = getInheritedNodeStyle(context, name);
+  if (style) {
+    const inheritedValue = ((style.value as ValuePlain)?.children?.[0] as Raw)?.value;
+    const isCSSReset = inheritedValue === 'initial';
+    return !isCSSReset && (value == null || inheritedValue === value);
+  }
+  return false;
+}
+
+export function getInheritedNodeStyle(context: NodeContext, name: keyof PropertiesHyphen) {
+  if (isInstanceContext(context)) {
+    const inheritedStyles = getInheritedNodeStyles(context);
+    return inheritedStyles?.[name];
+  }
+  return undefined;
+}
+
+function getInheritedNodeStyles(context: NodeContext) {
+  if (isInstanceContext(context)) {
+    if (!context.inheritedStyles) {
+      const inheritedStyles: Dict<DeclarationPlain> = {};
+      for (let i = context.intermediateNodes.length - 1; i >= 1; i--) {
+        const style = context.intermediateNodes[i]?.styles;
+        if (style) {
+          Object.assign(inheritedStyles, style);
+        }
+      }
+      context.inheritedStyles = inheritedStyles;
+    }
+    return context.inheritedStyles;
+  }
+  return undefined;
+}
+
+export function mergeWithInheritedStyles(context: NodeContext, styles: Dict<DeclarationPlain>) {
+  const inheritedStyles = getInheritedNodeStyles(context);
+  if (inheritedStyles) {
+    return Object.assign({}, inheritedStyles, styles);
+  } else {
+    return styles;
+  }
 }

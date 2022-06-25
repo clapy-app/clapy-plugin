@@ -27,6 +27,7 @@ import {
   SceneNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
+import { mergeWithInheritedStyles } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils';
@@ -224,7 +225,7 @@ function recurseOnChildren(
       tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
       nodeNameLower: child.name.toLowerCase(),
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
-      parentStyles: passParentToChildContext ? parentStyles : styles,
+      parentStyles: passParentToChildContext ? parentStyles : mergeWithInheritedStyles(context, styles),
       parentContext: passParentToChildContext ? parentContext : context,
       isRootInComponent: false,
     };

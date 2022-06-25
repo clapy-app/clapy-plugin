@@ -105,24 +105,22 @@ export function genTextAst(node: TextNode2) {
     let segAst: ts.JsxChild = factory.createJsxText(escapeHTML(segment.characters), false);
 
     if (!singleChild) {
-      const className = getOrGenClassName(moduleContext);
-      addCssRule(context, className, stylesToList(segmentStyles));
-      const classAttr = createClassAttrForClassNoOverride(className);
+      const styleDeclarations = stylesToList(segmentStyles);
+      const attributes: ts.JsxAttribute[] = [];
+      if (styleDeclarations.length) {
+        const className = getOrGenClassName(moduleContext);
+        addCssRule(context, className, styleDeclarations);
+        attributes.push(createClassAttrForClassNoOverride(className));
+      }
       if (segment.hyperlink) {
         if (segment.hyperlink.type === 'URL') {
           // hyperlink of type NODE not handled for now
-          segAst = mkTag(
-            'a',
-            [classAttr, mkHrefAttr(segment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr()],
-            [segAst],
-          );
+          attributes.push(mkHrefAttr(segment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr());
         } else {
           warnNode(segment, 'TODO Unsupported hyperlink of type node');
-          segAst = mkTag('span', [classAttr], [segAst]);
         }
-      } else {
-        segAst = mkTag('span', [classAttr], [segAst]);
       }
+      segAst = mkTag('span', attributes, [segAst]);
     }
 
     ast.push(segAst);
@@ -130,13 +128,16 @@ export function genTextAst(node: TextNode2) {
 
   // If multiple segments, surround with span to maintain the inline style
   if (!singleChild) {
-    let classAttr2: ts.JsxAttribute | undefined = undefined;
+    const attributes: ts.JsxAttribute[] = [];
     if (node.textInlineWrapperStyles) {
-      const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
-      addCssRule(context, className, stylesToList(node.textInlineWrapperStyles));
-      classAttr2 = createClassAttrForClassNoOverride(className);
+      const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
+      if (styleDeclarations.length) {
+        const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
+        addCssRule(context, className, styleDeclarations);
+        attributes.push(createClassAttrForClassNoOverride(className));
+      }
     }
-    ast = mkTag('span', classAttr2 ? [classAttr2] : [], ast);
+    ast = mkTag('span', attributes, ast);
   }
 
   // If node has styles to render, surround with a styled div

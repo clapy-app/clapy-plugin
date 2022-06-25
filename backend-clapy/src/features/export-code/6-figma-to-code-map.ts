@@ -57,10 +57,14 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, node, styles);
   if (isInstanceContext(context) && !isText(node)) {
-    // On the instance, only keep the styles different from the component.
-    const compStyles = context.nodeOfComp.styles;
+    // On the instance, only keep the styles different from the next intermediate component.
+    const nextCompNode = context.intermediateNodes[1];
+    if (!nextCompNode) {
+      throw new Error(`BUG? context of instance node ${node.name} has undefined nextCompNode (intermediateNodes[1])`);
+    }
+    const compStyles = nextCompNode.styles;
     if (!compStyles) {
-      warnOrThrow(`node ${context.nodeOfComp.name} has no styles attached when checking its instance.`);
+      warnOrThrow(`node ${nextCompNode.name} has no styles attached when checking its instance.`);
     }
     if (compStyles) {
       const instanceStyles: Dict<DeclarationPlain> = {};

@@ -74,7 +74,6 @@ type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, Frame
   SpecificExtender;
 
 interface GlobalExtender {
-  nodeOfComp?: SceneNode2;
   isRootInComponent?: boolean;
   maskedBy?: Masker;
   // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.

@@ -32,6 +32,7 @@ import {
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
+import { mergeWithInheritedStyles } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { instanceToCompIndexRemapper } from './gen-node-utils/default-node';
 import { readSvg } from './gen-node-utils/process-nodes-utils';
@@ -55,7 +56,6 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
   try {
     const { parentNode, moduleContext, componentContext, nodeOfComp, isRootInComponent } = context;
     node.nodeContext = context;
-    node.nodeOfComp = nodeOfComp;
     fillIsRootInComponent(moduleContext, node);
 
     let styles: Dict<DeclarationPlain> = {};
@@ -330,7 +330,7 @@ function recurseOnChildren(
       tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
       nodeNameLower: child.name.toLowerCase(),
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
-      parentStyles: passParentToChildContext ? parentStyles : styles,
+      parentStyles: passParentToChildContext ? parentStyles : mergeWithInheritedStyles(context, styles),
       parentContext: passParentToChildContext ? parentContext : context,
       componentContext,
       instanceNode,

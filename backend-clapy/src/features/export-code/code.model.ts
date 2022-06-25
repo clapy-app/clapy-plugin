@@ -157,6 +157,7 @@ export interface InstanceContext extends NodeContext {
   intermediateComponentContexts: ModuleContext[];
   // Undefined when a component is swapped. No need to match with the other instance, it may not have the same structure.
   intermediateNodes: (SceneNode2 | undefined)[];
+  inheritedStyles?: Dict<DeclarationPlain>;
   // intermediateComponents: IntermediateComponent[];
   // When adding properties here, ensure you also update the InstanceContext creation in 4- and 5-instance-overrides.ts.
   // TypeScript won't mark errors, because it inherits the previous context properties.
@@ -171,7 +172,7 @@ export interface SwapContext {
 }
 
 export function isInstanceContext(context: NodeContext): context is InstanceContext {
-  return !!(context as InstanceContext).nodeOfComp;
+  return !!(context as InstanceContext).componentContext;
 }
 
 export interface BorderWidths {

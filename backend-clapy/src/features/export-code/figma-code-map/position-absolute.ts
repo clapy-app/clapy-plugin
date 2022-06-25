@@ -3,10 +3,11 @@ import { DeclarationPlain } from 'css-tree';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
 import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
+import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (!styles.position) {
+  const inheritedStyle = getInheritedNodeStyle(context, 'position');
+  if (!inheritedStyle) {
     addStyle(context, node, styles, 'position', 'relative');
   }
 }
@@ -93,12 +94,11 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
       node.autoHeight = true; // Auto-height
     }
-    // TODO check
-    // } else {
-    //   resetStyleIfOverriding(context, node, styles, 'position');
-    //   resetStyleIfOverriding(context, node, styles, 'top');
-    //   resetStyleIfOverriding(context, node, styles, 'right');
-    //   resetStyleIfOverriding(context, node, styles, 'bottom');
-    //   resetStyleIfOverriding(context, node, styles, 'left');
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'position', 'absolute');
+    resetStyleIfOverriding(context, node, styles, 'top');
+    resetStyleIfOverriding(context, node, styles, 'right');
+    resetStyleIfOverriding(context, node, styles, 'bottom');
+    resetStyleIfOverriding(context, node, styles, 'left');
   }
 }
