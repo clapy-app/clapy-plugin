@@ -143,7 +143,7 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
         recurseOnChildren(context, node, styles);
       }
 
-      styles = postMapStyles(context, node, styles);
+      postMapStyles(context, node, styles);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate node with error below. Skipping the node.');

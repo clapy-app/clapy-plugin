@@ -74,7 +74,7 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
           instanceStyles[ruleName] = astValue;
         }
       }
-      return instanceStyles;
+      styles = instanceStyles;
     }
   }
   node.styles = styles;
