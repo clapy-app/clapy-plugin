@@ -28,17 +28,20 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
   const textSegments: TextSegment2[] | undefined = node._textSegments;
   if (!textSegments?.length) return;
 
-  for (const segment of textSegments) {
+  if (!node._segmentsStyles) node._segmentsStyles = [];
+
+  for (let i = 0; i < textSegments.length; i++) {
+    const segment = textSegments[i];
     const segmentStyles: Dict<DeclarationPlain> = {};
 
     // Add text segment styles
     mapTextSegmentStyles(context, segment, segmentStyles, node);
 
-    segment.styles = segmentStyles;
+    node._segmentsStyles[i] = segmentStyles;
   }
 
   const singleChild = textSegments.length === 1;
-  const firstSegmentStyles = textSegments[0].styles!;
+  const firstSegmentStyles = node._segmentsStyles[0];
 
   if (singleChild) {
     Object.assign(styles, firstSegmentStyles);
@@ -88,18 +91,22 @@ export function genTextAst(node: TextNode2) {
   if (!styles) throw new Error(`[genTextAst] node ${node.name} has no styles`);
   const { moduleContext } = context;
   const textSegments: TextSegment2[] | undefined = node._textSegments;
+  const segmentsStyles = node._segmentsStyles;
   if (!textSegments?.length) return;
+  if (!segmentsStyles?.length) return;
 
   const singleChild = textSegments.length === 1;
   let ast: JsxOneOrMore = [];
 
   // Prepare AST for each text segment
-  for (const segment of textSegments) {
+  for (let i = 0; i < textSegments.length; i++) {
+    const segment = textSegments[i];
+    const segmentStyles = segmentsStyles[i];
     let segAst: ts.JsxChild = factory.createJsxText(escapeHTML(segment.characters), false);
 
     if (!singleChild) {
       const className = getOrGenClassName(moduleContext);
-      addCssRule(context, className, stylesToList(styles));
+      addCssRule(context, className, stylesToList(segmentStyles));
       const classAttr = createClassAttrForClassNoOverride(className);
       if (segment.hyperlink) {
         if (segment.hyperlink.type === 'URL') {
@@ -147,4 +154,9 @@ export function genTextAst(node: TextNode2) {
   ast = mkWrapHideAndTextOverrideAst(context, ast, node);
 
   return ast;
+}
+
+export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
+  prepareStylesOnTextSegments(context, node, styles);
+  return genTextAst(node);
 }

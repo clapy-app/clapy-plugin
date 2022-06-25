@@ -10,9 +10,6 @@ import {
   mkSwapInstanceAndHideWrapper,
 } from './ts-ast-utils';
 
-// TODO check
-// TODO utiliser cette fonction sur le noeud root, en différenciant les cas comp/instance vs autre.
-// Dans 2-... si pas une instance, il y a moins de choses à faire ci-dessous
 export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneNode2, isRootComponent = false) {
   const { parentNode, moduleContext } = context;
   const isInst = isInstance(node);

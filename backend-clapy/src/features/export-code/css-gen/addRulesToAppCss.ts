@@ -1,9 +1,10 @@
 import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
 
 import { Nil } from '../../../common/general-utils';
+import { warnOrThrow } from '../../../utils';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { ModuleContext, NodeContext, ParentNode } from '../code.model';
-import { isPage, isValidNode } from '../create-ts-compiler/canvas-utils';
+import { isValidNode } from '../create-ts-compiler/canvas-utils';
 import { csstree } from '../create-ts-compiler/csstree';
 import { addStyle } from './css-factories-high';
 import {
@@ -24,12 +25,6 @@ import {
 } from './css-type-utils';
 
 export function addRulesToAppCss(context: ModuleContext, appCss: string, parentNode: ParentNode | Nil) {
-  if (!isValidNode(parentNode)) {
-    if (!isPage(parentNode)) {
-      console.warn('Parent node is not valid to add CSS rules in App.module.css', parentNode);
-    }
-    return;
-  }
   const styles: Dict<DeclarationPlain> = {};
 
   // Let's wait a bit until we're sure we don't want position absolute here
@@ -59,13 +54,20 @@ export function addRulesToAppCss(context: ModuleContext, appCss: string, parentN
 
   if (context.projectContext.extraConfig.isFTD) {
     // Add demo patch
+    const figmaNode = isValidNode(parentNode) ? parentNode : context.node;
     const styles2: Dict<DeclarationPlain> = {};
 
-    // Theme switcher styles
-    addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'position', 'absolute');
-    addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'top', '10px');
-    addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'right', '20px');
-    addStyle({ moduleContext: context } as NodeContext, parentNode, styles2, 'z-index', '10');
+    if (isValidNode(figmaNode)) {
+      // Theme switcher styles
+      addStyle({ moduleContext: context } as NodeContext, figmaNode, styles2, 'position', 'absolute');
+      addStyle({ moduleContext: context } as NodeContext, figmaNode, styles2, 'top', '10px');
+      addStyle({ moduleContext: context } as NodeContext, figmaNode, styles2, 'right', '20px');
+      addStyle({ moduleContext: context } as NodeContext, figmaNode, styles2, 'z-index', '10');
+    } else {
+      warnOrThrow(
+        `Theme switcher may not be styled as expected, since the parent does not match the criteria I had in mind when coding it. To review. Is it because the node is at top level (and parent is page)? It should work. Something to adapt? Selected node is not a "valid" node? I don't remember why we need it here.`,
+      );
+    }
 
     const className = 'themeSwitcher';
     const styleDeclarations = stylesToList(styles2);

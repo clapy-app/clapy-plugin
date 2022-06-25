@@ -6,7 +6,7 @@ import { env } from '../../env-and-config/env';
 import { handleError, warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { getOrGenComponent } from './3-gen-component';
-import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
+import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map';
 import { InstanceContext, JsxOneOrMore, ModuleContext, SwapAst, SwapContext } from './code.model';
 import { writeAsset } from './create-ts-compiler/2-write-asset';
 import {
@@ -28,17 +28,18 @@ import {
   isVector,
   Masker,
   SceneNode2,
+  TextNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import { stylesToList } from './css-gen/css-type-utils';
 import { instanceToCompIndexRemapper } from './gen-node-utils/default-node';
 import { readSvg } from './gen-node-utils/process-nodes-utils';
+import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils';
 import {
   addCssRule,
   checkIsOriginalInstance,
   createComponentUsageWithAttributes,
-  createTextAst,
   fillIsRootInComponent,
   getOrCreateCompContext,
   getOrGenClassName,
@@ -53,6 +54,7 @@ import { warnNode } from './gen-node-utils/utils-and-reset';
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {
     const { parentNode, moduleContext, componentContext, nodeOfComp, isRootInComponent } = context;
+    node.nodeContext = context;
     node.nodeOfComp = nodeOfComp;
     fillIsRootInComponent(moduleContext, node);
 
@@ -141,43 +143,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
-      if (!isText(nodeOfComp)) {
-        throw new Error(`BUG? Instance node ${node.name} is text but component node ${nodeOfComp.name} is not.`);
-      }
-      if (!equal(node._textSegments, nodeOfComp._textSegments)) {
-        const ast = createTextAst(context, node, styles);
-        if (ast) {
-          addTextOverride(context, node, ast);
-        }
-      }
-      // Add text styles
-      let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-      if (!ast) {
-        warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
-        return;
-      }
-
-      const flexStyles: Dict<DeclarationPlain> = {};
-      mapTagStyles(context, node, flexStyles);
-
-      if (!context.parentStyles || Object.keys(flexStyles).length) {
-        Object.assign(styles, flexStyles);
-        styles = postMapStyles(context, node, styles);
-        const styleDeclarations = stylesToList(styles);
-        if (styleDeclarations.length) {
-          const className = getOrGenClassName(moduleContext, node);
-          getOrGenClassName(componentContext, nodeOfComp);
-          addCssRule(context, className, styleDeclarations);
-          addStyleOverride(context, node);
-        }
-      } else {
-        styles = postMapStyles(context, node, styles);
-        Object.assign(context.parentStyles, styles);
-      }
-      //
-      // return ast;
-      // TODO something with the ast, likely add as attribute of the instance (render prop)
-      //
+      addTextOverride(context, node, styles);
     } else if (isVector(node)) {
       return addNodeStyles(context, node, nodeOfComp, styles);
     } else if (isBlockNode(node)) {
@@ -462,6 +428,7 @@ function addHideOverride(context: InstanceContext, node: SceneNode2) {
     intermediateNodes = intermediateNodes.slice(0, -1);
   }
 
+  // Check that the visibility of current node changed vs the next intermediate component
   if (!(intermediateNodes.length >= 2) || intermediateNodes[0]?.visible === intermediateNodes[1]?.visible) {
     return;
   }
@@ -483,10 +450,24 @@ function addHideOverride(context: InstanceContext, node: SceneNode2) {
   );
 }
 
-function addTextOverride(context: InstanceContext, node: SceneNode2, text: JsxOneOrMore) {
+function addTextOverride(context: InstanceContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
 
-  const overrideValue = text;
+  // Check that the text of current node changed vs the next intermediate component
+  const nextCompNode = intermediateNodes[1];
+  if (!isText(nextCompNode)) {
+    throw new Error(`BUG? Instance node ${node.name} is text but component node ${nextCompNode?.name} is not.`);
+  }
+  if (equal(node._textSegments, nextCompNode._textSegments)) {
+    return;
+  }
+  prepareStylesOnTextSegments(context, node, styles);
+  const textAst = genTextAst(node);
+  if (!textAst) {
+    return;
+  }
+
+  const overrideValue = textAst;
 
   addOverrides(
     intermediateNodes,

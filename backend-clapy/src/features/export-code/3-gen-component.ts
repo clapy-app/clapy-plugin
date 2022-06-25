@@ -257,6 +257,6 @@ export function createNodeContext(moduleContext: ModuleContext, root: SceneNode2
     isRootNode: moduleContext.isRootComponent,
     isRootInComponent: true,
   };
+  root.nodeContext = nodeContext;
   return nodeContext;
-  //
 }

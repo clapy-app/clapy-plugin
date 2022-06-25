@@ -259,7 +259,6 @@ export function genNodeAst(node: SceneNode2) {
     }
 
     if (isText(node)) {
-      prepareStylesOnTextSegments(context, node, styles);
       return genTextAst(node);
     } else if (isVector(node)) {
       if (!svgPathVarName) throw new Error(`[genNodeAst] node ${node.name} has no svgPathVarName`);

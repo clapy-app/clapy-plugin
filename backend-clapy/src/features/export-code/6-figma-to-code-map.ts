@@ -5,7 +5,7 @@ import ts from 'typescript';
 import { warnOrThrow } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
 import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
-import { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
+import { isText, TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
 import { addStyle } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background';
@@ -56,7 +56,7 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, node, styles);
-  if (isInstanceContext(context)) {
+  if (isInstanceContext(context) && !isText(node)) {
     // On the instance, only keep the styles different from the component.
     const compStyles = context.nodeOfComp.styles;
     if (!compStyles) {
