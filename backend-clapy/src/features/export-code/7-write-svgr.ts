@@ -1,6 +1,10 @@
 import { transform } from '@svgr/core';
+import _ from 'lodash';
 
 import { ProjectContext } from './code.model';
+
+const svgPrefix = {};
+svgPrefix.toString = () => `${_.uniqueId()}_`;
 
 export async function writeSVGReactComponents(projectContext: ProjectContext) {
   for (const [path, { svgPathVarName, svgContent }] of Object.entries(projectContext.svgToWrite)) {
@@ -17,6 +21,16 @@ export async function writeSVGReactComponents(projectContext: ProjectContext) {
         // jsx converts into React component
         plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
         // prettierConfig: await getPrettierConfig(),
+        svgoConfig: {
+          plugins: [
+            {
+              name: 'cleanupIDs',
+              params: {
+                prefix: svgPrefix,
+              },
+            },
+          ],
+        },
       },
       { componentName: svgPathVarName },
     );
