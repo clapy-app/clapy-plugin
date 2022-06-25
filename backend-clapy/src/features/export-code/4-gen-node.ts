@@ -59,6 +59,10 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
 
     const { parentNode, moduleContext, isRootInComponent } = context;
     fillIsRootInComponent(moduleContext, node);
+    if (isRootInComponent) {
+      // Always generate the className prop for root nodes
+      getOrGenClassName(moduleContext, node);
+    }
 
     let styles: Dict<DeclarationPlain> = {};
 

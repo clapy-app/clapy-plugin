@@ -232,9 +232,9 @@ export function createComponentUsageWithAttributes(
       otherClassOverrides.push(ov);
     }
   }
-  if (!rootClassOverride) {
-    warnNode(node, 'No root class found in instanceClasses.');
-  }
+  // if (!rootClassOverride) {
+  //   warnNode(node, 'No root class found in instanceClasses.');
+  // }
 
   const classAttr = mkClassAttr2(rootClassOverride);
   if (classAttr) attrs.push(classAttr);

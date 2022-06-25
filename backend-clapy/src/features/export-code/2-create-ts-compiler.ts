@@ -100,7 +100,7 @@ export async function exportCode(
 
   const lightAppModuleContext = mkModuleContext(
     projectContext,
-    undefined as unknown as SceneNode2,
+    {} as unknown as SceneNode2,
     parent,
     undefined,
     appCompDir,

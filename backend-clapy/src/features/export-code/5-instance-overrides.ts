@@ -55,7 +55,12 @@ import { warnNode } from './gen-node-utils/utils-and-reset';
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {
     const { parentNode, moduleContext, componentContext, nodeOfComp, isRootInComponent } = context;
-    node.nodeContext = context;
+    if (!isRootInComponent) {
+      // The root node is an instance node, also used where the instance is used, and a context is already attached there.
+      // It shouldn't be overridden, otherwise we get a wrong node.isRootInComponent in the instance usage.
+      // (E.g. it wraps instances with <></> as if it was a root node)
+      node.nodeContext = context;
+    }
     fillIsRootInComponent(moduleContext, node);
 
     let styles: Dict<DeclarationPlain> = {};

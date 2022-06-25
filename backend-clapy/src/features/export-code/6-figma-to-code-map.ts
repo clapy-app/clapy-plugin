@@ -63,7 +63,7 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
       throw new Error(`BUG? context of instance node ${node.name} has undefined nextCompNode (intermediateNodes[1])`);
     }
     const compStyles = nextCompNode.styles;
-    if (!compStyles) {
+    if (!compStyles && nextCompNode.visible) {
       warnOrThrow(`node ${nextCompNode.name} has no styles attached when checking its instance.`);
     }
     if (compStyles) {
