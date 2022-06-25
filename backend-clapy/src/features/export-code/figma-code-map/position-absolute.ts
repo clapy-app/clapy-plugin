@@ -2,7 +2,15 @@ import { DeclarationPlain } from 'css-tree';
 
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { NodeContext } from '../code.model';
-import { isConstraintMixin, isFlexNode, isGroup, isLine, ValidNode } from '../create-ts-compiler/canvas-utils';
+import {
+  isComponent,
+  isConstraintMixin,
+  isFlexNode,
+  isGroup,
+  isLine,
+  isPage,
+  ValidNode,
+} from '../create-ts-compiler/canvas-utils';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -27,10 +35,13 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     return;
   }
 
-  const { parentNode, isRootNode } = context;
+  const { parentNode, isRootNode, isRootInComponent } = context;
   const parentIsGroup = isGroup(parentNode);
   const parentIsAbsolute =
-    !isRootNode && (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
+    !isRootNode &&
+    !(isRootInComponent && isComponent(node) && isPage(node.parent)) &&
+    (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
+  //
   if (parentIsAbsolute) {
     addStyle(context, node, styles, 'position', 'absolute');
     const { horizontal, vertical } =
