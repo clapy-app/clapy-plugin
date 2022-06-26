@@ -256,6 +256,8 @@ function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<Declara
         { paddingLeft: [paddingLeft, 'px'] },
       );
     }
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'padding');
   }
 }
 
