@@ -16,7 +16,7 @@ export function isMixed(value: any): value is typeof figma.mixed {
 export function figmaColorToCssHex(color: RGB | RGBA, opacity?: number | undefined): string {
   const { r, g, b, a } = color as RGBA;
   const op = a ?? opacity ?? 1;
-  return opacity === undefined || opacity === 1
+  return op === undefined || opacity === 1
     ? shortenHex(`#${zeroOneToHex(r)}${zeroOneToHex(g)}${zeroOneToHex(b)}`)
     : shortenHex(`#${zeroOneToHex(r)}${zeroOneToHex(g)}${zeroOneToHex(b)}${zeroOneToHex(op)}`);
 }
