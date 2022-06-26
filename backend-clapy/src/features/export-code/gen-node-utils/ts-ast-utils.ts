@@ -659,7 +659,7 @@ export function mkSwapInstanceAndHideWrapper(
   compAst: ts.JsxSelfClosingElement,
   node: SceneNode2,
 ) {
-  let ast: ts.JsxSelfClosingElement | ts.Expression = compAst;
+  let ast: ts.JsxSelfClosingElement | ts.Expression | undefined = compAst;
   let ast2: ts.JsxSelfClosingElement | ts.JsxExpression = compAst;
   if (node.swapName) {
     ast = factory.createBinaryExpression(
@@ -673,14 +673,15 @@ export function mkSwapInstanceAndHideWrapper(
     );
   }
   ast = mkWrapHideExprFragment(ast, node);
+  if (!ast) return;
   if (node.swapName || node.hideProp) {
     ast2 = factory.createJsxExpression(undefined, ast);
   }
   return context.isRootInComponent ? mkFragment([ast2]) : ast2;
 }
 
-function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore, node: SceneNode2) {
-  if (!node.textOverrideProp) {
+function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore | undefined, node: SceneNode2) {
+  if (!ast || !node.textOverrideProp) {
     return ast;
   }
   return factory.createConditionalExpression(
@@ -704,13 +705,13 @@ function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore, node: SceneNode2) {
   );
 }
 
-function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression>(ast: T, node: SceneNode2) {
+function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression | undefined>(ast: T, node: SceneNode2) {
   if (!node.hideProp) {
     return ast;
   }
-  if (node.hideOverrideValue == null) {
+  if (node.hideDefaultValue == null) {
     warnOrThrow(`Node ${node.name} is missing hideOverrideValue although it has a hideProp.`);
-    node.hideOverrideValue = true;
+    node.hideDefaultValue = true;
   }
   const hidePropVar = factory.createPropertyAccessChain(
     factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
@@ -718,7 +719,7 @@ function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression>(ast: T, 
     factory.createIdentifier(node.hideProp),
   );
   const checkHideExpr =
-    node.hideOverrideValue === false
+    node.hideDefaultValue === true
       ? factory.createBinaryExpression(
           hidePropVar,
           factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
@@ -733,9 +734,10 @@ function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression>(ast: T, 
   return ast2;
 }
 
-export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOrMore, node: SceneNode2) {
+export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOrMore | undefined, node: SceneNode2) {
   const astTmp = mkWrapTextOverrideExprFragment(ast, node);
   const ast2 = mkWrapHideExprFragment(astTmp, node);
+  if (!ast2) return;
   if (ast === ast2) return ast;
   const ast3: JsxOneOrMore = mkWrapExpressionFragment(ast2);
   return context.isRootInComponent ? mkFragment(ast3) : ast3;

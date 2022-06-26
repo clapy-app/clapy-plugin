@@ -39,6 +39,7 @@ import {
   fillIsRootInComponent,
   genComponentImportName,
   getOrGenClassName,
+  getOrGenHideProp,
   mkComponentUsage,
   mkNamedImportsDeclaration,
   mkTag,
@@ -52,6 +53,7 @@ import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
 export function prepareNode(context: NodeContext, node: SceneNode2) {
   try {
     node.nodeContext = context;
+    node.styles = {};
     if (!node.visible && context.moduleContext.isRootComponent) {
       node.skip = true;
       return;
@@ -62,6 +64,10 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
     if (isRootInComponent) {
       // Always generate the className prop for root nodes
       getOrGenClassName(moduleContext, node);
+    }
+    node.hideDefaultValue = !node.visible;
+    if (!node.visible) {
+      getOrGenHideProp(moduleContext, node);
     }
 
     let styles: Dict<DeclarationPlain> = {};
@@ -119,7 +125,9 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
       const { projectContext } = moduleContext;
       let svgContent = readSvg(node);
       if (!svgContent) {
-        warnNode(node, 'BUG No SVG content, skipping.');
+        if (node.visible) {
+          warnNode(node, 'BUG No SVG content, skipping.');
+        }
         return;
       }
 
@@ -266,7 +274,14 @@ export function genNodeAst(node: SceneNode2) {
     if (isText(node)) {
       return genTextAst(node);
     } else if (isVector(node)) {
-      if (!svgPathVarName) throw new Error(`[genNodeAst] node ${node.name} has no svgPathVarName`);
+      if (!svgPathVarName) {
+        if (node.visible) {
+          throw new Error(`[genNodeAst] node ${node.name} has no svgPathVarName`);
+        } else {
+          // If the original SVG is not visible, it is not generated. Overrides on instances (show it or change it) are not supported yet.
+          return mkWrapHideAndTextOverrideAst(context, undefined, node);
+        }
+      }
       const attributes = addNodeStyles(context, node, styles);
       const ast = mkComponentUsage(svgPathVarName, attributes);
       return mkWrapHideAndTextOverrideAst(context, ast, node);

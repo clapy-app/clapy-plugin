@@ -65,7 +65,7 @@ function genInstanceAst(node: InstanceNode2) {
   let compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
 
   // Surround instance usage with a syntax to swap with render props
-  let compAst2: SwapAst | JsxOneOrMore = compAst;
+  let compAst2: SwapAst | JsxOneOrMore | undefined = compAst;
   compAst2 = mkSwapInstanceAndHideWrapper(context, compAst, node);
   return compAst2;
 }

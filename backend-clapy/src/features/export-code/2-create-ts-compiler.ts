@@ -172,7 +172,7 @@ function addCompToAppRoot(
   appModuleContext: ModuleContext,
   parentNode: ParentNode | Nil,
   cssVarsDeclaration: string | Nil,
-  compAst: CompAst,
+  compAst: CompAst | undefined,
 ) {
   const {
     compDir,
@@ -235,7 +235,7 @@ function addCompToAppRoot(
   printFileInProject(appModuleContext);
 }
 
-function mkAppCompTsx(compAst: CompAst) {
+function mkAppCompTsx(compAst: CompAst | undefined) {
   const overrideNode: BaseStyleOverride = {
     overrideValue: 'root',
   };
@@ -245,7 +245,7 @@ function mkAppCompTsx(compAst: CompAst) {
       undefined,
       factory.createJsxAttributes([mkClassAttr2(overrideNode)]),
     ),
-    [compAst],
+    compAst ? [compAst] : [],
     factory.createJsxClosingElement(factory.createIdentifier('div')),
   );
 }

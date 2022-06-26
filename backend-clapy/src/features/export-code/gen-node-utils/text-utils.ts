@@ -96,7 +96,7 @@ export function genTextAst(node: TextNode2) {
   if (!segmentsStyles?.length) return;
 
   const singleChild = textSegments.length === 1;
-  let ast: JsxOneOrMore = [];
+  let ast: JsxOneOrMore | undefined = [];
 
   // Prepare AST for each text segment
   for (let i = 0; i < textSegments.length; i++) {

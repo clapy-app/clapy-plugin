@@ -65,6 +65,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
     let styles: Dict<DeclarationPlain> = {};
 
+    // Not sure the below return is useful. To review with more test cases.
     if (!node.visible && context.isRootInComponent) {
       // It happens, we stop here. We may just need to ensure the instance node has a hideProp true on it.
       return;
@@ -442,7 +443,6 @@ function addHideOverride(context: InstanceContext, node: SceneNode2) {
   if (!lastIntermediateNode) {
     throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
   }
-  lastIntermediateNode.hideOverrideValue = overrideValue;
 
   addOverrides(
     intermediateNodes,
