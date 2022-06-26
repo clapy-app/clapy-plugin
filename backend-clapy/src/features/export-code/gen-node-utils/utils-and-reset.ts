@@ -31,7 +31,7 @@ function shortenHex(hex: string) {
     hex.charAt(5) === hex.charAt(6) &&
     (hex.length === 7 || hex.charAt(7) === hex.charAt(8))
   ) {
-    return '#' + hex.charAt(1) + hex.charAt(3) + hex.charAt(5) + (hex.length === 7 ? '' : hex.charAt(7));
+    return `#${hex.charAt(1)}${hex.charAt(3)}${hex.charAt(5)}${hex.length === 7 ? '' : hex.charAt(7)}`;
   }
   return hex;
 }

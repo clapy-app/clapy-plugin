@@ -347,8 +347,9 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     if (isVector(node) && node.strokeWeight > width) {
       width = node.strokeWeight;
     }
-    addStyle(context, node, styles, 'width', [width, 'px']);
-  } else if (node.autoWidth) {
+    addStyle(context, node, styles, 'width', `${width}px`);
+  } /* if (node.autoWidth) */ else {
+    // I'm not sure which one has highest priority between fixedWidth and node.autoWidth. To review with a test case.
     resetStyleIfOverriding(context, node, styles, 'width');
   }
 
@@ -361,7 +362,8 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       height = node.strokeWeight;
     }
     addStyle(context, node, styles, 'height', [height, 'px']);
-  } else if (node.autoHeight) {
+  } /* if (node.autoHeight) */ else {
+    // I'm not sure which one has highest priority between fixedHeight and node.autoHeight. To review with a test case.
     resetStyleIfOverriding(context, node, styles, 'height');
   }
   if (shouldApplyMaxHeight) {

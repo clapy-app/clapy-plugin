@@ -8,16 +8,7 @@ import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { isInstanceContext, NodeContext } from '../code.model';
 import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
 import { round } from '../gen-node-utils/utils-and-reset';
-import {
-  CssOperators,
-  cssOperators,
-  mkDeclarationCss,
-  mkDimensionCss,
-  mkNumberCss,
-  mkOperatorCss,
-  mkRawCss,
-  mkValueCss,
-} from './css-factories-low';
+import { mkDeclarationCss, mkValueCss } from './css-factories-low';
 
 type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
 
@@ -94,27 +85,29 @@ export function addStyle<T extends keyof PropertiesHyphen>(
   const newStyle = mkDeclarationCss(
     name,
     mkValueCss(
-      values.map(val => {
-        if (isPlainObject(val)) {
-          // Unwrap value from annotation object
-          const [figmaTokenProp, value] = Object.entries(val)[0];
-          val = value;
+      values
+        .map(val => {
+          if (isPlainObject(val)) {
+            // Unwrap value from annotation object
+            const [figmaTokenProp, value] = Object.entries(val)[0];
+            val = value;
 
-          const token = applyToken(context, node, figmaTokenProp, val);
-          if (token) {
-            return mkRawCss(token);
+            const token = applyToken(context, node, figmaTokenProp, val);
+            if (token) {
+              return token;
+            }
           }
-        }
-        return val === 0
-          ? mkNumberCss(0)
-          : !Array.isArray(val)
-          ? cssOperators.includes(val as CssOperators)
-            ? mkOperatorCss(val as CssOperators)
+          return val === 0
+            ? '0'
+            : Array.isArray(val)
+            ? `${val[0] * (val[2] || 1)}${val[1]}`
             : typeof val === 'number'
-            ? mkNumberCss(val)
-            : mkRawCss(val.toString())
-          : mkDimensionCss(val[0] * (val[2] || 1), val[1]);
-      }),
+            ? round(val).toString()
+            : typeof val === 'string'
+            ? val
+            : val.toString();
+        })
+        .join(' '),
     ),
   );
 
