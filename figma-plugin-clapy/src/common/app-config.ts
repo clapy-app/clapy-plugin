@@ -5,6 +5,8 @@ export const appConfig = {
 };
 
 export const flags = {
+  verbose: false,
+  measurePerf: false,
   alphaFeature: env.isDev,
   logWebsocketRequests: true,
   fixSvgStrokePositionBug: true,

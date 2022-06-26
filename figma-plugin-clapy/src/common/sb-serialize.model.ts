@@ -372,6 +372,7 @@ export const extractionBlacklist = [
   'exportSettings',
   'canUpgradeToNativeBidiSupport',
   'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
+  'componentPropertyDefinitions',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;

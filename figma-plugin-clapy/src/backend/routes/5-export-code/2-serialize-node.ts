@@ -6,12 +6,14 @@ import type {
   PageNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
+import { perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import type { SerializeContext } from './3-nodeToObject';
 import { nodeToObject } from './3-nodeToObject';
 import { extractFigmaTokens } from './4-extract-tokens';
 
 export async function serializeSelectedNode() {
+  perfReset();
   const selection = getFigmaSelection();
   if (selection?.length !== 1) {
     throw new Error('Selection is not exactly one node, which is not compatible with serialization.');

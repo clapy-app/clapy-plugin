@@ -49,6 +49,7 @@ const counterAlignToAlignItems: {
   MIN: 'flex-start', // stretch?
   CENTER: 'center',
   MAX: 'flex-end',
+  BASELINE: 'baseline',
 };
 const textAlignHorizontalToCssTextAlign: {
   [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT'>]: NonNullable<PropertiesHyphen['text-align']>;

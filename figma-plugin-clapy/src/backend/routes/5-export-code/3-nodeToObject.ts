@@ -13,7 +13,7 @@ import type {
   NodeWithDefaults,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
-import { extractionBlacklist, nodeDefaults } from '../../../common/sb-serialize.model';
+import { nodeDefaults } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import type { LayoutNode, ShapeNode } from '../../common/node-type-utils';
 import {
@@ -32,31 +32,10 @@ import {
   isShapeExceptDivable,
   isText,
 } from '../../common/node-type-utils';
+import { perfMeasure } from '../../common/perf-utils';
 import { exportNodeTokens } from './4-extract-tokens';
-import { nodeAttributes } from './node-attributes';
+import { nodeAttributes, rangeProps } from './node-attributes';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
-
-// Extracted from Figma typings
-type StyledTextSegment2 = Omit<StyledTextSegment, 'characters' | 'start' | 'end'>;
-type RangeProp = keyof StyledTextSegment2;
-
-const rangeProps: RangeProp[] = [
-  'fillStyleId',
-  'fills',
-  'fontName',
-  'fontSize',
-  'hyperlink',
-  'indentation',
-  'letterSpacing',
-  'lineHeight',
-  'listOptions',
-  'textCase',
-  'textDecoration',
-  'textStyleId',
-];
-/* as Writeable<typeof rangeProps> */
-const blacklist = new Set<string>(extractionBlacklist);
-const textBlacklist = new Set<string>([...extractionBlacklist, ...rangeProps, 'characters']);
 
 const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
 const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
@@ -104,6 +83,9 @@ export async function nodeToObject<T extends SceneNode | PageNode>(
   options: Partial<Options> = {},
 ) {
   const { skipChildren = false, skipInstance = true, skipParent = true } = options;
+  if (flags.verbose && !isComponent(node)) {
+    console.log('Extracting selection', node.name);
+  }
   return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
 }
 
@@ -111,6 +93,16 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
   try {
     if (!isPage(node) && !context.isComp && !node.visible) {
       throw new Error('NODE_NOT_VISIBLE');
+    }
+    if (flags.verbose) {
+      if (isComponent(node)) {
+        console.log(
+          'Extracting component',
+          isComponentSet(node.parent) ? `${node.parent.name} (variant ${node.name})` : node.name,
+        );
+      } else {
+        console.log('Extracting node', node.name);
+      }
     }
     let { skipChildren, skipInstance, skipParent } = options;
     const isProcessableInst = isProcessableInstance(node, skipInstance);
@@ -157,7 +149,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     obj = { id: node.id };
     setProp(obj, 'type', type);
 
-    for (const attribute of nodeAttributes[type]) {
+    perfMeasure('Before loop');
+    const attributesWhitelist = nodeAttributes[type];
+    const attributesArr = Array.from(attributesWhitelist);
+    for (const attribute of attributesArr) {
       try {
         const val = (node as any)[attribute];
         if (typeof val === 'symbol') {
@@ -168,9 +163,11 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       } catch (err) {
         console.warn('Error reading attribute', attribute, 'on node', node.name, type, node.id, '-', err);
         // setProp(obj, name, undefined); // or nothing?
-        obj[attribute] = undefined;
+        // obj[attribute] = undefined;
       }
     }
+    const measured = perfMeasure('After loop');
+    if (measured != null && measured > 2) return;
 
     const hasComponentPropertyDefinitions = isComponentSet(node) || (isComponent(node) && !isComponentSet(node.parent));
     if (hasComponentPropertyDefinitions) {

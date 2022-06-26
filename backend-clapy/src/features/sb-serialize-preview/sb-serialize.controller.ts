@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 
-import { extractStories } from './1-extract-stories';
-import { sbSerializePreview } from './2-serialize-preview';
+// import { extractStories } from './1-extract-stories';
+// import { sbSerializePreview } from './2-serialize-preview';
 
 @Controller('stories')
 // @PublicRoute()
@@ -10,11 +10,13 @@ export class SbSerializeController {
 
   @Get('fetch-list')
   fetchStories(@Query('sbUrl') sbUrl: string) {
-    return extractStories(sbUrl);
+    // return extractStories(sbUrl);
+    return undefined;
   }
 
   @Get('serialize')
   serialize(@Query('url') url: string) {
-    return sbSerializePreview(url);
+    // return sbSerializePreview(url);
+    return undefined;
   }
 }

@@ -68,7 +68,7 @@ async function insertTracking(entry: Clapy_Analytics, url: string, hasuraAdminSe
     if (axios.isAxiosError(error)) {
       const { response } = error;
       const { data } = response || {};
-      if (data?.code === 'constraint-violation') {
+      if ((data as any)?.code === 'constraint-violation') {
         console.log('Skipping existing analytic log', entry.id);
         return;
       }
