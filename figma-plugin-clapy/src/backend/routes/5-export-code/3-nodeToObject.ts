@@ -33,6 +33,7 @@ import {
   isText,
 } from '../../common/node-type-utils';
 import { exportNodeTokens } from './4-extract-tokens';
+import { nodeAttributes } from './node-attributes';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 // Extracted from Figma typings
@@ -153,27 +154,30 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       }
     }
 
-    const props = Object.entries(Object.getOwnPropertyDescriptors((node as any).__proto__));
     obj = { id: node.id };
-    setProp(obj, 'type', node.type);
-    const isTxt = isText(node);
-    const bl = isTxt ? textBlacklist : blacklist;
-    for (const [name, prop] of props) {
-      if (prop.get && !bl.has(name)) {
-        try {
-          const val = prop.get.call(node);
-          if (typeof val === 'symbol') {
-            setProp(obj, name, 'Mixed');
-          } else {
-            setProp(obj, name, val);
-          }
-        } catch (err) {
-          console.warn('Failed to read node value', name, 'from node', node.name, node.type, node.id);
-          // setProp(obj, name, undefined); // or nothing?
-          obj[name] = undefined;
+    setProp(obj, 'type', type);
+
+    for (const attribute of nodeAttributes[type]) {
+      try {
+        const val = (node as any)[attribute];
+        if (typeof val === 'symbol') {
+          setProp(obj, attribute, 'Mixed');
+        } else {
+          setProp(obj, attribute, val);
         }
+      } catch (err) {
+        console.warn('Error reading attribute', attribute, 'on node', node.name, type, node.id, '-', err);
+        // setProp(obj, name, undefined); // or nothing?
+        obj[attribute] = undefined;
       }
     }
+
+    const hasComponentPropertyDefinitions = isComponentSet(node) || (isComponent(node) && !isComponentSet(node.parent));
+    if (hasComponentPropertyDefinitions) {
+      setProp(obj, 'componentPropertyDefinitions', node.componentPropertyDefinitions);
+    }
+
+    const isTxt = isText(node);
     if (isTxt) {
       const segments = node.getStyledTextSegments(rangeProps);
       // We may want to skip it for components (instances define the text used). Style usage to review.

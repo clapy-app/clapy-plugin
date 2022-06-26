@@ -315,6 +315,8 @@ type PublishableMixin2 = ClapifyNode<PublishableMixin>;
 type VariantMixin2 = ClapifyNode<VariantMixin>;
 type VectorLikeMixin2 = ClapifyNode<VectorLikeMixin>;
 type StickableMixin2 = ClapifyNode<StickableMixin>;
+type ComponentPropertiesMixin2 = ClapifyNode<ComponentPropertiesMixin>;
+type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
 
 type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
 type SliceNode2 = ClapifyNode<SliceNode>;
@@ -369,6 +371,7 @@ export const extractionBlacklist = [
   'vectorNetwork',
   'exportSettings',
   'canUpgradeToNativeBidiSupport',
+  'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
@@ -399,6 +402,7 @@ const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
   name: '',
   visible: true,
   stuckNodes: [],
+  componentPropertyReferences: null,
 };
 
 const defaultChildrenMixin: ChildrenMixin2 = {
@@ -417,6 +421,7 @@ const defaultLayoutMixin: LayoutMixin2 = {
   height: 0,
   layoutAlign: 'INHERIT',
   layoutGrow: 0,
+  layoutPositioning: 'AUTO',
 };
 
 // const defaultSceneNode: SceneNodeNoMethod = {
@@ -443,6 +448,7 @@ const defaultBaseNodeMixin: BaseNodeMixin2 = {
 const defaultSceneNodeMixin2: SceneNodeMixin2 = {
   visible: true,
   stuckNodes: [],
+  componentPropertyReferences: null,
 };
 
 const defaultReactionMixin: ReactionMixin2 = {
@@ -460,7 +466,7 @@ const defaultBlendMixin: BlendMixin2 = {
 const defaultMinimalStrokesMixin: MinimalStrokesMixin2 = {
   strokes: [],
   strokeStyleId: '',
-  strokeWeight: 0,
+  strokeWeight: 1,
   strokeJoin: 'MITER',
   strokeAlign: 'INSIDE',
   dashPattern: [],
@@ -497,6 +503,7 @@ const defaultConstraintMixin: ConstraintMixin2 = {
 };
 
 const defaultTextSublayerNode: TextSublayerNode2 = {
+  ...defaultMinimalFillsMixin,
   hasMissingFont: false,
   paragraphIndent: 0,
   paragraphSpacing: 0,
@@ -531,6 +538,13 @@ const defaultRectangleCornerMixin: RectangleCornerMixin2 = {
   bottomRightRadius: 0,
 };
 
+const defaultIndividualStrokesMixin: IndividualStrokesMixin2 = {
+  strokeTopWeight: 1,
+  strokeRightWeight: 1,
+  strokeBottomWeight: 1,
+  strokeLeftWeight: 1,
+};
+
 const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultBaseNodeMixin,
   ...defaultSceneNodeMixin,
@@ -543,6 +557,7 @@ const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultConstraintMixin,
   ...defaultLayoutMixin,
   ...defaultExportMixin,
+  ...defaultIndividualStrokesMixin,
   layoutMode: 'HORIZONTAL',
   primaryAxisSizingMode: 'FIXED',
   counterAxisSizingMode: 'FIXED',
@@ -556,6 +571,8 @@ const defaultBaseFrameMixin: BaseFrameMixin2 = {
   layoutGrids: [],
   gridStyleId: '',
   clipsContent: false,
+  itemReverseZIndex: false,
+  strokesIncludedInLayout: false,
 };
 
 const defaultFramePrototypingMixin: FramePrototypingMixin2 = {
@@ -588,6 +605,10 @@ const defaultVectorLikeMixin: VectorLikeMixin2 = {
 };
 
 const defaultStickableMixin: StickableMixin2 = { stuckTo: null };
+
+const defaultComponentPropertiesMixin: ComponentPropertiesMixin2 = {
+  componentPropertyDefinitions: {},
+};
 
 // PageNode
 
@@ -650,9 +671,9 @@ const defaultGroupNode: GroupNode2 = {
 const defaultComponentSetNode: ComponentSetNode2 = {
   ...defaultBaseFrameMixin,
   ...defaultPublishableMixin,
+  ...defaultComponentPropertiesMixin,
   type: 'COMPONENT_SET',
   defaultVariant: null as unknown as ComponentNode, // To override
-  variantGroupProperties: {},
 };
 
 // ComponentNode
@@ -661,6 +682,7 @@ const defaultComponentNode: ComponentNode2 = {
   ...defaultDefaultFrameMixin,
   ...defaultPublishableMixin,
   ...defaultVariantMixin,
+  ...defaultComponentPropertiesMixin,
   type: 'COMPONENT',
 };
 
@@ -672,6 +694,7 @@ const defaultInstanceNode: InstanceNode2 = {
   type: 'INSTANCE',
   mainComponent: null,
   scaleFactor: 1,
+  componentProperties: {},
 };
 
 // BooleanOperationNode
@@ -744,6 +767,7 @@ const defaultRectangleNode: RectangleNode2 = {
   ...defaultConstraintMixin,
   ...defaultCornerMixin,
   ...defaultRectangleCornerMixin,
+  ...defaultIndividualStrokesMixin,
   type: 'RECTANGLE',
 };
 
