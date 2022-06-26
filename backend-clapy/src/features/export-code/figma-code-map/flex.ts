@@ -348,7 +348,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     if (isVector(node) && node.strokeWeight > width) {
       width = node.strokeWeight;
     }
-    addStyle(context, node, styles, 'width', `${width}px`);
+    addStyle(context, node, styles, 'width', [width, 'px']);
   } /* if (node.autoWidth) */ else {
     // I'm not sure which one has highest priority between fixedWidth and node.autoWidth. To review with a test case.
     resetStyleIfOverriding(context, node, styles, 'width');

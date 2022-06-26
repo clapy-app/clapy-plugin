@@ -112,15 +112,17 @@ export function genTextAst(node: TextNode2) {
         addCssRule(context, className, styleDeclarations);
         attributes.push(createClassAttrForClassNoOverride(className));
       }
+      let useAnchor = false;
       if (segment.hyperlink) {
         if (segment.hyperlink.type === 'URL') {
           // hyperlink of type NODE not handled for now
           attributes.push(mkHrefAttr(segment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr());
+          useAnchor = true;
         } else {
           warnNode(segment, 'TODO Unsupported hyperlink of type node');
         }
       }
-      segAst = mkTag('span', attributes, [segAst]);
+      segAst = mkTag(useAnchor ? 'a' : 'span', attributes, [segAst]);
     }
 
     ast.push(segAst);
