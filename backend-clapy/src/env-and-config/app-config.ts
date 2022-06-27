@@ -14,7 +14,6 @@ export const flags = {
   writeClapyFiles: false,
   destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
   enableInstanceOverrides: env.isDev,
-  stripInstancesInComponents: false,
   throwOnWarnings: false /* env.isDev */,
   indexOverrideByNodeId: false, // easier debugging when overrides are wrong
   writeFigmaIdOnNode: false,

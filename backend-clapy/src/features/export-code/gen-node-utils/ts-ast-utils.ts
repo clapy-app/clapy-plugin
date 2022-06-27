@@ -762,6 +762,16 @@ export function mkClassAttr2<T extends BaseStyleOverride | undefined>(
   ) as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
 }
 
+export function mkClassAttr3(className: string) {
+  return factory.createJsxAttribute(
+    factory.createIdentifier('className'),
+    factory.createJsxExpression(
+      undefined,
+      factory.createPropertyAccessExpression(factory.createIdentifier('classes'), factory.createIdentifier(className)),
+    ),
+  );
+}
+
 function mkClassExpression(overrideEntry: BaseStyleOverride) {
   const { overrideValue, propValue } = overrideEntry;
   if (!overrideValue && !propValue) {

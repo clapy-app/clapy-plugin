@@ -28,7 +28,7 @@ import {
   SceneNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils';
-import { mergeWithInheritedStyles } from './css-gen/css-factories-high';
+import { addStyle, mergeWithInheritedStyles } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils';
@@ -41,6 +41,7 @@ import {
   genComponentImportName,
   getOrGenClassName,
   getOrGenHideProp,
+  mkClassAttr3,
   mkComponentUsage,
   mkIdAttribute,
   mkNamedImportsDeclaration,
@@ -176,14 +177,18 @@ function addNodeStyles1(context: NodeContext, node: ValidNode, styles: Dict<Decl
   return styles;
 }
 
-function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+// If classBaseName is provided, it is used instead of node to generate the attribute.
+// Useful for the SVG class attribute, not found to a Figma node.
+function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, classBaseName?: string) {
   const { moduleContext } = context;
   const styleDeclarations = stylesToList(styles);
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
-    const className = getOrGenClassName(moduleContext, node);
+    const className = classBaseName
+      ? getOrGenClassName(moduleContext, undefined, classBaseName)
+      : getOrGenClassName(moduleContext, node);
     addCssRule(context, className, styleDeclarations);
-    attributes.push(createClassAttrForNode(node));
+    attributes.push(classBaseName ? mkClassAttr3(classBaseName) : createClassAttrForNode(node));
   }
   return attributes;
 }
@@ -286,8 +291,10 @@ export function genNodeAst(node: SceneNode2) {
       }
       const attributes = addNodeStyles(context, node, styles);
       if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
-      const ast = mkComponentUsage(svgPathVarName, attributes);
-      return mkWrapHideAndTextOverrideAst(context, ast, node);
+      const svgAttributes = createSvgClassAttribute(context, node);
+      const ast = mkComponentUsage(svgPathVarName, svgAttributes);
+      const ast2 = mkTag('div', attributes, [ast]);
+      return mkWrapHideAndTextOverrideAst(context, ast2, node);
     } else if (isBlockNode(node)) {
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
@@ -339,4 +346,10 @@ function genNodeAstLoopChildren(node: SceneNode2) {
     }
   }
   return childrenAst.length ? childrenAst : undefined;
+}
+function createSvgClassAttribute(context: NodeContext, node: ValidNode) {
+  const svgStyles: Dict<DeclarationPlain> = {};
+  addStyle(context, node, svgStyles, 'width', '100%');
+  addStyle(context, node, svgStyles, 'height', '100%');
+  return addNodeStyles(context, node, svgStyles, 'icon');
 }

@@ -1,5 +1,4 @@
 import { Nil } from '../../../common/general-utils';
-import { flags } from '../../../env-and-config/app-config';
 import {
   Dict,
   FrameNodeNoMethod,
@@ -40,11 +39,7 @@ export function fillWithDefaults(
 ) {
   if (!node) return;
   const isInst = isInstanceFeatureDetection(node);
-  if (flags.stripInstancesInComponents && inComp && isInst) {
-    // An instance inside a component (outside the selection): ignore it.
-    // The instance in the selection will be used instead.
-    return;
-  } else if (!isPage && isInst) {
+  if (!isPage && isInst) {
     instancesInComp.push(node);
   } else {
     fillNodeWithDefaults(node, defaultsForNode(node));
