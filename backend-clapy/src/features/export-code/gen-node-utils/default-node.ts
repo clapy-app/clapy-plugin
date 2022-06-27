@@ -124,9 +124,7 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
  */
 export function addHiddenNodeToInstance(instance: { id: string } & ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
   if (!isChildrenMixin(nodeOfComp)) return [undefined, undefined];
-  const mapper: Dict<number> = {};
   let compStartIndex = 0;
-  const hiddenNodes: number[] = [];
 
   // TODO refactor to simplify and run faster:
   // loop on component nodes. And for each hidden node, append one in the instance as we do below.
@@ -137,36 +135,15 @@ export function addHiddenNodeToInstance(instance: { id: string } & ChildrenMixin
 
     for (let j = compStartIndex; j < matchingCompIndex; j++) {
       appendInvisibleElement(instance, nodeOfComp, j);
-      mapper[j] = j;
       ++i;
     }
 
-    mapper[i] = matchingCompIndex;
     compStartIndex = matchingCompIndex + 1;
   }
 
   for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
     appendInvisibleElement(instance, nodeOfComp, j);
-    mapper[j] = j;
   }
-
-  return [mapper, hiddenNodes] as const;
-}
-
-function appendInvisibleElement(
-  instance: { id: string } & ChildrenMixin2,
-  nodeOfComp: SceneNode2 & ChildrenMixin2,
-  instanceIndex: number,
-) {
-  const c = instance.children as Array<SceneNode2>;
-  const compChild = nodeOfComp.children[instanceIndex];
-  const { id, name, type } = compChild;
-  let node = { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2;
-  fillNodeWithDefaults(node, defaultsForNode(node));
-  if (isInstance(node) && isInstance(compChild)) {
-    node.mainComponent = compChild.mainComponent;
-  }
-  c.splice(instanceIndex, 0, node);
 }
 
 function getMatchingComponentIndex(
@@ -188,21 +165,25 @@ function getMatchingComponentIndex(
       break;
     }
   }
-  // If no match, try to match by type + name
+  // If no match, try to match by type + name (for instances, replace type with main component ID)
   if (matchingIndex === -1) {
     for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
       const compChild = nodeOfComp.children[j];
-      if (compChild.type === instanceChild.type && compChild.name === instanceChild.name) {
+      const t1 = (isInstance(compChild) && compChild.mainComponent?.id) || compChild.type;
+      const t2 = (isInstance(instanceChild) && instanceChild.mainComponent?.id) || instanceChild.type;
+      if (t1 === t2 && compChild.name === instanceChild.name) {
         matchingIndex = j;
         break;
       }
     }
   }
-  // If no match, take the first match by type
+  // If no match, take the first match by type (for instances, replace type with main component ID)
   if (matchingIndex === -1) {
     for (let j = compStartIndex; j < nodeOfComp.children.length; j++) {
       const compChild = nodeOfComp.children[j];
-      if (compChild.type === instanceChild.type) {
+      const t1 = (isInstance(compChild) && compChild.mainComponent?.id) || compChild.type;
+      const t2 = (isInstance(instanceChild) && instanceChild.mainComponent?.id) || instanceChild.type;
+      if (t1 === t2) {
         matchingIndex = j;
         break;
       }
@@ -223,6 +204,22 @@ function getMatchingComponentIndex(
   }
 
   return matchingIndex;
+}
+
+function appendInvisibleElement(
+  instance: { id: string } & ChildrenMixin2,
+  nodeOfComp: SceneNode2 & ChildrenMixin2,
+  instanceIndex: number,
+) {
+  const c = instance.children as Array<SceneNode2>;
+  const compChild = nodeOfComp.children[instanceIndex];
+  const { id, name, type } = compChild;
+  let node = { id: `${instance.id};${id}`, name, type, visible: false } as SceneNode2;
+  fillNodeWithDefaults(node, defaultsForNode(node));
+  if (isInstance(node) && isInstance(compChild)) {
+    node.mainComponent = compChild.mainComponent;
+  }
+  c.splice(instanceIndex, 0, node);
 }
 
 // const inst = { id: 'i', children: [{ id: 'i;b' }, { id: 'i;d' }] } as unknown as { id: string } & ChildrenMixin2;

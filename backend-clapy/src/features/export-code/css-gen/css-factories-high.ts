@@ -100,7 +100,9 @@ export function addStyle<T extends keyof PropertiesHyphen>(
           return val === 0
             ? '0'
             : Array.isArray(val)
-            ? `${round(val[0] * (val[2] || 1))}${val[1]}`
+            ? val[0] === 0
+              ? 0
+              : `${round(val[0] * (val[2] || 1))}${val[1]}`
             : typeof val === 'number'
             ? round(val).toString()
             : typeof val === 'string'

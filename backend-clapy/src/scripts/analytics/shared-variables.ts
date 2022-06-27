@@ -1,10 +1,7 @@
 import { readdir } from 'fs/promises';
 
+import { Dict } from '../../features/sb-serialize-preview/sb-serialize.model';
 import { backendDir } from '../../root';
-
-export interface Dict<T = any> {
-  [key: string | number | symbol]: T;
-}
 
 export interface Analytic {
   ID: string; //'281ff4d8-d7f7-4a0e-a141-7b8c39ce7b44'
