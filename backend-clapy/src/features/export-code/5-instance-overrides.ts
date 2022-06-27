@@ -34,7 +34,7 @@ import {
 import { printStandalone } from './create-ts-compiler/parsing.utils';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high';
 import { stylesToList } from './css-gen/css-type-utils';
-import { instanceToCompIndexRemapper } from './gen-node-utils/default-node';
+import { addHiddenNodeToInstance } from './gen-node-utils/default-node';
 import { readSvg } from './gen-node-utils/process-nodes-utils';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils';
 import {
@@ -268,11 +268,7 @@ function recurseOnChildren(
     throw new Error('BUG Instance node has children, but the corresponding component node does not.');
   }
 
-  const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
-  if (!instanceToCompIndexMap) {
-    warnNode(node, 'BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
-    throw new Error('BUG instanceToCompIndexMap falsy, although nodeOfComp is a ChildrenMixin.');
-  }
+  addHiddenNodeToInstance(node, nodeOfComp);
   const nextCompNode = intermediateNodes[1];
   if (!nextCompNode) {
     throw new Error(`BUG [recurseOnChildren] nextNode is undefined.`);
@@ -283,7 +279,7 @@ function recurseOnChildren(
     if (child.skip) {
       continue;
     }
-    const nextCompChildNode = nextCompNode.children[instanceToCompIndexMap[i]];
+    const nextCompChildNode = nextCompNode.children[i];
     const isOriginalInstance = checkIsOriginalInstance(child, nextCompChildNode);
     let childIntermediateNodes: (SceneNode2 | undefined)[];
     let childIntermediateInstanceNodeOfComps = intermediateInstanceNodeOfComps;
@@ -330,7 +326,7 @@ function recurseOnChildren(
       }
     }
 
-    const childNodeOfComp = nodeOfComp.children[instanceToCompIndexMap[i]];
+    const childNodeOfComp = nodeOfComp.children[i];
     const contextForChild: InstanceContext = {
       moduleContext,
       tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
@@ -424,25 +420,36 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Sw
     'instanceSwaps',
     'swapName',
   );
+
+  // Special case: when a swap is added on a node that is initially hidden, it is automatically marked as visible.
+  addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
 }
 
 function addHideOverride(context: InstanceContext, node: SceneNode2) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
   const lastIntermediateNode = intermediateNodes[intermediateNodes.length - 1];
+  if (!lastIntermediateNode) {
+    throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
+  }
 
   if (lastIntermediateNode?.isRootInComponent) {
     intermediateNodes = intermediateNodes.slice(0, -1);
   }
+  addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
+}
 
+function addHideOverride2(
+  intermediateNodes: InstanceContext['intermediateNodes'],
+  intermediateComponentContexts: InstanceContext['intermediateComponentContexts'],
+  intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'],
+  node: SceneNode2,
+) {
   // Check that the visibility of current node changed vs the next intermediate component
   if (!(intermediateNodes.length >= 2) || intermediateNodes[0]?.visible === intermediateNodes[1]?.visible) {
     return;
   }
 
   const overrideValue = !node.visible;
-  if (!lastIntermediateNode) {
-    throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
-  }
 
   addOverrides(
     intermediateNodes,

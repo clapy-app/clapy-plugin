@@ -1,6 +1,7 @@
 import { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
+import { flags } from '../../env-and-config/app-config';
 import { env } from '../../env-and-config/env';
 import { handleError } from '../../utils';
 import { Dict } from '../sb-serialize-preview/sb-serialize.model';
@@ -41,6 +42,7 @@ import {
   getOrGenClassName,
   getOrGenHideProp,
   mkComponentUsage,
+  mkIdAttribute,
   mkNamedImportsDeclaration,
   mkTag,
   mkWrapHideAndTextOverrideAst,
@@ -283,6 +285,7 @@ export function genNodeAst(node: SceneNode2) {
         }
       }
       const attributes = addNodeStyles(context, node, styles);
+      if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
       const ast = mkComponentUsage(svgPathVarName, attributes);
       return mkWrapHideAndTextOverrideAst(context, ast, node);
     } else if (isBlockNode(node)) {
@@ -294,6 +297,7 @@ export function genNodeAst(node: SceneNode2) {
 
       const styleDeclarations = stylesToList(styles);
       let attributes: ts.JsxAttribute[] = [];
+      if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext, node);
         updateCssRuleClassName(context, cssRule, className);

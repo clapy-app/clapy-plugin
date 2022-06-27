@@ -646,6 +646,10 @@ export function mkSrcStaticAttribute(src: string) {
   return factory.createJsxAttribute(factory.createIdentifier('src'), factory.createStringLiteral(src));
 }
 
+export function mkIdAttribute(id: string) {
+  return factory.createJsxAttribute(factory.createIdentifier('id'), factory.createStringLiteral(id));
+}
+
 export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttribute[]) {
   return factory.createJsxSelfClosingElement(
     factory.createIdentifier(compName),

@@ -3,6 +3,7 @@ import ts from 'typescript';
 
 import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map';
 import { isEmptyObject } from '../../../common/general-utils';
+import { flags } from '../../../env-and-config/app-config';
 import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
 import { JsxOneOrMore, NodeContext } from '../code.model';
 import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
@@ -15,6 +16,7 @@ import {
   createClassAttrForNode,
   getOrGenClassName,
   mkHrefAttr,
+  mkIdAttribute,
   mkNoReferrerAttr,
   mkTag,
   mkTargetBlankAttr,
@@ -139,6 +141,7 @@ export function genTextAst(node: TextNode2) {
         attributes.push(createClassAttrForClassNoOverride(className));
       }
     }
+    if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
     ast = mkTag('span', attributes, ast);
   }
 
@@ -146,6 +149,7 @@ export function genTextAst(node: TextNode2) {
   if (!node.textSkipStyles) {
     const styleDeclarations = stylesToList(styles);
     let attributes: ts.JsxAttribute[] = [];
+    if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
     if (styleDeclarations.length) {
       const className = getOrGenClassName(moduleContext, node);
       addCssRule(context, className, styleDeclarations);

@@ -373,6 +373,7 @@ export const extractionBlacklist = [
   'canUpgradeToNativeBidiSupport',
   'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
   'componentPropertyDefinitions',
+  'autoRename',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
@@ -783,7 +784,6 @@ const defaultTextNode: TextNodeNoMethod = {
   textAlignHorizontal: 'CENTER',
   textAlignVertical: 'CENTER',
   textAutoResize: 'WIDTH_AND_HEIGHT',
-  autoRename: true,
   textStyleId: '',
 };
 

@@ -78,12 +78,12 @@ export function fillWithComponent(
     fillNodeWithDefaults(node, nodeOfComp);
   }
   if (isChildrenMixin(node)) {
-    const [instanceToCompIndexMap, hiddenNodes] = instanceToCompIndexRemapper(node, nodeOfComp);
+    addHiddenNodeToInstance(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
       if (child.visible || child.visible == null) {
         let childNodeOfComp = nodeOfComp;
-        if (childNodeOfComp && instanceToCompIndexMap) {
+        if (childNodeOfComp) {
           if (!isChildrenMixin(childNodeOfComp)) {
             warnNode(
               child,
@@ -93,7 +93,7 @@ export function fillWithComponent(
               `BUG Instance node ${node.name} has children, but the corresponding component node does not.`,
             );
           }
-          childNodeOfComp = childNodeOfComp.children[instanceToCompIndexMap[i]];
+          childNodeOfComp = childNodeOfComp.children[i];
         }
         fillWithComponent(child, compNodes, childNodeOfComp);
       }
@@ -122,10 +122,7 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
 /**
  * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
  */
-export function instanceToCompIndexRemapper(
-  instance: { id: string } & ChildrenMixin2,
-  nodeOfComp: SceneNode2 | undefined,
-) {
+export function addHiddenNodeToInstance(instance: { id: string } & ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
   if (!isChildrenMixin(nodeOfComp)) return [undefined, undefined];
   const mapper: Dict<number> = {};
   let compStartIndex = 0;

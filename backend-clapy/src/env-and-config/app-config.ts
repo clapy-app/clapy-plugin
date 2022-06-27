@@ -17,6 +17,7 @@ export const flags = {
   stripInstancesInComponents: false,
   throwOnWarnings: false /* env.isDev */,
   indexOverrideByNodeId: false, // easier debugging when overrides are wrong
+  writeFigmaIdOnNode: false,
 };
 
 // What takes time:
