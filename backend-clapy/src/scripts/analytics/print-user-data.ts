@@ -14,17 +14,18 @@ const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
   user.numberOfCodeGenerations = filteredAnalyticsCompleted.length;
 
   if (filteredAnalyticsOpened.length > 0) {
-    user.lastTimePluginWasLunched = filteredAnalyticsOpened[filteredAnalyticsOpened.length - 1]['Created At']
-      .toISOString()
-      .substring(0, 10);
+    user.lastTimePluginWasLunched = filteredAnalyticsOpened[0]['Created At'].toISOString().substring(0, 10);
   }
   if (filteredAnalyticsCompleted.length > 0) {
-    user.lastTimeCodeWasGenerated = filteredAnalyticsCompleted[filteredAnalyticsCompleted.length - 1]['Created At']
-      .toISOString()
-      .substring(0, 10);
+    user.lastTimeCodeWasGenerated = filteredAnalyticsCompleted[0]['Created At'].toISOString().substring(0, 10);
   }
-  if (filteredAnalyticsGenStarted.length > 0 && filteredAnalyticsCompleted.length > 0) {
-    user.totalTimeCodeGenerationWasInterrupted = filteredAnalyticsGenStarted.length - filteredAnalyticsCompleted.length;
+  if (filteredAnalyticsGenStarted.length > 0) {
+    if (filteredAnalyticsCompleted.length > 0) {
+      user.totalTimeCodeGenerationWasInterrupted =
+        filteredAnalyticsGenStarted.length - filteredAnalyticsCompleted.length;
+    } else {
+      user.totalTimeCodeGenerationWasInterrupted = filteredAnalyticsGenStarted.length;
+    }
   }
   for (let i = 0; i < filteredAnalyticsCompleted.length; i++) {
     const datesUserWasOn = filteredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
