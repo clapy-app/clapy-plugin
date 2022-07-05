@@ -1,9 +1,9 @@
-import { User } from 'auth0';
+import type { User } from 'auth0';
+import pipedrive from 'pipedrive';
 
-import { env } from '../../env-and-config/env';
-import { getAuth0FirstLastName, UserMetadata, UserMetaUsage } from '../user/user.service';
-
-const pipedrive = require('pipedrive');
+import { env } from '../../env-and-config/env.js';
+import type { UserMetadata, UserMetaUsage } from '../user/user.service.js';
+import { getAuth0FirstLastName } from '../user/user.service.js';
 
 // Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
 // API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons

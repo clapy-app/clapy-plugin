@@ -1,22 +1,21 @@
-import { Nil } from '../../../common/general-utils';
-import {
+import type { Nil } from '../../../common/general-utils.js';
+import { warnOrThrow } from '../../../utils.js';
+import type {
   Dict,
   FrameNodeNoMethod,
-  nodeDefaults,
   PageNodeNoMethod,
   SceneNodeNoMethod,
-} from '../../sb-serialize-preview/sb-serialize.model';
-import {
+} from '../../sb-serialize-preview/sb-serialize.model.js';
+import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type {
   ChildrenMixin2,
   ComponentNode2,
   FrameNode2,
   InstanceNode2,
-  isChildrenMixin,
-  isInstance,
-  isInstanceFeatureDetection,
   SceneNode2,
-} from '../create-ts-compiler/canvas-utils';
-import { warnNode } from './utils-and-reset';
+} from '../create-ts-compiler/canvas-utils.js';
+import { isChildrenMixin, isInstance, isInstanceFeatureDetection } from '../create-ts-compiler/canvas-utils.js';
+import { warnNode } from './utils-and-reset.js';
 
 export function makeDefaultNode(name: string, ...nodeOverrides: Partial<FrameNode2>[]): FrameNodeNoMethod {
   return Object.assign({ ...nodeDefaults.FRAME, name }, ...nodeOverrides);
@@ -117,9 +116,17 @@ function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
 /**
  * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
  */
-export function addHiddenNodeToInstance(instance: { id: string } & ChildrenMixin2, nodeOfComp: SceneNode2 | undefined) {
-  if (!isChildrenMixin(nodeOfComp)) return [undefined, undefined];
+export function addHiddenNodeToInstance(
+  instance: { id: string; name: string } & ChildrenMixin2,
+  nodeOfComp: SceneNode2 | undefined,
+) {
+  if (!isChildrenMixin(nodeOfComp)) return;
+  if (instance.children.length === nodeOfComp.children.length) return;
   let compStartIndex = 0;
+
+  warnOrThrow(
+    `Instance ${instance.name} and component ${nodeOfComp.name} do not have the same number of children. Is it an old version of the plugin?`,
+  );
 
   // TODO refactor to simplify and run faster:
   // loop on component nodes. And for each hidden node, append one in the instance as we do below.

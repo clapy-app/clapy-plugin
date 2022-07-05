@@ -1,4 +1,4 @@
-import {
+import type {
   AtrulePlain,
   BlockPlain,
   ClassSelector,
@@ -21,8 +21,8 @@ import {
   WhiteSpace,
 } from 'css-tree';
 
-import { csstree } from '../create-ts-compiler/csstree';
-import { round } from '../gen-node-utils/utils-and-reset';
+import { csstree } from '../create-ts-compiler/csstree.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
 
 export function cssAstToString(css: CssNodePlain) {
   // Clone because fromPlainObject changes the original object, which is not desired when comparing the instance and component styles.

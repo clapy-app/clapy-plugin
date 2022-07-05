@@ -1,18 +1,23 @@
-import { DeclarationPlain } from 'css-tree';
-import ts from 'typescript';
+import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
-import { flags } from '../../env-and-config/app-config';
-import { env } from '../../env-and-config/env';
-import { handleError } from '../../utils';
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map';
-import { NodeContext } from './code.model';
-import { writeAsset } from './create-ts-compiler/2-write-asset';
-import {
+import { flags } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
+import { handleError } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map.js';
+import type { NodeContext } from './code.model.js';
+import { writeAsset } from './create-ts-compiler/2-write-asset.js';
+import type {
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
+  Masker,
+  SceneNode2,
+  ValidNode,
+} from './create-ts-compiler/canvas-utils.js';
+import {
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
@@ -24,16 +29,13 @@ import {
   isText,
   isValidNode,
   isVector,
-  Masker,
-  SceneNode2,
-  ValidNode,
-} from './create-ts-compiler/canvas-utils';
-import { addStyle, mergeWithInheritedStyles } from './css-gen/css-factories-high';
-import { stylesToList } from './css-gen/css-type-utils';
-import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
-import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils';
-import { readSvg } from './gen-node-utils/process-nodes-utils';
-import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils';
+} from './create-ts-compiler/canvas-utils.js';
+import { addStyle, mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
+import { stylesToList } from './css-gen/css-type-utils.js';
+import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils.js';
+import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
@@ -49,9 +51,9 @@ import {
   mkWrapHideAndTextOverrideAst,
   removeCssRule,
   updateCssRuleClassName,
-} from './gen-node-utils/ts-ast-utils';
-import { warnNode } from './gen-node-utils/utils-and-reset';
-import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 
 export function prepareNode(context: NodeContext, node: SceneNode2) {
   try {

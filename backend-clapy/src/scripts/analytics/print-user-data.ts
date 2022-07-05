@@ -1,6 +1,7 @@
 import fs from 'fs';
 
-import { Analytic, initAnalytics, User, Users } from './shared-variables';
+import type { Analytic, User, Users } from './shared-variables.js';
+import { initAnalytics } from './shared-variables.js';
 
 const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
   const filteredAnalyticsOpened = analytics.filter(analytic => analytic.Action === 'open-plugin');

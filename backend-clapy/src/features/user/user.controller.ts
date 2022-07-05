@@ -1,18 +1,17 @@
 import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 
-import { perfMeasure, perfReset } from '../../common/perf-utils';
-import { handleError } from '../../utils';
-import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service';
+import { perfMeasure, perfReset } from '../../common/perf-utils.js';
+import { handleError } from '../../utils.js';
+import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
+import type { UserMetadata, UserMetaUsage } from './user.service.js';
 import {
   getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
   updateAuth0UserMetadata,
-  UserMetadata,
-  UserMetaUsage,
-} from './user.service';
+} from './user.service.js';
 
 @Controller('user')
 export class UserController {

@@ -1,9 +1,10 @@
 import ts from 'typescript';
 
-import { NodeContext } from '../../../code.model';
-import { FrameNode2, InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { MUIConfig, VariantProps } from '../mui-config';
-import { iconInstanceToAst } from '../mui-utils';
+import type { NodeContext } from '../../../code.model.js';
+import type { FrameNode2, InstanceNode2, TextNode2 } from '../../../create-ts-compiler/canvas-utils.js';
+import { isText } from '../../../create-ts-compiler/canvas-utils.js';
+import type { MUIConfig, VariantProps } from '../mui-config.js';
+import { iconInstanceToAst } from '../mui-utils.js';
 
 const { factory } = ts;
 

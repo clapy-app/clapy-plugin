@@ -1,18 +1,18 @@
-import { DeclarationPlain } from 'css-tree';
-import ts from 'typescript';
+import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
-import { Nil } from '../../common/general-utils';
-import { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model';
-import {
+import type { Nil } from '../../common/general-utils.js';
+import type { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model.js';
+import type {
   ComponentNode2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
   PageNode2,
   SceneNode2,
-} from './create-ts-compiler/canvas-utils';
-import { CssRootNode } from './css-gen/css-factories-low';
-import { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken';
+} from './create-ts-compiler/canvas-utils.js';
+import type { CssRootNode } from './css-gen/css-factories-low.js';
+import type { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken.js';
 
 export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;

@@ -3,16 +3,16 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthGuard } from './auth/auth.guard';
-import { LoginPrivateController } from './auth/login-private.controller';
-import { LoginTokensEntity } from './auth/login-tokens.entity';
-import { LoginController } from './auth/login.controller';
-import { env } from './env-and-config/env';
-import { CodeController } from './features/export-code/1-code-controller';
-import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller';
-import { UserController } from './features/user/user.controller';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { AuthGuard } from './auth/auth.guard.js';
+import { LoginPrivateController } from './auth/login-private.controller.js';
+import { LoginTokensEntity } from './auth/login-tokens.entity.js';
+import { LoginController } from './auth/login.controller.js';
+import { env } from './env-and-config/env.js';
+import { CodeController } from './features/export-code/1-code-controller.js';
+import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller.js';
+import { UserController } from './features/user/user.controller.js';
 
 @Module({
   imports: [

@@ -1,14 +1,15 @@
-import { getOrGenComponent } from '../3-gen-component';
-import { genInstanceOverrides } from '../5-instance-overrides';
-import { flags } from '../../../env-and-config/app-config';
-import { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from '../code.model';
-import { ComponentNode2, InstanceNode2, isInstance, SceneNode2 } from '../create-ts-compiler/canvas-utils';
+import { getOrGenComponent } from '../3-gen-component.js';
+import { genInstanceOverrides } from '../5-instance-overrides.js';
+import { flags } from '../../../env-and-config/app-config.js';
+import type { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from '../code.model.js';
+import type { ComponentNode2, InstanceNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
+import { isInstance } from '../create-ts-compiler/canvas-utils.js';
 import {
   createComponentUsageWithAttributes,
   getOrCreateCompContext,
   mkComponentUsage,
   mkSwapInstanceAndHideWrapper,
-} from './ts-ast-utils';
+} from './ts-ast-utils.js';
 
 export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneNode2, isRootComponent = false) {
   const { parentNode, moduleContext } = context;

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2021",
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "ES2022",
     "moduleResolution": "node",
     // "jsx": "react-jsx",
     // "noEmit": true,
@@ -34,6 +34,9 @@
     // "strictBindCallApply": false,
     "outDir": "./dist",
     // "baseUrl": "./",
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": [
     "src/**/*.ts",

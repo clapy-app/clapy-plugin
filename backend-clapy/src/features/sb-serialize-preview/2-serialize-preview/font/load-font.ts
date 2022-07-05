@@ -1,4 +1,5 @@
-import { Font, load } from 'opentype.js';
+import type { Font } from 'opentype.js';
+import { load } from 'opentype.js';
 
 const loadFromUrl0 = load as (url: string, callback?: never, options?: { isUrl?: boolean }) => Promise<Font>;
 

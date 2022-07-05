@@ -1,4 +1,4 @@
-import { UpdateMode } from '../types/state';
+import type { UpdateMode } from '../types/state.js';
 
 type WindowSettingsType = {
   width: number;

@@ -1,15 +1,17 @@
 import ts from 'typescript';
 
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { ModuleContext, NodeContext } from '../../code.model';
-import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { ModuleContext, NodeContext } from '../../code.model.js';
+import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import { isComponentSet, isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import {
   genUniqueName,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
-} from '../../gen-node-utils/ts-ast-utils';
-import { muiComponents } from './mui-all-components';
-import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
+} from '../../gen-node-utils/ts-ast-utils.js';
+import { muiComponents } from './mui-all-components.js';
+import type { MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config.js';
+import { isPropConfigMap } from './mui-config.js';
 
 const { factory } = ts;
 

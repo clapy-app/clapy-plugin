@@ -1,7 +1,8 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import {
   isComponent,
   isConstraintMixin,
@@ -9,9 +10,8 @@ import {
   isGroup,
   isLine,
   isPage,
-  ValidNode,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
+} from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const inheritedStyle = getInheritedNodeStyle(context, 'position');

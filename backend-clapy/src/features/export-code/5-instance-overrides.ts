@@ -1,21 +1,27 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 
-import { flags } from '../../env-and-config/app-config';
-import { env } from '../../env-and-config/env';
-import { handleError, warnOrThrow } from '../../utils';
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { getOrGenComponent } from './3-gen-component';
-import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, ModuleContext, SwapAst, SwapContext } from './code.model';
-import { writeAsset } from './create-ts-compiler/2-write-asset';
-import {
-  assertChildrenMixin,
-  assertInstance,
+import { flags } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
+import { handleError, warnOrThrow } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import { getOrGenComponent } from './3-gen-component.js';
+import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map.js';
+import type { InstanceContext, JsxOneOrMore, ModuleContext, SwapAst, SwapContext } from './code.model.js';
+import { writeAsset } from './create-ts-compiler/2-write-asset.js';
+import type {
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
+  Masker,
+  SceneNode2,
+  TextNode2,
+  ValidNode,
+} from './create-ts-compiler/canvas-utils.js';
+import {
+  assertChildrenMixin,
+  assertInstance,
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
@@ -26,17 +32,13 @@ import {
   isText,
   isValidNode,
   isVector,
-  Masker,
-  SceneNode2,
-  TextNode2,
-  ValidNode,
-} from './create-ts-compiler/canvas-utils';
-import { printStandalone } from './create-ts-compiler/parsing.utils';
-import { mergeWithInheritedStyles } from './css-gen/css-factories-high';
-import { stylesToList } from './css-gen/css-type-utils';
-import { addHiddenNodeToInstance } from './gen-node-utils/default-node';
-import { readSvg } from './gen-node-utils/process-nodes-utils';
-import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils';
+} from './create-ts-compiler/canvas-utils.js';
+import { printStandalone } from './create-ts-compiler/parsing.utils.js';
+import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
+import { stylesToList } from './css-gen/css-type-utils.js';
+import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
+import { readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
   checkIsOriginalInstance,
@@ -49,8 +51,8 @@ import {
   getOrGenTextOverrideProp,
   removeCssRule,
   updateCssRuleClassName,
-} from './gen-node-utils/ts-ast-utils';
-import { warnNode } from './gen-node-utils/utils-and-reset';
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {

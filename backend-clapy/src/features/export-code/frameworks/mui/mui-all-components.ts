@@ -1,7 +1,7 @@
-import { figmaNameMUIButton, muiConfigButton } from './components/button';
-import { figmaNameMUIIconButton, muiConfigIconButton } from './components/icon-button';
-import { figmaNameMUITypography, muiConfigTypography } from './components/typography';
-import { makeMuiConfigs } from './mui-config';
+import { figmaNameMUIButton, muiConfigButton } from './components/button.js';
+import { figmaNameMUIIconButton, muiConfigIconButton } from './components/icon-button.js';
+import { figmaNameMUITypography, muiConfigTypography } from './components/typography.js';
+import { makeMuiConfigs } from './mui-config.js';
 
 export const muiComponents = makeMuiConfigs({
   [figmaNameMUITypography]: muiConfigTypography,

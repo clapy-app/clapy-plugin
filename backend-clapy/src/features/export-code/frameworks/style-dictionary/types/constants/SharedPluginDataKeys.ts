@@ -1,5 +1,5 @@
-import { Properties } from './Properties';
-import { SharedPluginDataNamespaces } from './SharedPluginDataNamespaces';
+import { Properties } from './Properties.js';
+import { SharedPluginDataNamespaces } from './SharedPluginDataNamespaces.js';
 
 export const SharedPluginDataKeys = Object.freeze({
   [SharedPluginDataNamespaces.TOKENS]: {

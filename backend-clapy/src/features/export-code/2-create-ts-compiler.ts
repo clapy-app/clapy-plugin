@@ -1,35 +1,36 @@
 import { HttpException, StreamableFile } from '@nestjs/common';
-import { Readable } from 'stream';
-import ts, { Statement } from 'typescript';
+import type { Readable } from 'stream';
+import type { Statement } from 'typescript';
+import ts from 'typescript';
 
-import { Nil } from '../../common/general-utils';
-import { perfMeasure } from '../../common/perf-utils';
-import { env } from '../../env-and-config/env';
-import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
+import type { Nil } from '../../common/general-utils.js';
+import { perfMeasure } from '../../common/perf-utils.js';
+import { env } from '../../env-and-config/env.js';
+import type { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import {
   createModuleCode,
   createNodeContext,
   generateAllComponents,
   mkModuleContext,
   printFileInProject,
-} from './3-gen-component';
-import { writeSVGReactComponents } from './7-write-svgr';
-import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files';
-import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb';
-import { BaseStyleOverride, CodeDict, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model';
-import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files';
-import { toCSBFiles } from './create-ts-compiler/9-to-csb-files';
-import { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils';
-import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths';
-import { addRulesToAppCss } from './css-gen/addRulesToAppCss';
-import { addFontsToIndexHtml } from './figma-code-map/font';
-import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
-import { addMUIPackages } from './frameworks/mui/mui-add-packages';
-import { genStyles } from './frameworks/style-dictionary/gen-styles';
-import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
-import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils';
-import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node';
-import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils';
+} from './3-gen-component.js';
+import { writeSVGReactComponents } from './7-write-svgr.js';
+import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
+import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
+import type { BaseStyleOverride, CodeDict, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model.js';
+import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
+import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
+import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
+import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
+import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
+import { addFontsToIndexHtml } from './figma-code-map/font.js';
+import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals.js';
+import { addMUIPackages } from './frameworks/mui/mui-add-packages.js';
+import { genStyles } from './frameworks/style-dictionary/gen-styles.js';
+import type { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
+import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
+import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
 
 const { factory } = ts;
 

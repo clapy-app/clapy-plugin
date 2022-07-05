@@ -1,8 +1,8 @@
-import ts from 'typescript';
+import type ts from 'typescript';
 
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../../code.model';
-import { InstanceNode2 } from '../../create-ts-compiler/canvas-utils';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../../code.model.js';
+import type { InstanceNode2 } from '../../create-ts-compiler/canvas-utils.js';
 
 export interface VariantProps {
   [figmaName: string]: PropConfig;

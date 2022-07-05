@@ -1,18 +1,11 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import {
-  isComponentSet,
-  isGroup,
-  isLine,
-  isRectangle,
-  isText,
-  isVector,
-  ValidNode,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { guessScroll } from '../smart-guesses/guessScroll';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import { isComponentSet, isGroup, isLine, isRectangle, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { guessScroll } from '../smart-guesses/guessScroll.js';
 
 export function overflowFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   if (isVector(node)) {

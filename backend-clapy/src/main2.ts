@@ -1,8 +1,8 @@
-import { waitInfinite } from './common/general-utils';
-import { perfReset, perfTotal } from './common/perf-utils';
-import { CodeController } from './features/export-code/1-code-controller';
-import { devFigmaConfig } from './features/export-code/dev-figma-config header';
-import { round } from './features/export-code/gen-node-utils/utils-and-reset';
+import { waitInfinite } from './common/general-utils.js';
+import { perfReset, perfTotal } from './common/perf-utils.js';
+import { CodeController } from './features/export-code/1-code-controller.js';
+import { devFigmaConfig } from './features/export-code/dev-figma-config header.js';
+import { round } from './features/export-code/gen-node-utils/utils-and-reset.js';
 
 // To work on features outside the webservice, and keep live reload.
 

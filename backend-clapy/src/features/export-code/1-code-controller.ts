@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 
-import { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
-import { exportCode } from './2-create-ts-compiler';
+import type { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import { exportCode } from './2-create-ts-compiler.js';
 
 @Controller('code')
 export class CodeController {

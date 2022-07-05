@@ -1,11 +1,12 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
-import { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { FrameNode2, isFlexNode, isText, SceneNode2 } from '../create-ts-compiler/canvas-utils';
-import { addHugContents, makeDefaultNode } from '../gen-node-utils/default-node';
-import { mkInputTypeAttr } from '../gen-node-utils/ts-ast-utils';
+import type { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { FrameNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
+import { isFlexNode, isText } from '../create-ts-compiler/canvas-utils.js';
+import { addHugContents, makeDefaultNode } from '../gen-node-utils/default-node.js';
+import { mkInputTypeAttr } from '../gen-node-utils/ts-ast-utils.js';
 
 const { factory } = ts;
 

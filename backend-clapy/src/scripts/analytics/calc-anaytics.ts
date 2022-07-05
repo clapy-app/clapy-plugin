@@ -1,5 +1,6 @@
-import { Dict } from '../../features/sb-serialize-preview/sb-serialize.model';
-import { Analytic, dateDiffInDays, excludedUsers, initAnalytics, sortObjectByKey } from './shared-variables';
+import type { Dict } from '../../features/sb-serialize-preview/sb-serialize.model.js';
+import type { Analytic } from './shared-variables.js';
+import { dateDiffInDays, excludedUsers, initAnalytics, sortObjectByKey } from './shared-variables.js';
 
 (async function main() {
   const analytics = await initAnalytics();

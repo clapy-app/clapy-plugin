@@ -1,12 +1,12 @@
 export {};
-// import { CacheAsLRUMap } from '../../common/cache';
-// import { env } from '../../env-and-config/env';
-// import { FontFamilyToFontMap, prepareSVGFontsMap } from './2-serialize-preview/font/prepare-context';
-// import { processSVG } from './2-serialize-preview/font/process-node';
-// import { processImage } from './2-serialize-preview/image/process-node';
-// import { serializePreviewPuppeteer } from './2-serialize-preview/serialize-preview-puppeteer';
-// import { replaceLocalhostWithDockerHost, runInPuppeteerBrowser } from './puppeteers-utils';
-// import { CNode, cssDefaults, CSSStyleDeclarationNoMethod, isCElementNode } from './sb-serialize.model';
+// import { CacheAsLRUMap } from '../../common/cache.js';
+// import { env } from '../../env-and-config/env.js';
+// import { FontFamilyToFontMap, prepareSVGFontsMap } from './2-serialize-preview/font/prepare-context.js';
+// import { processSVG } from './2-serialize-preview/font/process-node.js';
+// import { processImage } from './2-serialize-preview/image/process-node.js';
+// import { serializePreviewPuppeteer } from './2-serialize-preview/serialize-preview-puppeteer.js';
+// import { replaceLocalhostWithDockerHost, runInPuppeteerBrowser } from './puppeteers-utils.js';
+// import { CNode, cssDefaults, CSSStyleDeclarationNoMethod, isCElementNode } from './sb-serialize.model.js';
 //
 // const serializeCache = new CacheAsLRUMap<string, CNode[]>();
 //

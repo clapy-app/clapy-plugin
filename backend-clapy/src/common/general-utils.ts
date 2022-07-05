@@ -1,4 +1,6 @@
-import { ObjKey } from '../features/sb-serialize-preview/sb-serialize.model';
+import { readFile } from 'fs/promises';
+
+import type { ObjKey } from '../features/sb-serialize-preview/sb-serialize.model.js';
 
 export type Nil = null | undefined;
 
@@ -54,4 +56,8 @@ export async function waitInfinite(setClearer?: (clearer: () => void) => void) {
 
 export function isArrayOf<T>(node: any): node is T[] {
   return Array.isArray(node);
+}
+
+export async function importJsonFile<T = any>(path: string): Promise<T> {
+  return JSON.parse(await readFile(new URL('./some-file.json', import.meta.url), { encoding: 'utf8' }));
 }

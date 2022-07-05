@@ -1,10 +1,10 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle } from '../css-gen/css-factories-high.js';
+import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
 
 export function colorFigmaToCode(
   context: NodeContext,

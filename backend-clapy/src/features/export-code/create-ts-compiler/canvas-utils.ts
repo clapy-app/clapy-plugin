@@ -1,11 +1,11 @@
-import { DeclarationPlain } from 'css-tree';
-import ts from 'typescript';
+import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
-import { Nil } from '../../../common/general-utils';
-import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
-import { CompContext, ModuleContext, NodeContext } from '../code.model';
-import { MUIConfig } from '../frameworks/mui/mui-config';
-import { warnNode } from '../gen-node-utils/utils-and-reset';
+import type { Nil } from '../../../common/general-utils.js';
+import type { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
+import type { MUIConfig } from '../frameworks/mui/mui-config.js';
+import { warnNode } from '../gen-node-utils/utils-and-reset.js';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;

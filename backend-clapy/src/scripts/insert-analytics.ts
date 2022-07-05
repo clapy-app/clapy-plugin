@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { readFile } from 'fs/promises';
 
-import '../env-and-config/env';
-import { backendDir } from '../root';
+import '../env-and-config/env.js';
+import { backendDir } from '../root.js';
 
 // Script to migrate analytics data from a database to another, each having a hasura instance in front of it.
 // Usage:

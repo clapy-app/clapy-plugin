@@ -1,12 +1,13 @@
-import { CssNodePlain, DeclarationPlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
+import type { CssNodePlain, DeclarationPlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
 
-import { Nil } from '../../../common/general-utils';
-import { flags } from '../../../env-and-config/app-config';
-import { Dict, nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import type { Nil } from '../../../common/general-utils.js';
+import { flags } from '../../../env-and-config/app-config.js';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { FlexNode, ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import {
-  FlexNode,
   isConstraintMixin,
   isFlexNode,
   isGroup,
@@ -15,9 +16,8 @@ import {
   isPage,
   isText,
   isVector,
-  ValidNode,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
+} from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;

@@ -1,7 +1,7 @@
-import { NodeContext } from '../code.model';
-import { genUniqueName } from '../gen-node-utils/ts-ast-utils';
-import { BaseNode2 } from './canvas-utils';
-import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths';
+import type { NodeContext } from '../code.model.js';
+import { genUniqueName } from '../gen-node-utils/ts-ast-utils.js';
+import type { BaseNode2 } from './canvas-utils.js';
+import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths.js';
 
 export function writeAsset(context: NodeContext, node: BaseNode2, extension: string, content: string) {
   const {

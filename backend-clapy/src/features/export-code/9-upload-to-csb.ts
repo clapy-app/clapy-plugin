@@ -6,11 +6,11 @@ import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
 
-import { flags } from '../../env-and-config/app-config';
-import { env } from '../../env-and-config/env';
-import { backendDir, dockerPluginCompDir } from '../../root';
-import { CSBResponse } from '../sb-serialize-preview/sb-serialize.model';
-import { CodeDict, CsbDict, ModuleContext } from './code.model';
+import { flags } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
+import { backendDir, dockerPluginCompDir } from '../../root.js';
+import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CodeDict, CsbDict, ModuleContext } from './code.model.js';
 
 export async function uploadToCSB(files: CsbDict) {
   const { data } = await axios.post<CSBResponse>('https://codesandbox.io/api/v1/sandboxes/define?json=1', {
@@ -53,7 +53,7 @@ export async function makeZip(files: CsbDict) {
 const srcCompPrefix = 'src/components/';
 
 export async function writeToDisk(files: CsbDict, moduleContext: ModuleContext, isClapyFile: boolean | undefined) {
-  const glob = require('glob');
+  const glob = (await import('glob')).default;
   const globPromise = promisify(glob);
   const { compName } = moduleContext;
 

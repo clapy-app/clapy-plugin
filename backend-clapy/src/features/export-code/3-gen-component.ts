@@ -1,23 +1,26 @@
-import { StyleSheetPlain } from 'css-tree';
+import type { StyleSheetPlain } from 'css-tree';
 import { relative } from 'path';
-import ts, { Statement } from 'typescript';
+import type { Statement } from 'typescript';
+import ts from 'typescript';
 
-import { isNonEmptyObject, Nil } from '../../common/general-utils';
-import { flags } from '../../env-and-config/app-config';
-import { warnOrThrow } from '../../utils';
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { genNodeAst, prepareNode } from './4-gen-node';
-import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model';
-import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
-import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
+import type { Nil } from '../../common/general-utils.js';
+import { isNonEmptyObject } from '../../common/general-utils.js';
+import { flags } from '../../env-and-config/app-config.js';
+import { warnOrThrow } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import { genNodeAst, prepareNode } from './4-gen-node.js';
+import type { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
+import type { ComponentNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
+import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
+import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low.js';
 import {
   getComponentName,
   mkCompFunction,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
   mkPropInterface,
-} from './gen-node-utils/ts-ast-utils';
-import { warnNode } from './gen-node-utils/utils-and-reset';
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
 const { factory } = ts;
 

@@ -1,10 +1,13 @@
 import { Parser } from 'expr-eval';
-import StyleDictionary, { formatHelpers, Formatter } from 'style-dictionary';
-import { DesignTokens } from 'style-dictionary/types/DesignToken';
-import { FormatterArguments } from 'style-dictionary/types/Format';
+import type { Formatter } from 'style-dictionary';
+import StyleDictionary from 'style-dictionary';
+import type { DesignTokens } from 'style-dictionary/types/DesignToken';
+import type { FormatterArguments } from 'style-dictionary/types/Format';
 
-import { hexToCSSRgb } from '../../gen-node-utils/utils-and-reset';
-import { TokenBoxshadowValue } from './types/types/values';
+import { hexToCSSRgb } from '../../gen-node-utils/utils-and-reset.js';
+import type { TokenBoxshadowValue } from './types/types/values';
+
+const { formatHelpers } = StyleDictionary;
 
 export const postTransforms: StyleDictionary.Named<StyleDictionary.Transform>[] = [];
 

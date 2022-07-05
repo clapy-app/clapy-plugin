@@ -1,5 +1,5 @@
 export {};
-// import { SbStories, SbStoriesWrapper, SbStoriesWrapperInput } from '../sb-serialize.model';
+// import { SbStories, SbStoriesWrapper, SbStoriesWrapperInput } from '../sb-serialize.model.js';
 //
 // export async function extractStoriesPuppeteer(sbUrl: string) {
 //   try {

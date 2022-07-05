@@ -1,8 +1,8 @@
 export {};
 // import axios from 'axios';
 //
-// import { NodeParseContext } from '../../2-serialize-preview';
-// import { CNode, isCElementNode, isCPseudoElementNode } from '../../sb-serialize.model';
+// import { NodeParseContext } from '../../2-serialize-preview.js';
+// import { CNode, isCElementNode, isCPseudoElementNode } from '../../sb-serialize.model.js';
 //
 // const urlRegex = /url\((.*?)\)/;
 // const protocolRegex = /(\w+):(.*)/;

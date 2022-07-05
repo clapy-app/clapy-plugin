@@ -1,5 +1,5 @@
-import { RootModel } from '../RootModel';
-import { ActionMeta } from './ActionMeta';
+import type { RootModel } from '../RootModel.js';
+import type { ActionMeta } from './ActionMeta.js';
 
 export type AnyTokenStateAction<GlobalScope = false> = {
   [K in keyof RootModel['tokenState']['reducers']]: {

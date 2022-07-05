@@ -1,23 +1,21 @@
 import { extractLinearGradientParamsFromTransform, extractRadialOrDiamondGradientParams } from '@figma-plugin/helpers';
-import { DeclarationPlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
+import type { DeclarationPlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { writeAsset } from '../create-ts-compiler/2-write-asset';
-import {
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import { writeAsset } from '../create-ts-compiler/2-write-asset.js';
+import type {
   BooleanOperationNode2,
   GroupNode2,
-  isGroup,
-  isText,
-  isVector,
   TextNode2,
   ValidNode,
   VectorNodeDerived,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset';
-import { addOpacity } from './opacity';
+} from '../create-ts-compiler/canvas-utils.js';
+import { isGroup, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset.js';
+import { addOpacity } from './opacity.js';
 
 export function prepareBackgrounds(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {

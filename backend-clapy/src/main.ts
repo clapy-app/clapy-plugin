@@ -1,18 +1,19 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { json } from 'body-parser';
-import { NextFunction, Request, Response } from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import type { NextFunction, Request, Response } from 'express';
+import { json } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { join } from 'path';
+import { URL } from 'url';
 
-import { AppModule } from './app.module';
-import { CsrfGuard } from './auth/csrf.guard';
-import { UnknownExceptionFilter } from './core/unknown-exception.filter';
-import { env } from './env-and-config/env';
+import { AppModule } from './app.module.js';
+import { CsrfGuard } from './auth/csrf.guard.js';
+import { UnknownExceptionFilter } from './core/unknown-exception.filter.js';
+import { env } from './env-and-config/env.js';
 
 const port = env.port;
 const logger = new Logger('main');
@@ -125,6 +126,8 @@ async function bootstrap() {
     app.use((req: Request, res: Response, next: NextFunction) => setTimeout(next, env.localhostLatency));
   }
 
+  // https://stackoverflow.com/a/66651120/4053349
+  const __dirname = new URL('.', import.meta.url).pathname;
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');

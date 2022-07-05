@@ -1,10 +1,11 @@
-import { rootDir } from '../root';
+import { rootDir } from '../root.js';
 
 const nodeEnv = process.env.NODE_ENV;
 const isNodeProduction = nodeEnv === 'production';
 if (!isNodeProduction) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('dotenv').config({ path: `${rootDir}/.env` });
+  // eslint-disable-next-line prettier/prettier
+  const dotenvPkg = await import('dotenv');
+  dotenvPkg.config({ path: `${rootDir}/.env` });
 }
 
 const envLabel = process.env.APP_ENV && process.env.APP_ENV.toLowerCase();

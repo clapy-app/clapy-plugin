@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 
-import { wait } from '../../common/general-utils';
-import { env } from '../../env-and-config/env';
-import { backendDir, pluginDir } from '../../root';
+import { wait } from '../../common/general-utils.js';
+import { env } from '../../env-and-config/env.js';
+import { backendDir, pluginDir } from '../../root.js';
 
 // Require dev dependencies:
 // mkdirp
@@ -80,12 +80,12 @@ async function hasuraReloadMetadata() {
 }
 
 async function createGeneratedFolder() {
-  const mkdirp = require('mkdirp');
+  const mkdirp = (await import('mkdirp')).default;
   return Promise.all([mkdirp(frontGeneratedDir), mkdirp(apiGeneratedDir)]);
 }
 
 async function hasuraExtractSchema() {
-  const fetchSchema = require('graphql-fetch-schema').default;
+  const fetchSchema = (await import('graphql-fetch-schema')).default;
   return Promise.all([
     fetchSchema(`${rootHasuraUrl}/graphql`, {
       json: false,
@@ -109,7 +109,7 @@ async function hasuraExtractSchema() {
 }
 
 async function generateTypesFromSchema() {
-  const { generate } = require('@graphql-codegen/cli');
+  const { generate } = await import('@graphql-codegen/cli');
   return generate(
     {
       schema: `${frontGeneratedDir}/schema.graphql`,

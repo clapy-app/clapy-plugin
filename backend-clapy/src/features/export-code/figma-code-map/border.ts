@@ -1,19 +1,16 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import {
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type {
   BooleanOperationNode2,
   GroupNode2,
-  isGroup,
-  isLine,
-  isText,
-  isVector,
   ValidNode,
   VectorNodeDerived,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset';
+} from '../create-ts-compiler/canvas-utils.js';
+import { isGroup, isLine, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
 
 export function prepareBorders(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {

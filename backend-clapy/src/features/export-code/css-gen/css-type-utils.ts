@@ -1,7 +1,7 @@
-import { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
+import type { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { csstree } from '../create-ts-compiler/csstree';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import { csstree } from '../create-ts-compiler/csstree.js';
 
 export function isStyleSheet(node: CssNode): node is StyleSheet {
   return node.type === 'StyleSheet';

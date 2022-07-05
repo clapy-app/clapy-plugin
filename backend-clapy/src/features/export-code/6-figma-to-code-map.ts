@@ -1,30 +1,32 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 import ts from 'typescript';
 
-import { warnOrThrow } from '../../utils';
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
-import { isText, TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
-import { addStyle } from './css-gen/css-factories-high';
-import { stylesToList } from './css-gen/css-type-utils';
-import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background';
-import { borderFigmaToCode, prepareBorders } from './figma-code-map/border';
-import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
-import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
-import { colorFigmaToCode } from './figma-code-map/color';
-import { cursorFigmaToCode } from './figma-code-map/cursor';
-import { effectsFigmaToCode } from './figma-code-map/effects';
-import { flexFigmaToCode } from './figma-code-map/flex';
-import { fontFigmaToCode } from './figma-code-map/font';
-import { maskFigmaToCode } from './figma-code-map/mask';
-import { opacityFigmaToCode } from './figma-code-map/opacity';
-import { overflowFigmaToCode } from './figma-code-map/overflow';
-import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
-import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches';
-import { postTransform, transformFigmaToCode } from './figma-code-map/transform';
-import { zindexFigmaToCode } from './figma-code-map/zindex';
-import { escapeHTML } from './gen-node-utils/process-nodes-utils';
+import { warnOrThrow } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { JsxOneOrMore, NodeContext } from './code.model.js';
+import { isInstanceContext } from './code.model.js';
+import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
+import { isText } from './create-ts-compiler/canvas-utils.js';
+import { addStyle } from './css-gen/css-factories-high.js';
+import { stylesToList } from './css-gen/css-type-utils.js';
+import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
+import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
+import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
+import { borderBoxFigmaToCode } from './figma-code-map/box-sizing.js';
+import { colorFigmaToCode } from './figma-code-map/color.js';
+import { cursorFigmaToCode } from './figma-code-map/cursor.js';
+import { effectsFigmaToCode } from './figma-code-map/effects.js';
+import { flexFigmaToCode } from './figma-code-map/flex.js';
+import { fontFigmaToCode } from './figma-code-map/font.js';
+import { maskFigmaToCode } from './figma-code-map/mask.js';
+import { opacityFigmaToCode } from './figma-code-map/opacity.js';
+import { overflowFigmaToCode } from './figma-code-map/overflow.js';
+import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute.js';
+import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches.js';
+import { postTransform, transformFigmaToCode } from './figma-code-map/transform.js';
+import { zindexFigmaToCode } from './figma-code-map/zindex.js';
+import { escapeHTML } from './gen-node-utils/process-nodes-utils.js';
 import {
   addCssRule,
   createClassAttrForClassNoOverride,
@@ -33,8 +35,8 @@ import {
   mkNoReferrerAttr,
   mkTag,
   mkTargetBlankAttr,
-} from './gen-node-utils/ts-ast-utils';
-import { warnNode } from './gen-node-utils/utils-and-reset';
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
 const { factory } = ts;
 

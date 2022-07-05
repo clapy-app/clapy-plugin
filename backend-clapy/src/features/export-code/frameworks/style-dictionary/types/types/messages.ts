@@ -1,14 +1,14 @@
-import { BackgroundJob, SettingsState } from '../app-store/app-store';
-import { Properties } from '../constants/Properties';
-import { ApiDataType, ContextObject, StorageProviderType, StorageType } from './api';
-import { NodeInfo } from './NodeInfo';
-import { NodeTokenRefMap } from './NodeTokenRefMap';
-import { PullStyleOptions } from './PullStylesOptions';
-import { SelectionGroup } from './SelectionGroup';
-import { SelectionValue } from './SelectionValue';
-import { UpdateMode } from './state';
-import { AnyTokenList, AnyTokenSet, TokenStore } from './tokens';
-import { UsedTokenSetsMap } from './UsedTokenSetsMap';
+import type { BackgroundJob, SettingsState } from '../app-store/app-store.js';
+import type { Properties } from '../constants/Properties.js';
+import type { ApiDataType, ContextObject, StorageProviderType, StorageType } from './api.js';
+import type { NodeInfo } from './NodeInfo.js';
+import type { NodeTokenRefMap } from './NodeTokenRefMap.js';
+import type { PullStyleOptions } from './PullStylesOptions.js';
+import type { SelectionGroup } from './SelectionGroup.js';
+import type { SelectionValue } from './SelectionValue.js';
+import type { UpdateMode } from './state.js';
+import type { AnyTokenList, AnyTokenSet, TokenStore } from './tokens';
+import type { UsedTokenSetsMap } from './UsedTokenSetsMap.js';
 
 export enum MessageFromPluginTypes {
   SELECTION = 'selection',

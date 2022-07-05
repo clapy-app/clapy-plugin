@@ -1,14 +1,14 @@
-import { TypographyStyle } from '@mui/material';
+import type { TypographyStyle } from '@mui/material';
 import axios from 'axios';
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext, ProjectContext } from '../code.model';
-import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
-import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths';
-import { addJss, addStyle } from '../css-gen/css-factories-high';
-import { addMUIFonts } from '../frameworks/mui/mui-add-globals';
-import { parseFontStyle, replaceFontWeightWithLabel } from '../gen-node-utils/fonts-utils';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext, ProjectContext } from '../code.model.js';
+import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
+import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths.js';
+import { addJss, addStyle } from '../css-gen/css-factories-high.js';
+import { addMUIFonts } from '../frameworks/mui/mui-add-globals.js';
+import { parseFontStyle, replaceFontWeightWithLabel } from '../gen-node-utils/fonts-utils.js';
 
 // Duplicate of below function with slight changes.
 // Always update both or refactor to centralize.

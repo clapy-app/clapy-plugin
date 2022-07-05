@@ -1,4 +1,4 @@
-import {
+import type {
   CElementNode,
   CNode,
   CPseudoElementNode,
@@ -14,7 +14,7 @@ import {
   Properties,
   Property,
   StyleKey,
-} from '../sb-serialize.model';
+} from '../sb-serialize.model.js';
 
 // If need to split in separate functions and files (because it's too big), see:
 // https://github.com/puppeteer/puppeteer/blob/v13.1.2/docs/api.md#pageexposefunctionname-puppeteerfunction

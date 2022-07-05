@@ -1,13 +1,14 @@
-import { env } from '../../../../env-and-config/env';
-import { ProjectContext } from '../../code.model';
-import { frameworksTemplateDir } from '../../create-ts-compiler/load-file-utils-and-paths';
+import { importJsonFile } from '../../../../common/general-utils.js';
+import { env } from '../../../../env-and-config/env.js';
+import type { ProjectContext } from '../../code.model.js';
+import { frameworksTemplateDir } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 
 export function addMUIPackages(projectContext: ProjectContext) {
   const { enableMUIFramework, resources } = projectContext;
   if (enableMUIFramework) {
     try {
       const packageJson = JSON.parse(resources['package.json']);
-      const muiDependencies = require(`${frameworksTemplateDir}/mui/package-dependencies.json`);
+      const muiDependencies = importJsonFile(`${frameworksTemplateDir}/mui/package-dependencies.json`);
       Object.assign(packageJson.dependencies, muiDependencies);
       resources['package.json'] = JSON.stringify(packageJson, null, 2);
       // package.json typings available at

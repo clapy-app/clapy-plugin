@@ -1,14 +1,18 @@
-import { TypographyStyle } from '@mui/material';
-import { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
+import type { TypographyStyle } from '@mui/material';
+import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
 import equal from 'fast-deep-equal';
-import { isPlainObject } from 'lodash';
+import lodashPkg from 'lodash';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { isInstanceContext, NodeContext } from '../code.model';
-import { isText, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { round } from '../gen-node-utils/utils-and-reset';
-import { mkDeclarationCss, mkValueCss } from './css-factories-low';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import { isInstanceContext } from '../code.model.js';
+import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import { isText } from '../create-ts-compiler/canvas-utils.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
+import { mkDeclarationCss, mkValueCss } from './css-factories-low.js';
+
+const { isPlainObject } = lodashPkg;
 
 type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
 

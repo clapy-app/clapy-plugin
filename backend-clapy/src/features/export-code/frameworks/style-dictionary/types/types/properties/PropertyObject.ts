@@ -1,4 +1,4 @@
-import { Properties } from '../../constants/Properties';
+import type { Properties } from '../../constants/Properties.js';
 
 export type PropertyObject = {
   name: Properties;

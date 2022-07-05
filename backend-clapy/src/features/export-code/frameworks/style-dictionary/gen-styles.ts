@@ -1,17 +1,24 @@
-import { isPlainObject } from 'lodash';
-import StyleDictionary, { Core } from 'style-dictionary';
-import { DesignToken, DesignTokens } from 'style-dictionary/types/DesignToken';
+import lodash from 'lodash';
+import type { Core } from 'style-dictionary';
+import StyleDictionary from 'style-dictionary';
+// @ts-ignore
+import filterProperties from 'style-dictionary/lib/filterProperties.js';
+// @ts-ignore
+import transformConfig from 'style-dictionary/lib/transform/config.js';
+// @ts-ignore
+import transformProperty from 'style-dictionary/lib/transform/property.js';
+// @ts-ignore
+import createDictionary from 'style-dictionary/lib/utils/createDictionary.js';
+// @ts-ignore
+import createFormatArgs from 'style-dictionary/lib/utils/createFormatArgs.js';
+import type { DesignToken, DesignTokens } from 'style-dictionary/types/DesignToken';
 
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { MySingleToken } from '../../code.model';
-import { getStyleDictionaryConfig, postTransforms } from './style-dictionary-config';
-import { TokenStore } from './types/types/tokens';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { MySingleToken } from '../../code.model.js';
+import { getStyleDictionaryConfig, postTransforms } from './style-dictionary-config.js';
+import type { TokenStore } from './types/types/tokens';
 
-const transformConfig = require('style-dictionary/lib/transform/config');
-const createDictionary = require('style-dictionary/lib/utils/createDictionary');
-const filterProperties = require('style-dictionary/lib/filterProperties');
-const createFormatArgs = require('style-dictionary/lib/utils/createFormatArgs');
-const transformProperty = require('style-dictionary/lib/transform/property');
+const { isPlainObject } = lodash;
 
 export function genStyles(tokens: TokenStore | undefined) {
   if (!tokens) return {};

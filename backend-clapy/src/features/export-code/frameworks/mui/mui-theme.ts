@@ -1,8 +1,8 @@
 import ts from 'typescript';
 
-import { ModuleContext } from '../../code.model';
-import { mkAstPalette } from './mui-theme-palette';
-import { mkAstTypography } from './mui-theme-typography';
+import type { ModuleContext } from '../../code.model.js';
+import { mkAstPalette } from './mui-theme-palette.js';
+import { mkAstTypography } from './mui-theme-typography.js';
 
 const { factory } = ts;
 

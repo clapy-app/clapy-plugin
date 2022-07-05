@@ -1,15 +1,15 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 import ts from 'typescript';
 
-import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map';
-import { isEmptyObject } from '../../../common/general-utils';
-import { flags } from '../../../env-and-config/app-config';
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { JsxOneOrMore, NodeContext } from '../code.model';
-import { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
-import { stylesToList } from '../css-gen/css-type-utils';
-import { escapeHTML } from './process-nodes-utils';
+import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map.js';
+import { isEmptyObject } from '../../../common/general-utils.js';
+import { flags } from '../../../env-and-config/app-config.js';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { JsxOneOrMore, NodeContext } from '../code.model.js';
+import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle } from '../css-gen/css-factories-high.js';
+import { stylesToList } from '../css-gen/css-type-utils.js';
+import { escapeHTML } from './process-nodes-utils.js';
 import {
   addCssRule,
   createClassAttrForClassNoOverride,
@@ -21,8 +21,8 @@ import {
   mkTag,
   mkTargetBlankAttr,
   mkWrapHideAndTextOverrideAst,
-} from './ts-ast-utils';
-import { warnNode } from './utils-and-reset';
+} from './ts-ast-utils.js';
+import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
 

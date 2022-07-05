@@ -1,12 +1,13 @@
-import { DeclarationPlain, RulePlain } from 'css-tree';
-import ts, { Statement } from 'typescript';
+import type { DeclarationPlain, RulePlain } from 'css-tree';
+import type { Statement } from 'typescript';
+import ts from 'typescript';
 
-import { mapTagStyles, mapTextStyles, postMapStyles } from '../6-figma-to-code-map';
-import { flags } from '../../../env-and-config/app-config';
-import { env } from '../../../env-and-config/env';
-import { warnOrThrow } from '../../../utils';
-import { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model';
-import {
+import { mapTagStyles, mapTextStyles, postMapStyles } from '../6-figma-to-code-map.js';
+import { flags } from '../../../env-and-config/app-config.js';
+import { env } from '../../../env-and-config/env.js';
+import { warnOrThrow } from '../../../utils.js';
+import type { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type {
   BaseStyleOverride,
   CompContext,
   FigmaOverride,
@@ -16,17 +17,18 @@ import {
   NodeContext,
   ProjectContext,
   StyleOverride,
-} from '../code.model';
-import { isComponentSet, isInstance, SceneNode2, TextNode2 } from '../create-ts-compiler/canvas-utils';
+} from '../code.model.js';
+import type { SceneNode2, TextNode2 } from '../create-ts-compiler/canvas-utils.js';
+import { isComponentSet, isInstance } from '../create-ts-compiler/canvas-utils.js';
 import {
   mkBlockCss,
   mkClassSelectorCss,
   mkRuleCss,
   mkSelectorCss,
   mkSelectorListCss,
-} from '../css-gen/css-factories-low';
-import { stylesToList } from '../css-gen/css-type-utils';
-import { warnNode } from './utils-and-reset';
+} from '../css-gen/css-factories-low.js';
+import { stylesToList } from '../css-gen/css-type-utils.js';
+import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
 

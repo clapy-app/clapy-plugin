@@ -1,6 +1,6 @@
-import { InstanceNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { MUIConfig, VariantProps } from '../mui-config';
-import { iconInstanceToAst } from '../mui-utils';
+import type { InstanceNode2 } from '../../../create-ts-compiler/canvas-utils.js';
+import type { MUIConfig, VariantProps } from '../mui-config.js';
+import { iconInstanceToAst } from '../mui-utils.js';
 
 const variantPropsMapping: VariantProps = {
   Size: {

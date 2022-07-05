@@ -1,7 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { ManagementClient, User } from 'auth0';
+import type { User } from 'auth0';
+import { ManagementClient } from 'auth0';
 
-import { env } from '../../env-and-config/env';
+import { env } from '../../env-and-config/env.js';
 
 const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
 

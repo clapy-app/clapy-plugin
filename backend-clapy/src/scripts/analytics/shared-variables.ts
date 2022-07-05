@@ -1,7 +1,8 @@
 import { readdir } from 'fs/promises';
 
-import { Dict } from '../../features/sb-serialize-preview/sb-serialize.model';
-import { backendDir } from '../../root';
+import { importJsonFile } from '../../common/general-utils.js';
+import type { Dict } from '../../features/sb-serialize-preview/sb-serialize.model.js';
+import { backendDir } from '../../root.js';
 
 export interface Analytic {
   ID: string; //'281ff4d8-d7f7-4a0e-a141-7b8c39ce7b44'
@@ -76,7 +77,7 @@ export async function initAnalytics() {
   const jsonFile = await firstJsonFile(analyticsDirInSrc);
   const jsonPath = `${analyticsDirInSrc}/${jsonFile}`;
 
-  const analytics: Analytic[] = require(jsonPath);
+  const analytics: Analytic[] = await importJsonFile(jsonPath);
   prepareData(analytics);
   return analytics;
 }

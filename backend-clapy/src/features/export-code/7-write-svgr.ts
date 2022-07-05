@@ -1,7 +1,7 @@
 import { transform } from '@svgr/core';
 import _ from 'lodash';
 
-import { ProjectContext } from './code.model';
+import type { ProjectContext } from './code.model.js';
 
 const svgPrefix = {};
 svgPrefix.toString = () => `${_.uniqueId()}_`;
@@ -10,6 +10,7 @@ export async function writeSVGReactComponents(projectContext: ProjectContext) {
   for (const [path, { svgPathVarName, svgContent }] of Object.entries(projectContext.svgToWrite)) {
     const svgTsCode = await transform(
       svgContent,
+      // Options here: https://react-svgr.com/docs/options/
       {
         typescript: true,
         exportType: 'named',

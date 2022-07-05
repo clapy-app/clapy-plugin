@@ -1,9 +1,9 @@
 import ts from 'typescript';
 
-import { ModuleContext, ProjectContext } from '../../code.model';
-import { getSetInMap } from '../../figma-code-map/font';
-import { mkNamedImportsDeclaration } from '../../gen-node-utils/ts-ast-utils';
-import { mkThemeVarCreation } from './mui-theme';
+import type { ModuleContext, ProjectContext } from '../../code.model.js';
+import { getSetInMap } from '../../figma-code-map/font.js';
+import { mkNamedImportsDeclaration } from '../../gen-node-utils/ts-ast-utils.js';
+import { mkThemeVarCreation } from './mui-theme.js';
 
 const { factory } = ts;
 

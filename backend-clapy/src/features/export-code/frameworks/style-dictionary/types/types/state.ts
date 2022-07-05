@@ -1,5 +1,5 @@
-import { ApiDataType, StorageType } from './api';
-import { Tokens } from './tokens';
+import type { ApiDataType, StorageType } from './api.js';
+import type { Tokens } from './tokens';
 
 export type StateType = {
   storageType: StorageType;

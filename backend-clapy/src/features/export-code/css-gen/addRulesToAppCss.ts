@@ -1,12 +1,12 @@
-import { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
+import type { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css-tree';
 
-import { Nil } from '../../../common/general-utils';
-import { warnOrThrow } from '../../../utils';
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { ModuleContext, NodeContext, ParentNode } from '../code.model';
-import { isValidNode } from '../create-ts-compiler/canvas-utils';
-import { csstree } from '../create-ts-compiler/csstree';
-import { addStyle } from './css-factories-high';
+import type { Nil } from '../../../common/general-utils.js';
+import { warnOrThrow } from '../../../utils.js';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { ModuleContext, NodeContext, ParentNode } from '../code.model.js';
+import { isValidNode } from '../create-ts-compiler/canvas-utils.js';
+import { csstree } from '../create-ts-compiler/csstree.js';
+import { addStyle } from './css-factories-high.js';
 import {
   mkBlockCss,
   mkClassSelectorCss,
@@ -14,7 +14,7 @@ import {
   mkSelectorCss,
   mkSelectorListCss,
   mkStylesheetCss,
-} from './css-factories-low';
+} from './css-factories-low.js';
 import {
   assertStyleSheet,
   isDeclarationListOrThrow,
@@ -22,7 +22,7 @@ import {
   isRule,
   isStyleSheet,
   stylesToList,
-} from './css-type-utils';
+} from './css-type-utils.js';
 
 export function addRulesToAppCss(context: ModuleContext, appCss: string, parentNode: ParentNode | Nil) {
   const styles: Dict<DeclarationPlain> = {};

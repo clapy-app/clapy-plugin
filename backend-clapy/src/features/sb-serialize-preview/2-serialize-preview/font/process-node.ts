@@ -1,8 +1,8 @@
 export {};
-// import { NodeParseContext } from '../../2-serialize-preview';
-// import { checkIsFontIcon, unquoteAndTrimString } from '../../../../utils';
-// import { CNode, isCPseudoElementNode } from '../../sb-serialize.model';
-// import { fontIconUnicodeToSVG } from './load-font';
+// import { NodeParseContext } from '../../2-serialize-preview.js';
+// import { checkIsFontIcon, unquoteAndTrimString } from '../../../../utils.js';
+// import { CNode, isCPseudoElementNode } from '../../sb-serialize.model.js';
+// import { fontIconUnicodeToSVG } from './load-font.js';
 //
 // export function processSVG(node: CNode, context: NodeParseContext) {
 //   const { fontsMap } = context;

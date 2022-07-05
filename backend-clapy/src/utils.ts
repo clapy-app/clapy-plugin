@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 
-import { flags } from './env-and-config/app-config';
-import { env } from './env-and-config/env';
+import { flags } from './env-and-config/app-config.js';
+import { env } from './env-and-config/env.js';
 
 type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
 export function entries<T>(o: T): Entry<T>[] {

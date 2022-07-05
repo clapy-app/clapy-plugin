@@ -1,10 +1,10 @@
 export {};
 // import { Font } from 'opentype.js';
 //
-// import { NodeParseContext } from '../../2-serialize-preview';
-// import { unquoteAndTrimString } from '../../../../utils';
-// import { Dict } from '../../sb-serialize.model';
-// import { loadFromUrl } from './load-font';
+// import { NodeParseContext } from '../../2-serialize-preview.js';
+// import { unquoteAndTrimString } from '../../../../utils.js';
+// import { Dict } from '../../sb-serialize.model.js';
+// import { loadFromUrl } from './load-font.js';
 //
 // export type FontFamilyToFontMap = Dict<Font>;
 // type FontFormat = 'woff' | 'truetype';
