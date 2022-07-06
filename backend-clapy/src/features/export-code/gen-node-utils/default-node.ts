@@ -122,11 +122,12 @@ export function addHiddenNodeToInstance(
 ) {
   if (!isChildrenMixin(nodeOfComp)) return;
   if (instance.children.length === nodeOfComp.children.length) return;
-  let compStartIndex = 0;
 
   warnOrThrow(
     `Instance ${instance.name} and component ${nodeOfComp.name} do not have the same number of children. Is it an old version of the plugin?`,
   );
+
+  let compStartIndex = 0;
 
   // TODO refactor to simplify and run faster:
   // loop on component nodes. And for each hidden node, append one in the instance as we do below.

@@ -30,6 +30,7 @@ export async function serializeSelectedNode() {
     strokeStyles: {},
     effectStyles: {},
     gridStyles: {},
+    intermediateNodes: [],
   };
   const extraConfig = {
     ...(env.isDev

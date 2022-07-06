@@ -7,7 +7,7 @@ export function handleError(error: any) {
   console.error('[handleError]', error);
 }
 
-export function warnNode(node: SceneNode | StyledTextSegment | PageNode | DocumentNode, ...msg: any[]) {
+export function warnNode(node: SceneNode | PageNode | StyledTextSegment | DocumentNode, ...msg: any[]) {
   if (isStyledTextSegment(node)) {
     console.warn(...msg, node.characters);
   } else {

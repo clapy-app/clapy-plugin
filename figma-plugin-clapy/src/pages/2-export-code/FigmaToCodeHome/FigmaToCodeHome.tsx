@@ -16,6 +16,7 @@ import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
 import { apiPost } from '../../../common/http.utils';
+import { perfMeasure, perfReset } from '../../../common/perf-front-utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
 import { Button } from '../../../components-used/Button/Button';
@@ -81,9 +82,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       track('gen-code', 'start');
 
       // Extract the Figma configuration
+      perfReset();
       const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
         'serializeSelectedNode',
       );
+      perfMeasure('Figma config extraction time:');
       const images: ExportImageMap2 = {};
       const nodes: ExportCodePayload = {
         parent,

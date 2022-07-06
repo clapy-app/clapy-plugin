@@ -3,6 +3,7 @@ import filetype from 'magic-bytes.js';
 
 import { removeNode } from '../2-update-canvas/update-canvas-utils';
 import { flags } from '../../../common/app-config';
+import type { Nil } from '../../../common/app-models.js';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import type {
@@ -34,7 +35,7 @@ import {
 } from '../../common/node-type-utils';
 import { perfMeasure } from '../../common/perf-utils';
 import { exportNodeTokens } from './4-extract-tokens';
-import { nodeAttributes, rangeProps } from './node-attributes';
+import { areSvgEqual, nodeAttributes, rangeProps } from './node-attributes';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
 const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
@@ -42,12 +43,15 @@ const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'vi
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
+type IntermediateNodes = (SceneNode | PageNode)[];
+
 export interface SerializeContext {
   images: ExportImagesFigma;
   components: Dict<ComponentNodeNoMethod>;
   isInInstance?: boolean;
   // When into an instance, we keep track of the corresponding node in the component to find style overrides
   nodeOfComp?: SceneNode;
+  intermediateNodes: IntermediateNodes;
   isComp?: boolean;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
@@ -86,14 +90,14 @@ export async function nodeToObject<T extends SceneNode | PageNode>(
   if (flags.verbose && !isComponent(node)) {
     console.log('Extracting selection', node.name);
   }
+  context = { ...context, intermediateNodes: [node] };
   return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
 }
 
+let prevNode: SceneNode | PageNode | undefined = undefined;
+
 async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context: SerializeContext, options: Options) {
   try {
-    if (!isPage(node) && !context.isComp && !node.visible) {
-      throw new Error('NODE_NOT_VISIBLE');
-    }
     if (flags.verbose) {
       if (isComponent(node)) {
         console.log(
@@ -112,7 +116,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     if (isProcessableInst) {
       context = { ...context, nodeOfComp: node.mainComponent };
     }
-    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp } = context;
+    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp, intermediateNodes } =
+      context;
+    // It is undefined if we are not in an instance yet
+    const nextIntermediateNode = intermediateNodes[1] as SceneNode | PageNode | undefined;
 
     if (isComp) skipParent = false;
     const isInInstance = !!nodeOfComp;
@@ -142,10 +149,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     obj = { id: node.id };
     setProp(obj, 'type', type);
 
-    perfMeasure('Before loop');
+    perfMeasure(`Time spent - ${prevNode?.name} => ${node.name}`, 0.5);
+    prevNode = node;
     const attributesWhitelist = nodeAttributes[type];
-    const attributesArr = Array.from(attributesWhitelist);
-    for (const attribute of attributesArr) {
+    for (const attribute of attributesWhitelist) {
       try {
         const val = (node as any)[attribute];
         if (typeof val === 'symbol') {
@@ -159,8 +166,8 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         // obj[attribute] = undefined;
       }
     }
-    const measured = perfMeasure('After loop');
-    if (measured != null && measured > 2) return;
+    // const measured = perfMeasure('After loop');
+    // if (measured != null && measured > 2) return;
 
     const hasComponentPropertyDefinitions = isComponentSet(node) || (isComponent(node) && !isComponentSet(node.parent));
     if (hasComponentPropertyDefinitions) {
@@ -198,79 +205,88 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     if (isBaseFrameMixin(node)) {
       addStyle(gridStyles, node.gridStyleId);
     }
-
     // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
     // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
-    if (isInstance(node) || isComponent(node)) {
+    if (isInstance(node) || isComponent(node) || isPage(node) || !node.visible) {
       exportAsSvg = false;
     }
     if (exportAsSvg) {
       setProp(obj, 'type', 'VECTOR' as VectorNode['type']);
       // If we are in an instance, we don't need to export the SVG. For now, it is assumed to be the same as the component's SVG. It will be copied from the component.
       // In reality, there could be overrides in Figma (e.g. fills) on parts that are included in the exported SVG. Such overrides won't be captured. To capture them, we need to reexport as SVG on all instances, or if a change is detected vs the component.
-      if (!isInInstance) {
+      if (flags.extractInstanceSVG || !isInInstance) {
+        perfMeasure('Before svg equality');
+        const svgAreEqual = areSvgEqual(node as LayoutNode, nextIntermediateNode as LayoutNode | undefined);
+        perfMeasure(
+          `==> After svg equality: ${node.name} // ${nextIntermediateNode?.name} // ${
+            svgAreEqual ? '(equal)' : '- NOT EQUAL'
+          }`,
+        );
         let nodeToExport = node as LayoutNode;
         let copyForExport: LayoutNode | undefined = undefined;
-        try {
-          if (isBlend) {
-            // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
-            // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
-            // inside instances of components.
-            if ((nodeToExport as BlendMixin).isMask) {
-              [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-              (nodeToExport as BlendMixin).isMask = false;
-              if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
-                // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
-                // Well, images with transparency would be useful. Later.
-                nodeToExport.fills = [
-                  {
-                    type: 'SOLID',
-                    color: { r: 0, g: 0, b: 0 },
-                  },
-                ];
+        if (!svgAreEqual) {
+          try {
+            if (isBlend) {
+              // Masks cannot be directly exported as SVG. So we make a copy and disable the mask on it to export as SVG.
+              // In the finally clause, this copy is removed. Source nodes must be treated as readonly since they can be
+              // inside instances of components.
+              if ((nodeToExport as BlendMixin).isMask) {
+                [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+                (nodeToExport as BlendMixin).isMask = false;
+                if (isMinimalFillsMixin(nodeToExport) && isArrayOf<Paint>(nodeToExport.fills)) {
+                  // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
+                  // Well, images with transparency would be useful. Later.
+                  nodeToExport.fills = [
+                    {
+                      type: 'SOLID',
+                      color: { r: 0, g: 0, b: 0 },
+                    },
+                  ];
+                }
               }
             }
-          }
 
-          if (isComp) {
+            // Edit: always clone when we need to export, so that border fixes don't affect the original SVG.
+            // if (isComp) {
             // The real condition is if we are in another file, which can happen when parsing the main component from an instance. If we can detect it, we should improve the condition to avoid copying nodes for components that are in the same file.
             [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-          }
-          if (isBlendMixin(nodeToExport) && nodeToExport.effects?.length) {
-            [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
-            (nodeToExport as ShapeNode).effects = [];
-            (nodeToExport as ShapeNode).effectStyleId = '';
-          }
-          if (!isPage(node)) {
-            const { rotation } = parseTransformationMatrix(node.absoluteTransform);
-            if (rotation !== 0) {
+            // }
+            if (isBlendMixin(nodeToExport) && nodeToExport.effects?.length) {
               [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+              (nodeToExport as ShapeNode).effects = [];
+              (nodeToExport as ShapeNode).effectStyleId = '';
             }
-          }
-          if (isGroup(nodeToExport)) {
-            // Interesting properties like constraints are in the children nodes. Let's make a copy.
-            setProp(obj, 'constraints', (nodeToExport.children[0] as ConstraintMixin)?.constraints);
-          }
+            if (!isPage(node)) {
+              const { rotation } = parseTransformationMatrix(node.absoluteTransform);
+              if (rotation !== 0) {
+                [nodeToExport, copyForExport] = ensureCloned(nodeToExport, copyForExport);
+              }
+            }
+            if (isGroup(nodeToExport)) {
+              // Interesting properties like constraints are in the children nodes. Let's make a copy.
+              setProp(obj, 'constraints', (nodeToExport.children[0] as ConstraintMixin)?.constraints);
+            }
 
-          // Change all stroke positions to center to fix the bad SVG export bug
-          fixStrokeAlign(nodeToExport);
+            // Change all stroke positions to center to fix the bad SVG export bug
+            fixStrokeAlign(nodeToExport);
 
-          // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
-          // But ideally, we should do:
-          // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
+            // TextDecoder is undefined, I don't know why. We are supposed to be in a modern JS engine. So we use a JS replacement instead.
+            // But ideally, we should do:
+            // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
-          try {
-            setProp(
-              obj,
-              '_svg',
-              utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ })),
-            );
-          } catch (error) {
-            warnNode(node, 'Failed to export node as SVG, ignoring.');
-            console.error(error);
+            try {
+              setProp(
+                obj,
+                '_svg',
+                utf8ArrayToStr(await nodeToExport.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ })),
+              );
+            } catch (error) {
+              warnNode(node, 'Failed to export node as SVG, ignoring.');
+              console.error(error);
+            }
+          } finally {
+            removeNode(copyForExport);
           }
-        } finally {
-          removeNode(copyForExport);
         }
       }
     } else if (!isTxt && isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
@@ -347,19 +363,35 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     }
     if (isChildrenMixin(node) && !exportAsSvg && !skipChildren) {
       const promises: ReturnType<typeof nodeToObjectRec>[] = [];
-      const instanceToCompIndexMap = instanceToCompIndexRemapper(node, nodeOfComp);
+      assertChildrenMixinOrUndef(nextIntermediateNode);
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
-        if (child.visible || isComp) {
-          if (nodeOfComp && instanceToCompIndexMap) {
-            if (!isChildrenMixin(nodeOfComp)) {
-              warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
-              throw new Error('BUG Instance node has children, but the corresponding component node does not.');
-            }
-            context = { ...context, nodeOfComp: nodeOfComp.children[instanceToCompIndexMap[i]] };
+
+        const nextCompChildNode = nextIntermediateNode?.children[i];
+        const isOriginalInstance = !nextIntermediateNode || checkIsOriginalInstance(child, nextCompChildNode);
+
+        let childIntermediateNodes: IntermediateNodes;
+        if (!isOriginalInstance) {
+          childIntermediateNodes = [child];
+        } else {
+          // Replace intermediate nodes with the child at the same location:
+          childIntermediateNodes = mapToChildrenAtPosition(intermediateNodes, i);
+          const isProcessableInst = isProcessableInstance(child, skipInstance);
+          if (isProcessableInst) {
+            childIntermediateNodes = [...childIntermediateNodes, child.mainComponent];
           }
-          promises.push(nodeToObjectRec(child, context, options));
         }
+
+        if (nodeOfComp && !isChildrenMixin(nodeOfComp)) {
+          warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+          throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+        }
+        context = {
+          ...context,
+          nodeOfComp: nodeOfComp?.children[i],
+          intermediateNodes: childIntermediateNodes,
+        };
+        promises.push(nodeToObjectRec(child, context, options));
       }
       obj.children = (await Promise.all(promises)).filter(child => !!child);
     }
@@ -375,14 +407,27 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         obj.mainComponent.parent = { id, name, type };
       }
       if (!context.components[id]) {
-        const compContext = context.nodeOfComp
-          ? { ...context, nodeOfComp: undefined, isComp: true }
-          : { ...context, isComp: true };
+        // We should assign a component, but it is only available after the await below. And we use the dictionary to prevent double processing. We set a boolean for the moment to prevent the double processing, and once we have the component, it is assigned instead.
+        context.components[id] = true as any;
+        const { nodeOfComp, ...compContext } = context;
+        compContext.isComp = true;
+        compContext.intermediateNodes = [node.mainComponent];
         const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
           | ComponentNodeNoMethod
           | undefined;
         if (comp) {
+          if (context.components[id]) {
+            console.warn('Component', comp.name, 'already referenced. It was certainly processed twice.');
+          }
           context.components[id] = comp;
+        } else {
+          // If undefined, there was an error (processed separately). Remove from the dictionary of components.
+          console.warn(
+            'Component for node ',
+            node.mainComponent.name,
+            'is undefined. There was certainly an error. Removing from the components map.',
+          );
+          delete context.components[id];
         }
       }
     }
@@ -406,6 +451,42 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     handleError(error);
     return;
   }
+}
+
+function checkIsOriginalInstance(node: SceneNode, nextNode: SceneNode | undefined) {
+  if (!node) {
+    throw new Error(`BUG [checkIsOriginalInstance] node is undefined.`);
+  }
+  if (!nextNode) {
+    throw new Error(`BUG [checkIsOriginalInstance] nextNode is undefined.`);
+  }
+  const nodeIsInstance = isInstance(node);
+  const nextNodeIsInstance = isInstance(nextNode);
+  if (nodeIsInstance !== nextNodeIsInstance) {
+    throw new Error(
+      `BUG nodeIsInstance: ${nodeIsInstance} but nextNodeIsInstance: ${nextNodeIsInstance}, althought they are supposed to be the same.`,
+    );
+  }
+  return !nodeIsInstance || !nextNodeIsInstance || node.mainComponent!.id === nextNode.mainComponent!.id; // = not swapped in Figma
+}
+
+// Assertion in control flow analysis
+function assertChildrenMixinOrUndef(node: BaseNode | ChildrenMixin | Nil): asserts node is ChildrenMixin | undefined {
+  if (node && !isChildrenMixin(node)) {
+    throw new Error(`node ${(node as BaseNode).name} is not a ChildrenMixin`);
+  }
+}
+
+function mapToChildrenAtPosition(intermediateNodes: IntermediateNodes, position: number) {
+  return intermediateNodes.map(intermediateNode => {
+    // intermediateNode is undefined if an instance was swapped with another.
+    if (!isChildrenMixin(intermediateNode)) {
+      // warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+      throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+    }
+    const childIntermediateNode = intermediateNode.children[position];
+    return childIntermediateNode;
+  });
 }
 
 function shouldGroupAsSVG(node: SceneNode | PageNode) {
@@ -458,22 +539,6 @@ function ensureCloned<T extends LayoutNode>(node: T, clone: T | undefined): [T, 
     node = clone;
   }
   return [node, clone];
-}
-
-/**
- * Workaround: instances and their components don't have the same children. anInstance.children seems to exclude non-visible elements, although myComponent.children includes non-visible elements. So indexes in the array of children don't match (shift). Easy fix: we map indexes. We use it to get, for a given element in an instance, the corresponding element in the component.
- */
-function instanceToCompIndexRemapper(instance: ChildrenMixin, nodeOfComp: SceneNode | undefined) {
-  if (!isChildrenMixin(nodeOfComp)) return undefined;
-  const mapper: Dict<number> = {};
-  for (let i = 0; i < instance.children.length; i++) {
-    const child = instance.children[i];
-    const childId = child.id;
-    const compId = childId.substring(childId.lastIndexOf(';') + 1);
-    const compIndex = nodeOfComp.children.findIndex(child => child.id === compId);
-    mapper[i] = compIndex;
-  }
-  return mapper;
 }
 
 // Filtering on keys: https://stackoverflow.com/a/49397693/4053349

@@ -1,4 +1,4 @@
-import { flags } from '../../common/app-config';
+import { flags } from './app-config';
 
 export interface PerfContext {
   initial: number;
@@ -14,13 +14,11 @@ export function perfReset(logMessage?: string) {
   context = makeNewContext();
 }
 
-export function perfMeasure(label = 'Exec time:', threshold?: number) {
+export function perfMeasure(label = 'Exec time:') {
   if (flags.measurePerf) {
     const now = new Date().getTime();
     const measured = Math.round(now - context.prev) / 1000;
-    if (threshold == null || measured > threshold) {
-      console.log(label, measured, 's');
-    }
+    console.log(label, measured, 's');
     context.prev = now;
     return measured;
   }

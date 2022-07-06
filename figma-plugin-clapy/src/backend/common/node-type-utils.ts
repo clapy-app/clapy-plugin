@@ -1,11 +1,11 @@
 import type { Nil } from '../../common/app-models';
-import type { Intersect } from '../../common/sb-serialize.model';
+import type { BaseNode2, Intersect, PageNode2, SceneNode2 } from '../../common/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }
 
-export function isPage(node: BaseNode | undefined): node is PageNode {
+export function isPage(node: BaseNode2 | undefined): node is PageNode {
   return node?.type === 'PAGE';
 }
 
@@ -58,73 +58,73 @@ type LayoutNodeExtended =
 // clone() method available on nodes: Page, frame, group, slice, rectangle, line, ellipse, polygon, star, vector, text, componentSet, component, instance, BooleanOperationNode, sticky, stamp, ShapeWithText, CodeBlockNode, Connector, Widget, Embed, LinkUnfurl, Media
 // Let's approximate with Layout.
 
-export function isLayout(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
+export function isLayout(node: BaseNode2 | null | undefined): node is LayoutMixin & BaseNode2 {
   return !!node && layoutTypes.has(node.type);
 }
 
-export function isGroup(node: BaseNode | SceneNode | Nil): node is GroupNode {
+export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
 
-export function isSlice(node: BaseNode | SceneNode | Nil): node is SliceNode {
+export function isSlice(node: BaseNode2 | SceneNode2 | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
-export function isRectangle(node: BaseNode | SceneNode | Nil): node is RectangleNode {
+export function isRectangle(node: BaseNode2 | SceneNode2 | Nil): node is RectangleNode {
   return node?.type === 'RECTANGLE';
 }
 
-export function isLine(node: BaseNode | SceneNode | Nil): node is LineNode {
+export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
-export function isEllipse(node: BaseNode | SceneNode | Nil): node is EllipseNode {
+export function isEllipse(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
-export function isPolygon(node: BaseNode | SceneNode | Nil): node is PolygonNode {
+export function isPolygon(node: BaseNode2 | SceneNode2 | Nil): node is PolygonNode {
   return node?.type === 'POLYGON';
 }
 
-export function isStar(node: BaseNode | SceneNode | Nil): node is StarNode {
+export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
-export function isVector(node: BaseNode | SceneNode | Nil): node is VectorNode {
+export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode {
   return node?.type === 'VECTOR';
 }
 
-export function isText(node: BaseNode | SceneNode | Nil): node is TextNode {
+export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode {
   return node?.type === 'TEXT';
 }
 
-export function isBooleanOperation(node: BaseNode | SceneNode | Nil): node is BooleanOperationNode {
+export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode {
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
-export function isStamp(node: BaseNode | SceneNode | Nil): node is StampNode {
+export function isStamp(node: BaseNode2 | SceneNode2 | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
-export function isComponentSet(node: BaseNode | SceneNode | Nil): node is ComponentSetNode {
+export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is ComponentSetNode {
   return node?.type === 'COMPONENT_SET';
 }
 
 export function isFrame(
-  node: BaseNode | SceneNode | Nil /* BaseNode | BaseFrameMixin | undefined */,
+  node: BaseNode2 | SceneNode2 | Nil /* BaseNode2 | BaseFrameMixin | undefined */,
 ): node is FrameNode {
   return (node as BaseNode)?.type === 'FRAME';
 }
 
-export function isComponent(node: BaseNode | SceneNode | Nil): node is ComponentNode {
+export function isComponent(node: BaseNode2 | SceneNode2 | PageNode2 | Nil): node is ComponentNode {
   return node?.type === 'COMPONENT';
 }
 
-export function isInstance(node: BaseNode | SceneNode | BaseNode | Nil): node is InstanceNode {
+export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode {
   return node?.type === 'INSTANCE';
 }
 
-export function isBaseFrameMixin(node: BaseNode | BaseFrameMixin | Nil): node is BaseFrameMixin {
+export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node is BaseFrameMixin {
   return !!(node as BaseFrameMixin)?.layoutMode;
 }
 
@@ -132,20 +132,20 @@ export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is C
   return !!(node as ChildrenMixin)?.children;
 }
 
-export function isMinimalStrokesMixin(node: BaseNode | MinimalStrokesMixin | Nil): node is MinimalStrokesMixin {
+export function isMinimalStrokesMixin(node: BaseNode2 | MinimalStrokesMixin | Nil): node is MinimalStrokesMixin {
   return !!(node as MinimalStrokesMixin)?.strokeAlign;
 }
 
-export function isMinimalFillsMixin(node: BaseNode | MinimalFillsMixin | Nil): node is MinimalFillsMixin {
+export function isMinimalFillsMixin(node: BaseNode2 | MinimalFillsMixin | Nil): node is MinimalFillsMixin {
   return !!(node as MinimalFillsMixin)?.fills;
 }
 
 // Has isMask property
-export function isBlendMixin(node: BaseNode | BlendMixin | Nil): node is BlendMixin {
+export function isBlendMixin(node: BaseNode2 | BlendMixin | Nil): node is BlendMixin {
   return !!(node as BlendMixin)?.blendMode;
 }
 
-export function isExportMixin(node: BaseNode | ExportMixin | Nil): node is ExportMixin {
+export function isExportMixin(node: BaseNode2 | ExportMixin | Nil): node is ExportMixin {
   return !!(node as ExportMixin)?.exportAsync;
 }
 
@@ -153,13 +153,13 @@ export type WithChildrenNode = Intersect<SceneNode, ChildrenMixin>;
 
 export type MyCompNode = ComponentNode | ComponentSetNode | FrameNode;
 
-export function isMyComp(node: BaseNode | SceneNode | Nil): node is MyCompNode {
+export function isMyComp(node: BaseNode2 | SceneNode2 | Nil): node is MyCompNode {
   return isFrame(node) || isComponentSet(node) || isComponent(node);
 }
 
 export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode | BooleanOperationNode;
 
-export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is ShapeNode {
+export function isShapeExceptDivable(node: BaseNode2 | SceneNode2 | Nil): node is ShapeNode {
   // Rectangle and line are excluded
   return (
     isEllipse(node) ||
@@ -172,7 +172,7 @@ export function isShapeExceptDivable(node: BaseNode | SceneNode | Nil): node is 
 }
 
 export function isStyledTextSegment(
-  node: SceneNode | StyledTextSegment | PageNode | DocumentNode | Nil,
+  node: SceneNode | PageNode | SceneNode2 | StyledTextSegment | PageNode2 | DocumentNode | Nil,
 ): node is StyledTextSegment {
   const sts = node as StyledTextSegment;
   return sts.characters != null && sts.start != null && sts.end != null;

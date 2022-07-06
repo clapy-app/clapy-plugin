@@ -285,7 +285,7 @@ type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList>;
 
 type BaseNodeMixin2 = ClapifyNode<BaseNodeMixin>;
 type SceneNodeMixin2 = ClapifyNode<SceneNodeMixin>;
-type ChildrenMixin2 = {
+export type ChildrenMixin2 = {
   children: ReadonlyArray<LayoutNode>;
 } /* Omit<OmitMethods<ChildrenMixin>, FrameNodeBlackList> */;
 type ReactionMixin2 = ClapifyNode<ReactionMixin>;
@@ -318,24 +318,26 @@ type StickableMixin2 = ClapifyNode<StickableMixin>;
 type ComponentPropertiesMixin2 = ClapifyNode<ComponentPropertiesMixin>;
 type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
 
-type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
-type SliceNode2 = ClapifyNode<SliceNode>;
+export type BaseNode2 = ClapifyNode<BaseNode>;
+export type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
+export type SliceNode2 = ClapifyNode<SliceNode>;
 export type FrameNode2 = ClapifyNode<FrameNode>;
-type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
-type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
-type ComponentNode2 = ClapifyNode<ComponentNode>;
-type InstanceNode2 = ClapifyNode<InstanceNode>;
-type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
-type VectorNode2 = ClapifyNode<VectorNode>;
-type StarNode2 = ClapifyNode<StarNode>;
-type LineNode2 = ClapifyNode<LineNode>;
-type EllipseNode2 = ClapifyNode<EllipseNode>;
-type PolygonNode2 = ClapifyNode<PolygonNode>;
-type RectangleNode2 = ClapifyNode<RectangleNode>;
-type StampNode2 = ClapifyNode<StampNode>;
+export type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
+export type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
+export type ComponentNode2 = ClapifyNode<ComponentNode>;
+export type InstanceNode2 = ClapifyNode<InstanceNode>;
+export type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
+export type VectorNode2 = ClapifyNode<VectorNode>;
+export type StarNode2 = ClapifyNode<StarNode>;
+export type LineNode2 = ClapifyNode<LineNode>;
+export type EllipseNode2 = ClapifyNode<EllipseNode>;
+export type PolygonNode2 = ClapifyNode<PolygonNode>;
+export type RectangleNode2 = ClapifyNode<RectangleNode>;
+export type StampNode2 = ClapifyNode<StampNode>;
 
 // Later: rename XXNoMethod to XX2 to be consistent with the back.
 export type SceneNodeNoMethod = ClapifyNode<SceneNode>;
+export type SceneNode2 = SceneNodeNoMethod;
 export type TextNodeNoMethod = ClapifyNode<TextNode> & { listSpacing: number };
 export type FrameNodeNoMethod = ClapifyNode<FrameNode> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = ClapifyNode<ComponentNode> & {
@@ -352,6 +354,7 @@ export const extractionBlacklist = [
   'parent',
   'children',
   'removed',
+  'selection',
   'masterComponent',
   'mainComponent',
   'horizontalPadding',
@@ -360,6 +363,7 @@ export const extractionBlacklist = [
   'fillGeometry',
   'strokeGeometry',
   'vectorPaths',
+  'vectorNetwork',
   'backgrounds',
   'backgroundStyleId',
   'locked',
@@ -368,12 +372,12 @@ export const extractionBlacklist = [
   'expanded',
   'absoluteTransform',
   'absoluteRenderBounds',
-  'vectorNetwork',
   'exportSettings',
   'canUpgradeToNativeBidiSupport',
   'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
   'componentPropertyDefinitions',
   'autoRename',
+  'arcData',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
@@ -619,7 +623,6 @@ const defaultPageNode: PageNode2 = {
   ...defaultChildrenMixin,
   ...defaultExportMixin,
   type: 'PAGE',
-  selection: [],
   selectedTextRange: null,
   flowStartingPoints: [],
   // backgrounds: [
@@ -745,11 +748,6 @@ const defaultEllipseNode: EllipseNode2 = {
   ...defaultConstraintMixin,
   ...defaultCornerMixin,
   type: 'ELLIPSE',
-  arcData: {
-    startingAngle: 0,
-    endingAngle: 6.2831854820251465,
-    innerRadius: 0,
-  },
 };
 
 // PolygonNode

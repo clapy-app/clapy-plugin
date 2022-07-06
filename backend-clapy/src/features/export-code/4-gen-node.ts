@@ -349,6 +349,7 @@ function genNodeAstLoopChildren(node: SceneNode2) {
   }
   return childrenAst.length ? childrenAst : undefined;
 }
+
 function createSvgClassAttribute(context: NodeContext, node: ValidNode) {
   const svgStyles: Dict<DeclarationPlain> = {};
   addStyle(context, node, svgStyles, 'width', '100%');

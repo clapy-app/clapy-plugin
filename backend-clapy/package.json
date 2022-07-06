@@ -20,7 +20,7 @@
     "stop": "cd .. && yarn stop",
     "log": "cd .. && yarn log",
     "upgr": "yarn upgrade-interactive --latest",
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf dist && rimraf node_modules/.cache/tsconfig.tsbuildinfo",
     "build": "nest build",
     "test": "jest",
     "test:watch": "jest --watch",

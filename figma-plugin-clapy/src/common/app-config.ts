@@ -10,4 +10,5 @@ export const flags = {
   alphaFeature: env.isDev,
   logWebsocketRequests: true,
   fixSvgStrokePositionBug: true,
+  extractInstanceSVG: true,
 };
