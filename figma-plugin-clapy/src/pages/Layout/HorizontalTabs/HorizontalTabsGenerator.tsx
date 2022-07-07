@@ -2,8 +2,6 @@ import type { FC, MouseEvent } from 'react';
 import { memo, useCallback, useRef } from 'react';
 
 import { _TabButtonBase } from '../_TabButtonBase/_TabButtonBase';
-import { CodeIcon } from '../Header/CodeIcon';
-import { SettingsIcon } from '../Header/SettingsIcon';
 import classes from './HorizontalTabs.module.css';
 
 interface Props {
@@ -30,16 +28,10 @@ export const HorizontalTabs: FC<Props> = memo(function HorizontalTabs(props) {
       <div className={classes.divider}></div>
       <div className={classes.tabs}>
         <_TabButtonBase active={activeTab === 0} data-index={0} onClick={_selectTab}>
-          Generator
-          <span style={{ marginLeft: 8, marginTop: 4 }}>
-            <CodeIcon />
-          </span>
+          Figma to code
         </_TabButtonBase>
         <_TabButtonBase active={activeTab === 1} data-index={1} onClick={_selectTab}>
-          Settings
-          <span style={{ marginLeft: 8, marginTop: 3 }}>
-            <SettingsIcon />
-          </span>
+          Code to Figma
         </_TabButtonBase>
       </div>
     </div>

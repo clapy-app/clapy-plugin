@@ -1,0 +1,14 @@
+.root {
+    flex: 1;
+    background-color: #fff;
+    flex-direction: column;
+  }
+  
+  .content {
+    flex: 1;
+    align-items: center;
+    gap: 16px;
+    padding: 0px 24px;
+    overflow: auto;
+    flex-direction: column;
+  }

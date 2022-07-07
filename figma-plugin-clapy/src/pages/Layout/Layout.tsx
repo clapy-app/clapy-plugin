@@ -1,16 +1,14 @@
 import type { FC } from 'react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { LoginHome } from '../0-login/LoginHome/LoginHome';
 import loginHomeClasses from '../0-login/LoginHome/LoginHome.module.css';
-import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
-import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome';
-import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
+import { Account } from '../3-Account/Account';
+import { Generator } from '../4-Generator/Generator';
 import { Loading } from '../../components-used/Loading/Loading';
 import { selectAuthError, selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
-import { env } from '../../environment/env';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
@@ -36,7 +34,6 @@ export const Layout: FC = memo(function Layout() {
 
 export const LayoutInner: FC = memo(function LayoutInner() {
   const [activeTab, setActiveTab] = useState(0);
-  const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
   const isSignedIn = useSelector(selectSignedIn);
@@ -44,17 +41,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
   // hasMissingMetaUsage = false;
-
-  // Show selection
-  useEffect(() => {
-    const dispose = subscribePlugin('selectionPreview', (_, prev) => {
-      setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
-    });
-    if (env.isDev) {
-      fetchPluginNoResponse('getSelectionPreview');
-    }
-    return dispose;
-  }, []);
 
   if (authError) {
     return (
@@ -80,10 +66,16 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   return (
     <>
       <Header activeTab={activeTab} selectTab={setActiveTab} />
-      <div className={classes.content}>
-        {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
-        {activeTab === 1 && <CodeToFigma />}
-      </div>
+      {activeTab === 0 && (
+        <div className={classes.generatorContent}>
+          <Generator />
+        </div>
+      )}
+      {activeTab === 1 && (
+        <div className={classes.generatorContent}>
+          <Account />
+        </div>
+      )}
     </>
   );
 });

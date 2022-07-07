@@ -1,7 +1,7 @@
 import type { FC, MouseEvent } from 'react';
 import { memo } from 'react';
 
-import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
+import { HorizontalTabs as HorizontalTabsGenerator } from '../HorizontalTabs/HorizontalTabsGenerator';
 import classes from './Header.module.css';
 
 interface Props {
@@ -14,7 +14,7 @@ export const Header: FC<Props> = memo(function Header(props) {
 
   return (
     <div className={classes.root}>
-      <HorizontalTabs activeTab={activeTab} selectTab={selectTab} />
+      <HorizontalTabsGenerator activeTab={activeTab} selectTab={selectTab} />
     </div>
   );
 });

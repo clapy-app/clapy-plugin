@@ -12,3 +12,10 @@
   overflow: auto;
   flex-direction: column;
 }
+
+.generatorContent {
+  flex: 1;
+  gap: 16px;
+  overflow: auto;
+  flex-direction: column;
+}
