@@ -145,7 +145,7 @@ function applyPostTransform(platformConfig: StyleDictionary.Platform, entry: Pos
 
 function isPTEntryLeaf(entry: PostTransformEntry): entry is StyleDictionary.TransformedToken {
   const e = entry as StyleDictionary.TransformedToken;
-  return !!e.value && e.type && !isPlainObject(e.value);
+  return e.value != null && e.type && !isPlainObject(e.value);
 }
 
 function indexVarNames(properties: StyleDictionary.TransformedTokens) {
