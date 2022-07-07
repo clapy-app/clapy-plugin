@@ -1,11 +1,33 @@
 import type { Nil } from '../../common/app-models';
-import type { BaseNode2, Intersect, PageNode2, SceneNode2 } from '../../common/sb-serialize.model';
+import type {
+  BaseNode2,
+  BooleanOperationNode2,
+  ChildrenMixin2,
+  ComponentNode2,
+  ComponentSetNode2,
+  EllipseNode2,
+  FrameNode2,
+  GroupNode2,
+  InstanceNode2,
+  Intersect,
+  LineNode2,
+  PageNode2,
+  PolygonNode2,
+  RectangleNode2,
+  SceneNode2,
+  StarNode2,
+  VectorNode2,
+} from '../../common/sb-serialize.model';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }
 
 export function isPage(node: BaseNode2 | undefined): node is PageNode {
+  return node?.type === 'PAGE';
+}
+
+export function isPage2(node: BaseNode2 | undefined): node is PageNode2 {
   return node?.type === 'PAGE';
 }
 
@@ -66,11 +88,19 @@ export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
 
+export function isGroup2(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode2 {
+  return node?.type === 'GROUP';
+}
+
 export function isSlice(node: BaseNode2 | SceneNode2 | Nil): node is SliceNode {
   return node?.type === 'SLICE';
 }
 
 export function isRectangle(node: BaseNode2 | SceneNode2 | Nil): node is RectangleNode {
+  return node?.type === 'RECTANGLE';
+}
+
+export function isRectangle2(node: BaseNode2 | SceneNode2 | Nil): node is RectangleNode2 {
   return node?.type === 'RECTANGLE';
 }
 
@@ -82,7 +112,15 @@ export function isEllipse(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNo
   return node?.type === 'ELLIPSE';
 }
 
+export function isEllipse2(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNode2 {
+  return node?.type === 'ELLIPSE';
+}
+
 export function isPolygon(node: BaseNode2 | SceneNode2 | Nil): node is PolygonNode {
+  return node?.type === 'POLYGON';
+}
+
+export function isPolygon2(node: BaseNode2 | SceneNode2 | Nil): node is PolygonNode2 {
   return node?.type === 'POLYGON';
 }
 
@@ -90,7 +128,15 @@ export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
+export function isStar2(node: BaseNode2 | SceneNode2 | Nil): node is StarNode2 {
+  return node?.type === 'STAR';
+}
+
 export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode {
+  return node?.type === 'VECTOR';
+}
+
+export function isVector2(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode2 {
   return node?.type === 'VECTOR';
 }
 
@@ -102,11 +148,19 @@ export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is 
   return node?.type === 'BOOLEAN_OPERATION';
 }
 
+export function isBooleanOperation2(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode2 {
+  return node?.type === 'BOOLEAN_OPERATION';
+}
+
 export function isStamp(node: BaseNode2 | SceneNode2 | Nil): node is StampNode {
   return node?.type === 'STAMP';
 }
 
 export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is ComponentSetNode {
+  return node?.type === 'COMPONENT_SET';
+}
+
+export function isComponentSet2(node: BaseNode2 | SceneNode2 | Nil): node is ComponentSetNode2 {
   return node?.type === 'COMPONENT_SET';
 }
 
@@ -116,11 +170,23 @@ export function isFrame(
   return (node as BaseNode)?.type === 'FRAME';
 }
 
+export function isFrame2(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 {
+  return (node as BaseNode2)?.type === 'FRAME';
+}
+
 export function isComponent(node: BaseNode2 | SceneNode2 | PageNode2 | Nil): node is ComponentNode {
   return node?.type === 'COMPONENT';
 }
 
+export function isComponent2(node: BaseNode2 | SceneNode2 | PageNode2 | Nil): node is ComponentNode2 {
+  return node?.type === 'COMPONENT';
+}
+
 export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode {
+  return node?.type === 'INSTANCE';
+}
+
+export function isInstance2(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
   return node?.type === 'INSTANCE';
 }
 
@@ -130,6 +196,10 @@ export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node i
 
 export function isChildrenMixin(node: BaseNode | ChildrenMixin | Nil): node is ChildrenMixin {
   return !!(node as ChildrenMixin)?.children;
+}
+
+export function isChildrenMixin2(node: BaseNode2 | ChildrenMixin2 | Nil): node is ChildrenMixin2 {
+  return !!(node as ChildrenMixin2)?.children;
 }
 
 export function isMinimalStrokesMixin(node: BaseNode2 | MinimalStrokesMixin | Nil): node is MinimalStrokesMixin {
@@ -168,6 +238,20 @@ export function isShapeExceptDivable(node: BaseNode2 | SceneNode2 | Nil): node i
     isVector(node) ||
     isBooleanOperation(node) ||
     (isFrame(node) && node.isMask)
+  );
+}
+
+export type ShapeNode2 = LineNode2 | EllipseNode2 | PolygonNode2 | StarNode2 | VectorNode2 | BooleanOperationNode2;
+
+export function isShapeExceptDivable2(node: BaseNode2 | SceneNode2 | Nil): node is ShapeNode2 {
+  // Rectangle and line are excluded
+  return (
+    isEllipse2(node) ||
+    isPolygon2(node) ||
+    isStar2(node) ||
+    isVector2(node) ||
+    isBooleanOperation2(node) ||
+    (isFrame2(node) && node.isMask)
   );
 }
 

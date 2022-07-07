@@ -34,8 +34,9 @@ export const rangeProps: RangeProp[] = [
   'textStyleId',
 ];
 /* as Writeable<typeof rangeProps> */
-const blacklist = new Set<string>(extractionBlacklist);
-const textBlacklist = new Set<string>([...extractionBlacklist, ...rangeProps, 'characters']);
+const extractionBlacklist2 = [...extractionBlacklist, 'id', 'type'];
+const blacklist = new Set<string>(extractionBlacklist2);
+const textBlacklist = new Set<string>([...extractionBlacklist2, ...rangeProps, 'characters']);
 
 // We prepare the list of fields we want to extract from Figma.
 // It is derived from the default values configured in sb-serialize.model.

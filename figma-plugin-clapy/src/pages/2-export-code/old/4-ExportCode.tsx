@@ -39,45 +39,47 @@ const ExportCodeInner: FC = memo(function ExportCodeInner() {
       const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
         'serializeSelectedNode',
       );
-      const images: ExportImageMap2 = {};
-      const nodes = { parent, root, images, styles, extraConfig };
+      if (imagesExtracted) {
+        const images: ExportImageMap2 = {};
+        const nodes = { parent, root, images, styles, extraConfig };
 
-      // Upload assets to a CDN before generating the code
-      for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
-        const { bytes, ...imageEntryRest } = imageFigmaEntry;
-        // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
-        // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+        // Upload assets to a CDN before generating the code
+        for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
+          const { bytes, ...imageEntryRest } = imageFigmaEntry;
+          // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
+          // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
 
-        // Replace Figma asset URL with our own CDN. Benefits:
-        // - Avoid CORS issue in codesandbox when exporting the project as zip
-        // - Allows image compression if useful later, instead of keeping the original HD image.
-        let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
-        if (!url) {
-          handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
-        } else {
-          images[imageHash] = { ...imageEntryRest, url };
+          // Replace Figma asset URL with our own CDN. Benefits:
+          // - Avoid CORS issue in codesandbox when exporting the project as zip
+          // - Allows image compression if useful later, instead of keeping the original HD image.
+          let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
+          if (!url) {
+            handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
+          } else {
+            images[imageHash] = { ...imageEntryRest, url };
+          }
         }
-      }
 
-      // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
-      // TODO improvements for images
-      // Small UI update: 2 steps loading (show a loader?)
-      // Check if the hash is already in database. If yes, reuse the URL.
-      // If not, upload to CDN and save the hash + URL in database.
-      // When a node has an image, apply relevant formattings using the info from the node.
-      // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
+        // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
+        // TODO improvements for images
+        // Small UI update: 2 steps loading (show a loader?)
+        // Check if the hash is already in database. If yes, reuse the URL.
+        // If not, upload to CDN and save the hash + URL in database.
+        // When a node has an image, apply relevant formattings using the info from the node.
+        // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
 
-      if (env.isDev) {
-        console.log(JSON.stringify(nodes));
-      }
-      if (!env.isDev || sendToApi) {
-        const { data } = await apiPost<CSBResponse>('code/export', nodes);
-        if (data) {
-          const url = `https://${data.sandbox_id}.csb.app/`;
-          console.log('sandbox:', url);
-          // window.open(url, '_blank', 'noopener');
-          setPreviewUrl(url);
-          return;
+        if (env.isDev) {
+          console.log(JSON.stringify(nodes));
+        }
+        if (!env.isDev || sendToApi) {
+          const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          if (data) {
+            const url = `https://${data.sandbox_id}.csb.app/`;
+            console.log('sandbox:', url);
+            // window.open(url, '_blank', 'noopener');
+            setPreviewUrl(url);
+            return;
+          }
         }
       }
 

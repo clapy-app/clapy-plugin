@@ -49,7 +49,10 @@ export interface SerializeContext {
   images: ExportImagesFigma;
   components: Dict<ComponentNodeNoMethod>;
   isInInstance?: boolean;
-  // When into an instance, we keep track of the corresponding node in the component to find style overrides
+  // When into an instance, we keep track of the corresponding node in the component to find style overrides.
+  // The only usage is to avoid writing a value in the extrated JSON. We could replace it with a more relevant
+  // node: nextIntermediateNode. But it will require to update the webservice as well. And to avoid issues during
+  // the deployment, support both nodeOfComp and nextIntermediateNode as base node in the API.
   nodeOfComp?: SceneNode;
   intermediateNodes: IntermediateNodes;
   isComp?: boolean;

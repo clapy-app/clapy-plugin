@@ -283,6 +283,15 @@ type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList>;
 // const f: ClapifyNode2<FrameNode>;
 // f.chil
 
+export type NodeId = string;
+
+export interface NodeLight {
+  id: string;
+  name: string;
+  type: (LayoutNode | PageNode2)['type'];
+  parent?: NodeId;
+}
+
 type BaseNodeMixin2 = ClapifyNode<BaseNodeMixin>;
 type SceneNodeMixin2 = ClapifyNode<SceneNodeMixin>;
 export type ChildrenMixin2 = {
@@ -321,11 +330,12 @@ type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
 export type BaseNode2 = ClapifyNode<BaseNode>;
 export type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
 export type SliceNode2 = ClapifyNode<SliceNode>;
-export type FrameNode2 = ClapifyNode<FrameNode>;
+export type FrameNode2 = ClapifyNode<FrameNode> & ChildrenMixin2;
 export type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
 export type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
-export type ComponentNode2 = ClapifyNode<ComponentNode>;
-export type InstanceNode2 = ClapifyNode<InstanceNode>;
+export type ComponentNode2 = ClapifyNode<ComponentNode> & ChildrenMixin2;
+export type InstanceNode2 = Omit<ClapifyNode<InstanceNode>, 'mainComponent'> &
+  ChildrenMixin2 & { mainComponent: NodeLight | null };
 export type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
 export type VectorNode2 = ClapifyNode<VectorNode>;
 export type StarNode2 = ClapifyNode<StarNode>;
@@ -654,6 +664,7 @@ const defaultSliceNode: SliceNode2 = {
 
 const defaultFrameNode: FrameNode2 = {
   ...defaultDefaultFrameMixin,
+  ...defaultChildrenMixin,
   type: 'FRAME',
 };
 
@@ -688,6 +699,7 @@ const defaultComponentNode: ComponentNode2 = {
   ...defaultPublishableMixin,
   ...defaultVariantMixin,
   ...defaultComponentPropertiesMixin,
+  ...defaultChildrenMixin,
   type: 'COMPONENT',
 };
 
@@ -696,6 +708,7 @@ const defaultComponentNode: ComponentNode2 = {
 const defaultInstanceNode: InstanceNode2 = {
   ...defaultDefaultFrameMixin,
   ...defaultVariantMixin,
+  ...defaultChildrenMixin,
   type: 'INSTANCE',
   mainComponent: null,
   scaleFactor: 1,
