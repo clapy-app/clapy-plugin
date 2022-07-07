@@ -58,7 +58,7 @@ async function pushCorrectData(person: any, user: User) {
   return updateResp;
 }
 
-export async function updateANumberOfusers(nombreOfUsersToTest: number) {
+async function updateANumberOfusers(nombreOfUsersToTest: number) {
   let inexistantPipeDriveUsers = [];
   let usersToEdit = [];
   let counter = 0;
