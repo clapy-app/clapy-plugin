@@ -47,7 +47,7 @@ async function searchPerson(key: string) {
 async function pushCorrectData(person: any, user: User) {
   const personObj = {
     [F.lastTimeCodeWasGenerated]: user.lastTimeCodeWasGenerated,
-    [F.lastTimePluginWasLunched]: user.lastTimePluginWasLunched,
+    [F.lastTimePluginWasLunched]: user.lastTimePluginWasLaunched,
     [F.generatedUrls]: user.generatedUrls,
     [F.numberOfCodeGenerations]: user.numberOfCodeGenerations,
     [F.numberOfDaysActive]: user.numberOfDaysActive,

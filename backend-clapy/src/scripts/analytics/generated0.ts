@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { writeFile } from 'fs/promises';
 
 import { backendDir } from '../../root';
 import { Users } from './shared-variables';
@@ -15,8 +15,6 @@ async function loop() {
     }
   }
   const dictstring = JSON.stringify(result);
-  fs.writeFile('0codeGenerated.json', dictstring, e => {
-    console.log(e);
-  });
+  await writeFile('0codeGenerated.json', dictstring);
 }
 loop();

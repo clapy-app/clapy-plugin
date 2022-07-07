@@ -28,7 +28,7 @@ export interface User {
   numberOfDaysActive?: number;
   totalTimeCodeGenerationWasInterrupted?: number;
   lastTimeCodeWasGenerated?: Date | string;
-  lastTimePluginWasLunched?: Date | string;
+  lastTimePluginWasLaunched?: Date | string;
   generatedUrls?: string[] | string;
 }
 export async function firstJsonFile(directory: string) {

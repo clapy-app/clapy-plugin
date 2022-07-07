@@ -14,23 +14,22 @@ const calculateUserInfoFromAnalytics = (analytics: Analytic[], user: User) => {
   user.numberOfCodeGenerations = filteredAnalyticsCompleted.length;
 
   if (filteredAnalyticsOpened.length > 0) {
-    user.lastTimePluginWasLunched = filteredAnalyticsOpened[0]['Created At'].toISOString().substring(0, 10);
+    user.lastTimePluginWasLaunched = filteredAnalyticsOpened[0]['Created At'].toISOString().substring(0, 10);
   }
+
   if (filteredAnalyticsCompleted.length > 0) {
     user.lastTimeCodeWasGenerated = filteredAnalyticsCompleted[0]['Created At'].toISOString().substring(0, 10);
   }
-  if (filteredAnalyticsGenStarted.length > 0) {
-    if (filteredAnalyticsCompleted.length > 0) {
-      user.totalTimeCodeGenerationWasInterrupted =
-        filteredAnalyticsGenStarted.length - filteredAnalyticsCompleted.length;
-    } else {
-      user.totalTimeCodeGenerationWasInterrupted = filteredAnalyticsGenStarted.length;
-    }
+
+  if (filteredAnalyticsGenStarted.length > 0 && filteredAnalyticsCompleted.length >= 0) {
+    user.totalTimeCodeGenerationWasInterrupted = filteredAnalyticsGenStarted.length - filteredAnalyticsCompleted.length;
   }
+
   for (let i = 0; i < filteredAnalyticsCompleted.length; i++) {
     const datesUserWasOn = filteredAnalyticsCompleted.map(r => r['Created At'].toISOString().substring(0, 10));
     user.numberOfDaysActive = new Set(datesUserWasOn).size;
   }
+
   if (Array.isArray(user.generatedUrls)) {
     user.generatedUrls = user.generatedUrls.join(';');
   }
