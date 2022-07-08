@@ -13,6 +13,7 @@ import type { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectConte
 import type { ComponentNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low.js';
+import { getCSSExtension } from './frameworks/scss/scss-utils.js';
 import {
   getComponentName,
   mkCompFunction,
@@ -181,8 +182,10 @@ export function generateAllComponents(projectContext: ProjectContext) {
     createModuleCode(moduleContext, tsx);
 
     if (isNonEmptyObject(css.children)) {
-      cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
-      const cssModuleModuleSpecifier = `./${compName}.module.css`;
+      const cssExt = getCSSExtension(projectContext.extraConfig);
+      const cssFileName = `${compName}.module.${cssExt}`;
+      cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
+      const cssModuleModuleSpecifier = `./${cssFileName}`;
       imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
     }
 

@@ -4,6 +4,7 @@ import type { Statement } from 'typescript';
 import ts from 'typescript';
 
 import type { Nil } from '../../common/general-utils.js';
+import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils.js';
 import { env } from '../../env-and-config/env.js';
 import type { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
@@ -26,6 +27,7 @@ import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals.js';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages.js';
+import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './frameworks/scss/scss-utils.js';
 import { genStyles } from './frameworks/style-dictionary/gen-styles.js';
 import type { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
@@ -34,7 +36,9 @@ import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } f
 
 const { factory } = ts;
 
-const cssVariablesFile = 'variables.css';
+function getCSSVariablesFileName(cssExt: string) {
+  return `variables.${cssExt}`;
+}
 
 const enableMUIInDev = false;
 
@@ -68,9 +72,9 @@ export async function exportCode(
 
   const appCompDir = 'src';
   const appCompName = 'App';
-  const appCssPath = `${appCompDir}/${appCompName}.module.css`;
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles(extraConfig.useViteJS ? reactViteDir : reactCRADir);
+  const appCssPath = getAppCssPathAndRenameSCSS(filesCsb, extraConfig, appCompDir, appCompName);
   // If useful, resources['tsconfig.json']
   const [tsFiles, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(filesCsb);
   const cssFiles: CodeDict = { [appCssPath]: appCss };
@@ -97,6 +101,8 @@ export async function exportCode(
     varNamesMap,
     tokensRawMap,
     extraConfig,
+    newDependencies: {},
+    newDevDependencies: {},
   };
 
   const lightAppModuleContext = mkModuleContext(
@@ -178,17 +184,19 @@ function addCompToAppRoot(
   const {
     compDir,
     compName,
-    projectContext: {
-      cssFiles,
-      extraConfig: { isFTD },
-    },
+    projectContext: { cssFiles, extraConfig },
     imports,
     statements,
   } = appModuleContext;
-  const appCssPath = `${compDir}/${compName}.module.css`;
+  const { isFTD } = extraConfig;
+  const cssExt = getCSSExtension(extraConfig);
+
+  const cssFileName = `${compName}.module.${cssExt}`;
+  const appCssPath = `${compDir}/${cssFileName}`;
 
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration && !isFTD) {
+    const cssVariablesFile = getCSSVariablesFileName(cssExt);
     const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
     const cssVarModuleSpecifier = `./${cssVariablesFile}`;
     imports[cssVarModuleSpecifier] = mkSimpleImportDeclaration(cssVarModuleSpecifier);
@@ -196,7 +204,7 @@ function addCompToAppRoot(
   }
 
   // Add CSS classes import in TSX file
-  const cssModuleModuleSpecifier = `./${compName}.module.css`;
+  const cssModuleModuleSpecifier = `./${cssFileName}`;
   imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
 
   // Specific to the root node. Don't apply on other components.
@@ -253,6 +261,30 @@ function mkAppCompTsx(compAst: CompAst | undefined) {
 
 function addPackages(projectContext: ProjectContext) {
   addMUIPackages(projectContext);
+  addScssPackage(projectContext);
+  writePackages(projectContext);
+}
+
+function writePackages(projectContext: ProjectContext) {
+  const { resources, newDependencies, newDevDependencies } = projectContext;
+  if (isNonEmptyObject(newDependencies) || isNonEmptyObject(newDevDependencies)) {
+    try {
+      const packageJson = JSON.parse(resources['package.json']);
+      Object.assign(packageJson.dependencies, newDependencies);
+      Object.assign(packageJson.devDependencies, newDevDependencies);
+      resources['package.json'] = JSON.stringify(packageJson, null, 2);
+      // package.json typings available at
+      // https://github.com/sindresorhus/type-fest
+      // and/or https://www.npmjs.com/package/package-json-type
+    } catch (error) {
+      console.warn(
+        'Cannot parse and update package.json. Skipping in production, but the generated project is incomplete.',
+      );
+      if (!env.isProd) {
+        throw error;
+      }
+    }
+  }
 }
 
 function addDemoThemeSwitcher(

@@ -82,7 +82,12 @@ export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
 export async function prepareCssFiles(cssFiles: CodeDict) {
   for (const [path, content] of Object.entries(cssFiles)) {
     if (flags.formatCode && path.startsWith('src')) {
-      cssFiles[path] = await formatCssFile(path, content);
+      try {
+        cssFiles[path] = await formatCssFile(path, content);
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     }
   }
 }

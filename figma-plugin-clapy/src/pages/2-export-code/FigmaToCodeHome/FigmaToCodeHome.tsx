@@ -43,6 +43,7 @@ interface Props {
 
 interface AdvancedOptions {
   zip?: boolean;
+  scss?: boolean;
 }
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
@@ -91,6 +92,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       perfMeasure('Figma config extraction time:');
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
+        const { zip, ...userSettings } = advancedOptionsRef.current;
         const nodes: ExportCodePayload = {
           parent,
           root,
@@ -100,7 +102,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            output: advancedOptionsRef.current.zip ? 'zip' : 'csb',
+            output: zip ? 'zip' : 'csb',
+            ...userSettings,
           },
           tokens,
         };
@@ -189,23 +192,51 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       <SelectionPreview state={state} selectionPreview={selectionPreview} />
       {state !== 'generated' && (
         <>
-          {isZipEnabled && (
-            <Accordion classes={{ root: classes.accordionRoot }}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                <Typography>Advanced options</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <FormGroup>
-                  <Tooltip title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'>
+          <Accordion classes={{ root: classes.accordionRoot }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1a-content'
+              id='panel1a-header'
+              disabled={isLoading}
+            >
+              <Typography>Advanced options</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <FormGroup>
+                {isZipEnabled && (
+                  <Tooltip
+                    title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+                    disableInteractive
+                  >
                     <FormControlLabel
-                      control={<Switch name='zip' onChange={updateAdvancedOption} />}
+                      control={
+                        <Switch
+                          name='zip'
+                          onChange={updateAdvancedOption}
+                          defaultChecked={advancedOptionsRef.current.zip}
+                        />
+                      }
                       label='Download as zip'
+                      disabled={isLoading}
                     />
                   </Tooltip>
-                </FormGroup>
-              </AccordionDetails>
-            </Accordion>
-          )}
+                )}
+                <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name='scss'
+                        onChange={updateAdvancedOption}
+                        defaultChecked={advancedOptionsRef.current.scss}
+                      />
+                    }
+                    label='SCSS instead of CSS (beta)'
+                    disabled={isLoading}
+                  />
+                </Tooltip>
+              </FormGroup>
+            </AccordionDetails>
+          </Accordion>
           <Button onClick={generateCode} disabled={state === 'loading' || state === 'noselection'} loading={isLoading}>
             &lt; Generate code &gt;
           </Button>
