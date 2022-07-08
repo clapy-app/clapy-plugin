@@ -7,6 +7,8 @@ import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
 import type { MUIConfig } from '../frameworks/mui/mui-config.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
 
+// Most of this file has a big overlap with sb-serialize.model.ts. To refactor later.
+
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
 }

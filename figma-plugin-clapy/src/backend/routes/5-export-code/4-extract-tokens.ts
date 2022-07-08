@@ -49,3 +49,17 @@ export function exportNodeTokens(node: SceneNode | PageNode) {
     throw error;
   }
 }
+
+export function exportNodeTokens2(node: SceneNode) {
+  try {
+    return node.getSharedPluginDataKeys('tokens').reduce((obj, key) => {
+      if (!obj) obj = {};
+      // obj[key] = JSON.stringify(node.getSharedPluginData('tokens', key));
+      obj[key] = tokenOf(node, key, key !== 'hash');
+      return obj;
+    }, undefined as Dict<TokenName> | undefined);
+  } catch (error) {
+    warnNode(node, 'while processing this node');
+    throw error;
+  }
+}

@@ -5,7 +5,7 @@ import type {
   PageNodeNoMethod,
 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
-import { perfReset } from '../../common/perf-utils';
+import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import type { SerializeContext } from './3-nodeToObject.js';
 import { nodeToObject } from './3-nodeToObject.js';
@@ -35,9 +35,9 @@ export async function serializeSelectedNode() {
       effectStyles: {},
       gridStyles: {},
     };
-    console.log('Start fillNodesCache');
+    perfMeasure('Start fillNodesCache');
     const nodes = fillNodesCache(node, extractBatchContext);
-    console.log('End fillNodesCache');
+    perfMeasure('End fillNodesCache');
     return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
   } else {
     const context: SerializeContext = {

@@ -1,3 +1,5 @@
+// July 7, 2022, 11:31 AM => code qui a été supprimé ensuite
+
 import equal from 'fast-deep-equal';
 import filetype from 'magic-bytes.js';
 
@@ -7,17 +9,21 @@ import type { Nil } from '../../../common/app-models.js';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf, parseTransformationMatrix } from '../../../common/general-utils';
 import type {
+  ComponentNode2,
   ComponentNodeNoMethod,
   Dict,
   ExportImageEntry,
   ExportImagesFigma,
-  NodeKeys,
+  InstanceNode2,
+  NodeWithDefaults,
+  PageNode2,
+  SceneNode2,
   SceneNodeNoMethod,
 } from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env';
 import type { LayoutNode, ShapeNode } from '../../common/node-type-utils';
-import {
+import { isInstance2 ,
   isBaseFrameMixin,
   isBlendMixin,
   isChildrenMixin,
@@ -41,21 +47,26 @@ import { utf8ArrayToStr } from './Utf8ArrayToStr';
 const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
 const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
 
-type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+type AnyNode = SceneNode | PageNode;
+type AnyNode2 = (SceneNode2 | PageNode2) & {
+  exportAsSvg?: boolean;
+};
+type IntermediateNodes = AnyNode[];
+type NodeId = string;
 
-type IntermediateNodes = (SceneNode | PageNode)[];
+// export interface NodeLight {
+//   id: string;
+//   name: string;
+//   type: AnyNode2['type'];
+//   mainComponent?: NodeId;
+//   children?: NodeId[];
+// }
 
-export interface SerializeContext {
+export interface ExtractBatchContext {
   images: ExportImagesFigma;
   components: Dict<ComponentNodeNoMethod>;
-  isInInstance?: boolean;
-  // When into an instance, we keep track of the corresponding node in the component to find style overrides.
-  // The only usage is to avoid writing a value in the extrated JSON. We could replace it with a more relevant
-  // node: nextIntermediateNode. But it will require to update the webservice as well. And to avoid issues during
-  // the deployment, support both nodeOfComp and nextIntermediateNode as base node in the API.
-  nodeOfComp?: SceneNode;
-  intermediateNodes: IntermediateNodes;
-  isComp?: boolean;
+  // nodesCache: Dict<AnyNode2>;
+  componentsCache: Dict<ComponentNode2>;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
   fillStyles: Dict<PaintStyle>;
@@ -63,6 +74,20 @@ export interface SerializeContext {
   effectStyles: Dict<EffectStyle>;
   gridStyles: Dict<GridStyle>;
   // VectorRegion fillStyleId
+}
+
+export interface ExtractNodeContext {
+  extractBatchContext: ExtractBatchContext;
+  node: AnyNode;
+  isInInstance?: boolean;
+  // When into an instance, we keep track of the corresponding node in the component to find style overrides.
+  // The only usage is to avoid writing a value in the extrated JSON. We could replace it with a more relevant
+  // node: nextIntermediateNode. But it will require to update the webservice as well. And to avoid issues during
+  // the deployment, support both nodeOfComp and nextIntermediateNode as base node in the API.
+  nodeOfComp?: SceneNode2;
+  nextIntermediateNode?: AnyNode2 | Nil;
+  // intermediateNodes: IntermediateNodes;
+  isComp?: boolean;
 }
 
 interface Options {
@@ -84,23 +109,192 @@ interface Options {
  * @param node
  * @param options
  */
-export async function nodeToObject<T extends SceneNode | PageNode>(
+export async function nodeToObject<T extends AnyNode>(
   node: T,
-  context: SerializeContext,
+  // context: ExtractNodeContext,
   options: Partial<Options> = {},
 ) {
+  const extractBatchContext: ExtractBatchContext = {
+    images: {},
+    components: {},
+    // nodesCache: {},
+    componentsCache: {},
+    textStyles: {},
+    fillStyles: {},
+    strokeStyles: {},
+    effectStyles: {},
+    gridStyles: {},
+  };
+
+  const context: ExtractNodeContext = {
+    extractBatchContext,
+    node,
+  };
+
   const { skipChildren = false, skipInstance = true, skipParent = true } = options;
   if (flags.verbose && !isComponent(node)) {
     console.log('Extracting selection', node.name);
   }
-  context = { ...context, intermediateNodes: [node] };
+  // context = { ...context /* , intermediateNodes: [node] */ };
   return nodeToObjectRec(node, context, { skipChildren, skipParent, skipInstance });
 }
 
-let prevNode: SceneNode | PageNode | undefined = undefined;
+let prevNode: AnyNode | undefined = undefined;
 
-async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context: SerializeContext, options: Options) {
+function fillNodesCache<T extends AnyNode>(nodeOriginal: T, context: ExtractBatchContext): AnyNode2 {
+  const id = nodeOriginal.id;
+  let type = nodeOriginal.type as keyof typeof nodeDefaults;
+  if (!nodeDefaults[type]) {
+    warnNode(nodeOriginal, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
+    type = 'FRAME';
+  }
+  const node2 = { id, type } as AnyNode2;
+  const attributesWhitelist = nodeAttributes[type];
+  for (const attribute of attributesWhitelist) {
+    try {
+      const attr = attribute as keyof AnyNode2;
+      const val = (nodeOriginal as any)[attr];
+      if (typeof val === 'symbol') {
+        (node2 as any)[attr] = 'Mixed' as any;
+      } else {
+        (node2 as any)[attr] = val;
+      }
+    } catch (err) {
+      console.warn('Error reading attribute', attribute, 'on node', nodeOriginal.name, type, id, '-', err);
+    }
+  }
+
+  const nodeIsShape = isShapeExceptDivable(node2);
+  let exportAsSvg =
+    nodeIsShape ||
+    (isBlendMixin(node2) && node2.isMask) ||
+    ((node2 as SceneNode2).visible && !isInstance2(node2) && !isComponent(node2) && !isPage(node2));
+  // One more case to export as SVG, to check in the next loop: shouldGroupAsSVG(node2)
+
+  if (!exportAsSvg) {
+    const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
+    if (children) {
+      (node2 as any).children = children.map(child => fillNodesCache(child, context));
+    }
+  }
+
+  // TODO component
+  const isProcessableInst = isInstance2(node2);
+
+    if (isProcessableInst) {
+      const {components} = context;
+      const {mainComponent} = nodeOriginal as InstanceNode;
+      const { id } = mainComponent;
+      if (!components[id]) {
+        const comp = fillNodesCache(mainComponent!, context);
+        components[id] = comp;
+        const { name, type } = comp;
+        node2.mainComponent = {id, name, type: type as any};
+        if (isComponentSet(mainComponent.parent)) {
+          const { id, name, type } = mainComponent.parent;
+          node2.mainComponent.parent = { id, name, type };
+        }
+      }
+
+
+      const { id, name, type } = node.mainComponent;
+      // For MUI, only the parent name is useful.
+      // For normal components, only the compoent ID is useful.
+      // But we keep id, name, type for both in case we want to do sanity checks.
+      obj.mainComponent = { id, name, type };
+      if (isComponentSet(node.mainComponent.parent)) {
+        const { id, name, type } = node.mainComponent.parent;
+        obj.mainComponent.parent = { id, name, type };
+      }
+      if (!context.components[id]) {
+        // We should assign a component, but it is only available after the await below. And we use the dictionary to prevent double processing. We set a boolean for the moment to prevent the double processing, and once we have the component, it is assigned instead.
+        context.components[id] = true as any;
+        const { nodeOfComp, nextIntermediateNode, ...compContext } = context;
+        compContext.isComp = true;
+        // compContext.intermediateNodes = [node.mainComponent];
+        const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
+          | ComponentNodeNoMethod
+          | undefined;
+        if (comp) {
+          if (context.components[id]) {
+            console.warn('Component', comp.name, 'already referenced. It was certainly processed twice.');
+          }
+          context.components[id] = comp;
+        } else {
+          // If undefined, there was an error (processed separately). Remove from the dictionary of components.
+          console.warn(
+            'Component for node ',
+            node.mainComponent.name,
+            'is undefined. There was certainly an error. Removing from the components map.',
+          );
+          delete context.components[id];
+        }
+      }
+    }
+  
+  // TODO return
+}
+
+async function nodeToObjectRec<T extends AnyNode>(nodeOriginal: T, context: ExtractNodeContext, options: Options) {
   try {
+    let { skipChildren, skipInstance, skipParent } = options;
+
+    // It seems reading attributes of Figma nodes have very bad performance impact.
+    // Probably because it's not a simple JS object, but a wrapper around something more complex.
+    // Let's ensure we read each field only once. For that, we make a copy in an in-memory object.
+    // The name "nodeOriginal" is purposely heavy to discourage its usage.
+    const id = nodeOriginal.id;
+    let type = nodeOriginal.type as keyof typeof nodeDefaults;
+    if (!nodeDefaults[type]) {
+      warnNode(nodeOriginal, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
+      type = 'FRAME';
+    }
+    const mainComponentOriginal = (nodeOriginal as unknown as InstanceNode).mainComponent;
+    const mainComponentParentOriginal = mainComponentOriginal?.parent;
+    const mainComponent = mainComponentOriginal
+      ? { id: mainComponentOriginal.id, type: mainComponentOriginal.type, name: mainComponentOriginal.name }
+      : undefined;
+    const mainComponentParent = mainComponentParentOriginal
+      ? {
+          id: mainComponentParentOriginal.id,
+          type: mainComponentParentOriginal.type,
+          name: mainComponentParentOriginal.name,
+        }
+      : undefined;
+    let node2 = { id, type } as AnyNode2;
+    if (mainComponent) {
+      (node2 as any).mainComponent = mainComponent;
+    }
+    const isProcessableInst2 = isInstance(node2);
+    if (isProcessableInst2) {
+      let { nextIntermediateNode } = context;
+      if (!nextIntermediateNode) {
+        // If we haven't registered an intermediate node yet, this instance's component is marked as intermediate node.
+        nextIntermediateNode = (node2 as InstanceNode2).mainComponent;
+      } else if (!checkIsOriginalInstance(node2, nextIntermediateNode)) {
+        // If there was already an intermediate node, now we find another instance, we check if it's the same
+        // instance as in the intermediate node. If different, the instance was swapped in Figma.
+        // It will be rendered as a render prop in React, which resets the intermediate node to undefined.
+        nextIntermediateNode = undefined;
+      }
+
+      context = { ...context, nodeOfComp: node.mainComponent, nextIntermediateNode };
+    }
+    let { nodeOfComp } = context;
+
+    function setProp2(obj: any, key: string, value: any) {
+      const k = key as keyof NodeWithDefaults;
+      const compVal = nodeOfComp?.[k];
+      if (
+        (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, currentNodeDefaults[k]))) ||
+        (isInInstance && (componentPropsNotInherited.has(k) || !equal(value, compVal)))
+      ) {
+        obj[k] = value;
+      }
+    }
+
+    ///
+
     if (flags.verbose) {
       if (isComponent(node)) {
         console.log(
@@ -111,18 +305,23 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         console.log('Extracting node', node.name);
       }
     }
-    let { skipChildren, skipInstance, skipParent } = options;
     const isProcessableInst = isProcessableInstance(node, skipInstance);
     const nodeIsShape = isShapeExceptDivable(node);
     let exportAsSvg = nodeIsShape;
-    let obj: any;
-    if (isProcessableInst) {
-      context = { ...context, nodeOfComp: node.mainComponent };
-    }
-    const { nodeOfComp, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles, isComp, intermediateNodes } =
-      context;
+    let obj: AnyNode2;
+
+    const {
+      // nodeOfComp,
+      // textStyles,
+      // fillStyles,
+      // strokeStyles,
+      // effectStyles,
+      // gridStyles,
+      isComp,
+      nextIntermediateNode /* , intermediateNodes */,
+    } = context;
     // It is undefined if we are not in an instance yet
-    const nextIntermediateNode = intermediateNodes[1] as SceneNode | PageNode | undefined;
+    // const nextIntermediateNode = intermediateNodes[1] as AnyNode | undefined;
 
     if (isComp) skipParent = false;
     const isInInstance = !!nodeOfComp;
@@ -131,15 +330,10 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
     }
     const nodeIsLayout = isLayout(node);
     const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
-    let type = node.type as keyof typeof nodeDefaults;
-    if (!nodeDefaults[type]) {
-      warnNode(node, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
-      type = 'FRAME';
-    }
     const currentNodeDefaults = nodeDefaults[type];
 
     function setProp(obj: any, key: string, value: any) {
-      const k = key as NodeKeys;
+      const k = key as keyof NodeWithDefaults;
       const compVal = nodeOfComp?.[k];
       if (
         (!isInInstance && (propsNeverOmitted.has(k) || !equal(value, currentNodeDefaults[k]))) ||
@@ -370,20 +564,54 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
 
-        const nextCompChildNode = nextIntermediateNode?.children[i];
-        const isOriginalInstance = !nextIntermediateNode || checkIsOriginalInstance(child, nextCompChildNode);
+        ////////
 
-        let childIntermediateNodes: IntermediateNodes;
-        if (!isOriginalInstance) {
-          childIntermediateNodes = [child];
-        } else {
-          // Replace intermediate nodes with the child at the same location:
-          childIntermediateNodes = mapToChildrenAtPosition(intermediateNodes, i);
-          const isProcessableInst = isProcessableInstance(child, skipInstance);
-          if (isProcessableInst) {
-            childIntermediateNodes = [...childIntermediateNodes, child.mainComponent];
-          }
-        }
+        // if (nodeOfComp && !isChildrenMixin(nodeOfComp)) {
+        //   warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+        //   throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+        // }
+        // context = {
+        //   ...context,
+        //   nodeOfComp: nodeOfComp?.children[i],
+        // };
+        // Get nextIntermediateNodeChild, then:
+        //  if the child node is an instance
+        //    If there is no nextIntermediateNodeChild yet
+        //      set nextIntermediateNodeChild
+        //    else (already has a nextIntermediateNodeChild)
+        //    -- check isOriginalInstance
+        //    ---- if it is a swapped instance, unset nextIntermediateNodeChild
+
+        // let nextIntermediateNodeChild = nextIntermediateNode?.children[i];
+        // const childIsProcessableInst = isProcessableInstance(child, skipInstance);
+        // if (childIsProcessableInst) {
+        //   if (!nextIntermediateNodeChild) {
+        //     // If we haven't registered an intermediate node yet, this instance's component is marked as intermediate node.
+        //     nextIntermediateNodeChild = child.mainComponent;
+        //   } else if (!checkIsOriginalInstance(child, nextIntermediateNodeChild)) {
+        //     // If there was already an intermediate node, now we find another instance, we check if it's the same
+        //     // instance as in the intermediate node. If different, the instance was swapped in Figma.
+        //     // It will be rendered as a render prop in React, which resets the intermediate node to undefined.
+        //     nextIntermediateNodeChild = undefined;
+        //   }
+        // }
+
+        ////////
+
+        //         const nextIntermediateNodeChild0 = nextIntermediateNode?.children[i];
+        //         const isOriginalInstance = !nextIntermediateNodeChild0 || checkIsOriginalInstance(child, nextIntermediateNodeChild0);
+        //
+        //         let childIntermediateNodes: IntermediateNodes;
+        //         if (!isOriginalInstance) {
+        //           childIntermediateNodes = [child];
+        //         } else {
+        //           // Replace intermediate nodes with the child at the same location:
+        //           childIntermediateNodes = mapToChildrenAtPosition(intermediateNodes, i);
+        //           const isProcessableInst = isProcessableInstance(child, skipInstance);
+        //           if (isProcessableInst) {
+        //             childIntermediateNodes = [...childIntermediateNodes, child.mainComponent];
+        //           }
+        //         }
 
         if (nodeOfComp && !isChildrenMixin(nodeOfComp)) {
           warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
@@ -392,7 +620,8 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
         context = {
           ...context,
           nodeOfComp: nodeOfComp?.children[i],
-          intermediateNodes: childIntermediateNodes,
+          nextIntermediateNode: nextIntermediateNode?.children[i],
+          // intermediateNodes: childIntermediateNodes,
         };
         promises.push(nodeToObjectRec(child, context, options));
       }
@@ -412,9 +641,9 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
       if (!context.components[id]) {
         // We should assign a component, but it is only available after the await below. And we use the dictionary to prevent double processing. We set a boolean for the moment to prevent the double processing, and once we have the component, it is assigned instead.
         context.components[id] = true as any;
-        const { nodeOfComp, ...compContext } = context;
+        const { nodeOfComp, nextIntermediateNode, ...compContext } = context;
         compContext.isComp = true;
-        compContext.intermediateNodes = [node.mainComponent];
+        // compContext.intermediateNodes = [node.mainComponent];
         const comp = (await nodeToObjectRec(node.mainComponent, compContext, options)) as
           | ComponentNodeNoMethod
           | undefined;
@@ -456,7 +685,7 @@ async function nodeToObjectRec<T extends SceneNode | PageNode>(node: T, context:
   }
 }
 
-function checkIsOriginalInstance(node: SceneNode, nextNode: SceneNode | undefined) {
+function checkIsOriginalInstance(node: AnyNode2, nextNode: AnyNode2 | undefined) {
   if (!node) {
     throw new Error(`BUG [checkIsOriginalInstance] node is undefined.`);
   }
@@ -492,7 +721,7 @@ function mapToChildrenAtPosition(intermediateNodes: IntermediateNodes, position:
   });
 }
 
-function shouldGroupAsSVG(node: SceneNode | PageNode) {
+function shouldGroupAsSVG(node: AnyNode) {
   if (!isChildrenMixin(node) || !node.children.length) return false;
   // If only one child, don't group as SVG
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
@@ -657,6 +886,6 @@ function addStyle<TStyle extends BaseStyle>(styles: Dict<TStyle>, styleId: strin
 type WithCompMixin = SceneNode & {
   mainComponent: ComponentNode;
 };
-function isProcessableInstance(node: SceneNode | PageNode, skipInstance: boolean): node is WithCompMixin {
+function isProcessableInstance(node: AnyNode, skipInstance: boolean): node is WithCompMixin {
   return !!(isInstance(node) && node.mainComponent && !skipInstance);
 }

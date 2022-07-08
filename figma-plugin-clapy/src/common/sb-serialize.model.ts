@@ -271,17 +271,16 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
-// type UpdateChildren<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
-type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList>;
-// & T extends ChildrenMixin
-// ? { children: ReadonlyArray<ClapifyNode<T['children']> /* LayoutNode */> }
-// : {};
-// type UpdateChildren2<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
-// type ClapifyNode2<T> = UpdateChildren2<Omit<OmitMethods<T>, FrameNodeBlackList>>;
-// type FrameNode3 = ClapifyNode2<UpdateChildren2<FrameNode>>;
-// type A = FrameNode3['c
-// const f: ClapifyNode2<FrameNode>;
-// f.chil
+type GlobalExtender = {
+  _tokens?: Dict<string>;
+};
+
+type TextExtender = {
+  _textSegments?: TextSegment2[];
+  listSpacing: number; // Temporary workaround, to remove once Figma API includes it.
+};
+
+type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList> & GlobalExtender;
 
 export type NodeId = string;
 
@@ -302,7 +301,7 @@ type BlendMixin2 = ClapifyNode<BlendMixin>;
 type MinimalStrokesMixin2 = ClapifyNode<MinimalStrokesMixin>;
 type MinimalFillsMixin2 = ClapifyNode<MinimalFillsMixin>;
 type GeometryMixin2 = ClapifyNode<GeometryMixin>;
-type LayoutMixin2 = ClapifyNode<LayoutMixin>;
+export type LayoutMixin2 = ClapifyNode<LayoutMixin>;
 type ExportMixin2 = ClapifyNode<ExportMixin>;
 interface DefaultShapeMixin2
   extends BaseNodeMixin2,
@@ -348,7 +347,9 @@ export type StampNode2 = ClapifyNode<StampNode>;
 // Later: rename XXNoMethod to XX2 to be consistent with the back.
 export type SceneNodeNoMethod = ClapifyNode<SceneNode>;
 export type SceneNode2 = SceneNodeNoMethod;
-export type TextNodeNoMethod = ClapifyNode<TextNode> & { listSpacing: number };
+export type TextNodeNoMethod = ClapifyNode<TextNode> & TextExtender;
+export type TextNode2 = TextNodeNoMethod;
+export type TextSegment2 = StyledTextSegment;
 export type FrameNodeNoMethod = ClapifyNode<FrameNode> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = ClapifyNode<ComponentNode> & {
   children: SceneNodeNoMethod[];
@@ -385,7 +386,7 @@ export const extractionBlacklist = [
   'exportSettings',
   'canUpgradeToNativeBidiSupport',
   'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
-  'componentPropertyDefinitions',
+  // 'componentPropertyDefinitions',
   'autoRename',
   'arcData',
 ] as const;
@@ -501,7 +502,7 @@ const defaultGeometryMixin: GeometryMixin2 = {
 };
 
 const defaultExportMixin: ExportMixin2 = {
-  exportSettings: [],
+  // exportSettings: [],
 };
 
 const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
@@ -825,11 +826,12 @@ export type LayoutNode =
   | StampNode2;
 
 export type NodeWithDefaults = LayoutNode | PageNode2;
+export type NodeKeys = Exclude<keyof NodeWithDefaults, keyof GlobalExtender | keyof TextExtender>;
+
+export type LayoutTypes = NodeWithDefaults['type'];
 
 // Function used to type-check the defaults below and ensure all keys are correctly mapped.
-function makeNodeDefaults<T extends { [key in NodeWithDefaults['type']]: NodeWithDefaults & { type: key } }>(
-  defaults: T,
-) {
+function makeNodeDefaults<T extends { [key in LayoutTypes]: NodeWithDefaults & { type: key } }>(defaults: T) {
   return defaults;
 }
 

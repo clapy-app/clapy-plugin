@@ -10,12 +10,14 @@ import type {
   GroupNode2,
   InstanceNode2,
   Intersect,
+  LayoutMixin2,
   LineNode2,
   PageNode2,
   PolygonNode2,
   RectangleNode2,
   SceneNode2,
   StarNode2,
+  TextNode2,
   VectorNode2,
 } from '../../common/sb-serialize.model';
 
@@ -84,6 +86,10 @@ export function isLayout(node: BaseNode2 | null | undefined): node is LayoutMixi
   return !!node && layoutTypes.has(node.type);
 }
 
+export function isLayout2(node: BaseNode2 | null | undefined): node is LayoutMixin2 & BaseNode2 {
+  return !!node && layoutTypes.has(node.type);
+}
+
 export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
@@ -141,6 +147,10 @@ export function isVector2(node: BaseNode2 | SceneNode2 | Nil): node is VectorNod
 }
 
 export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode {
+  return node?.type === 'TEXT';
+}
+
+export function isText2(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
   return node?.type === 'TEXT';
 }
 

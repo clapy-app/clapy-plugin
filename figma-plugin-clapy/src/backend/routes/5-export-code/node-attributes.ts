@@ -6,7 +6,7 @@ import type {
   Dict3,
   EllipseNode2,
   FrameNode2,
-  NodeWithDefaults,
+  LayoutTypes,
   PolygonNode2,
   StarNode2,
   VectorNode2,
@@ -34,15 +34,15 @@ export const rangeProps: RangeProp[] = [
   'textStyleId',
 ];
 /* as Writeable<typeof rangeProps> */
-const extractionBlacklist2 = [...extractionBlacklist, 'id', 'type'];
+const extractionBlacklist2 = [...extractionBlacklist, 'id', 'type', 'componentPropertyDefinitions'];
 const blacklist = new Set<string>(extractionBlacklist2);
 const textBlacklist = new Set<string>([...extractionBlacklist2, ...rangeProps, 'characters']);
 
 // We prepare the list of fields we want to extract from Figma.
 // It is derived from the default values configured in sb-serialize.model.
-export const nodeAttributes = {} as Dict3<NodeWithDefaults['type'], string[]>;
+export const nodeAttributes = {} as Dict3<LayoutTypes, string[]>;
 for (const [nodeType, defaultValues] of Object.entries(nodeDefaults)) {
-  const key = nodeType as NodeWithDefaults['type'];
+  const key = nodeType as LayoutTypes;
   const bl = key === 'TEXT' ? textBlacklist : blacklist;
 
   const attrs = Object.keys(defaultValues).filter(attr => !bl.has(attr));
@@ -69,12 +69,12 @@ const vectorEqualityFields = [
   // 'strokeGeometry',
   // 'fillGeometry',
 ];
-const equalityExtraFields: Dict2<NodeWithDefaults['type'], Array<keyof (FrameNode2 & VectorNode2)>> = {
+const equalityExtraFields: Dict2<LayoutTypes, Array<keyof (FrameNode2 & VectorNode2)>> = {
   VECTOR: vectorEqualityFields,
 };
-const equalityAttributes = {} as Dict3<NodeWithDefaults['type'], string[]>;
+const equalityAttributes = {} as Dict3<LayoutTypes, string[]>;
 for (const [nodeType, attributes] of Object.entries(nodeAttributes)) {
-  const key = nodeType as NodeWithDefaults['type'];
+  const key = nodeType as LayoutTypes;
 
   const attrs = attributes.filter(attr => !equalityBlacklist.has(attr));
   const extraFields = equalityExtraFields[key] as string[] | undefined;
