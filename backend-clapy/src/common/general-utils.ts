@@ -1,4 +1,6 @@
-import { ObjKey } from '../features/sb-serialize-preview/sb-serialize.model';
+import { readFile } from 'fs/promises';
+
+import type { Dict, ObjKey } from '../features/sb-serialize-preview/sb-serialize.model.js';
 
 export type Nil = null | undefined;
 
@@ -54,4 +56,9 @@ export async function waitInfinite(setClearer?: (clearer: () => void) => void) {
 
 export function isArrayOf<T>(node: any): node is T[] {
   return Array.isArray(node);
+}
+
+export function renameField(object: Dict<any>, oldKey: string, newKey: string) {
+  // Change the key of a field. Src: https://stackoverflow.com/a/50101979/4053349
+  delete Object.assign(object, { [newKey]: object[oldKey] })[oldKey];
 }

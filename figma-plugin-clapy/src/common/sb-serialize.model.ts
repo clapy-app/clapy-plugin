@@ -248,6 +248,7 @@ export interface ExtraConfig {
   enableMUIFramework?: boolean;
   output?: 'csb' | 'zip';
   useViteJS?: boolean;
+  scss?: boolean;
 }
 
 export interface ExportCodePayload {

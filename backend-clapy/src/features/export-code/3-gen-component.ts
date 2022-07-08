@@ -6,6 +6,7 @@ import { flags } from '../../env-and-config/app-config';
 import { figmaToAstRec } from './4-gen-node';
 import { JsxOneOrMore, ModuleContext, NodeContext, ParentNode } from './code.model';
 import { ComponentNode2, isComponent, isInstance, SceneNode2 } from './create-ts-compiler/canvas-utils';
+import { getCSSExtension } from './frameworks/scss/scss-utils.js';
 import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low';
 import {
   genUniqueName,
@@ -98,8 +99,10 @@ function genComponent(
   createModuleCode(moduleContext, tsx, classesArr);
 
   if (isNonEmptyObject(css.children)) {
-    cssFiles[`${compDir}/${compName}.module.css`] = cssAstToString(css);
-    imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
+    const cssExt = getCSSExtension(projectContext.extraConfig);
+    const cssFileName = `${compName}.module.${cssExt}`;
+    cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
+    imports.push(mkDefaultImportDeclaration('classes', `./${cssFileName}`));
   }
 
   let moduleSpecifier = `${relative(callerCompDir, compDir)}/${compName}`;

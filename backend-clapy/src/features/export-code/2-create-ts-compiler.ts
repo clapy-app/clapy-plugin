@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import ts, { Statement } from 'typescript';
 
 import { Nil } from '../../common/general-utils';
+import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils';
 import { env } from '../../env-and-config/env';
 import { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model';
@@ -26,12 +27,15 @@ import {
 import { addFontsToIndexHtml } from './figma-code-map/font';
 import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals';
 import { addMUIPackages } from './frameworks/mui/mui-add-packages';
+import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './frameworks/scss/scss-utils.js';
 import { genStyles } from './frameworks/style-dictionary/gen-styles';
 import { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
-const cssVariablesFile = 'variables.css';
+function getCSSVariablesFileName(cssExt: string) {
+  return `variables.${cssExt}`;
+}
 
 const enableMUIInDev = false;
 
@@ -65,9 +69,9 @@ export async function exportCode(
 
   const appCompDir = 'src';
   const appCompName = 'App';
-  const appCssPath = `${appCompDir}/${appCompName}.module.css`;
   // Initialize the project template with base files
   const filesCsb = await readReactTemplateFiles(extraConfig.useViteJS ? reactViteDir : reactCRADir);
+  const appCssPath = getAppCssPathAndRenameSCSS(filesCsb, extraConfig, appCompDir, appCompName);
   // If useful, resources['tsconfig.json']
   const [tsFiles, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(filesCsb);
   const cssFiles: CodeDict = { [appCssPath]: appCss };
@@ -94,6 +98,8 @@ export async function exportCode(
     varNamesMap,
     tokensRawMap,
     extraConfig,
+    newDependencies: {},
+    newDevDependencies: {},
   };
 
   const lightAppModuleContext = {
@@ -163,24 +169,27 @@ function addCompToAppRoot(
   const {
     compDir,
     compName,
-    projectContext: {
-      cssFiles,
-      extraConfig: { isFTD },
-    },
+    projectContext: { cssFiles, extraConfig },
     imports,
     statements,
   } = appModuleContext;
-  const appCssPath = `${compDir}/${compName}.module.css`;
+  const { isFTD } = extraConfig;
+  const cssExt = getCSSExtension(extraConfig);
+
+  const cssFileName = `${compName}.module.${cssExt}`;
+  const appCssPath = `${compDir}/${cssFileName}`;
 
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration && !isFTD) {
+    const cssVariablesFile = getCSSVariablesFileName(cssExt);
     const cssVariablesPath = `${compDir}/${cssVariablesFile}`;
     imports.push(mkSimpleImportDeclaration(`./${cssVariablesFile}`));
     cssFiles[cssVariablesPath] = cssVarsDeclaration;
   }
 
   // Add CSS classes import in TSX file
-  imports.push(mkDefaultImportDeclaration('classes', `./${compName}.module.css`));
+  const cssModuleModuleSpecifier = `./${cssFileName}`;
+  imports.push(mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier));
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
@@ -233,6 +242,30 @@ function mkAppCompTsx(childComponentName: string) {
 
 function addPackages(projectContext: ProjectContext) {
   addMUIPackages(projectContext);
+  addScssPackage(projectContext);
+  writePackages(projectContext);
+}
+
+function writePackages(projectContext: ProjectContext) {
+  const { resources, newDependencies, newDevDependencies } = projectContext;
+  if (isNonEmptyObject(newDependencies) || isNonEmptyObject(newDevDependencies)) {
+    try {
+      const packageJson = JSON.parse(resources['package.json']);
+      Object.assign(packageJson.dependencies, newDependencies);
+      Object.assign(packageJson.devDependencies, newDevDependencies);
+      resources['package.json'] = JSON.stringify(packageJson, null, 2);
+      // package.json typings available at
+      // https://github.com/sindresorhus/type-fest
+      // and/or https://www.npmjs.com/package/package-json-type
+    } catch (error) {
+      console.warn(
+        'Cannot parse and update package.json. Skipping in production, but the generated project is incomplete.',
+      );
+      if (!env.isProd) {
+        throw error;
+      }
+    }
+  }
 }
 
 function addDemoThemeSwitcher(

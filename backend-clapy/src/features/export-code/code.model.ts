@@ -36,6 +36,8 @@ export interface ProjectContext {
   readonly varNamesMap: Dict<string> | undefined;
   readonly tokensRawMap: Dict<MySingleToken> | undefined;
   readonly extraConfig: ExtraConfig;
+  readonly newDependencies: Dict<string>;
+  readonly newDevDependencies: Dict<string>;
 }
 
 export interface ModuleContext {
