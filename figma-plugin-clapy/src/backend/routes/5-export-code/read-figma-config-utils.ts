@@ -60,7 +60,7 @@ export interface ExtractNodeContext {
   // node: nextIntermediateNode. But it will require to update the webservice as well. And to avoid issues during
   // the deployment, support both nodeOfComp and nextIntermediateNode as base node in the API.
   nodeOfComp?: AnyNode3;
-  nextIntermediateNode?: NodeLight | Nil;
+  nextIntermediateNode?: AnyNode3 | Nil;
   // intermediateNodes: IntermediateNodes;
   isComp?: boolean;
 }
@@ -110,7 +110,7 @@ function isRectangleWithoutImage(node: AnyNode3): node is RectangleNode2 {
   return true;
 }
 
-export function checkIsOriginalInstance2(node: AnyNode3, nextNode: NodeLight | undefined) {
+export function checkIsOriginalInstance2(node: AnyNode3, nextNode: AnyNode3 | undefined) {
   if (!node) {
     throw new Error(`BUG [checkIsOriginalInstance2] node is undefined.`);
   }

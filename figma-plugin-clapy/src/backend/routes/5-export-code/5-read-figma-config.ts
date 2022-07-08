@@ -1,14 +1,9 @@
 import { flags } from '../../../common/app-config.js';
-import type { Nil } from '../../../common/app-models.js';
-import { warnNode } from '../../../common/error-utils';
+import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf } from '../../../common/general-utils.js';
-import type {
-  ComponentNode2,
-  ComponentNodeNoMethod,
-  Dict,
-  LayoutTypes,
-} from '../../../common/sb-serialize.model';
+import type { ComponentNode2, Dict, LayoutTypes } from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
+import { env } from '../../../environment/env.js';
 import {
   isBaseFrameMixin,
   isBlendMixin,
@@ -159,10 +154,6 @@ export function parseConfig<T extends AnyNode3>(node: T, extractBatchContext: Ex
     node,
   };
 
-  if (flags.verbose && !isComponent2(node)) {
-    console.log('Extracting selection', node.name);
-  }
-  // context = { ...context /* , intermediateNodes: [node] */ };
   return parseNodeConfig(node, context);
 }
 
@@ -170,8 +161,8 @@ export function parseConfig<T extends AnyNode3>(node: T, extractBatchContext: Ex
 
 function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContext) {
   try {
-    const { extractBatchContext, isComp } = context;
-    const { componentsCache, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = extractBatchContext;
+    const { extractBatchContext } = context;
+    const { componentsCache } = extractBatchContext;
     if (flags.verbose) {
       if (isComponent2(node)) {
         console.log(
@@ -183,17 +174,13 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
       }
     }
     const isProcessableInst = isProcessableInstance2(node);
-    const { id, type, name } = node;
-    let node2 = { id, type, name } as AnyNode3;
-    // const nodeIsShape = isShapeExceptDivable(node);
-    // let exportAsSvg = nodeIsShape;
-    // let obj: any;
 
     if (isProcessableInst) {
+      const nodeOfComp = componentsCache[node.mainComponent.id];
       let { nextIntermediateNode } = context;
       if (!nextIntermediateNode) {
         // If we haven't registered an intermediate node yet, this instance's component is marked as intermediate node.
-        nextIntermediateNode = node.mainComponent;
+        nextIntermediateNode = nodeOfComp;
       } else if (!checkIsOriginalInstance2(node, nextIntermediateNode)) {
         // If there was already an intermediate node, now we find another instance, we check if it's the same
         // instance as in the intermediate node. If different, the instance was swapped in Figma.
@@ -201,16 +188,16 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
         nextIntermediateNode = undefined;
       }
 
-      context = { ...context, nodeOfComp: componentsCache[node.mainComponent.id], nextIntermediateNode };
+      context = { ...context, nodeOfComp, nextIntermediateNode };
     }
 
     const { nodeOfComp, nextIntermediateNode } = context;
 
-    // TODO refactor-rename obj to node2 to remove this extra variable.
-    const obj = node2;
-
     // Let's patch before it is copied and optimized.
     patchDimensionFromRotation(node);
+
+    const { id, type, name } = node;
+    let node2 = { id, type, name } as AnyNode3;
 
     // perfMeasure(`Time spent - ${prevNode?.name} => ${node.name}`, 0.5);
     // prevNode = node;
@@ -219,14 +206,9 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
     // except for children that will be checked recursively below.
     for (const [attribute, val] of Object.entries(node)) {
       if (attribute !== 'children') {
-        setProp2(obj, nodeOfComp, attribute, val);
+        setProp2(node2, nodeOfComp, attribute, val);
       }
     }
-    // const attributesWhitelist = nodeAttributes[type];
-    // for (const attribute of attributesWhitelist) {
-    //   const val = (node as any)[attribute];
-    //   setProp2(obj, nodeOfComp, attribute, val);
-    // }
 
     const { exportAsSvg } = node;
 
@@ -256,7 +238,7 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
 
     if (!exportAsSvg && !isTxt && isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
       // Fills can be mixed if node is Text. Ignore it, text segments are already processed earlier.
-      addStyle(fillStyles, node.fillStyleId);
+      addStyle(extractBatchContext.fillStyles, node.fillStyleId);
 
       for (const fill of node.fills) {
         if (fill.type === 'IMAGE') {
@@ -274,69 +256,28 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
     }
 
     if (isChildrenMixin2(node) && !exportAsSvg) {
-      //
-      // nextIntermediateNode de type NodeLight, c'est OK ? Il faut les enfants aussi !
-      // TODO
-      assertChildrenMixinOrUndef(nextIntermediateNode);
+      if (nodeOfComp && !isChildrenMixin2(nodeOfComp)) {
+        warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
+        throw new Error('BUG Instance node has children, but the corresponding component node does not.');
+      }
+      if (nextIntermediateNode && !isChildrenMixin2(nextIntermediateNode)) {
+        warnNode(node, 'BUG Instance node has children, but nextIntermediateNode does not.');
+        throw new Error('BUG Instance node has children, but nextIntermediateNode does not.');
+      }
 
       // TODO check if filter useful
       // .filter(child => !!child)
-      (obj as any).children = node.children.map(child => {
-        if (nodeOfComp && !isChildrenMixin2(nodeOfComp)) {
-          warnNode(node, 'BUG Instance node has children, but the corresponding component node does not.');
-          throw new Error('BUG Instance node has children, but the corresponding component node does not.');
-        }
+      (node2 as any).children = node.children.map((child, i) => {
         const childContext = {
           ...context,
           nodeOfComp: nodeOfComp?.children[i],
           nextIntermediateNode: nextIntermediateNode?.children[i],
         };
-        return parseNodeConfig(child, childContext)
+        return parseNodeConfig(child, childContext);
       });
     }
 
-    if (isProcessableInst) {
-      const { id, name, type } = node.mainComponent;
-      // For MUI, only the parent name is useful.
-      // For normal components, only the compoent ID is useful.
-      // But we keep id, name, type for both in case we want to do sanity checks.
-      obj.mainComponent = { id, name, type };
-      if (isComponentSet(node.mainComponent.parent)) {
-        const { id, name, type } = node.mainComponent.parent;
-        obj.mainComponent.parent = { id, name, type };
-      }
-      if (!context.components[id]) {
-        // We should assign a component, but it is only available after the await below. And we use the dictionary to prevent double processing. We set a boolean for the moment to prevent the double processing, and once we have the component, it is assigned instead.
-        context.components[id] = true as any;
-        const { nodeOfComp, ...compContext } = context;
-        compContext.isComp = true;
-        compContext.intermediateNodes = [node.mainComponent];
-        const comp = (await parseNodeConfig(node.mainComponent, compContext, options)) as
-          | ComponentNodeNoMethod
-          | undefined;
-        if (comp) {
-          if (context.components[id]) {
-            console.warn('Component', comp.name, 'already referenced. It was certainly processed twice.');
-          }
-          context.components[id] = comp;
-        } else {
-          // If undefined, there was an error (processed separately). Remove from the dictionary of components.
-          console.warn(
-            'Component for node ',
-            node.mainComponent.name,
-            'is undefined. There was certainly an error. Removing from the components map.',
-          );
-          delete context.components[id];
-        }
-      }
-    }
-    // If we need to debug symbols:
-    // for (const [key, val] of Object.entries(obj)) {
-    //   if (typeof val === 'symbol') {
-    //     throw new Error(`Symbol found, key ${key}, val ${String(val)}`);
-    //   }
-    // }
-    return obj as SceneNodeNoMethod;
+    return node2;
   } catch (error: any) {
     if (typeof error === 'string') {
       error = new Error(error);
@@ -349,13 +290,6 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
     // Production: don't block the process
     handleError(error);
     return;
-  }
-}
-
-// Assertion in control flow analysis
-function assertChildrenMixinOrUndef(node: BaseNode | ChildrenMixin | Nil): asserts node is ChildrenMixin | undefined {
-  if (node && !isChildrenMixin(node)) {
-    throw new Error(`node ${(node as BaseNode).name} is not a ChildrenMixin`);
   }
 }
 

@@ -5,11 +5,13 @@ import type {
   PageNodeNoMethod,
 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
-import { perfReset } from '../../common/perf-utils';
+import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import type { SerializeContext } from './3-nodeToObject.js';
 import { nodeToObject } from './3-nodeToObject.js';
 import { extractFigmaTokens } from './4-extract-tokens.js';
+import { fillNodesCache, parseConfig } from './5-read-figma-config.js';
+import type { ExtractBatchContext } from './read-figma-config-utils.js';
 
 const newWorkflow = false;
 
@@ -22,62 +24,72 @@ export async function serializeSelectedNode() {
   const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
-  // if (newWorkflow) {
-  //   const extractBatchContext: ExtractBatchContext = {
-  //     images: {},
-  //     components: {},
-  //     componentsCache: {},
-  //     textStyles: {},
-  //     fillStyles: {},
-  //     strokeStyles: {},
-  //     effectStyles: {},
-  //     gridStyles: {},
-  //     nodeIdsToExtractAsSVG: new Set(),
-  //     imageHashesToExtract: new Set(),
-  //   };
-  //   perfMeasure('Start fillNodesCache');
-  //   const nodes = fillNodesCache(node, extractBatchContext);
-  //   perfMeasure('End fillNodesCache');
-  //   return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
-  // } else {
-  const context: SerializeContext = {
-    images: {},
-    components: {},
-    textStyles: {},
-    fillStyles: {},
-    strokeStyles: {},
-    effectStyles: {},
-    gridStyles: {},
-    intermediateNodes: [],
-  };
+  if (newWorkflow) {
+    const extractBatchContext: ExtractBatchContext = {
+      images: {},
+      components: {},
+      componentsCache: {},
+      textStyles: {},
+      fillStyles: {},
+      strokeStyles: {},
+      effectStyles: {},
+      gridStyles: {},
+      nodeIdsToExtractAsSVG: new Set(),
+      imageHashesToExtract: new Set(),
+    };
+    perfMeasure('Start fillNodesCache');
+    const nodes = fillNodesCache(node, extractBatchContext);
+    perfMeasure('End fillNodesCache, start parseConfig');
+    // TODO bug
+    // } else if (!checkIsOriginalInstance2(node, nextIntermediateNode)) {
+    // => nextIntermediateNode name: "Card btn 1" is an instance but doesn't have the mainComponent field.
+    // Check where the node is coming from and why it doesn't have this field.
+    // I can start by checking the `nodes` variable above, returned by fillNodesCache.
+    const nodes2 = parseConfig(nodes, extractBatchContext);
+    perfMeasure('End parseConfig');
 
-  const extraConfig = {
-    ...(env.isDev
-      ? {
-          isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
-        }
-      : {}),
-    isFTD: figma.root.name?.includes('Clapy — Token demo file'),
-  };
+    return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
+  } else {
+    const context: SerializeContext = {
+      images: {},
+      components: {},
+      textStyles: {},
+      fillStyles: {},
+      strokeStyles: {},
+      effectStyles: {},
+      gridStyles: {},
+      intermediateNodes: [],
+    };
 
-  const tokens = extractFigmaTokens();
+    const extraConfig = {
+      ...(env.isDev
+        ? {
+            isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+          }
+        : {}),
+      isFTD: figma.root.name?.includes('Clapy — Token demo file'),
+    };
 
-  const enableMUIFramework = true;
-  // Later, once variants are handled, we will use instances as well, but differently?
-  const skipInstance = !enableMUIFramework;
-  const [parentConf, nodesConf] = await Promise.all([
-    node.parent
-      ? (nodeToObject(node.parent as SceneNode, context, {
-          skipChildren: true,
-        }) as Promise<FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined>)
-      : null,
-    nodeToObject(node, context, { skipChildren: false, skipInstance }),
-  ]);
-  const { images, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
-  const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
+    const tokens = extractFigmaTokens();
 
-  return [extraConfig, parentConf, nodesConf, Object.values(context.components), images, styles, tokens] as const;
-  // }
+    const enableMUIFramework = true;
+    // Later, once variants are handled, we will use instances as well, but differently?
+    const skipInstance = !enableMUIFramework;
+    const [parentConf, nodesConf] = await Promise.all([
+      node.parent
+        ? (nodeToObject(node.parent as SceneNode, context, {
+            skipChildren: true,
+          }) as Promise<
+            FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined
+          >)
+        : null,
+      nodeToObject(node, context, { skipChildren: false, skipInstance }),
+    ]);
+    const { images, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+    const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
+
+    return [extraConfig, parentConf, nodesConf, Object.values(context.components), images, styles, tokens] as const;
+  }
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.
