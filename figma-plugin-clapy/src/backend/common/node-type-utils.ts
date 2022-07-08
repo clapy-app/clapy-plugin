@@ -20,6 +20,7 @@ import type {
   TextNode2,
   VectorNode2,
 } from '../../common/sb-serialize.model';
+import type { AnyNode3 } from '../routes/5-export-code/read-figma-config-utils.js';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -81,6 +82,10 @@ type LayoutNodeExtended =
 
 // clone() method available on nodes: Page, frame, group, slice, rectangle, line, ellipse, polygon, star, vector, text, componentSet, component, instance, BooleanOperationNode, sticky, stamp, ShapeWithText, CodeBlockNode, Connector, Widget, Embed, LinkUnfurl, Media
 // Let's approximate with Layout.
+
+export function isLayout0(node: BaseNode | null | undefined): node is LayoutMixin & BaseNode {
+  return !!node && layoutTypes.has(node.type);
+}
 
 export function isLayout(node: BaseNode2 | null | undefined): node is LayoutMixin & BaseNode2 {
   return !!node && layoutTypes.has(node.type);
@@ -266,7 +271,7 @@ export function isShapeExceptDivable2(node: BaseNode2 | SceneNode2 | Nil): node 
 }
 
 export function isStyledTextSegment(
-  node: SceneNode | PageNode | SceneNode2 | StyledTextSegment | PageNode2 | DocumentNode | Nil,
+  node: SceneNode | PageNode | SceneNode2 | StyledTextSegment | PageNode2 | DocumentNode | AnyNode3 | Nil,
 ): node is StyledTextSegment {
   const sts = node as StyledTextSegment;
   return sts.characters != null && sts.start != null && sts.end != null;

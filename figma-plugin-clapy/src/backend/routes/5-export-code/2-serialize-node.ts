@@ -32,6 +32,8 @@ export async function serializeSelectedNode() {
   //     strokeStyles: {},
   //     effectStyles: {},
   //     gridStyles: {},
+  //     nodeIdsToExtractAsSVG: new Set(),
+  //     imageHashesToExtract: new Set(),
   //   };
   //   perfMeasure('Start fillNodesCache');
   //   const nodes = fillNodesCache(node, extractBatchContext);

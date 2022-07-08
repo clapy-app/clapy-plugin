@@ -1,7 +1,12 @@
 import equal from 'fast-deep-equal';
 
+import type { Nil } from '../../../common/app-models.js';
 import { isArrayOf } from '../../../common/general-utils.js';
 import type {
+  ComponentNode2,
+  ComponentNodeNoMethod,
+  Dict,
+  ExportImagesFigma,
   LayoutNode,
   LayoutTypes,
   NodeLight,
@@ -15,6 +20,7 @@ import {
   isGroup2,
   isInstance,
   isInstance2,
+  isLayout2,
   isRectangle2,
   isShapeExceptDivable,
 } from '../../common/node-type-utils.js';
@@ -25,6 +31,39 @@ export type AnyNode3 = /* SceneNode2 */ Omit<SceneNode2, 'type'> & {
   exportAsSvg?: boolean;
   type: LayoutTypes;
 };
+
+// const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
+// const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
+
+export interface ExtractBatchContext {
+  images: ExportImagesFigma;
+  components: Dict<ComponentNodeNoMethod>;
+  // nodesCache: Dict<AnyNode2>;
+  componentsCache: Dict<ComponentNode2>;
+  // Extract styles to process them later
+  textStyles: Dict<TextStyle>;
+  fillStyles: Dict<PaintStyle>;
+  strokeStyles: Dict<PaintStyle>;
+  effectStyles: Dict<EffectStyle>;
+  gridStyles: Dict<GridStyle>;
+  // VectorRegion fillStyleId
+  nodeIdsToExtractAsSVG: Set<string>;
+  imageHashesToExtract: Set<string>;
+}
+
+export interface ExtractNodeContext {
+  extractBatchContext: ExtractBatchContext;
+  node: AnyNode3;
+  isInInstance?: boolean;
+  // When into an instance, we keep track of the corresponding node in the component to find style overrides.
+  // The only usage is to avoid writing a value in the extrated JSON. We could replace it with a more relevant
+  // node: nextIntermediateNode. But it will require to update the webservice as well. And to avoid issues during
+  // the deployment, support both nodeOfComp and nextIntermediateNode as base node in the API.
+  nodeOfComp?: AnyNode3;
+  nextIntermediateNode?: NodeLight | Nil;
+  // intermediateNodes: IntermediateNodes;
+  isComp?: boolean;
+}
 
 export function shouldGroupAsSVG(node: AnyNode3) {
   if (!isChildrenMixin2(node) || !node.children.length) return false;
@@ -52,7 +91,7 @@ export function shouldGroupAsSVG(node: AnyNode3) {
 type WithCompMixin2 = AnyNode3 & {
   mainComponent: NodeLight;
 };
-export function isProcessableInstance2(node: AnyNode3, mainComponent?: ComponentNode | null): node is WithCompMixin2 {
+export function isProcessableInstance2(node: any, mainComponent?: ComponentNode | null): node is WithCompMixin2 {
   return !!(isInstance(node) && (mainComponent || node.mainComponent));
 }
 
@@ -91,7 +130,7 @@ export function checkIsOriginalInstance2(node: AnyNode3, nextNode: NodeLight | u
 const propsNeverOmitted = new Set<keyof AnyNode3>(['type']);
 const componentPropsNotInherited = new Set<keyof AnyNode3>(['type', 'visible', 'name']);
 
-export function setProp2(node: AnyNode3, key: string, value: any, nodeOfComp: AnyNode3 | undefined) {
+export function setProp2(node: AnyNode3, nodeOfComp: AnyNode3 | undefined, key: string, value: any) {
   const k = key as keyof NodeWithDefaults;
   const compVal = nodeOfComp?.[k];
   const isInInstance = !!nodeOfComp;
@@ -102,4 +141,44 @@ export function setProp2(node: AnyNode3, key: string, value: any, nodeOfComp: An
   ) {
     (node as any)[k] = value;
   }
+}
+
+export function patchDimensionFromRotation(node: AnyNode3) {
+  const { exportAsSvg } = node;
+  const nodeIsLayout = isLayout2(node);
+  const isSvgWithRotation = exportAsSvg && nodeIsLayout && node.rotation;
+
+  if (isSvgWithRotation) {
+    const { rotation, width, height } = node;
+    const rotationRad = (rotation * Math.PI) / 180;
+    // Adjust x/y depending on the rotation. Figma's x/y are the coordinates of the original top/left corner after rotation. In CSS, it's the top-left corner of the final square containing the SVG.
+    // Sounds a bit complex. We could avoid that by rotating in CSS instead. But It will have other side effects, like the space used in the flow (different in Figma and CSS).
+    if (rotation >= -180 && rotation <= -90) {
+      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+      node.x = node.x - node.width;
+      node.y = node.y - getOppositeSide(90 - (rotation + 180), height);
+    } else if (rotation > -90 && rotation <= 0) {
+      node.x = node.x + getOppositeSide(rotation, height);
+      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+      // Do nothing for y
+    } else if (rotation > 0 && rotation <= 90) {
+      node.width = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+      node.height = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+      // Do nothing for x
+      node.y = node.y - getOppositeSide(rotation, width);
+    } else if (rotation > 90 && rotation <= 180) {
+      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
+      node.x = node.x - getOppositeSide(rotation - 90, width);
+      node.y = node.y - node.height;
+    }
+  }
+}
+
+function getOppositeSide(rotation: number, adjacent: number) {
+  const rotationRad = (rotation * Math.PI) / 180;
+  const tangent = Math.sin(rotationRad);
+  return tangent * adjacent;
 }

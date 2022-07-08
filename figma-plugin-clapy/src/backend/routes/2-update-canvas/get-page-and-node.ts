@@ -1,6 +1,6 @@
 import { getCompNode } from '../1-import-stories/3-import-sb-detail';
 import type { MyCompNode } from '../../common/node-type-utils';
-import { getPageById, isLayout, isMyComp } from '../../common/node-type-utils';
+import { getPageById, isLayout0, isMyComp } from '../../common/node-type-utils';
 import { removeNode, withDefaultProps } from './update-canvas-utils';
 
 export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: string) {
@@ -19,7 +19,7 @@ export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: str
     node.y = 700;
     page.appendChild(node);
   }
-  if (!isLayout(node)) {
+  if (!isLayout0(node)) {
     console.warn('Node to update is not in the layout, skipping. ID:', figmaNodeId);
     return {};
   }
