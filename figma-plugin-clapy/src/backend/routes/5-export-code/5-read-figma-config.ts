@@ -109,20 +109,32 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     }
   }
 
+  const { componentsCallbacks } = context;
   const { mainComponent: _mainComponent } = nodeOriginal as InstanceNode;
   const mainComponent = _mainComponent!;
   if (isProcessableInstance2(node, mainComponent)) {
-    const { componentsCache } = context;
     const { id, parent } = mainComponent;
-    if (!componentsCache[id]) {
-      const comp = fillNodesCache(mainComponent, context);
-      // The cast to unknown may not be required if ComponentNode2 has the parent field like AnyNode3.
-      componentsCache[id] = comp as unknown as ComponentNode2;
+
+    if (!componentsCallbacks[id]) {
+      componentsCallbacks[id] = [];
+      context.componentsToProcess.push(mainComponent);
+    }
+
+    componentsCallbacks[id].push(comp => {
       const { name, type } = comp;
       node.mainComponent = { id, name, type: type as any } as ComponentNode2;
       if (isComponentSet(parent)) {
         node.mainComponent.parent = parent.id;
       }
+    });
+  }
+
+  if (componentsCallbacks[id]) {
+    // Then it's a sub-component we have just finished to process. Let's add it to the cache,
+    context.componentsCache[id] = node as ComponentNode2;
+    // And process its callbacks.
+    for (const callback of componentsCallbacks[id]) {
+      callback(node as ComponentNode2);
     }
   }
 
@@ -197,7 +209,7 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
     patchDimensionFromRotation(node);
 
     const { id, type, name } = node;
-    let node2 = { id, type, name } as AnyNode3;
+    let node2 = { id, type, name } as T;
 
     // perfMeasure(`Time spent - ${prevNode?.name} => ${node.name}`, 0.5);
     // prevNode = node;

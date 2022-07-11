@@ -11,7 +11,7 @@ import type { SerializeContext } from './3-nodeToObject.js';
 import { nodeToObject } from './3-nodeToObject.js';
 import { extractFigmaTokens } from './4-extract-tokens.js';
 import { fillNodesCache, parseConfig } from './5-read-figma-config.js';
-import type { ExtractBatchContext } from './read-figma-config-utils.js';
+import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
 
 const newWorkflow = false;
 
@@ -28,7 +28,9 @@ export async function serializeSelectedNode() {
     const extractBatchContext: ExtractBatchContext = {
       images: {},
       components: {},
+      componentsToProcess: [node],
       componentsCache: {},
+      componentsCallbacks: {},
       textStyles: {},
       fillStyles: {},
       strokeStyles: {},
@@ -38,15 +40,19 @@ export async function serializeSelectedNode() {
       imageHashesToExtract: new Set(),
     };
     perfMeasure('Start fillNodesCache');
-    const nodes = fillNodesCache(node, extractBatchContext);
-    perfMeasure('End fillNodesCache, start parseConfig');
-    // TODO bug
-    // } else if (!checkIsOriginalInstance2(node, nextIntermediateNode)) {
-    // => nextIntermediateNode name: "Card btn 1" is an instance but doesn't have the mainComponent field.
-    // Check where the node is coming from and why it doesn't have this field.
-    // I can start by checking the `nodes` variable above, returned by fillNodesCache.
-    const nodes2 = parseConfig(nodes, extractBatchContext);
+    const nodes: AnyNode3[] = [];
+    for (const compToProcess of extractBatchContext.componentsToProcess) {
+      nodes.push(fillNodesCache(compToProcess, extractBatchContext));
+      perfMeasure(`End fillNodesCache for node ${compToProcess.name}`);
+    }
+    console.log(JSON.stringify(nodes));
+    console.log('Start parseConfig');
+
+    const [mainNode, ...components2] = nodes.map(node => parseConfig(node, extractBatchContext));
     perfMeasure('End parseConfig');
+
+    // console.log(JSON.stringify(mainNode));
+    // components2
 
     return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
   } else {

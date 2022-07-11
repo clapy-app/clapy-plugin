@@ -37,9 +37,12 @@ export type AnyNode3 = /* SceneNode2 */ Omit<SceneNode2, 'type'> & {
 
 export interface ExtractBatchContext {
   images: ExportImagesFigma;
+  /** @deprecated */
   components: Dict<ComponentNodeNoMethod>;
   // nodesCache: Dict<AnyNode2>;
+  componentsToProcess: SceneNode[];
   componentsCache: Dict<ComponentNode2>;
+  componentsCallbacks: Dict<Array<(comp: ComponentNode2) => void>>;
   // Extract styles to process them later
   textStyles: Dict<TextStyle>;
   fillStyles: Dict<PaintStyle>;
