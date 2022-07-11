@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Clapy</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Payment {{state}}.</h1>
+  <h2>You can close this window and go back to Figma.</h2>
+</body>
+<script >
+</script>
+
+<script type="text/javascript" >
+  if ("{{ from }}" === "desktop") {
+    window.location.href = 'figma://clapy';
+  } else {
+    if (window.opener) {
+      window.opener.focus();
+    }
+    window.close();
+  }
+</script>
+
+</html>
