@@ -7,9 +7,9 @@ import loginHomeClasses from '../0-login/LoginHome/LoginHome.module.css';
 import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma.js';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
 import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome.js';
-import { Account } from '../3-Account/Account';
+import { Account } from '../3-Account/Account.js';
 import { selectStripeState } from '../3-Account/stripe-slice.js';
-import { Generator } from '../4-Generator/Generator';
+import { Generator } from '../4-Generator/Generator.js';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading';
 import { selectAuthError, selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
@@ -18,8 +18,8 @@ import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
 import { Footer } from './Footer/Footer';
-import { Header } from './Header/Header';
-import { HeaderGenerator } from './Header/Header_Generator';
+import { Header } from './Header/Header.js';
+import { HeaderGenerator } from './Header/Header_Generator.js';
 import classes from './Layout.module.css';
 
 // Flag for development only. Will be ignored in production.
@@ -89,37 +89,27 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   if (hasMissingMetaProfile) return <FillUserProfile />;
 
   if (hasMissingMetaUsage) return <FillUserProfileStep2 />;
-  if (env.isDev) {
-    return (
-      <>
-        <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
-        {activeTab === 0 && (
-          <div className={classes.generatorContent}>
-            <Generator />
-          </div>
-        )}
-        {activeTab === 1 && (
-          <div className={classes.generatorContent}>
-            <Account />
-          </div>
-        )}
-      </>
-    );
-  } else {
-    return (
-      <>
-        <Header activeTab={activeTab} selectTab={setActiveTab} />
-        {activeTab === 0 && (
-          <div className={classes.generatorContent}>
-            <FigmaToCodeHome selectionPreview={selectionPreview} />
-          </div>
-        )}
-        {activeTab === 1 && (
-          <div className={classes.generatorContent}>
-            <CodeToFigma />
-          </div>
-        )}
-      </>
-    );
-  }
+  return env.isDev ? (
+    <>
+      <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
+      {activeTab === 0 && (
+        <div className={classes.content}>
+          <Generator />
+        </div>
+      )}
+      {activeTab === 1 && (
+        <div className={classes.generatorContent}>
+          <Account />
+        </div>
+      )}
+    </>
+  ) : (
+    <>
+      <Header activeTab={activeTab} selectTab={setActiveTab} />
+      <div className={classes.content}>
+        {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
+        {activeTab === 1 && <CodeToFigma />}
+      </div>
+    </>
+  );
 });

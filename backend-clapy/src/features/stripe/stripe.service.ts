@@ -11,6 +11,6 @@ export class StripeService {
   }
 
   emitStripePaymentStatus(status: boolean) {
-    stripeSubject.next({ data: 'status: ' + status });
+    stripeSubject.next({ data: JSON.stringify({ status: status }) });
   }
 }

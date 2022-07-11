@@ -1,5 +1,5 @@
 import type { MessageEvent } from '@nestjs/common';
-import { Body, Controller, Get, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Observable } from 'rxjs';
 import { Stripe } from 'stripe';
@@ -60,8 +60,8 @@ export class StripeController {
     try {
       event = stripe.webhooks.constructEvent(request.body, sig as string, env.stripeWebhookSecret);
     } catch (err) {
-      console.log(`Webhook Error: ${err}`);
-      return;
+      console.log();
+      throw new HttpException(`Webhook Error: ${err}`, 401);
     }
     switch (event.type) {
       case 'checkout.session.completed':
