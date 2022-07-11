@@ -1,4 +1,5 @@
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
 import { _ButtonBase2 } from '../_ButtonBase2/_ButtonBase2';
 import classes from './ButtonUpgrade2.module.css';

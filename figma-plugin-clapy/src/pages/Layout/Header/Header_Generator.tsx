@@ -1,7 +1,8 @@
 import type { FC, MouseEvent } from 'react';
 import { memo } from 'react';
 
-import { HorizontalTabs as HorizontalTabsGenerator } from '../HorizontalTabs/HorizontalTabsGenerator';
+import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
+import { LogoutButton } from '../LogoutButton/LogoutButton.js';
 import classes from './Header.module.css';
 
 interface Props {
@@ -9,12 +10,13 @@ interface Props {
   selectTab: (index: number, event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export const Header: FC<Props> = memo(function Header(props) {
+export const HeaderGenerator: FC<Props> = memo(function Header(props) {
   const { activeTab, selectTab } = props;
 
   return (
     <div className={classes.root}>
-      <HorizontalTabsGenerator activeTab={activeTab} selectTab={selectTab} />
+      <HorizontalTabs activeTab={activeTab} selectTab={selectTab} />
+      <LogoutButton />
     </div>
   );
 });

@@ -53,3 +53,11 @@ export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
 export const selectIsZipEnabled = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_zip');
+
+// const selector2 = createSelector(
+//   selectAuthLoading,
+//   selectIsZipEnabled
+//   (authLoading, isZipEnabled) => {
+//     return authLoading && isZipEnabled;
+//   }
+// )

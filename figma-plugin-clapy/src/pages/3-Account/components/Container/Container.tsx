@@ -1,4 +1,5 @@
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
