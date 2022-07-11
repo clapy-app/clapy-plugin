@@ -31,7 +31,8 @@ export function getAppCssPathAndRenameSCSS(
   if (extraConfig.scss) {
     renameField(filesCsb, appCssPathTemplate, appCssPath);
     renameField(filesCsb, 'src/resets.css', 'src/resets.scss');
-    filesCsb['src/index.tsx'] = filesCsb['src/index.tsx'].replace('resets.css', 'resets.scss');
+    const indexTsxPath = extraConfig.useViteJS ? 'src/main.tsx' : 'src/index.tsx';
+    filesCsb[indexTsxPath] = filesCsb[indexTsxPath].replace('resets.css', 'resets.scss');
   }
   return appCssPath;
 }
