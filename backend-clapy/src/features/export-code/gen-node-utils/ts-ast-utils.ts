@@ -346,12 +346,13 @@ export function mkDefaultImportDeclaration(importClauseName: string, moduleSpeci
 export function mkNamedImportsDeclaration(
   importSpecifierNames: (string | [string, string])[],
   moduleSpecifier: string,
+  isTypeOnly?: boolean,
 ) {
   return factory.createImportDeclaration(
     undefined,
     undefined,
     factory.createImportClause(
-      false,
+      !!isTypeOnly,
       undefined,
       factory.createNamedImports(
         importSpecifierNames.map(name =>

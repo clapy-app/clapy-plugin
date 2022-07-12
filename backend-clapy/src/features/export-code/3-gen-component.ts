@@ -200,13 +200,13 @@ export function createModuleCode(
 
   // Add React imports: import { FC, memo } from 'react';
   imports['react'] = mkNamedImportsDeclaration(
-    [
-      'FC',
-      'memo',
-      ...(moduleContext.swaps.size > 0 || moduleContext.textOverrideProps.size > 0 ? ['ReactNode'] : []),
-      ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : []),
-    ],
+    ['memo', ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : [])],
     'react',
+  );
+  imports['react#types'] = mkNamedImportsDeclaration(
+    ['FC', ...(moduleContext.swaps.size > 0 || moduleContext.textOverrideProps.size > 0 ? ['ReactNode'] : [])],
+    'react',
+    true,
   );
 
   // Add component Prop interface
