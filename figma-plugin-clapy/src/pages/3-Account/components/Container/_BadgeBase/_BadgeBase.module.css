@@ -1,0 +1,16 @@
+.root {
+  padding: 2px 8px;
+  border-radius: 16px;
+  background-color: #f2f4f7;
+}
+.text {
+  color: #344054;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  text-align: center;
+  justify-content: center;
+  white-space: nowrap;
+}

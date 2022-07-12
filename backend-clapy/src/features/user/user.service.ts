@@ -23,6 +23,11 @@ export async function updateAuth0UserMetadata(userId: string | undefined, userMe
   return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
 }
 
+export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
+  if (!userId) throw new UnauthorizedException();
+  return auth0Management.assignRolestoUser({ id: userId }, { roles });
+}
+
 export interface UserMetadata {
   firstName?: string;
   lastName?: string;

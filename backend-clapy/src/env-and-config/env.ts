@@ -20,7 +20,7 @@ if (!isDev && !isStaging && !isProd) {
 const dev = {
   auth0Domain: 'clapy-dev.eu.auth0.com',
   auth0ClientId: 'BxwH4Y8N4xsrJp55lm4UTWblnHVDRDz9',
-  auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',
+  auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',  
   baseUrl: 'http://localhost:4141',
 };
 
@@ -58,6 +58,10 @@ export const env = {
   port: process.env.PORT || '4141',
   auth0Audience: 'clapy',
   auth0BackendClientSecret: process.env.AUTH0_BACKEND_CLIENT_SECRET as string,
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY as string,
+  stripeWebhookSecret:process.env.STRIPE_WEBHOOK_SECRET as string,
+  stripeCurrency:process.env.STRIPE_CURRENCY as string,
+  stripePriceId:process.env.STRIPE_PRICE_ID as string,
   securityRequestedByHeader: 'clapy',
   localhostLatency: 400, // ms
   // Hasura

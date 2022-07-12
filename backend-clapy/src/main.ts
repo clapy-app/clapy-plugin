@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
-import { json } from 'express';
+import { json, raw } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
@@ -119,7 +119,15 @@ async function bootstrap() {
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 
-  app.use(json({ limit: '50mb' }));
+  // app.use(json({ limit: '50mb' }));
+  // Use JSON parser for all non-webhook routes
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    if (req.originalUrl === '/stripe/webhook') {
+      raw({ type: 'application/json' })(req, res, next);
+    } else {
+      json({ limit: '50mb' })(req, res, next);
+    }
+  });
 
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {
