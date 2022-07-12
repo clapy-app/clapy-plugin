@@ -14,6 +14,15 @@ Note: for now, `Hasura console` task is excluded from the default build because 
 
 ## Troubleshooting
 
+### Switch to production branch
+
+- Arrêter toutes les tâches en cours d'exécution et le webservice si en mode debug
+- changer de branche
+- yarn install dans les 2 dossiers (front/webservice)
+- changer la fin de .env en copiant-collant le template
+- webservice : supprimer dist et node_modules/.cache/tsconfig.tsbuildinfo
+- Lancer les tâches (ctrl shift B). Ca inclut le webservice.
+
 ### `Error: Cannot find module '/app/dist/main2'`
 
 Open a docker container terminal and remove /app/node_modules/.cache/tsconfig.tsbuildinfo

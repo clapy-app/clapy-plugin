@@ -29,7 +29,7 @@ export type AnyNodeOriginal = SceneNode;
 export type AnyNode3 = /* SceneNode2 */ Omit<SceneNode2, 'type'> & {
   parent?: NodeLight; // Should be required, but we will need to fix a few typing issues.
   exportAsSvg?: boolean;
-  type: LayoutTypes;
+  type: Exclude<LayoutTypes, 'PAGE'>;
 };
 
 // const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);

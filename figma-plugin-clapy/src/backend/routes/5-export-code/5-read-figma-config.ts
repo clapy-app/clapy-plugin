@@ -1,7 +1,14 @@
 import { flags } from '../../../common/app-config.js';
 import { handleError, warnNode } from '../../../common/error-utils';
 import { isArrayOf } from '../../../common/general-utils.js';
-import type { ComponentNode2, Dict, LayoutTypes } from '../../../common/sb-serialize.model';
+import type {
+  ComponentNode2,
+  Dict,
+  FrameNode2,
+  InstanceNode2,
+  LayoutTypes,
+  PageNode2,
+} from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
 import { env } from '../../../environment/env.js';
 import {
@@ -11,6 +18,7 @@ import {
   isComponent2,
   isComponentSet,
   isComponentSet2,
+  isGroup2,
   isInstance2,
   isMinimalFillsMixin,
   isMinimalStrokesMixin,
@@ -29,12 +37,12 @@ import {
   shouldGroupAsSVG,
 } from './read-figma-config-utils.js';
 
-export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, context: ExtractBatchContext): AnyNode3 {
-  // It seems reading attributes of Figma nodes have very bad performance impact.
-  // Probably because it's not a simple JS object, but a wrapper around something more complex.
-  // Let's ensure we read each field only once. For that, we make a copy in an in-memory object.
-  // The name "nodeOriginal" is purposely heavy to discourage its usage.
+export function readParentNodeConfig<T extends AnyNodeOriginal>(nodeOriginal: T) {
+  return commonFigmaConfigExtraction(nodeOriginal) as FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2;
+}
 
+function commonFigmaConfigExtraction<T extends AnyNodeOriginal>(nodeOriginal: T) {
+  // Part that is common to the parent node and the main node + sub-components.
   const id = nodeOriginal.id;
   let type = nodeOriginal.type as LayoutTypes;
   if (!nodeDefaults[type]) {
@@ -59,6 +67,28 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     }
   }
 
+  // Copy the Figma Tokens
+  const tokens = exportNodeTokens2(nodeOriginal);
+  if (tokens) {
+    node._tokens = tokens;
+    // Should we use setProp here? No real default except undefined, already handled.
+  }
+
+  return node;
+}
+
+export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
+  nodeOriginal: T,
+  context: ExtractBatchContext,
+): AnyNode3 {
+  // It seems reading attributes of Figma nodes have very bad performance impact.
+  // Probably because it's not a simple JS object, but a wrapper around something more complex.
+  // Let's ensure we read each field only once. For that, we make a copy in an in-memory object.
+  // The name "nodeOriginal" is purposely heavy to discourage its usage.
+
+  const node = commonFigmaConfigExtraction(nodeOriginal);
+  const { id } = node;
+
   // Copy the reference to the parent
   const { parent } = nodeOriginal;
   const { id: parentId, name: parentName, type: parentType } = parent || {};
@@ -66,9 +96,11 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     node.parent = { id: parentId, name: parentName!, type: parentType as LayoutTypes };
   }
 
+  const nodeIsComp = isComponent2(node);
+
   // Copy componentPropertyDefinitions that is only accessible in special condition, throwing an error otherwise
   const hasComponentPropertyDefinitions =
-    isComponentSet2(node) || (isComponent2(node) && !isComponentSet2((node as AnyNode3).parent));
+    isComponentSet2(node) || (nodeIsComp && !isComponentSet2((node as AnyNode3).parent));
   if (hasComponentPropertyDefinitions) {
     node.componentPropertyDefinitions = (nodeOriginal as ComponentNode | ComponentSetNode).componentPropertyDefinitions;
   }
@@ -80,13 +112,6 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     node._textSegments = segments;
   }
 
-  // Copy the Figma Tokens
-  const tokens = exportNodeTokens2(nodeOriginal);
-  if (tokens) {
-    node._tokens = tokens;
-    // Should we use setProp here? No real default except undefined, already handled.
-  }
-
   const isBlend = isBlendMixin(node);
   const isMask = isBlend && node.isMask;
 
@@ -95,25 +120,41 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
     // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
     !isInstance2(node) &&
-    !isComponent2(node) &&
+    !nodeIsComp &&
     !isPage2(node) &&
     (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(node as AnyNode3));
 
   if (exportAsSvg) {
     (node as AnyNode3).exportAsSvg = exportAsSvg;
+    if (isGroup2(node)) {
+      const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
+      if (children) {
+        // Interesting properties like constraints are in the children nodes. Let's make a copy.
+        (node as any).constraints = (children[0] as ConstraintMixin)?.constraints;
+      }
+    }
     context.nodeIdsToExtractAsSVG.add(node.id);
+    node.type = 'VECTOR';
   } else {
     const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
     if (children) {
-      (node as any).children = children.map(child => fillNodesCache(child, context));
+      // Another way to iterate to try, using generators, that might be a bit faster (to compare):
+      // https://forum.figma.com/t/figma-layers-tree-traversal-estimating-size/551/4
+      (node as any).children = children.map(child => readFigmaNodesConfig(child, context));
+    }
+  }
+
+  if (nodeIsComp) {
+    if (!context.componentsCache[id]) {
+      context.componentsCache[id] = node as ComponentNode2;
     }
   }
 
   const { componentsCallbacks } = context;
   const { mainComponent: _mainComponent } = nodeOriginal as InstanceNode;
-  const mainComponent = _mainComponent!;
-  if (isProcessableInstance2(node, mainComponent)) {
-    const { id, parent } = mainComponent;
+  if (isProcessableInstance2(node, _mainComponent)) {
+    const mainComponent = _mainComponent!;
+    const { id } = mainComponent;
 
     if (!componentsCallbacks[id]) {
       componentsCallbacks[id] = [];
@@ -123,22 +164,32 @@ export function fillNodesCache<T extends AnyNodeOriginal>(nodeOriginal: T, conte
     componentsCallbacks[id].push(comp => {
       const { name, type } = comp;
       node.mainComponent = { id, name, type: type as any } as ComponentNode2;
+      const parent = (comp as AnyNode3).parent;
       if (isComponentSet(parent)) {
         node.mainComponent.parent = parent.id;
       }
     });
   }
 
-  if (componentsCallbacks[id]) {
-    // Then it's a sub-component we have just finished to process. Let's add it to the cache,
-    context.componentsCache[id] = node as ComponentNode2;
-    // And process its callbacks.
-    for (const callback of componentsCallbacks[id]) {
-      callback(node as ComponentNode2);
+  return node as AnyNode3;
+}
+
+export function linkInstancesToComponents(context: ExtractBatchContext) {
+  const { componentsCallbacks, componentsCache } = context;
+  for (const [compId, callback] of Object.entries(componentsCallbacks)) {
+    if (!componentsCache[compId]) {
+      console.warn(
+        'Component',
+        compId,
+        'found in componentsCallbacks, but not componentsCache. Skip linking the instances to this component.',
+      );
+      continue;
+    }
+    const comp = componentsCache[compId];
+    for (const callback of componentsCallbacks[compId]) {
+      callback(comp);
     }
   }
-
-  return node as AnyNode3;
 }
 
 interface Options {
@@ -160,18 +211,18 @@ interface Options {
  * @param node
  * @param options
  */
-export function parseConfig<T extends AnyNode3>(node: T, extractBatchContext: ExtractBatchContext) {
+export function optimizeConfig<T extends AnyNode3>(node: T, extractBatchContext: ExtractBatchContext) {
   const context: ExtractNodeContext = {
     extractBatchContext,
     node,
   };
 
-  return parseNodeConfig(node, context);
+  return optimizeNodeConfig(node, context);
 }
 
 // let prevNode: AnyNode3 | undefined = undefined;
 
-function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContext) {
+function optimizeNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContext) {
   try {
     const { extractBatchContext } = context;
     const { componentsCache } = extractBatchContext;
@@ -285,7 +336,7 @@ function parseNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContex
           nodeOfComp: nodeOfComp?.children[i],
           nextIntermediateNode: nextIntermediateNode?.children[i],
         };
-        return parseNodeConfig(child, childContext);
+        return optimizeNodeConfig(child, childContext);
       });
     }
 

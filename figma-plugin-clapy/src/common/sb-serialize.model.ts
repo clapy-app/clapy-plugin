@@ -255,9 +255,9 @@ export interface ExtraConfig {
 }
 
 export interface ExportCodePayload {
-  parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
-  root: SceneNodeNoMethod | null | undefined;
-  components: ComponentNodeNoMethod[];
+  parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;
+  root: SceneNode2 | null | undefined;
+  components: ComponentNode2[];
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: ExtraConfig;

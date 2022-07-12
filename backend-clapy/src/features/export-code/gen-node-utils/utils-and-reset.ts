@@ -1,8 +1,15 @@
-import type { PageNodeNoMethod, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
+import type {
+  PageNode2,
+  PageNodeNoMethod,
+  SceneNode2,
+  SceneNodeNoMethod,
+} from '../../sb-serialize-preview/sb-serialize.model.js';
 import { isStyledTextSegment } from '../create-ts-compiler/canvas-utils.js';
 
-export function warnNode(node: SceneNodeNoMethod | SceneNode2 | StyledTextSegment | PageNodeNoMethod, ...msg: any[]) {
+export function warnNode(
+  node: SceneNodeNoMethod | SceneNode2 | StyledTextSegment | PageNodeNoMethod | PageNode2,
+  ...msg: any[]
+) {
   if (isStyledTextSegment(node)) {
     console.warn(...msg, node.characters);
   } else {

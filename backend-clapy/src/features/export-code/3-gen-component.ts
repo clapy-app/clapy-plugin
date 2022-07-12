@@ -101,7 +101,6 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
 export function mkModuleContext(
   projectContext: ProjectContext,
   node: SceneNode2,
-  parent: ParentNode | Nil,
   pageName: string | undefined,
   compDir: string,
   compName: string,
@@ -113,7 +112,6 @@ export function mkModuleContext(
   const moduleContext: ModuleContext = {
     projectContext,
     node,
-    parent,
     imports: {},
     statements: [],
     pageName,
@@ -151,7 +149,6 @@ function createModuleContextForNode(
   const moduleContext = mkModuleContext(
     projectContext,
     node,
-    parent,
     pageName || compName,
     compDir,
     compName,

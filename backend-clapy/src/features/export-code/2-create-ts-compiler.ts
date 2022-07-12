@@ -7,7 +7,7 @@ import type { Nil } from '../../common/general-utils.js';
 import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils.js';
 import { env } from '../../env-and-config/env.js';
-import type { ComponentNodeNoMethod, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import {
   createModuleCode,
   createNodeContext,
@@ -56,7 +56,7 @@ export async function exportCode(
   const compNodes = components.reduce((prev, cur) => {
     prev[cur.id] = cur;
     return prev;
-  }, {} as Dict<ComponentNodeNoMethod>) as unknown as Dict<ComponentNode2>;
+  }, {} as Dict<ComponentNode2>) as unknown as Dict<ComponentNode2>;
   fillWithDefaults(p, instancesInComp, false, true);
   for (const instance of instancesInComp) {
     fillWithComponent(instance, compNodes);
@@ -108,7 +108,6 @@ export async function exportCode(
   const lightAppModuleContext = mkModuleContext(
     projectContext,
     {} as unknown as SceneNode2,
-    parent,
     undefined,
     appCompDir,
     appCompName,

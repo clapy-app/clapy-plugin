@@ -55,7 +55,6 @@ interface OverrideFromProp {
 export interface ModuleContext {
   readonly projectContext: ProjectContext;
   readonly node: SceneNode2;
-  readonly parent: ParentNode | Nil;
   // Dictionary of imports. The key is an arbitrary key to deduplicate imports.
   // For components, it's clearly the component name. For other special imports, it's up to the developer to choose a key that would not collide with other import keys, but still help to deduplicate that specific import if required (e.g. by using the module specifier = relative path of the imported file)
   readonly imports: Dict<ts.ImportDeclaration>;

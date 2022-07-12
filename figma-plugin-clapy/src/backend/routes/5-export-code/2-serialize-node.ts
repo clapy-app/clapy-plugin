@@ -1,7 +1,11 @@
 import type {
+  ComponentNode2,
   ComponentNodeNoMethod,
+  FrameNode2,
   FrameNodeNoMethod,
+  InstanceNode2,
   InstanceNodeNoMethod,
+  PageNode2,
   PageNodeNoMethod,
 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
@@ -10,10 +14,96 @@ import { getFigmaSelection } from '../../common/selection-utils';
 import type { SerializeContext } from './3-nodeToObject.js';
 import { nodeToObject } from './3-nodeToObject.js';
 import { extractFigmaTokens } from './4-extract-tokens.js';
-import { fillNodesCache, parseConfig } from './5-read-figma-config.js';
+import {
+  linkInstancesToComponents,
+  optimizeConfig,
+  readFigmaNodesConfig,
+  readParentNodeConfig,
+} from './5-read-figma-config.js';
 import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
 
-const newWorkflow = false;
+export async function serializeSelectedNode2() {
+  perfReset();
+  const selection = getFigmaSelection();
+  if (selection?.length !== 1) {
+    throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
+  }
+  const node = selection[0];
+  // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
+
+  const parentConfig = node.parent ? readParentNodeConfig(node.parent as SceneNode) : undefined;
+
+  const extractBatchContext: ExtractBatchContext = {
+    images: {},
+    components: {},
+    componentsToProcess: [node],
+    componentsCache: {},
+    componentsCallbacks: {},
+    textStyles: {},
+    fillStyles: {},
+    strokeStyles: {},
+    effectStyles: {},
+    gridStyles: {},
+    nodeIdsToExtractAsSVG: new Set(),
+    imageHashesToExtract: new Set(),
+  };
+  perfMeasure('Start readFigmaNodesConfig');
+
+  // Tip to unfreeze a bit the UI, the time to show the progress:
+  // await wait(0) or a bit more than 0, to let the UI refresh.
+  // Example, run it every 100 nodes processed
+  // idea from: https://forum.figma.com/t/figma-layers-tree-traversal-estimating-size/551/6
+
+  const nodes: AnyNode3[] = [];
+  for (const compToProcess of extractBatchContext.componentsToProcess) {
+    nodes.push(readFigmaNodesConfig(compToProcess, extractBatchContext));
+    perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
+  }
+  linkInstancesToComponents(extractBatchContext);
+  perfMeasure('End linkInstancesToComponents');
+
+  const [mainNode, ...components2] = nodes.map(node => optimizeConfig(node, extractBatchContext));
+  const components3 = components2.filter(c => c) as ComponentNode2[];
+  perfMeasure('End optimizeConfig');
+
+  const tokens = extractFigmaTokens();
+  perfMeasure('End extracting Figma Tokens global config');
+
+  const extraConfig = {
+    ...(env.isDev
+      ? {
+          isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+        }
+      : {}),
+    isFTD: figma.root.name?.includes('Clapy — Token demo file'),
+  };
+  perfMeasure('End prepare extra config');
+
+  // console.log(JSON.stringify(mainNode));
+  // console.log('--------------------');
+  // console.log(JSON.stringify(components3));
+
+  const { images, nodeIdsToExtractAsSVG, imageHashesToExtract } = extractBatchContext;
+  const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = extractBatchContext;
+  const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
+
+  return {
+    extraConfig,
+    parent: parentConfig,
+    root: mainNode,
+    components: components3,
+    nodeIdsToExtractAsSVG: Array.from(nodeIdsToExtractAsSVG),
+    imageHashesToExtract: Array.from(imageHashesToExtract),
+    // imagesExtracted: undefined,
+    styles,
+    tokens,
+  } as const;
+
+  // TODO test that the extracted config is ready, then:
+  // TODO it's still missing svg and images extraction
+
+  // return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
+}
 
 export async function serializeSelectedNode() {
   perfReset();
@@ -24,78 +114,51 @@ export async function serializeSelectedNode() {
   const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
-  if (newWorkflow) {
-    const extractBatchContext: ExtractBatchContext = {
-      images: {},
-      components: {},
-      componentsToProcess: [node],
-      componentsCache: {},
-      componentsCallbacks: {},
-      textStyles: {},
-      fillStyles: {},
-      strokeStyles: {},
-      effectStyles: {},
-      gridStyles: {},
-      nodeIdsToExtractAsSVG: new Set(),
-      imageHashesToExtract: new Set(),
-    };
-    perfMeasure('Start fillNodesCache');
-    const nodes: AnyNode3[] = [];
-    for (const compToProcess of extractBatchContext.componentsToProcess) {
-      nodes.push(fillNodesCache(compToProcess, extractBatchContext));
-      perfMeasure(`End fillNodesCache for node ${compToProcess.name}`);
-    }
-    console.log(JSON.stringify(nodes));
-    console.log('Start parseConfig');
+  const context: SerializeContext = {
+    images: {},
+    components: {},
+    textStyles: {},
+    fillStyles: {},
+    strokeStyles: {},
+    effectStyles: {},
+    gridStyles: {},
+    intermediateNodes: [],
+  };
 
-    const [mainNode, ...components2] = nodes.map(node => parseConfig(node, extractBatchContext));
-    perfMeasure('End parseConfig');
+  const extraConfig = {
+    ...(env.isDev
+      ? {
+          isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
+        }
+      : {}),
+    isFTD: figma.root.name?.includes('Clapy — Token demo file'),
+  };
 
-    // console.log(JSON.stringify(mainNode));
-    // components2
+  const tokens = extractFigmaTokens();
 
-    return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
-  } else {
-    const context: SerializeContext = {
-      images: {},
-      components: {},
-      textStyles: {},
-      fillStyles: {},
-      strokeStyles: {},
-      effectStyles: {},
-      gridStyles: {},
-      intermediateNodes: [],
-    };
+  const enableMUIFramework = true;
+  // Later, once variants are handled, we will use instances as well, but differently?
+  const skipInstance = !enableMUIFramework;
+  const [parentConf, nodesConf] = await Promise.all([
+    node.parent
+      ? (nodeToObject(node.parent as SceneNode, context, {
+          skipChildren: true,
+        }) as Promise<FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined>)
+      : null,
+    nodeToObject(node, context, { skipChildren: false, skipInstance }),
+  ]);
+  const { images, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+  const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
-    const extraConfig = {
-      ...(env.isDev
-        ? {
-            isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
-          }
-        : {}),
-      isFTD: figma.root.name?.includes('Clapy — Token demo file'),
-    };
-
-    const tokens = extractFigmaTokens();
-
-    const enableMUIFramework = true;
-    // Later, once variants are handled, we will use instances as well, but differently?
-    const skipInstance = !enableMUIFramework;
-    const [parentConf, nodesConf] = await Promise.all([
-      node.parent
-        ? (nodeToObject(node.parent as SceneNode, context, {
-            skipChildren: true,
-          }) as Promise<
-            FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined
-          >)
-        : null,
-      nodeToObject(node, context, { skipChildren: false, skipInstance }),
-    ]);
-    const { images, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
-    const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
-
-    return [extraConfig, parentConf, nodesConf, Object.values(context.components), images, styles, tokens] as const;
-  }
+  return [
+    extraConfig,
+    parentConf as FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined,
+    nodesConf,
+    Object.values(context.components) as unknown as ComponentNode2[],
+    images,
+    styles,
+    tokens,
+  ] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.

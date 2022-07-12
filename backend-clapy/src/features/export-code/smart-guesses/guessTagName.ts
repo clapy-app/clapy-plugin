@@ -42,7 +42,7 @@ export function guessTagNameAndUpdateNode(
     // function isInput() {}
     // function isCheckbox() {}
 
-    if (context.parentNode && context.parentContext?.tagName !== 'label') {
+    if (context.parentNode?.children && context.parentContext?.tagName !== 'label') {
       const siblings = context.parentNode.children as readonly SceneNode2[];
       const i = siblings.indexOf(node);
       if (i !== -1) {

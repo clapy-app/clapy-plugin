@@ -3,17 +3,12 @@ import { warnOrThrow } from '../../../utils.js';
 import type {
   Dict,
   FrameNodeNoMethod,
-  PageNodeNoMethod,
+  PageNode2,
+  SceneNode2,
   SceneNodeNoMethod,
 } from '../../sb-serialize-preview/sb-serialize.model.js';
 import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type {
-  ChildrenMixin2,
-  ComponentNode2,
-  FrameNode2,
-  InstanceNode2,
-  SceneNode2,
-} from '../create-ts-compiler/canvas-utils.js';
+import type { ChildrenMixin2, ComponentNode2, FrameNode2, InstanceNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isChildrenMixin, isInstance, isInstanceFeatureDetection } from '../create-ts-compiler/canvas-utils.js';
 import { warnNode } from './utils-and-reset.js';
 
@@ -31,7 +26,7 @@ export function addHugContents(): Partial<FrameNodeNoMethod> {
 }
 
 export function fillWithDefaults(
-  node: SceneNodeNoMethod | PageNodeNoMethod | Nil,
+  node: SceneNode2 | PageNode2 | Nil,
   instancesInComp: InstanceNode2[],
   inComp?: boolean,
   isPage?: boolean,
@@ -95,7 +90,7 @@ export function fillWithComponent(
   }
 }
 
-function fillNodeWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod, defaultValues: any) {
+function fillNodeWithDefaults(node: SceneNode2 | PageNode2, defaultValues: any) {
   const defaultKeys = Object.keys(defaultValues);
   for (const key of defaultKeys) {
     if (!node.hasOwnProperty(key)) {
@@ -104,7 +99,7 @@ function fillNodeWithDefaults(node: SceneNodeNoMethod | PageNodeNoMethod, defaul
   }
 }
 
-function defaultsForNode(node: SceneNodeNoMethod | PageNodeNoMethod) {
+function defaultsForNode(node: SceneNode2 | PageNode2) {
   let type = node.type as keyof typeof nodeDefaults;
   if (!nodeDefaults[type]) {
     warnNode(node, 'Node type is not found in the defaults available. Falling back to Frame defaults.');
