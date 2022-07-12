@@ -13,13 +13,9 @@ import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import type { SerializeContext } from './3-nodeToObject.js';
 import { nodeToObject } from './3-nodeToObject.js';
-import { extractFigmaTokens } from './4-extract-tokens.js';
-import {
-  linkInstancesToComponents,
-  optimizeConfig,
-  readFigmaNodesConfig,
-  readParentNodeConfig,
-} from './5-read-figma-config.js';
+import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3b-read-figma-config.js';
+import { optimizeConfig } from './4-optimize-config.js';
+import { extractFigmaTokens } from './9-extract-tokens.js';
 import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
 
 export async function serializeSelectedNode2() {

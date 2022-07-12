@@ -34,7 +34,7 @@ import {
   isText,
 } from '../../common/node-type-utils';
 import { perfMeasure } from '../../common/perf-utils';
-import { exportNodeTokens } from './4-extract-tokens';
+import { exportNodeTokens } from './9-extract-tokens';
 import { areSvgEqual, nodeAttributes, rangeProps } from './node-attributes';
 import { utf8ArrayToStr } from './Utf8ArrayToStr';
 
