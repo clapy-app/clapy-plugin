@@ -82,7 +82,7 @@ function getComponentOrNil(compNodes: Dict<ComponentNode2>, node: SceneNode2) {
 }
 
 function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleContext: ModuleContext) {
-  const { compDir: callerCompDir, imports: callerImports } = parentModuleContext;
+  const { compDir: callerCompDir, imports: callerImports, projectContext } = parentModuleContext;
   const { compDir, compName } = moduleContext;
 
   if (callerImports[compName]) return;
@@ -94,7 +94,8 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
     moduleSpecifier = `./${moduleSpecifier}`;
   }
 
-  callerImports[compName] = mkNamedImportsDeclaration([compName], moduleSpecifier);
+  const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
+  callerImports[compName] = mkNamedImportsDeclaration([compName], `${moduleSpecifier}${ext}`);
 }
 
 // Although it's quite verbose, we put the ModuleContext creation in a separate function, that is also called in 2-create-ts-compiler.ts for the root App.tsx component. It avoids mistakes when adding more content to the context.

@@ -145,9 +145,10 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
       };
       // console.log(svgContent);
 
+      const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
       // Add import in file
       // (Note: could be moved to when AST is generated to have the final imports)
-      moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`);
+      moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}${ext}`);
 
       addNodeStyles1(context, node, styles);
 
