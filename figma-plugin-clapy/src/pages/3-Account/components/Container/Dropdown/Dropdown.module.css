@@ -1,0 +1,7 @@
+.root {
+  flex-direction: column;
+}
+.moreHorizontal {
+  width: 20px;
+  height: 20px;
+}

@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode';
 
 import { handleError } from '../../common/error-utils';
-import { openWindowStep1, openWindowStep2, toastError } from '../../common/front-utils';
+import { openNewTab, openWindowStep1, openWindowStep2, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
@@ -126,7 +126,7 @@ export function logout(mustReauth?: boolean) {
       client_id: auth0ClientId,
       returnTo: mustReauth ? `${loggedOutCallbackUrl}&reauth` : loggedOutCallbackUrl,
     });
-    window.open(url, '_blank');
+    openNewTab(url);
   }
   fetchPlugin('clearCachedTokens').catch(handleError);
   dispatchOther(setSignedInState(false));
