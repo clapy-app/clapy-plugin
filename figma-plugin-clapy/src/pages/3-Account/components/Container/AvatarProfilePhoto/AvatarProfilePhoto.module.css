@@ -4,7 +4,6 @@
   place-content: center;
   position: relative;
   border-radius: 200px;
-  background-image:/* webpackIgnore: true */ url('../../../../../public/avatarProfilePhoto.jpeg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

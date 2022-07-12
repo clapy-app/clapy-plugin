@@ -5,7 +5,14 @@ import classes from './AvatarProfilePhoto.module.css';
 
 interface Props {
   className?: string;
+  picture?: string;
 }
-export const AvatarProfilePhoto: FC<Props> = memo(function AvatarProfilePhoto(props = {}) {
-  return <div className={`${classes.root} ${props.className || ''}`}></div>;
+export const AvatarProfilePhoto: FC<Props> = memo(function AvatarProfilePhoto(props: Props) {
+  return (
+    <img
+      className={`${classes.root} ${props.className || ''}`}
+      src={props.picture ? props.picture : '../../../../../public/avatarProfilePhoto.jpeg'}
+      referrerPolicy='no-referrer'
+    />
+  );
 });

@@ -34,6 +34,8 @@ export interface UserMetadata {
   companyName?: string;
   jobRole?: string;
   techTeamSize?: string;
+  email?: string;
+  picture?: string;
   usage?: UserMetaUsage;
 }
 
