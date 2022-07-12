@@ -128,7 +128,7 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
       return;
     } else if (isVector(node)) {
       const { projectContext } = moduleContext;
-      let svgContent = readSvg(node);
+      let svgContent = readSvg(context, node);
       if (!svgContent) {
         if (node.visible) {
           warnNode(node, 'BUG No SVG content, skipping.');
@@ -210,7 +210,7 @@ function recurseOnChildren(
         warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
         continue;
       }
-      let svgContent = readSvg(child);
+      let svgContent = readSvg(context, child);
       if (!svgContent) {
         warnNode(child, 'BUG Mask SVG has no content, skipping.');
         continue;

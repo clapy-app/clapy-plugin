@@ -2,6 +2,7 @@ import { removeNode } from '../2-update-canvas/update-canvas-utils.js';
 import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils.js';
 import { isArrayOf } from '../../../common/general-utils.js';
+import type { SVGsExtracted } from '../../../common/sb-serialize.model.js';
 import { isMinimalStrokesMixin } from '../../common/node-type-utils.js';
 import { perfReset } from '../../common/perf-utils.js';
 import type { AnyNodeOriginal } from './read-figma-config-utils.js';
@@ -11,10 +12,19 @@ type Fills = readonly Paint[];
 type FillsOrUndef = Fills | undefined;
 
 export async function extractSVGs(nodeIdsToExtractAsSVG: string[]) {
-  return await Promise.all(nodeIdsToExtractAsSVG.map(extractSVG));
+  const svgs = await Promise.all(
+    nodeIdsToExtractAsSVG.map(nodeId => extractSVG(nodeId).then(svg => ({ nodeId, svg }))),
+  );
+  const svgsDict: SVGsExtracted = {};
+  for (const { nodeId, svg } of svgs) {
+    if (svg) {
+      svgsDict[nodeId] = svg;
+    }
+  }
+  return svgsDict;
 }
 
-export async function extractSVG(nodeIdToExtractAsSVG: string) {
+async function extractSVG(nodeIdToExtractAsSVG: string) {
   perfReset();
   const svgNode = figma.getNodeById(nodeIdToExtractAsSVG) as AnyNodeOriginal | null;
   if (!svgNode) {
@@ -64,7 +74,6 @@ export async function extractSVG(nodeIdToExtractAsSVG: string) {
     }
   } finally {
     removeNode(svgNode2);
-    // perfMeasure(`SVG from node ${nodeName} extracted in`);
   }
 }
 
@@ -89,10 +98,3 @@ function fixStrokeAlign(node: SceneNode) {
     );
   }
 }
-
-// function isMinimalFillsMixin0(
-//   node: AnyNodeOriginal | MinimalFillsMixin,
-//   fills: FillsOrUndef,
-// ): node is MinimalFillsMixin {
-//   return !!fills;
-// }

@@ -43,7 +43,7 @@ function getCSSVariablesFileName(cssExt: string) {
 const enableMUIInDev = false;
 
 export async function exportCode(
-  { root, parent: p, components, images, styles, extraConfig, tokens }: ExportCodePayload,
+  { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
 ) {
   if (!extraConfig.output) extraConfig.output = 'csb';
@@ -95,6 +95,7 @@ export async function exportCode(
     tsFiles,
     svgToWrite: {},
     cssFiles,
+    svgs,
     images,
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,

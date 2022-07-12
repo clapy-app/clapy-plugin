@@ -16,7 +16,7 @@ import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
 import { apiPost } from '../../../common/http.utils.js';
-import { perfReset, perfTotal } from '../../../common/perf-front-utils.js';
+import { perfMeasure, perfReset, perfTotal } from '../../../common/perf-front-utils.js';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
@@ -89,29 +89,29 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
       //////// New implementation
 
-      //       const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
-      //         await fetchPlugin('serializeSelectedNode2');
-      //       perfMeasure(`Figma configuration extracted in`);
-      //
-      //       // for (const nodeIdToExtractAsSVG of nodeIdsToExtractAsSVG) {
-      //       //   const svgsExtracted = await fetchPlugin('extractSVG', nodeIdToExtractAsSVG);
-      //       //   // console.log('svgsExtracted:', svgsExtracted);
-      //       //   perfMeasure(`SVG extracted in`);
-      //       // }
-      //       const svgsExtracted = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
-      //       console.log(svgsExtracted);
-      //       perfMeasure(`SVGs extracted in`);
-      //
-      //       const imagesExtracted = undefined as ExportImagesFigma | undefined;
-      //       // imagesExtracted
+      const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
+        await fetchPlugin('serializeSelectedNode2');
+      perfMeasure(`Figma configuration extracted in`);
+
+      // for (const nodeIdToExtractAsSVG of nodeIdsToExtractAsSVG) {
+      //   const svgsExtracted = await fetchPlugin('extractSVG', nodeIdToExtractAsSVG);
+      //   // console.log('svgsExtracted:', svgsExtracted);
+      //   perfMeasure(`SVG extracted in`);
+      // }
+      const svgs = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
+      perfMeasure(`SVGs extracted in`);
+
+      const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
+      console.log(imagesExtracted);
+      perfMeasure(`Images extracted in`);
 
       ////////
 
       //////// Old implementation
 
-      const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
-        'serializeSelectedNode',
-      );
+      // const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
+      //   'serializeSelectedNode',
+      // );
 
       ////////
 
@@ -123,6 +123,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           parent,
           root,
           components,
+          svgs,
           images,
           styles,
           extraConfig: {

@@ -2,7 +2,13 @@ import type { DeclarationPlain } from 'css-tree';
 import type ts from 'typescript';
 
 import type { Nil } from '../../common/general-utils.js';
-import type { Dict, ExportImageMap2, ExtraConfig, FigmaStyles } from '../sb-serialize-preview/sb-serialize.model.js';
+import type {
+  Dict,
+  ExportImageMap2,
+  ExtraConfig,
+  FigmaStyles,
+  SVGsExtracted,
+} from '../sb-serialize-preview/sb-serialize.model.js';
 import type {
   ComponentNode2,
   FlexNode,
@@ -38,6 +44,7 @@ export interface ProjectContext {
   readonly tsFiles: CodeDict;
   readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
   readonly cssFiles: CodeDict;
+  readonly svgs: SVGsExtracted;
   readonly images: ExportImageMap2;
   readonly styles: FigmaStyles;
   readonly enableMUIFramework: boolean;

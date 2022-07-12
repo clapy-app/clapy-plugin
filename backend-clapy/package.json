@@ -35,8 +35,8 @@
     "dev:clean": "rm -rf dist",
     "dev:swc": "swc src -s -d dist",
     "dev:swc:watch": "swc src -w -s -d dist",
-    "dev:nodemon": "nodemon --watch \"dist/**/*.js\" --exec \"node dist/main.js\" --delay 0.1",
-    "dev:nodemon2": "nodemon --watch \"dist/**/*.js\" --exec \"node dist/main2.js\" --delay 0.1",
+    "dev:nodemon": "nodemon --watch \"dist/**/*.js\" --exec \"node --enable-source-maps dist/main.js\" --delay 0.1",
+    "dev:nodemon2": "nodemon --watch \"dist/**/*.js\" --exec \"node --enable-source-maps dist/main2.js\" --delay 0.1",
     "_________________ old _________________": "",
     "dev-old": "nest start --watch",
     "dev2-old": "nest start --watch --config nest-cli-main2.json"

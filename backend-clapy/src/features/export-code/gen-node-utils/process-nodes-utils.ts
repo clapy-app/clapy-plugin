@@ -1,12 +1,14 @@
+import type { NodeContext } from '../code.model.js';
 import type { VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 
 // const svgWidthHeightRegex = /^<svg width="\d+" height="\d+"/;
 const svgBeginningRegex = /^<svg/;
 
-export function readSvg(node: VectorNodeDerived) {
+export function readSvg(context: NodeContext, node: VectorNodeDerived) {
   // Remove width and height from SVG. Let the CSS define it.
   // Useless when using SVGR to create a React component, but useful for masking since we don't use React SVG for masking.
-  let svg = node._svg; /* ?.replace(svgWidthHeightRegex, '<svg') */
+  let svg: string | undefined =
+    context.moduleContext.projectContext.svgs[node.id]; /* ?.replace(svgWidthHeightRegex, '<svg') */
 
   // Add attribute to remove aspect ratio, so that it matches the Figma behavior.
   svg = svg?.replace(svgBeginningRegex, '<svg preserveAspectRatio="none"');

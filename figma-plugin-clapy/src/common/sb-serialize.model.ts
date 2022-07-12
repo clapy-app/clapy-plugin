@@ -254,10 +254,13 @@ export interface ExtraConfig {
   scss?: boolean;
 }
 
+export type SVGsExtracted = Dict<string>;
+
 export interface ExportCodePayload {
   parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;
   root: SceneNode2 | null | undefined;
   components: ComponentNode2[];
+  svgs: SVGsExtracted;
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: ExtraConfig;

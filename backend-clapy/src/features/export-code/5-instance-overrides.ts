@@ -222,7 +222,7 @@ function recurseOnChildren(
         warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
         continue;
       }
-      let svgContent = readSvg(child);
+      let svgContent = readSvg(context, child);
       if (!svgContent) {
         warnNode(child, 'BUG Mask SVG has no content, skipping.');
         continue;
