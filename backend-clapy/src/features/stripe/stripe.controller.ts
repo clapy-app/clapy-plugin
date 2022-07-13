@@ -27,11 +27,12 @@ export class StripeController {
       },
     });
     //search if customer already exists in stripe
+    //We use Full-text search instead of search by id to avoid having to register the stripe id in auth0 and not do an api call to auth0
+    //Stripe api has better rate limits than Auth0 api.
     const customerExist = await stripe.customers.search({
       query: `email:'${auth0User.email}'`,
     });
     let customer;
-    console.log(customerExist.data.length, auth0User.email);
     if (!customerExist.data.length) {
       customer = await stripe.customers.create({
         email: auth0User.email,
@@ -39,7 +40,9 @@ export class StripeController {
           auth0Id: (request as any).user.sub,
         },
       });
-    } else customer = customerExist.data[0];
+    } else {
+      customer = customerExist.data[0];
+    }
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       client_reference_id: (request as any).user.sub,
