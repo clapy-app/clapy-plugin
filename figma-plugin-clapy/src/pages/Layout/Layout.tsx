@@ -73,12 +73,15 @@ export const LayoutInner: FC = memo(function LayoutInner() {
         <Loading />
         {authLoading && (
           <>
-            <p>Loading previous session</p>
+            <p>Checking your session...</p>
           </>
         )}
         {stripeLoading && (
           <>
-            <p>Hello, a new browser page has been opened, complete your payment in the browser then come back 🙏</p>
+            <p>
+              The payment page has been opened in your browser. Please complete the payment there, then come back here
+              🙏
+            </p>
           </>
         )}
       </div>
