@@ -26,11 +26,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   }, []);
   return (
     <>
-      {/* <Header activeTab={activeTab} selectTab={setActiveTab} />
-      <div className={classes.content}>
-        {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
-        {activeTab === 1 && <CodeToFigma />}
-      </div> */}
       <div className={classes.content}>
         <FigmaToCodeHome selectionPreview={selectionPreview} />
       </div>
