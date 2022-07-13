@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { memo } from 'react';
 
-import classes from './_ButtonBase.module.css';
+import classes from './ButtonViewPlan.module.css';
 
 interface Props {
   className?: string;
@@ -9,10 +9,10 @@ interface Props {
     text?: string;
   };
 }
-export const _ButtonBase: FC<Props> = memo(function _ButtonBase(props = {}) {
+export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}) {
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <div className={`${classes.text} ${props.classes?.text || ''}`}>Upgrade now</div>
+      <div className={`${classes.text} ${props.classes?.text || ''}`}>See plan details</div>
     </div>
   );
 });

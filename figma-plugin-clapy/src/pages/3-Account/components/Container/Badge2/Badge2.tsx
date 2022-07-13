@@ -1,4 +1,5 @@
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
 import { _BadgeBase2 } from '../_BadgeBase2/_BadgeBase2';
 

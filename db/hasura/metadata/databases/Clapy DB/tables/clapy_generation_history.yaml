@@ -1,0 +1,3 @@
+table:
+  schema: clapy
+  name: generation_history

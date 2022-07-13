@@ -37,6 +37,8 @@ export interface UserMetadata {
   email?: string;
   picture?: string;
   usage?: UserMetaUsage;
+  licenceStartDate?: number;
+  licenceExpirationDate?: number;
 }
 
 export interface UserMetaUsage {

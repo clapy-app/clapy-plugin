@@ -7,7 +7,7 @@ import { Stripe } from 'stripe';
 import { IsBrowserGet } from '../../auth/IsBrowserGet.decorator.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { env } from '../../env-and-config/env.js';
-import { getAuth0User, updateAuth0UserRoles } from '../user/user.service.js';
+import { getAuth0User, updateAuth0UserMetadata, updateAuth0UserRoles } from '../user/user.service.js';
 import { StripeService } from './stripe.service.js';
 
 @Controller('stripe')
@@ -86,9 +86,15 @@ export class StripeController {
         const session = event.data.object as any;
         if (session.payment_status === 'paid') {
           const { auth0Id } = session.metadata;
+          const subscriptionId = session.subscription;
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const { current_period_start, current_period_end } = subscription;
           this.stripeService.emitStripePaymentStatus(true);
-          console.log(auth0Id);
-          updateAuth0UserRoles(auth0Id, ['rol_26j83lBEgJ515Zgi']);
+          await updateAuth0UserMetadata(auth0Id, {
+            licenceStartDate: current_period_start,
+            licenceExpirationDate: current_period_end,
+          });
+          await updateAuth0UserRoles(auth0Id, ['rol_26j83lBEgJ515Zgi']);
         }
         break;
       case 'payment_intent.succeeded':

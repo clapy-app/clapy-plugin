@@ -1,2 +1,3 @@
 - "!include clapy_analytics.yaml"
+- "!include clapy_generation_history.yaml"
 - "!include clapy_login_tokens.yaml"

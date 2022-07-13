@@ -173,7 +173,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             // window.open(url, '_blank', 'noopener');
             setSandboxId(data.sandbox_id);
             track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
-            //
             return;
           } else {
             track('gen-code', 'completed-no-data', { durationInS });
