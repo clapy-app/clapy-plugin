@@ -14,3 +14,8 @@
   justify-content: center;
   white-space: nowrap;
 }
+.green {
+  padding: 2px 8px;
+  border-radius: 16px;
+  background-color: #6cfca6;
+}

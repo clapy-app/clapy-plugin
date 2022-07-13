@@ -7,7 +7,7 @@ import { Stripe } from 'stripe';
 import { IsBrowserGet } from '../../auth/IsBrowserGet.decorator.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { env } from '../../env-and-config/env.js';
-import { updateAuth0UserRoles } from '../user/user.service.js';
+import { getAuth0User, updateAuth0UserRoles } from '../user/user.service.js';
 import { StripeService } from './stripe.service.js';
 
 @Controller('stripe')
@@ -17,8 +17,8 @@ export class StripeController {
   @Get('/checkout')
   async stripeCheckout(@Req() request: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${from}`;
-
     const userId = (request as any).user.sub;
+    let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, {
       apiVersion: '2020-08-27',
       appInfo: {
@@ -26,8 +26,27 @@ export class StripeController {
         version: '0.0.1',
       },
     });
+    //search if customer already exists in stripe
+    //We use Full-text search instead of search by id to avoid having to register the stripe id in auth0 and not do an api call to auth0
+    //Stripe api has better rate limits than Auth0 api.
+    const customerExist = await stripe.customers.search({
+      query: `email:'${auth0User.email}'`,
+    });
+    let customer;
+    if (!customerExist.data.length) {
+      customer = await stripe.customers.create({
+        email: auth0User.email,
+        metadata: {
+          auth0Id: (request as any).user.sub,
+        },
+      });
+    } else {
+      customer = customerExist.data[0];
+    }
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      client_reference_id: (request as any).user.sub,
+      customer: customer.id,
       line_items: [
         {
           price: env.stripePriceId,
@@ -60,7 +79,6 @@ export class StripeController {
     try {
       event = stripe.webhooks.constructEvent(request.body, sig as string, env.stripeWebhookSecret);
     } catch (err) {
-      console.log();
       throw new HttpException(`Webhook Error: ${err}`, 401);
     }
     switch (event.type) {

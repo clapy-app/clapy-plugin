@@ -21,7 +21,8 @@ export class UserController {
     const userId = (request as any).user.sub;
     const auth0User = await getAuth0User(userId);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
-
+    userMetadata.picture = auth0User.picture;
+    userMetadata.email = auth0User.email;
     // If missing name, pre-fill with other profile info available.
     if (!userMetadata.firstName || !userMetadata.lastName) {
       const [firstName, lastName] = getAuth0FirstLastName(auth0User);
@@ -32,7 +33,6 @@ export class UserController {
     perfMeasure();
     return userMetadata;
   }
-
   @Post('update-profile')
   async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');

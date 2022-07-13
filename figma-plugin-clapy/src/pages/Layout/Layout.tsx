@@ -95,11 +95,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   return env.isDev ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
-      {activeTab === 0 && (
-        <div className={classes.content}>
-          <Generator />
-        </div>
-      )}
+      {activeTab === 0 && <Generator />}
       {activeTab === 1 && (
         <div className={classes.generatorContent}>
           <Account />
