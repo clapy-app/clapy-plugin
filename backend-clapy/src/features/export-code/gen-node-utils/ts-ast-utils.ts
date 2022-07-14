@@ -485,6 +485,7 @@ export function mkCompFunction(
   fnName: string,
   tsx: JsxOneOrMore | undefined,
   prefixStatements: Statement[] = [],
+  skipAnnotation?: boolean,
 ) {
   const { classOverrides } = moduleContext;
   const classes = Array.from(classOverrides);
@@ -578,17 +579,19 @@ export function mkCompFunction(
     ),
   );
 
-  // Attach an annotation with Figma ID.
-  // Ideally, it should be TSDoc (/ JSDoc), but it is not supported by the ts compiler API.
-  // As a workaround, we use multi-line comments.
-  // https://stackoverflow.com/a/57206925/4053349
-  // https://github.com/microsoft/TypeScript/issues/17146
-  ts.addSyntheticLeadingComment(
-    componentVariableStatement,
-    ts.SyntaxKind.MultiLineCommentTrivia,
-    ` @figmaId ${moduleContext.node.id} `,
-    true,
-  );
+  if (!skipAnnotation) {
+    // Attach an annotation with Figma ID.
+    // Ideally, it should be TSDoc (/ JSDoc), but it is not supported by the ts compiler API.
+    // As a workaround, we use multi-line comments.
+    // https://stackoverflow.com/a/57206925/4053349
+    // https://github.com/microsoft/TypeScript/issues/17146
+    ts.addSyntheticLeadingComment(
+      componentVariableStatement,
+      ts.SyntaxKind.MultiLineCommentTrivia,
+      ` @figmaId ${moduleContext.node.id} `,
+      true,
+    );
+  }
 
   return componentVariableStatement;
 }

@@ -17,7 +17,9 @@ export function figmaConfigExtractionProgress(next: NextFn<ExtractionProgress>) 
 
 async function notifyProgress(progress: ExtractionProgress) {
   await wait();
-  progress.nodeName = `Component: ${progress.nodeName}`;
+  if (progress.nodeName) {
+    progress.nodeName = `Component: ${progress.nodeName}`;
+  }
   _notifyProgress?.(progress);
 }
 

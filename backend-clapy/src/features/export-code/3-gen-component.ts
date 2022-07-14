@@ -1,4 +1,3 @@
-import type { StyleSheetPlain } from 'css-tree';
 import { relative } from 'path';
 import type { Statement } from 'typescript';
 import ts from 'typescript';
@@ -163,12 +162,6 @@ function createModuleContextForNode(
   return moduleContext;
 }
 
-interface CompReadyToWrite {
-  moduleContext: ModuleContext;
-  tsx: JsxOneOrMore | undefined;
-  css: StyleSheetPlain;
-}
-
 export function generateAllComponents(projectContext: ProjectContext) {
   const { components } = projectContext;
   for (const [_, moduleContext] of components) {
@@ -195,6 +188,7 @@ export function createModuleCode(
   moduleContext: ModuleContext,
   tsx: JsxOneOrMore | undefined,
   prefixStatements: Statement[] = [],
+  skipAnnotation?: boolean,
 ) {
   const { imports, statements, compName } = moduleContext;
 
@@ -213,7 +207,7 @@ export function createModuleCode(
   statements.push(mkPropInterface(moduleContext));
 
   // Add the component
-  statements.push(mkCompFunction(moduleContext, compName, tsx, prefixStatements));
+  statements.push(mkCompFunction(moduleContext, compName, tsx, prefixStatements, skipAnnotation));
 }
 
 export function printFileInProject(moduleContext: ModuleContext) {

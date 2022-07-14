@@ -251,7 +251,7 @@ function addCompToAppRoot(
     prefixStatements = [mkSwitchThemeHandler()];
   }
 
-  createModuleCode(appModuleContext, appTsx, prefixStatements);
+  createModuleCode(appModuleContext, appTsx, prefixStatements, true);
 
   printFileInProject(appModuleContext);
 }
