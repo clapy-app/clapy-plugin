@@ -16,7 +16,7 @@ import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
 import { apiPost } from '../../../common/http.utils.js';
-import { perfMeasure, perfReset, perfTotal } from '../../../common/perf-front-utils.js';
+import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
@@ -81,41 +81,20 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setIsLoading(true);
       setSandboxId('loading');
       track('gen-code', 'start');
-
-      // await fetchPlugin('serializeSelectedNode');
-
-      // Extract the Figma configuration
       perfReset();
 
-      //////// New implementation
+      // Extract the Figma configuration
 
       const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
-        await fetchPlugin('serializeSelectedNode2');
+        await fetchPlugin('serializeSelectedNode');
       perfMeasure(`Figma configuration extracted in`);
 
-      // for (const nodeIdToExtractAsSVG of nodeIdsToExtractAsSVG) {
-      //   const svgsExtracted = await fetchPlugin('extractSVG', nodeIdToExtractAsSVG);
-      //   // console.log('svgsExtracted:', svgsExtracted);
-      //   perfMeasure(`SVG extracted in`);
-      // }
       const svgs = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
       perfMeasure(`SVGs extracted in`);
 
       const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
-      console.log(imagesExtracted);
       perfMeasure(`Images extracted in`);
 
-      ////////
-
-      //////// Old implementation
-
-      // const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
-      //   'serializeSelectedNode',
-      // );
-
-      ////////
-
-      perfTotal('Figma config extraction time:');
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
         const { zip, ...userSettings } = advancedOptionsRef.current;
@@ -150,6 +129,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           } else {
             images[imageHash] = { ...imageEntryRest, url };
           }
+          perfMeasure(`Image uploaded`);
         }
 
         // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
@@ -165,10 +145,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         }
         if (!env.isDev || sendToApi) {
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
           if (data?.sandbox_id) {
             if (env.isDev) {
-              console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`);
+              console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`, `(in ${durationInS} seconds)`);
             }
             // window.open(url, '_blank', 'noopener');
             setSandboxId(data.sandbox_id);

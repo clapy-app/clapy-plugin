@@ -1,24 +1,13 @@
-import type {
-  ComponentNode2,
-  ComponentNodeNoMethod,
-  FrameNode2,
-  FrameNodeNoMethod,
-  InstanceNode2,
-  InstanceNodeNoMethod,
-  PageNode2,
-  PageNodeNoMethod,
-} from '../../../common/sb-serialize.model.js';
+import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
-import type { SerializeContext } from './3-nodeToObject.js';
-import { nodeToObject } from './3-nodeToObject.js';
-import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3b-read-figma-config.js';
+import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
 import { optimizeConfig } from './4-optimize-config.js';
 import { extractFigmaTokens } from './9-extract-tokens.js';
 import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
 
-export async function serializeSelectedNode2() {
+export async function serializeSelectedNode() {
   perfReset();
   const selection = getFigmaSelection();
   if (selection?.length !== 1) {
@@ -99,62 +88,6 @@ export async function serializeSelectedNode2() {
   // TODO it's still missing svg and images extraction
 
   // return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
-}
-
-export async function serializeSelectedNode() {
-  perfReset();
-  const selection = getFigmaSelection();
-  if (selection?.length !== 1) {
-    throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
-  }
-  const node = selection[0];
-  // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
-
-  const context: SerializeContext = {
-    images: {},
-    components: {},
-    textStyles: {},
-    fillStyles: {},
-    strokeStyles: {},
-    effectStyles: {},
-    gridStyles: {},
-    intermediateNodes: [],
-  };
-
-  const extraConfig = {
-    ...(env.isDev
-      ? {
-          isClapyFile: figma.fileKey === 'Bdl7eeSo61mEXcFs5sgD7n',
-        }
-      : {}),
-    isFTD: figma.root.name?.includes('Clapy — Token demo file'),
-  };
-
-  const tokens = extractFigmaTokens();
-
-  const enableMUIFramework = true;
-  // Later, once variants are handled, we will use instances as well, but differently?
-  const skipInstance = !enableMUIFramework;
-  const [parentConf, nodesConf] = await Promise.all([
-    node.parent
-      ? (nodeToObject(node.parent as SceneNode, context, {
-          skipChildren: true,
-        }) as Promise<FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined>)
-      : null,
-    nodeToObject(node, context, { skipChildren: false, skipInstance }),
-  ]);
-  const { images, textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
-  const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
-
-  return [
-    extraConfig,
-    parentConf as FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined,
-    nodesConf,
-    Object.values(context.components) as unknown as ComponentNode2[],
-    images,
-    styles,
-    tokens,
-  ] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.

@@ -6,7 +6,7 @@ import { runGrid } from './routes/2-update-canvas/grid-utils';
 import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
 import { getCurrentUser } from './routes/4-analytics/get-current-user';
 import { getSelectionPreview, selectionPreview } from './routes/5-export-code/1-selection-preview';
-import { serializeSelectedNode, serializeSelectedNode2 } from './routes/5-export-code/2-serialize-node';
+import { serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
 import { extractSVGs } from './routes/5-export-code/7-extract-svg.js';
 import { extractImages } from './routes/5-export-code/8-extract-images.js';
 import { reloadUI } from './routes/9-common/load-ui';
@@ -40,7 +40,6 @@ export const routes = {
   runGrid: runGrid,
 
   serializeSelectedNode: serializeSelectedNode,
-  serializeSelectedNode2: serializeSelectedNode2,
   extractSVGs: extractSVGs,
   extractImages: extractImages,
 

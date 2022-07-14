@@ -2,7 +2,6 @@ import type { ChangeEventHandler, FC, MouseEventHandler, MutableRefObject } from
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ExportCode } from '../2-export-code/old/4-ExportCode';
 import type { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
 import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
@@ -261,7 +260,7 @@ export const ImportSb: FC = memo(function ImportSb() {
       )}
 
       <ErrorComp error={error} />
-      <ExportCode />
+      {/* <ExportCode /> */}
       <PreviewArea />
       {/* {env.isDev ? <button onClick={detachPage}>Detach page</button> : null} */}
     </div>
