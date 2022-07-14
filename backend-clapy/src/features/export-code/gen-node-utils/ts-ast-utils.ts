@@ -490,7 +490,8 @@ export function mkCompFunction(
   const classes = Array.from(classOverrides);
   let returnedExpression = jsxOneOrMoreToJsxExpression(tsx);
 
-  return factory.createVariableStatement(
+  // Create the component function as AST node
+  const componentVariableStatement = factory.createVariableStatement(
     [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
     factory.createVariableDeclarationList(
       [
@@ -576,6 +577,20 @@ export function mkCompFunction(
       ts.NodeFlags.Const,
     ),
   );
+
+  // Attach an annotation with Figma ID.
+  // Ideally, it should be TSDoc (/ JSDoc), but it is not supported by the ts compiler API.
+  // As a workaround, we use multi-line comments.
+  // https://stackoverflow.com/a/57206925/4053349
+  // https://github.com/microsoft/TypeScript/issues/17146
+  ts.addSyntheticLeadingComment(
+    componentVariableStatement,
+    ts.SyntaxKind.MultiLineCommentTrivia,
+    ` @figmaId ${moduleContext.node.id} `,
+    true,
+  );
+
+  return componentVariableStatement;
 }
 
 function mkWrapExpressionFragment(
