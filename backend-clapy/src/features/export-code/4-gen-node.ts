@@ -30,23 +30,20 @@ import {
   isValidNode,
   isVector,
 } from './create-ts-compiler/canvas-utils.js';
-import { addStyle, mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
+import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
-import { readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
   fillIsRootInComponent,
-  genComponentImportName,
   getOrGenClassName,
   getOrGenHideProp,
-  mkClassAttr3,
-  mkComponentUsage,
   mkIdAttribute,
-  mkNamedImportsDeclaration,
+  mkSwapInstanceAndHideWrapper,
   mkTag,
   mkWrapHideAndTextOverrideAst,
   removeCssRule,
@@ -136,19 +133,7 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
         return;
       }
 
-      const svgPathVarName = genComponentImportName(context);
-
-      // Save SVG to convert to React component later, so that we isolate the execution time, which is significant (second most expensive after Prettier formatting).
-      projectContext.svgToWrite[`${moduleContext.compDir}/${svgPathVarName}.tsx`] = {
-        svgPathVarName,
-        svgContent,
-      };
-      // console.log(svgContent);
-
-      const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
-      // Add import in file
-      // (Note: could be moved to when AST is generated to have the final imports)
-      moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}${ext}`);
+      const svgPathVarName = registerSvgForWrite(context, svgContent);
 
       addNodeStyles1(context, node, styles);
 
@@ -178,22 +163,6 @@ function addNodeStyles1(context: NodeContext, node: ValidNode, styles: Dict<Decl
   mapTagStyles(context, node, styles);
   styles = postMapStyles(context, node, styles);
   return styles;
-}
-
-// If classBaseName is provided, it is used instead of node to generate the attribute.
-// Useful for the SVG class attribute, not found to a Figma node.
-function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, classBaseName?: string) {
-  const { moduleContext } = context;
-  const styleDeclarations = stylesToList(styles);
-  let attributes: ts.JsxAttribute[] = [];
-  if (styleDeclarations.length) {
-    const className = classBaseName
-      ? getOrGenClassName(moduleContext, undefined, classBaseName)
-      : getOrGenClassName(moduleContext, node);
-    addCssRule(context, className, styleDeclarations);
-    attributes.push(classBaseName ? mkClassAttr3(classBaseName) : createClassAttrForNode(node));
-  }
-  return attributes;
 }
 
 function recurseOnChildren(
@@ -286,18 +255,13 @@ export function genNodeAst(node: SceneNode2) {
     } else if (isVector(node)) {
       if (!svgPathVarName) {
         if (node.visible) {
-          throw new Error(`[genNodeAst] node ${node.name} has no svgPathVarName`);
-        } else {
-          // If the original SVG is not visible, it is not generated. Overrides on instances (show it or change it) are not supported yet.
-          return mkWrapHideAndTextOverrideAst(context, undefined, node);
+          console.warn(`BUG [genNodeAst] node ${node.name} has no svgPathVarName`);
         }
+        return mkSwapInstanceAndHideWrapper(context, undefined, node);
       }
-      const attributes = addNodeStyles(context, node, styles);
-      if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
-      const svgAttributes = createSvgClassAttribute(context, node);
-      const ast = mkComponentUsage(svgPathVarName, svgAttributes);
-      const ast2 = mkTag('div', attributes, [ast]);
-      return mkWrapHideAndTextOverrideAst(context, ast2, node);
+
+      let ast = createSvgAst(context, node, styles, svgPathVarName, true);
+      return ast;
     } else if (isBlockNode(node)) {
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
@@ -349,11 +313,4 @@ function genNodeAstLoopChildren(node: SceneNode2) {
     }
   }
   return childrenAst.length ? childrenAst : undefined;
-}
-
-function createSvgClassAttribute(context: NodeContext, node: ValidNode) {
-  const svgStyles: Dict<DeclarationPlain> = {};
-  addStyle(context, node, svgStyles, 'width', '100%');
-  addStyle(context, node, svgStyles, 'height', '100%');
-  return addNodeStyles(context, node, svgStyles, 'icon');
 }

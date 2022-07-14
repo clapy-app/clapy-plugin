@@ -254,7 +254,7 @@ export interface ExtraConfig {
   scss?: boolean;
 }
 
-export type SVGsExtracted = Dict<string>;
+export type SVGsExtracted = Dict<{ svg: string; name: string }>;
 
 export interface ExportCodePayload {
   parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;

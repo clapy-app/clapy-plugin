@@ -37,7 +37,7 @@ import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
-import { readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -125,7 +125,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           const compContext = getOrCreateCompContext(node);
           // If swapped, the new component is referenced, with overrides applied in props.
           // When getting this new component context, it was added to the list of components in the app. Its source code will be generated separately.
-          const compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
+          const compAst = createComponentUsageWithAttributes(compContext, componentContext);
 
           addSwapInstance(context, node, compAst);
         }
@@ -153,7 +153,32 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     if (isText(node)) {
       addTextOverride(context, node, styles);
     } else if (isVector(node)) {
-      return addNodeStyles(context, node, nodeOfComp, styles);
+      const { intermediateNodes } = context;
+      const nextIntermediateNode = intermediateNodes[1];
+
+      // If the instance SVG is different from the one in the next intermediate node (the surrounding component if there are multiple embedded components),
+      // then it is added to the project and passed as a swapped instance.
+      const svg = readSvg(context, node);
+      addNodeStyles(context, node, nodeOfComp, styles);
+      if (nextIntermediateNode && !isVector(nextIntermediateNode)) {
+        warnNode(node, `nextIntermediateNode ${nextIntermediateNode.name} is not a SVG although the node is a SVG.`);
+      } else {
+        const intermediateNodeSvg = nextIntermediateNode ? readSvg(context, nextIntermediateNode) : undefined;
+        if (svg && svg !== intermediateNodeSvg) {
+          const svgPathVarName = registerSvgForWrite(context, svg);
+          const ast = createSvgAst(context, node, styles, svgPathVarName);
+          if (!ast) {
+            warnNode(node, 'Could not generate the SVG AST for this node.');
+          } else {
+            context.swapContext = {
+              intermediateNodes: [],
+              intermediateInstanceNodeOfComps: [],
+              intermediateComponentContexts: [],
+            };
+            addSwapInstance(context, node, ast);
+          }
+        }
+      }
     } else if (isBlockNode(node)) {
       // Add tag styles
       mapTagStyles(context, node, styles);
@@ -271,17 +296,17 @@ function recurseOnChildren(
   }
 
   addHiddenNodeToInstance(node, nodeOfComp);
-  const nextCompNode = intermediateNodes[1];
-  if (!nextCompNode) {
+  const nextIntermediateNode = intermediateNodes[1];
+  if (!nextIntermediateNode) {
     throw new Error(`BUG [recurseOnChildren] nextNode is undefined.`);
   }
-  assertChildrenMixin(nextCompNode);
+  assertChildrenMixin(nextIntermediateNode);
   for (let i = 0; i < node.children.length; i++) {
     const child = node.children[i];
     if (child.skip) {
       continue;
     }
-    const nextCompChildNode = nextCompNode.children[i];
+    const nextCompChildNode = nextIntermediateNode.children[i];
     const isOriginalInstance = checkIsOriginalInstance(child, nextCompChildNode);
     let childIntermediateNodes: (SceneNode2 | undefined)[];
     let childIntermediateInstanceNodeOfComps = intermediateInstanceNodeOfComps;
@@ -468,11 +493,11 @@ function addTextOverride(context: InstanceContext, node: TextNode2, styles: Dict
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
 
   // Check that the text of current node changed vs the next intermediate component
-  const nextCompNode = intermediateNodes[1];
-  if (!isText(nextCompNode)) {
-    throw new Error(`BUG? Instance node ${node.name} is text but component node ${nextCompNode?.name} is not.`);
+  const nextIntermediateNode = intermediateNodes[1];
+  if (!isText(nextIntermediateNode)) {
+    throw new Error(`BUG? Instance node ${node.name} is text but component node ${nextIntermediateNode?.name} is not.`);
   }
-  if (equal(node._textSegments, nextCompNode._textSegments)) {
+  if (equal(node._textSegments, nextIntermediateNode._textSegments)) {
     return;
   }
   prepareStylesOnTextSegments(context, node, styles);

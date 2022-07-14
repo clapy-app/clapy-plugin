@@ -60,13 +60,15 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
   postTransform(context, node, styles);
   if (isInstanceContext(context) && !isText(node)) {
     // On the instance, only keep the styles different from the next intermediate component.
-    const nextCompNode = context.intermediateNodes[1];
-    if (!nextCompNode) {
-      throw new Error(`BUG? context of instance node ${node.name} has undefined nextCompNode (intermediateNodes[1])`);
+    const nextIntermediateNode = context.intermediateNodes[1];
+    if (!nextIntermediateNode) {
+      throw new Error(
+        `BUG? context of instance node ${node.name} has undefined nextIntermediateNode (intermediateNodes[1])`,
+      );
     }
-    const compStyles = nextCompNode.styles;
-    if (!compStyles && nextCompNode.visible) {
-      warnOrThrow(`node ${nextCompNode.name} has no styles attached when checking its instance.`);
+    const compStyles = nextIntermediateNode.styles;
+    if (!compStyles && nextIntermediateNode.visible) {
+      warnOrThrow(`node ${nextIntermediateNode.name} has no styles attached when checking its instance.`);
     }
     if (compStyles) {
       const instanceStyles: Dict<DeclarationPlain> = {};

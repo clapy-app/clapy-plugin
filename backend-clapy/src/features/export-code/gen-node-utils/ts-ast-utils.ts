@@ -215,11 +215,7 @@ function prefixIfNumber(varName: string) {
   return varName.match(/^\d/) ? `_${varName}` : varName;
 }
 
-export function createComponentUsageWithAttributes(
-  compContext: CompContext,
-  componentModuleContext: ModuleContext,
-  node: SceneNode2,
-) {
+export function createComponentUsageWithAttributes(compContext: CompContext, componentModuleContext: ModuleContext) {
   const { instanceSwaps, instanceHidings, instanceStyleOverrides, instanceTextOverrides } = compContext;
 
   const attrs = [];
@@ -594,6 +590,13 @@ function mkWrapExpressionFragment(
   return node;
 }
 
+function jsxOneOrMoreToExpression(ast: ts.Expression | JsxOneOrMore | undefined) {
+  if (ast && (Array.isArray(ast) || ts.isJsxText(ast))) {
+    return mkFragment(ast);
+  }
+  return ast;
+}
+
 export function mkFragment(children: ts.JsxChild | ts.JsxChild[]) {
   if (!Array.isArray(children)) {
     children = [children];
@@ -661,12 +664,8 @@ export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttri
   );
 }
 
-export function mkSwapInstanceAndHideWrapper(
-  context: NodeContext,
-  compAst: ts.JsxSelfClosingElement,
-  node: SceneNode2,
-) {
-  let ast: ts.JsxSelfClosingElement | ts.Expression | undefined = compAst;
+export function mkSwapInstanceAlone(context: NodeContext, compAst: ts.JsxSelfClosingElement, node: SceneNode2) {
+  let ast: ts.JsxSelfClosingElement | ts.Expression = compAst;
   let ast2: ts.JsxSelfClosingElement | ts.JsxExpression = compAst;
   if (node.swapName) {
     ast = factory.createBinaryExpression(
@@ -676,15 +675,38 @@ export function mkSwapInstanceAndHideWrapper(
         factory.createIdentifier(node.swapName),
       ),
       factory.createToken(ts.SyntaxKind.BarBarToken),
-      ast,
+      jsxOneOrMoreToExpression(ast)!,
+    );
+    ast2 = factory.createJsxExpression(undefined, jsxOneOrMoreToExpression(ast)!);
+  }
+  return context.isRootInComponent ? mkFragment(ast2) : ast2;
+}
+
+export function mkSwapInstanceAndHideWrapper(
+  context: NodeContext,
+  compAst: ts.JsxSelfClosingElement | undefined,
+  node: SceneNode2,
+) {
+  let ast: ts.JsxSelfClosingElement | ts.Expression | undefined = compAst;
+  let ast2: ts.JsxSelfClosingElement | ts.JsxExpression | undefined = compAst;
+  if (node.swapName) {
+    const expr = jsxOneOrMoreToExpression(ast);
+    ast = factory.createBinaryExpression(
+      factory.createPropertyAccessChain(
+        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('swap')),
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier(node.swapName),
+      ),
+      factory.createToken(ts.SyntaxKind.BarBarToken),
+      expr || factory.createNull(),
     );
   }
   ast = mkWrapHideExprFragment(ast, node);
   if (!ast) return;
   if (node.swapName || node.hideProp) {
-    ast2 = factory.createJsxExpression(undefined, ast);
+    ast2 = factory.createJsxExpression(undefined, jsxOneOrMoreToExpression(ast)!);
   }
-  return context.isRootInComponent ? mkFragment([ast2]) : ast2;
+  return context.isRootInComponent && ast2 ? mkFragment(ast2) : ast2;
 }
 
 function mkWrapTextOverrideExprFragment(ast: JsxOneOrMore | undefined, node: SceneNode2) {
@@ -897,7 +919,7 @@ export function mkSwapsAttribute(swaps: CompContext['instanceSwaps']) {
               )
             : undefined;
 
-          const overrideValueAst = overrideValue;
+          const overrideValueAst = jsxOneOrMoreToExpression(overrideValue);
 
           const ast = !propValue
             ? overrideValueAst!

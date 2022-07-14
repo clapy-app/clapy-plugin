@@ -45,6 +45,7 @@ export interface ProjectContext {
   readonly svgToWrite: Dict<{ svgPathVarName: string; svgContent: string }>;
   readonly cssFiles: CodeDict;
   readonly svgs: SVGsExtracted;
+  readonly svgsRead: Map<string, string>;
   readonly images: ExportImageMap2;
   readonly styles: FigmaStyles;
   readonly enableMUIFramework: boolean;
@@ -126,7 +127,7 @@ export interface FigmaOverride<T> extends BaseFigmaOverride<T> {
 export type StyleOverride = FigmaOverride<string>;
 export type BaseStyleOverride = BaseFigmaOverride<string>;
 
-export type SwapAst = ts.JsxSelfClosingElement | ts.JsxExpression;
+export type SwapAst = JsxOneOrMore;
 export type SwapOverride = FigmaOverride<SwapAst>;
 
 export type HideOverride = FigmaOverride<boolean>;

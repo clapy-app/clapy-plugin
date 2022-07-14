@@ -17,6 +17,7 @@ export const flags = {
   throwOnWarnings: false /* env.isDev */,
   indexOverrideByNodeId: false, // easier debugging when overrides are wrong
   writeFigmaIdOnNode: false,
+  listUnreadSVGs: false,
 };
 
 // What takes time:

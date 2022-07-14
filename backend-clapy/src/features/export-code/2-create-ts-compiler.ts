@@ -6,6 +6,7 @@ import ts from 'typescript';
 import type { Nil } from '../../common/general-utils.js';
 import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils.js';
+import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import {
@@ -47,7 +48,7 @@ export async function exportCode(
   uploadToCsb = true,
 ) {
   if (!extraConfig.output) extraConfig.output = 'csb';
-  extraConfig.useViteJS = /* env.isDev || */ extraConfig.output === 'zip';
+  extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
@@ -96,6 +97,7 @@ export async function exportCode(
     svgToWrite: {},
     cssFiles,
     svgs,
+    svgsRead: new Map(),
     images,
     styles,
     enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
@@ -149,6 +151,16 @@ export async function exportCode(
   const csbFiles = toCSBFiles(tsFilesFormatted, cssFiles, resources);
   perfMeasure('j');
   if (env.isDev) {
+    // Useful to list SVGs that haven't been processed among the list of exported SVGs.
+    // E.g. it will list the hidden SVGs in the instances.
+    if (flags.listUnreadSVGs) {
+      for (const [nodeId, svg] of Object.entries(projectContext.svgs)) {
+        if (!projectContext.svgsRead.has(nodeId)) {
+          console.warn('SVG unread for node', svg.name);
+        }
+      }
+    }
+
     // Useful for the dev in watch mode. Uncomment when needed.
     // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
     // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);

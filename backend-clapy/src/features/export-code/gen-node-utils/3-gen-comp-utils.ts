@@ -63,11 +63,10 @@ function genInstanceAst(node: InstanceNode2) {
     throw new Error(`nodeContext is undefined in node ${node.name}.`);
   }
   const compContext = getOrCreateCompContext(node);
-  let compAst = createComponentUsageWithAttributes(compContext, componentContext, node);
+  let compAst = createComponentUsageWithAttributes(compContext, componentContext);
 
   // Surround instance usage with a syntax to swap with render props
-  let compAst2: SwapAst | JsxOneOrMore | undefined = compAst;
-  compAst2 = mkSwapInstanceAndHideWrapper(context, compAst, node);
+  const compAst2: SwapAst | JsxOneOrMore | undefined = mkSwapInstanceAndHideWrapper(context, compAst, node);
   return compAst2;
 }
 
