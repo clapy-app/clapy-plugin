@@ -12,12 +12,14 @@ import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
+import type { ExtractionProgress } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
 import { apiPost } from '../../../common/http.utils.js';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
-import { fetchPlugin } from '../../../common/plugin-utils';
+import type { Disposer } from '../../../common/plugin-utils';
+import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser, selectIsZipEnabled } from '../../../core/auth/auth-slice';
@@ -50,6 +52,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isZipEnabled = useSelector(selectIsZipEnabled);
 
@@ -77,6 +80,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
+    let unsubscribe: Disposer | undefined;
     try {
       setIsLoading(true);
       setSandboxId('loading');
@@ -85,13 +89,27 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
       // Extract the Figma configuration
 
+      unsubscribe = subscribePlugin('figmaConfigExtractionProgress', (error, progress) => {
+        if (error) {
+          const durationInS = getDuration(timer, performance.now());
+          track('gen-code-progress', 'error', { error: error?.message, durationInS });
+          handleError(error);
+        } else {
+          setProgress(progress);
+        }
+      });
+
+      setProgress({ stepId: 'init', stepNumber: 1 });
       const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
         await fetchPlugin('serializeSelectedNode');
+      unsubscribe?.();
       perfMeasure(`Figma configuration extracted in`);
 
+      setProgress({ stepId: 'extractSVGs', stepNumber: 5 });
       const svgs = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
       perfMeasure(`SVGs extracted in`);
 
+      setProgress({ stepId: 'extractImages', stepNumber: 6 });
       const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
       perfMeasure(`Images extracted in`);
 
@@ -115,7 +133,10 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         };
 
         // Upload assets to a CDN before generating the code
-        for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
+        const imagesEntries = Object.entries(imagesExtracted);
+        let i = 0;
+        for (const [imageHash, imageFigmaEntry] of imagesEntries) {
+          setProgress({ stepId: 'uploadAsset', stepNumber: 7, nodeName: `Asset ${++i} / ${imagesEntries.length}` });
           const { bytes, ...imageEntryRest } = imageFigmaEntry;
           // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
           // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
@@ -144,6 +165,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           console.log(JSON.stringify(nodes));
         }
         if (!env.isDev || sendToApi) {
+          setProgress({ stepId: 'generateCode', stepNumber: 8 });
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
@@ -176,7 +198,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       }
       throw error;
     } finally {
+      unsubscribe?.();
       setIsLoading(false);
+      setProgress(undefined);
     }
   }, [isAlphaDTCUser]);
 
@@ -197,7 +221,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}
       </div>
-      <SelectionPreview state={state} selectionPreview={selectionPreview} />
+      <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
       {state !== 'generated' && (
         <>
           <Accordion classes={{ root: classes.accordionRoot }}>

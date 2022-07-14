@@ -27,7 +27,18 @@
 .rootLoading {
   height: 212px;
   align-self: stretch;
-  flex-direction: row;
-  padding: 16px;
-  border-radius: 12px;
+  flex-direction: column;
+  text-align: center;
+}
+
+.loadingWrapper {
+  flex-direction: column;
+  height: 52px;
+}
+
+.loadingText {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

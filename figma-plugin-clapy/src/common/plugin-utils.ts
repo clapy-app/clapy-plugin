@@ -75,7 +75,7 @@ export function fetchPluginNoResponse<T extends keyof Routes>(routeName: T, ...a
   parent.postMessage({ pluginMessage: { type: routeName, payload: args, noResponse: true } }, '*');
 }
 
-type Disposer = () => void;
+export type Disposer = () => void;
 type EmittedValue<T extends keyof Subscriptions> = Parameters<Parameters<Subscriptions[T]>[0]>[0];
 
 export function subscribePlugin<T extends keyof Subscriptions>(

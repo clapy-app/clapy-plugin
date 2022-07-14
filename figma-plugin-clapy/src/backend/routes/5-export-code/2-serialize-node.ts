@@ -1,3 +1,5 @@
+import type { ExtractionProgress, NextFn } from '../../../common/app-models';
+import { wait } from '../../../common/general-utils.js';
 import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
@@ -6,6 +8,18 @@ import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig }
 import { optimizeConfig } from './4-optimize-config.js';
 import { extractFigmaTokens } from './9-extract-tokens.js';
 import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
+
+let _notifyProgress: ((progress: ExtractionProgress) => void) | undefined;
+
+export function figmaConfigExtractionProgress(next: NextFn<ExtractionProgress>) {
+  _notifyProgress = async (progress: ExtractionProgress) => next(progress);
+}
+
+async function notifyProgress(progress: ExtractionProgress) {
+  await wait();
+  progress.nodeName = `Component: ${progress.nodeName}`;
+  _notifyProgress?.(progress);
+}
 
 export async function serializeSelectedNode() {
   perfReset();
@@ -16,7 +30,11 @@ export async function serializeSelectedNode() {
   const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
-  const parentConfig = node.parent ? readParentNodeConfig(node.parent as SceneNode) : undefined;
+  const nodeParent = node.parent as SceneNode | undefined;
+  if (nodeParent) {
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: nodeParent.name });
+  }
+  const parentConfig = nodeParent ? readParentNodeConfig(nodeParent) : undefined;
 
   const extractBatchContext: ExtractBatchContext = {
     images: {},
@@ -41,9 +59,12 @@ export async function serializeSelectedNode() {
 
   const nodes: AnyNode3[] = [];
   for (const compToProcess of extractBatchContext.componentsToProcess) {
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: compToProcess.name });
     nodes.push(readFigmaNodesConfig(compToProcess, extractBatchContext));
     perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
   }
+
+  await notifyProgress({ stepId: 'optimizeConfig', stepNumber: 3 });
   linkInstancesToComponents(extractBatchContext);
   perfMeasure('End linkInstancesToComponents');
 
@@ -51,6 +72,7 @@ export async function serializeSelectedNode() {
   const components3 = components2.filter(c => c) as ComponentNode2[];
   perfMeasure('End optimizeConfig');
 
+  await notifyProgress({ stepId: 'extractTokens', stepNumber: 4 });
   const tokens = extractFigmaTokens();
   perfMeasure('End extracting Figma Tokens global config');
 

@@ -1,4 +1,5 @@
 import type { _Routes, _Subscriptions } from '../backend/routes';
+import type { extractionStepsLabels } from './app-config.js';
 import type { Args, ArgTypes } from './sb-serialize.model';
 
 export type ObjKey = string | number | symbol;
@@ -65,4 +66,10 @@ export interface NewVariant {
   i: number;
   j: number;
   args: Args;
+}
+
+export interface ExtractionProgress {
+  stepId: keyof typeof extractionStepsLabels; // Map to the text of the step
+  stepNumber: number;
+  nodeName?: string;
 }

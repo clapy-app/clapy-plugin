@@ -15,5 +15,5 @@ const defaultOptions: Options = {
 };
 
 export const Loading: FC = memo(function Loading() {
-  return <Lottie options={defaultOptions} height={60} width={28} isClickToPauseDisabled={true} />;
+  return <Lottie options={defaultOptions} height={56} width={28} isClickToPauseDisabled={true} />;
 });
