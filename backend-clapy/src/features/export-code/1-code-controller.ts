@@ -22,12 +22,13 @@ export class CodeController {
       generationHistory.generatedLink = (res as CSBResponse).sandbox_id;
     } else if (figmaNode.extraConfig.output === 'zip') {
       generationHistory.generatedLink = '_zip';
+    } else {
+      throw new Error('Unsupported output format');
     }
-    try {
-      this.generationHistoryRepository.save(generationHistory);
-    } catch (e) {
-      console.error('probleme while saving generation history record in database');
-    }
+
+    await this.generationHistoryRepository.save(generationHistory);
+    // TODO; si une erreur surviens, ne pas bloquer l'execution de code et envoyé la reponse a l'utilisateur dans ce cas.
+    // faire un push slack pour avoir le corps de l'erreur
     return res;
   }
 }

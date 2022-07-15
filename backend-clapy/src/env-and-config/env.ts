@@ -63,7 +63,6 @@ export const env = {
   auth0BackendClientSecret: process.env.AUTH0_BACKEND_CLIENT_SECRET as string,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY as string,
   stripeWebhookSecret:process.env.STRIPE_WEBHOOK_SECRET as string,
-  stripeCurrency:process.env.STRIPE_CURRENCY as string,
   stripePriceId:process.env.STRIPE_PRICE_ID as string,
   securityRequestedByHeader: 'clapy',
   localhostLatency: 400, // ms
@@ -95,7 +94,7 @@ if (isDev) {
 // To check process.env.VARNAME when not written in `env` object.
 const criticalRawVariables: Array<any> = [];
 if (isDev) {
-  criticalRawVariables.push('VITE_HASURA_SSL', 'VITE_HASURA_HOSTNAME', 'VITE_HASURA_PORT');
+  criticalRawVariables.push('VITE_HASURA_SSL', 'VITE_HASURA_HOSTNAME', 'VITE_HASURA_PORT', 'AUTH0_BACKEND_CLIENT_SECRET', 'PIPEDRIVE_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET');
 }
 
 const missingVar: Array<keyof typeof env> = [];
