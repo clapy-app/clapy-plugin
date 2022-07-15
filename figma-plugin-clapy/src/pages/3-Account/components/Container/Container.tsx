@@ -7,8 +7,10 @@ import { selectUserMetadata } from '../../../user/user-slice.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
 import { Badge } from './Badge/Badge';
+import { ButtonContact } from './ButtonContact/ButtonContact.js';
 import { ButtonUpgrade2 } from './ButtonUpgrade2/ButtonUpgrade2';
 import { ButtonUpgrade } from './ButtonUpgrade/ButtonUpgrade';
+import { ButtonViewPlan } from './buttonViewPlan/ButtonViewPlan.js';
 import classes from './Container.module.css';
 import { Dropdown } from './Dropdown/Dropdown';
 
@@ -54,7 +56,7 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
                 <Badge />
-                {isPaid ? '' : <Badge2 />}
+                {isPaid && <Badge2 />}
               </div>
             </div>
           </div>
@@ -64,6 +66,12 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             <>
               <ButtonUpgrade />
               <ButtonUpgrade2 />
+            </>
+          )}
+          {isPaid && (
+            <>
+              <ButtonViewPlan />
+              <ButtonContact />
             </>
           )}
         </div>

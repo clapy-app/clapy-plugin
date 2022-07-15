@@ -20,7 +20,8 @@ if (!isDev && !isStaging && !isProd) {
 const dev = {
   auth0Domain: 'clapy-dev.eu.auth0.com',
   auth0ClientId: 'BxwH4Y8N4xsrJp55lm4UTWblnHVDRDz9',
-  auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',  
+  auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',
+  auth0PaidRole: "rol_26j83lBEgJ515Zgi",
   baseUrl: 'http://localhost:4141',
 };
 
@@ -28,6 +29,7 @@ const staging = {
   auth0Domain: 'todo',
   auth0ClientId: 'todo',
   auth0BackendClientId: 'todo',
+  auth0PaidRole: 'todo',
   baseUrl: 'todo',
 };
 
@@ -35,6 +37,7 @@ const prod = {
   auth0Domain: 'clapy.eu.auth0.com',
   auth0ClientId: '6erPCh883JBV4COxwAHLbhbgNgarqaq5',
   auth0BackendClientId: 'BSeUsfhXeYXBUSRH1zfsxftkc4e43vj1',
+  auth0PaidRole: "rol_6yESsWlMyCLzY6Lz",
   baseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
@@ -60,7 +63,6 @@ export const env = {
   auth0BackendClientSecret: process.env.AUTH0_BACKEND_CLIENT_SECRET as string,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY as string,
   stripeWebhookSecret:process.env.STRIPE_WEBHOOK_SECRET as string,
-  stripeCurrency:process.env.STRIPE_CURRENCY as string,
   stripePriceId:process.env.STRIPE_PRICE_ID as string,
   securityRequestedByHeader: 'clapy',
   localhostLatency: 400, // ms
@@ -92,7 +94,7 @@ if (isDev) {
 // To check process.env.VARNAME when not written in `env` object.
 const criticalRawVariables: Array<any> = [];
 if (isDev) {
-  criticalRawVariables.push('VITE_HASURA_SSL', 'VITE_HASURA_HOSTNAME', 'VITE_HASURA_PORT');
+  criticalRawVariables.push('VITE_HASURA_SSL', 'VITE_HASURA_HOSTNAME', 'VITE_HASURA_PORT', 'AUTH0_BACKEND_CLIENT_SECRET', 'PIPEDRIVE_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET');
 }
 
 const missingVar: Array<keyof typeof env> = [];

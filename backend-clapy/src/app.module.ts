@@ -11,6 +11,7 @@ import { LoginTokensEntity } from './auth/login-tokens.entity.js';
 import { LoginController } from './auth/login.controller.js';
 import { env } from './env-and-config/env.js';
 import { CodeController } from './features/export-code/1-code-controller.js';
+import { GenerationHistoryEntity } from './features/export-code/generation-history.entity.js';
 import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller.js';
 import { StripeController } from './features/stripe/stripe.controller.js';
 import { StripeService } from './features/stripe/stripe.service.js';
@@ -33,7 +34,7 @@ import { UserController } from './features/user/user.controller.js';
       autoLoadEntities: true,
       retryAttempts: Number.MAX_SAFE_INTEGER,
     }),
-    TypeOrmModule.forFeature([LoginTokensEntity]),
+    TypeOrmModule.forFeature([LoginTokensEntity, GenerationHistoryEntity]),
   ],
   controllers: [
     AppController,

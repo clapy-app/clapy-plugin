@@ -11,7 +11,7 @@
   height: 12px;
 }
 .text {
-  color: #b42318;
+  color: #000;
   font-size: 12px;
   line-height: 18px;
   font-weight: 500;
@@ -20,4 +20,13 @@
   text-align: center;
   justify-content: center;
   white-space: nowrap;
+}
+.green {
+  background-color: #6cfca6;
+}
+.yellow {
+  background-color: #fcfb6c;
+}
+.red {
+  background-color: #ff8282;
 }
