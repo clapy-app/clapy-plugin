@@ -22,7 +22,7 @@ import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser, selectIsZipEnabled } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
@@ -54,7 +54,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
-  const isZipEnabled = useSelector(selectIsZipEnabled);
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -235,24 +234,22 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
-                {isZipEnabled && (
-                  <Tooltip
-                    title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
-                    disableInteractive
-                  >
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name='zip'
-                          onChange={updateAdvancedOption}
-                          defaultChecked={advancedOptionsRef.current.zip}
-                        />
-                      }
-                      label='Download as zip'
-                      disabled={isLoading}
-                    />
-                  </Tooltip>
-                )}
+                <Tooltip
+                  title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+                  disableInteractive
+                >
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name='zip'
+                        onChange={updateAdvancedOption}
+                        defaultChecked={advancedOptionsRef.current.zip}
+                      />
+                    }
+                    label='Download as zip'
+                    disabled={isLoading}
+                  />
+                </Tooltip>
                 <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
                   <FormControlLabel
                     control={

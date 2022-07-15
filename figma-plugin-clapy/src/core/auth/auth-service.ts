@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode';
 
 import { handleError } from '../../common/error-utils';
-import { openNewTab, openWindowStep1, openWindowStep2, toastError } from '../../common/front-utils';
+import { openNewTab, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
@@ -33,8 +33,6 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
   let readToken: string | undefined = undefined,
     writeToken: string | undefined = undefined;
   try {
-    let authWindow = openWindowStep1();
-
     dispatchOther(startLoadingAuth());
 
     const verifier = createVerifier();
@@ -42,8 +40,8 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
 
     ({ readToken, writeToken } = await fetchReadWriteKeys());
     const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp);
-    authWindow = openWindowStep2(authWindow, authUrl);
-    const authoCode = await waitForAuthorizationCode(readToken, authWindow);
+    openNewTab(authUrl);
+    const authoCode = await waitForAuthorizationCode(readToken);
     const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
@@ -225,7 +223,7 @@ async function fetchAuthorizationCode(readToken: string) {
   return data?.code;
 }
 
-async function waitForAuthorizationCode(readToken: string, authWindow: Window | null) {
+async function waitForAuthorizationCode(readToken: string) {
   while (true) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
