@@ -1,1 +1,1 @@
-export * from './PropertyObject';
+export * from './PropertyObject.js';

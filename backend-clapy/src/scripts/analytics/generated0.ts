@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises';
 
-import { backendDir } from '../../root';
-import { Users } from './shared-variables';
+import { backendDir } from '../../root.js';
+import type { Users } from './shared-variables';
 
 const analyticsDirInSrc = `${backendDir}/src/scripts/analytics`;
 let jsonData: Users = require(`${analyticsDirInSrc}/user-data.json`);

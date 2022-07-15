@@ -1,1 +1,1 @@
-export * from './AnyAction';
+export * from './AnyAction.js';
