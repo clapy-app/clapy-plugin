@@ -1,6 +1,8 @@
 import { env } from './env.js';
 
-export const appConfig = {};
+export const appConfig = {
+  maxQuotas: 3,
+};
 
 export const flags = {
   measurePerf: false,

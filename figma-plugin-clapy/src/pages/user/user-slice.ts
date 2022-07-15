@@ -30,15 +30,19 @@ export const userSlice = createSlice({
     clearMetadata: state => {
       state.userMetadata = undefined;
     },
+    setQuota: (state, { payload }: PayloadAction<UserMetadata>) => {
+      state.userMetadata!.quotas = payload.quotas;
+    },
   },
 });
 
-export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata } = userSlice.actions;
+export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setQuota } = userSlice.actions;
 
 /**
  * Not undefined, which assumes the value is read after the authentication initial loading is completed
  * (selectAuthLoading === false)
  */
+export const selectUserQuota = (state: RootState) => state.user.userMetadata?.quotas!;
 export const selectUserMetadata = (state: RootState) => state.user.userMetadata!;
 export const selectUserMetaUsage = (state: RootState) => state.user.userMetadata?.usage;
 export const selectHasMissingMetaProfile = (state: RootState) => hasMissingMetaProfile(state.user.userMetadata);

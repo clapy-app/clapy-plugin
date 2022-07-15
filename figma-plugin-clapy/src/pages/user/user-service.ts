@@ -15,6 +15,7 @@ export interface UserMetadata {
   usage?: UserMetaUsage;
   licenceStartDate?: number;
   licenceExpirationDate?: number;
+  quotas?: number;
 }
 
 export interface UserMetaUsage {

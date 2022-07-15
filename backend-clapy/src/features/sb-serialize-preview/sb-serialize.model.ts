@@ -265,6 +265,7 @@ export interface ExportCodePayload {
   styles: FigmaStyles;
   extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
+  codeGenerationCount: number;
 }
 
 export interface FigmaStyles {
@@ -399,6 +400,7 @@ export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'ma
 
 export interface CSBResponse {
   sandbox_id: string;
+  quotas: number;
 }
 
 // From magic-bytes.js, for portability with the backend that doesn't have the lib

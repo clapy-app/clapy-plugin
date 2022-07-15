@@ -23,7 +23,9 @@ import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
+import { setQuota } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -166,6 +168,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         if (!env.isDev || sendToApi) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          dispatchOther(setQuota(data));
+
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
           if (data?.sandbox_id) {

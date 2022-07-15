@@ -33,8 +33,9 @@ interface Props {
   };
 }
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata) as any;
+  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
   const isPaid = useSelector(selectIsPaidUser);
+  console.log(quotas);
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.imageWrapOuter} ${props.classes?.imageWrapOuter || ''}`}>
