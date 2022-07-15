@@ -94,7 +94,7 @@ export class StripeController {
             licenceStartDate: current_period_start,
             licenceExpirationDate: current_period_end,
           });
-          await updateAuth0UserRoles(auth0Id, ['rol_26j83lBEgJ515Zgi']);
+          await updateAuth0UserRoles(auth0Id, [env.auth0PaidRole]);
         }
         break;
       case 'payment_intent.succeeded':

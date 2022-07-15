@@ -1,7 +1,7 @@
 {
   "git.allowForcePush": true,
   "editor.formatOnSave": false,
-  // turns on Auto Fix for ESLint provider 
+  // turns on Auto Fix for ESLint provider
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -26,9 +26,15 @@
   "[markdown]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
+  "[handlebars]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "css.format.spaceAroundSelectorSeparator": true,
   "less.format.spaceAroundSelectorSeparator": true,
-  "scss.format.spaceAroundSelectorSeparator": true,
+  "scss.format.spaceAroundSelectorSeparator": true
   // "[html]": {
   //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   // },

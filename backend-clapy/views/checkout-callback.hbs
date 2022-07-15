@@ -23,17 +23,17 @@
   <h2>You can close this window and go back to Figma.</h2>
   <h3>you will be redirected to figma automatically soon</h3>
 </body>
-<script >
+<script>
 </script>
 
-<script type="text/javascript" >
+<script type="text/javascript">
   if ("{{ from }}" === "desktop") {
     window.location.href = 'figma://clapy';
   } else {
     if (window.opener) {
       window.opener.focus();
     }
-        setTimeout(()=> {window.close()}, 3000)
+    setTimeout(() => { window.close() }, 3000)
   }
 </script>
 

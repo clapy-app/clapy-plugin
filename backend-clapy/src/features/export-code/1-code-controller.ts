@@ -2,7 +2,7 @@ import { Body, Controller, Post, Req } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
-import type { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import { exportCode } from './2-create-ts-compiler.js';
 import { GenerationHistoryEntity } from './generation-history.entity.js';
 
@@ -15,10 +15,19 @@ export class CodeController {
   async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true, @Req() request: Request) {
     const res = await exportCode(figmaNode, uploadToCsb);
     const userId = (request as any).user.sub;
+    if (res === undefined) return res;
     const generationHistory = new GenerationHistoryEntity();
     generationHistory.auth0id = userId;
-    generationHistory.generated_link = (res as any).sandbox_id;
-    this.generationHistoryRepository.save(generationHistory);
+    if (figmaNode.extraConfig.output === 'csb') {
+      generationHistory.generatedLink = (res as CSBResponse).sandbox_id;
+    } else if (figmaNode.extraConfig.output === 'zip') {
+      generationHistory.generatedLink = '_zip';
+    }
+    try {
+      this.generationHistoryRepository.save(generationHistory);
+    } catch (e) {
+      console.error('probleme while saving generation history record in database');
+    }
     return res;
   }
 }

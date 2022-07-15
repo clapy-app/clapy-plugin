@@ -18,16 +18,17 @@ export const _BadgeBase2: FC<Props> = memo(function _BadgeBase2(props = {}) {
   const { licenceStartDate, licenceExpirationDate } = useSelector(selectUserMetadata);
 
   let daysLeftTillRenewal;
-  let color;
-  if (licenceExpirationDate) {
-    let difference = new Date(licenceExpirationDate * 1000).getTime() - new Date().getTime();
-    daysLeftTillRenewal = Math.ceil(difference / (1000 * 3600 * 24));
-    const isCloseToRenewal = daysLeftTillRenewal > 10 ? '#fcfb6c' : '#ff8282';
-    color = daysLeftTillRenewal > 20 ? '#6cfca6' : isCloseToRenewal;
-  }
+  const color = (licenceExpirationDate: number | undefined) => {
+    if (licenceExpirationDate) {
+      let difference = new Date(licenceExpirationDate * 1000).getTime() - new Date().getTime();
+      daysLeftTillRenewal = Math.ceil(difference / (1000 * 3600 * 24));
+      const isCloseToRenewal = daysLeftTillRenewal > 10 ? classes.yellow : classes.red;
+      return daysLeftTillRenewal > 20 ? classes.green : isCloseToRenewal;
+    }
+  };
 
   return (
-    <div style={{ backgroundColor: color }} className={`${classes.root} ${props.className || ''}`}>
+    <div className={`${classes.root} ${props.className || ''} ${color(licenceExpirationDate)}`}>
       <ClockIcon className={`${classes.clock} ${props.classes?.clock || ''}`} />
       <div className={`${classes.text} ${props.classes?.text || ''}`}>
         {daysLeftTillRenewal ? `Next billing in ${daysLeftTillRenewal} days` : ''}

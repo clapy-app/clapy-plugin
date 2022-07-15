@@ -2,15 +2,15 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'generation_history', schema: 'clapy' })
 export class GenerationHistoryEntity {
-  @PrimaryGeneratedColumn('increment', { name: 'id' })
-  id?: number;
+  @PrimaryGeneratedColumn('uuid')
+  id?: string;
 
   @Column({ name: 'auth0id' })
   auth0id?: string;
 
   @Column({ name: 'created_at' })
-  created_at?: Date;
+  createdAt?: Date;
 
   @Column({ name: 'generated_link' })
-  generated_link?: string;
+  generatedLink?: string;
 }

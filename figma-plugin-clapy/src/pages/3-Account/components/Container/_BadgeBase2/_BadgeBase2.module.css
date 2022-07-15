@@ -21,3 +21,12 @@
   justify-content: center;
   white-space: nowrap;
 }
+.green {
+  background-color: #6cfca6;
+}
+.yellow {
+  background-color: #fcfb6c;
+}
+.red {
+  background-color: #ff8282;
+}

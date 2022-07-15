@@ -56,7 +56,7 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
                 <Badge />
-                {isPaid ? <Badge2 /> : ''}
+                {isPaid && <Badge2 />}
               </div>
             </div>
           </div>
