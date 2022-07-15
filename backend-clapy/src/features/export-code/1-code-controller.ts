@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Request } from 'express';
 import type { Repository } from 'typeorm';
 
 import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
