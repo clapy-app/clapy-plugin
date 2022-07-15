@@ -1,5 +1,5 @@
-import { TokenTypes } from '../../constants/TokenTypes';
-import {
+import type { TokenTypes } from '../../constants/TokenTypes.js';
+import type {
   SingleBorderRadiusToken,
   SingleBorderWidthToken,
   SingleBoxShadowToken,

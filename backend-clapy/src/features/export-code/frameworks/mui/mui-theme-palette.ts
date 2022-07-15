@@ -1,9 +1,9 @@
-import { Theme } from '@mui/material';
+import type { Theme } from '@mui/material';
 import ts from 'typescript';
 
-import { env } from '../../../../env-and-config/env';
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { figmaColorToCssHex } from '../../figma-code-map/details/utils-and-reset';
+import { env } from '../../../../env-and-config/env.js';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import { figmaColorToCssHex } from '../../gen-node-utils/utils-and-reset.js';
 
 const { factory } = ts;
 

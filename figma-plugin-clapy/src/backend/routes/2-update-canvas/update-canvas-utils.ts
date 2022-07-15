@@ -1,19 +1,18 @@
-import { AbsoluteElementToAdd, BorderWidths, RenderContext } from '../1-import-stories/import-model';
-import { Nil } from '../../../common/app-models';
-import {
+import type { AbsoluteElementToAdd, BorderWidths, RenderContext } from '../1-import-stories/import-model';
+import type { Nil } from '../../../common/app-models';
+import type {
   CElementNode,
   CNode,
   CPseudoElementNode,
-  cssDefaults,
   CTextNode,
-  isCElementNode,
-  isCTextNode,
   MyStyles,
   MyStylesPE,
   Properties,
   Property,
 } from '../../../common/sb-serialize.model';
-import { isFrame, isGroup, isLayout, isText, LayoutNode } from '../../common/node-type-utils';
+import { cssDefaults, isCElementNode, isCTextNode } from '../../../common/sb-serialize.model';
+import type { LayoutNode } from '../../common/node-type-utils';
+import { isFrame, isGroup, isLayout, isText } from '../../common/node-type-utils';
 
 const loadedFonts = new Map<string, Promise<void>>();
 

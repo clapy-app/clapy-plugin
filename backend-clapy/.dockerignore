@@ -1,0 +1,12 @@
+**/.git
+**/.github
+**/node_modules
+**/.idea
+**/.vscode
+**/dist*
+**/build*
+**/Dockerfile*
+**/.gitignore
+**/cloudbuild.yaml
+/atest-gen
+/stories

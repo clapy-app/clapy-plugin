@@ -1,0 +1,12 @@
+.root {
+  width: 96px;
+  height: 96px;
+  place-content: center;
+  position: relative;
+  border-radius: 200px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px -2px #10182808, 0px 12px 16px -4px #10182814,0 0 0 2px white;
+}

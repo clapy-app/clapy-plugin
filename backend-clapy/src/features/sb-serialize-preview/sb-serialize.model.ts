@@ -16,6 +16,9 @@ export type ObjKey = string | number | symbol;
 export type Dict2<Key extends ObjKey, Value> = Partial<{
   [key in Key]: Value;
 }>;
+export type Dict3<Key extends ObjKey, Value> = {
+  [key in Key]: Value;
+};
 
 export type Intersect<T, U> = Extract<T, U>;
 
@@ -239,7 +242,7 @@ export interface SbStoriesWrapperInput {
 }
 
 export type OmitMethods<T> = {
-  [P in keyof T as T[P] extends Function ? never : P]: T[P];
+  -readonly [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
 export interface ExtraConfig {
@@ -251,10 +254,13 @@ export interface ExtraConfig {
   scss?: boolean;
 }
 
+export type SVGsExtracted = Dict<{ svg: string; name: string }>;
+
 export interface ExportCodePayload {
-  parent: FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | null | undefined;
-  root: SceneNodeNoMethod | null | undefined;
-  components: ComponentNodeNoMethod[];
+  parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;
+  root: SceneNode2 | null | undefined;
+  components: ComponentNode2[];
+  svgs: SVGsExtracted;
   images: ExportImageMap2;
   styles: FigmaStyles;
   extraConfig: ExtraConfig;
@@ -269,21 +275,29 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
-// type UpdateChildren<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
-type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList>;
-// & T extends ChildrenMixin
-// ? { children: ReadonlyArray<ClapifyNode<T['children']> /* LayoutNode */> }
-// : {};
-// type UpdateChildren2<T> = T extends ChildrenMixin ? Omit<T, 'children'> & { children: ReadonlyArray<LayoutNode> } : T;
-// type ClapifyNode2<T> = UpdateChildren2<Omit<OmitMethods<T>, FrameNodeBlackList>>;
-// type FrameNode3 = ClapifyNode2<UpdateChildren2<FrameNode>>;
-// type A = FrameNode3['c
-// const f: ClapifyNode2<FrameNode>;
-// f.chil
+type GlobalExtender = {
+  _tokens?: Dict<string>;
+};
+
+type TextExtender = {
+  _textSegments?: TextSegment2[];
+  listSpacing: number; // Temporary workaround, to remove once Figma API includes it.
+};
+
+type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList> & GlobalExtender;
+
+export type NodeId = string;
+
+export interface NodeLight {
+  id: string;
+  name: string;
+  type: (LayoutNode | PageNode2)['type'];
+  parent?: NodeId;
+}
 
 type BaseNodeMixin2 = ClapifyNode<BaseNodeMixin>;
 type SceneNodeMixin2 = ClapifyNode<SceneNodeMixin>;
-type ChildrenMixin2 = {
+export type ChildrenMixin2 = {
   children: ReadonlyArray<LayoutNode>;
 } /* Omit<OmitMethods<ChildrenMixin>, FrameNodeBlackList> */;
 type ReactionMixin2 = ClapifyNode<ReactionMixin>;
@@ -291,7 +305,7 @@ type BlendMixin2 = ClapifyNode<BlendMixin>;
 type MinimalStrokesMixin2 = ClapifyNode<MinimalStrokesMixin>;
 type MinimalFillsMixin2 = ClapifyNode<MinimalFillsMixin>;
 type GeometryMixin2 = ClapifyNode<GeometryMixin>;
-type LayoutMixin2 = ClapifyNode<LayoutMixin>;
+export type LayoutMixin2 = ClapifyNode<LayoutMixin>;
 type ExportMixin2 = ClapifyNode<ExportMixin>;
 interface DefaultShapeMixin2
   extends BaseNodeMixin2,
@@ -313,26 +327,33 @@ type PublishableMixin2 = ClapifyNode<PublishableMixin>;
 type VariantMixin2 = ClapifyNode<VariantMixin>;
 type VectorLikeMixin2 = ClapifyNode<VectorLikeMixin>;
 type StickableMixin2 = ClapifyNode<StickableMixin>;
+type ComponentPropertiesMixin2 = ClapifyNode<ComponentPropertiesMixin>;
+type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
 
-type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
-type SliceNode2 = ClapifyNode<SliceNode>;
-export type FrameNode2 = ClapifyNode<FrameNode>;
-type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
-type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
-type ComponentNode2 = ClapifyNode<ComponentNode>;
-type InstanceNode2 = ClapifyNode<InstanceNode>;
-type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
-type VectorNode2 = ClapifyNode<VectorNode>;
-type StarNode2 = ClapifyNode<StarNode>;
-type LineNode2 = ClapifyNode<LineNode>;
-type EllipseNode2 = ClapifyNode<EllipseNode>;
-type PolygonNode2 = ClapifyNode<PolygonNode>;
-type RectangleNode2 = ClapifyNode<RectangleNode>;
-type StampNode2 = ClapifyNode<StampNode>;
+export type BaseNode2 = ClapifyNode<BaseNode>;
+export type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
+export type SliceNode2 = ClapifyNode<SliceNode>;
+export type FrameNode2 = ClapifyNode<FrameNode> & ChildrenMixin2;
+export type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;
+export type ComponentSetNode2 = ClapifyNode<ComponentSetNode>;
+export type ComponentNode2 = ClapifyNode<ComponentNode> & ChildrenMixin2;
+export type InstanceNode2 = Omit<ClapifyNode<InstanceNode>, 'mainComponent'> &
+  ChildrenMixin2 & { mainComponent: NodeLight | null };
+export type BooleanOperationNode2 = ClapifyNode<BooleanOperationNode> & ChildrenMixin2;
+export type VectorNode2 = ClapifyNode<VectorNode>;
+export type StarNode2 = ClapifyNode<StarNode>;
+export type LineNode2 = ClapifyNode<LineNode>;
+export type EllipseNode2 = ClapifyNode<EllipseNode>;
+export type PolygonNode2 = ClapifyNode<PolygonNode>;
+export type RectangleNode2 = ClapifyNode<RectangleNode>;
+export type StampNode2 = ClapifyNode<StampNode>;
 
 // Later: rename XXNoMethod to XX2 to be consistent with the back.
 export type SceneNodeNoMethod = ClapifyNode<SceneNode>;
-export type TextNodeNoMethod = ClapifyNode<TextNode> & { listSpacing: number };
+export type SceneNode2 = SceneNodeNoMethod;
+export type TextNodeNoMethod = ClapifyNode<TextNode> & TextExtender;
+export type TextNode2 = TextNodeNoMethod;
+export type TextSegment2 = StyledTextSegment;
 export type FrameNodeNoMethod = ClapifyNode<FrameNode> & { children: SceneNodeNoMethod[] };
 export type ComponentNodeNoMethod = ClapifyNode<ComponentNode> & {
   children: SceneNodeNoMethod[];
@@ -348,6 +369,7 @@ export const extractionBlacklist = [
   'parent',
   'children',
   'removed',
+  'selection',
   'masterComponent',
   'mainComponent',
   'horizontalPadding',
@@ -356,6 +378,7 @@ export const extractionBlacklist = [
   'fillGeometry',
   'strokeGeometry',
   'vectorPaths',
+  'vectorNetwork',
   'backgrounds',
   'backgroundStyleId',
   'locked',
@@ -364,9 +387,12 @@ export const extractionBlacklist = [
   'expanded',
   'absoluteTransform',
   'absoluteRenderBounds',
-  'vectorNetwork',
   'exportSettings',
   'canUpgradeToNativeBidiSupport',
+  'variantGroupProperties', // deprecated, prefer componentPropertyDefinitions
+  // 'componentPropertyDefinitions',
+  'autoRename',
+  'arcData',
 ] as const;
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
@@ -397,6 +423,7 @@ const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
   name: '',
   visible: true,
   stuckNodes: [],
+  componentPropertyReferences: null,
 };
 
 const defaultChildrenMixin: ChildrenMixin2 = {
@@ -415,6 +442,7 @@ const defaultLayoutMixin: LayoutMixin2 = {
   height: 0,
   layoutAlign: 'INHERIT',
   layoutGrow: 0,
+  layoutPositioning: 'AUTO',
 };
 
 // const defaultSceneNode: SceneNodeNoMethod = {
@@ -441,6 +469,7 @@ const defaultBaseNodeMixin: BaseNodeMixin2 = {
 const defaultSceneNodeMixin2: SceneNodeMixin2 = {
   visible: true,
   stuckNodes: [],
+  componentPropertyReferences: null,
 };
 
 const defaultReactionMixin: ReactionMixin2 = {
@@ -458,7 +487,7 @@ const defaultBlendMixin: BlendMixin2 = {
 const defaultMinimalStrokesMixin: MinimalStrokesMixin2 = {
   strokes: [],
   strokeStyleId: '',
-  strokeWeight: 0,
+  strokeWeight: 1,
   strokeJoin: 'MITER',
   strokeAlign: 'INSIDE',
   dashPattern: [],
@@ -477,7 +506,7 @@ const defaultGeometryMixin: GeometryMixin2 = {
 };
 
 const defaultExportMixin: ExportMixin2 = {
-  exportSettings: [],
+  // exportSettings: [],
 };
 
 const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
@@ -495,6 +524,7 @@ const defaultConstraintMixin: ConstraintMixin2 = {
 };
 
 const defaultTextSublayerNode: TextSublayerNode2 = {
+  ...defaultMinimalFillsMixin,
   hasMissingFont: false,
   paragraphIndent: 0,
   paragraphSpacing: 0,
@@ -529,6 +559,13 @@ const defaultRectangleCornerMixin: RectangleCornerMixin2 = {
   bottomRightRadius: 0,
 };
 
+const defaultIndividualStrokesMixin: IndividualStrokesMixin2 = {
+  strokeTopWeight: 1,
+  strokeRightWeight: 1,
+  strokeBottomWeight: 1,
+  strokeLeftWeight: 1,
+};
+
 const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultBaseNodeMixin,
   ...defaultSceneNodeMixin,
@@ -541,6 +578,7 @@ const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultConstraintMixin,
   ...defaultLayoutMixin,
   ...defaultExportMixin,
+  ...defaultIndividualStrokesMixin,
   layoutMode: 'HORIZONTAL',
   primaryAxisSizingMode: 'FIXED',
   counterAxisSizingMode: 'FIXED',
@@ -554,6 +592,8 @@ const defaultBaseFrameMixin: BaseFrameMixin2 = {
   layoutGrids: [],
   gridStyleId: '',
   clipsContent: false,
+  itemReverseZIndex: false,
+  strokesIncludedInLayout: false,
 };
 
 const defaultFramePrototypingMixin: FramePrototypingMixin2 = {
@@ -587,6 +627,10 @@ const defaultVectorLikeMixin: VectorLikeMixin2 = {
 
 const defaultStickableMixin: StickableMixin2 = { stuckTo: null };
 
+const defaultComponentPropertiesMixin: ComponentPropertiesMixin2 = {
+  componentPropertyDefinitions: {},
+};
+
 // PageNode
 
 const defaultPageNode: PageNode2 = {
@@ -594,7 +638,6 @@ const defaultPageNode: PageNode2 = {
   ...defaultChildrenMixin,
   ...defaultExportMixin,
   type: 'PAGE',
-  selection: [],
   selectedTextRange: null,
   flowStartingPoints: [],
   // backgrounds: [
@@ -626,6 +669,7 @@ const defaultSliceNode: SliceNode2 = {
 
 const defaultFrameNode: FrameNode2 = {
   ...defaultDefaultFrameMixin,
+  ...defaultChildrenMixin,
   type: 'FRAME',
 };
 
@@ -648,9 +692,9 @@ const defaultGroupNode: GroupNode2 = {
 const defaultComponentSetNode: ComponentSetNode2 = {
   ...defaultBaseFrameMixin,
   ...defaultPublishableMixin,
+  ...defaultComponentPropertiesMixin,
   type: 'COMPONENT_SET',
   defaultVariant: null as unknown as ComponentNode, // To override
-  variantGroupProperties: {},
 };
 
 // ComponentNode
@@ -659,6 +703,8 @@ const defaultComponentNode: ComponentNode2 = {
   ...defaultDefaultFrameMixin,
   ...defaultPublishableMixin,
   ...defaultVariantMixin,
+  ...defaultComponentPropertiesMixin,
+  ...defaultChildrenMixin,
   type: 'COMPONENT',
 };
 
@@ -667,9 +713,11 @@ const defaultComponentNode: ComponentNode2 = {
 const defaultInstanceNode: InstanceNode2 = {
   ...defaultDefaultFrameMixin,
   ...defaultVariantMixin,
+  ...defaultChildrenMixin,
   type: 'INSTANCE',
   mainComponent: null,
   scaleFactor: 1,
+  componentProperties: {},
 };
 
 // BooleanOperationNode
@@ -718,11 +766,6 @@ const defaultEllipseNode: EllipseNode2 = {
   ...defaultConstraintMixin,
   ...defaultCornerMixin,
   type: 'ELLIPSE',
-  arcData: {
-    startingAngle: 0,
-    endingAngle: 6.2831854820251465,
-    innerRadius: 0,
-  },
 };
 
 // PolygonNode
@@ -742,6 +785,7 @@ const defaultRectangleNode: RectangleNode2 = {
   ...defaultConstraintMixin,
   ...defaultCornerMixin,
   ...defaultRectangleCornerMixin,
+  ...defaultIndividualStrokesMixin,
   type: 'RECTANGLE',
 };
 
@@ -756,7 +800,6 @@ const defaultTextNode: TextNodeNoMethod = {
   textAlignHorizontal: 'CENTER',
   textAlignVertical: 'CENTER',
   textAutoResize: 'WIDTH_AND_HEIGHT',
-  autoRename: true,
   textStyleId: '',
 };
 
@@ -787,11 +830,12 @@ export type LayoutNode =
   | StampNode2;
 
 export type NodeWithDefaults = LayoutNode | PageNode2;
+export type NodeKeys = Exclude<keyof NodeWithDefaults, keyof GlobalExtender | keyof TextExtender>;
+
+export type LayoutTypes = NodeWithDefaults['type'];
 
 // Function used to type-check the defaults below and ensure all keys are correctly mapped.
-function makeNodeDefaults<T extends { [key in NodeWithDefaults['type']]: NodeWithDefaults & { type: key } }>(
-  defaults: T,
-) {
+function makeNodeDefaults<T extends { [key in LayoutTypes]: NodeWithDefaults & { type: key } }>(defaults: T) {
   return defaults;
 }
 

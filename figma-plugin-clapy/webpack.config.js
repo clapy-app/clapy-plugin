@@ -49,7 +49,7 @@ module.exports = (env, argv) => {
   // Extract environment variables to send to the React app
   const reactAppVar = {};
   for (const [varName, value] of Object.entries(process.env)) {
-    if (varName.startsWith('REACT_APP_')) {
+    if (varName.startsWith('VITE_')) {
       reactAppVar[varName] = JSON.stringify(value);
     }
   }
@@ -97,7 +97,7 @@ module.exports = (env, argv) => {
           ],
         },
 
-        // Process any JS outside of the app with Babel.
+        // Process any JS outside of the app with Babel (e.g. node modules exposing source code only, e.g. with es modules).
         // Unlike the application JS, we only compile the standard ES features.
         {
           test: /\.(js|mjs)$/,

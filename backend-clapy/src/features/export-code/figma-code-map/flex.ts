@@ -1,12 +1,13 @@
-import { CssNodePlain, DeclarationPlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
+import type { CssNodePlain, DeclarationPlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
 
-import { Nil } from '../../../common/general-utils';
-import { flags } from '../../../env-and-config/app-config';
-import { Dict, nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
+import type { Nil } from '../../../common/general-utils.js';
+import { flags } from '../../../env-and-config/app-config.js';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { FlexNode, ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import {
-  FlexNode,
   isConstraintMixin,
   isFlexNode,
   isGroup,
@@ -15,9 +16,8 @@ import {
   isPage,
   isText,
   isVector,
-  ValidNode,
-} from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
+} from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -49,6 +49,7 @@ const counterAlignToAlignItems: {
   MIN: 'flex-start', // stretch?
   CENTER: 'center',
   MAX: 'flex-end',
+  BASELINE: 'baseline',
 };
 const textAlignHorizontalToCssTextAlign: {
   [K in Exclude<TextNode['textAlignHorizontal'], 'LEFT'>]: NonNullable<PropertiesHyphen['text-align']>;
@@ -89,11 +90,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const isFlex = isFlexNode(node);
 
   const { parentStyles, outerLayoutOnly } = context;
-  const { nodePrimaryAxisHugContents, nodeCounterAxisHugContents, parentAndNodeHaveSameDirection } = applyWidth(
-    context,
-    node,
-    styles,
-  );
+  const {
+    isParentAutoLayout,
+    isParentVertical,
+    nodePrimaryAxisHugContents,
+    nodeCounterAxisHugContents,
+    parentAndNodeHaveSameDirection,
+  } = applyWidth(context, node, styles);
 
   const defaultIsVertical = nodeDefaults.FRAME.layoutMode === 'VERTICAL';
 
@@ -116,8 +119,9 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  if (node.layoutAlign === 'STRETCH' || (context.isRootNode && !parentCounterAxisHugContents)) {
+  if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || (context.isRootNode && !parentCounterAxisHugContents)) {
     addStyle(context, node, styles, 'align-self', 'stretch');
+    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'auto');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
@@ -253,10 +257,7 @@ function applyPadding(context: NodeContext, node: FlexNode, styles: Dict<Declara
       );
     }
   } else {
-    // If no padding applied, check if a reset is required
-    // if (tagResets[context.tagName]?.padding) {
-    //   addStyle(context, node, styles, 'padding', 0);
-    // }
+    resetStyleIfOverriding(context, node, styles, 'padding');
   }
 }
 
@@ -350,7 +351,11 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       width = node.strokeWeight;
     }
     addStyle(context, node, styles, 'width', [width, 'px']);
+  } /* if (node.autoWidth) */ else {
+    // I'm not sure which one has highest priority between fixedWidth and node.autoWidth. To review with a test case.
+    resetStyleIfOverriding(context, node, styles, 'width');
   }
+
   if (shouldApplyMaxWidth) {
     addStyle(context, node, styles, 'max-width', [100, '%']);
   }
@@ -360,12 +365,18 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
       height = node.strokeWeight;
     }
     addStyle(context, node, styles, 'height', [height, 'px']);
+  } /* if (node.autoHeight) */ else {
+    // I'm not sure which one has highest priority between fixedHeight and node.autoHeight. To review with a test case.
+    resetStyleIfOverriding(context, node, styles, 'height');
   }
   if (shouldApplyMaxHeight) {
     addStyle(context, node, styles, 'max-height', [100, '%']);
   }
   const parentAndNodeHaveSameDirection = isParentVertical === isNodeVertical;
   return {
+    isParentAutoLayout,
+    isParentVertical,
+    isNodeVertical,
     fixedWidth,
     widthFillContainer,
     fixedHeight,

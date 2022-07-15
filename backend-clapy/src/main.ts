@@ -1,18 +1,19 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { json } from 'body-parser';
-import { NextFunction, Request, Response } from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import type { NextFunction, Request, Response } from 'express';
+import { json, raw } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { join } from 'path';
+import { URL } from 'url';
 
-import { AppModule } from './app.module';
-import { CsrfGuard } from './auth/csrf.guard';
-import { UnknownExceptionFilter } from './core/unknown-exception.filter';
-import { env } from './env-and-config/env';
+import { AppModule } from './app.module.js';
+import { CsrfGuard } from './auth/csrf.guard.js';
+import { UnknownExceptionFilter } from './core/unknown-exception.filter.js';
+import { env } from './env-and-config/env.js';
 
 const port = env.port;
 const logger = new Logger('main');
@@ -118,13 +119,23 @@ async function bootstrap() {
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 
-  app.use(json({ limit: '50mb' }));
+  // app.use(json({ limit: '50mb' }));
+  // Use JSON parser for all non-webhook routes
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    if (req.originalUrl === '/stripe/webhook') {
+      raw({ type: 'application/json' })(req, res, next);
+    } else {
+      json({ limit: '50mb' })(req, res, next);
+    }
+  });
 
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {
     app.use((req: Request, res: Response, next: NextFunction) => setTimeout(next, env.localhostLatency));
   }
 
+  // https://stackoverflow.com/a/66651120/4053349
+  const __dirname = new URL('.', import.meta.url).pathname;
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');

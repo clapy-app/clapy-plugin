@@ -1,6 +1,7 @@
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
-import classes from './Banner.module.scss';
+import classes from './Banner.module.css';
 import image from './detail/discord-banner-black.jpg';
 
 // https://clapy.co/banner

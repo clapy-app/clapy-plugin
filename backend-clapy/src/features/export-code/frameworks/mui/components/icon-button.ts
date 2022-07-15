@@ -1,6 +1,6 @@
-import { InstanceNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { MUIConfig, VariantProps } from '../mui-config';
-import { iconInstanceToAst } from '../mui-utils';
+import type { InstanceNode2 } from '../../../create-ts-compiler/canvas-utils.js';
+import type { MUIConfig, VariantProps } from '../mui-config.js';
+import { iconInstanceToAst } from '../mui-utils.js';
 
 const variantPropsMapping: VariantProps = {
   Size: {
@@ -46,9 +46,9 @@ export const muiConfigIconButton: MUIConfig = {
     const fontSizeFigma = iconWrapper?.variantProperties?.['Size'] as keyof typeof iconFontSizeMapping | undefined;
     const fontSize = fontSizeFigma ? iconFontSizeMapping[fontSizeFigma] : undefined;
 
-    const [importAst, jsxAst] = iconInstanceToAst(iconSelected, fontSize);
+    const [iconVarName, importAst, jsxAst] = iconInstanceToAst(iconSelected, fontSize);
     if (!importAst || !jsxAst) return;
-    context.moduleContext.imports.push(importAst);
+    context.moduleContext.imports[iconVarName] = importAst;
     return jsxAst;
   },
 };

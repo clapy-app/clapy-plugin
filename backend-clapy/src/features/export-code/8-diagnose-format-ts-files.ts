@@ -1,12 +1,12 @@
 import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
-import parserCss from 'prettier/parser-postcss';
-import parserTypeScript from 'prettier/parser-typescript';
-import prettier from 'prettier/standalone';
+import parserCss from 'prettier/parser-postcss.js';
+import parserTypeScript from 'prettier/parser-typescript.js';
+import prettier from 'prettier/standalone.js';
 
-import { flags } from '../../env-and-config/app-config';
-import { backendDir } from '../../root';
-import { CodeDict } from './code.model';
+import { flags } from '../../env-and-config/app-config.js';
+import { backendDir } from '../../root.js';
+import type { CodeDict } from './code.model.js';
 
 let _prettierConfig: any;
 
@@ -82,7 +82,12 @@ export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
 export async function prepareCssFiles(cssFiles: CodeDict) {
   for (const [path, content] of Object.entries(cssFiles)) {
     if (flags.formatCode && path.startsWith('src')) {
-      cssFiles[path] = await formatCssFile(path, content);
+      try {
+        cssFiles[path] = await formatCssFile(path, content);
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     }
   }
 }

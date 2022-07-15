@@ -1,5 +1,5 @@
-import { ArgTypeObj } from '../../../common/app-models';
-import { Args, ArgTypes } from '../../../common/sb-serialize.model';
+import type { ArgTypeObj } from '../../../common/app-models';
+import type { Args, ArgTypes } from '../../../common/sb-serialize.model';
 import { argTypesToValuesFiltered } from '../../../common/storybook-utils';
 
 interface ArgType2 {

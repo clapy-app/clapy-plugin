@@ -1,9 +1,10 @@
 import ts from 'typescript';
 
-import { InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { warnNode } from '../../../figma-code-map/details/utils-and-reset';
-import { MUIConfig, VariantProps } from '../mui-config';
-import { typoMappingConfig } from '../mui-theme-typography';
+import type { InstanceNode2, TextNode2 } from '../../../create-ts-compiler/canvas-utils.js';
+import { isText } from '../../../create-ts-compiler/canvas-utils.js';
+import { warnNode } from '../../../gen-node-utils/utils-and-reset.js';
+import type { MUIConfig, VariantProps } from '../mui-config.js';
+import { typoMappingConfig } from '../mui-theme-typography.js';
 
 const { factory } = ts;
 

@@ -1,4 +1,4 @@
-import { Nil, ObjKey } from './app-models';
+import type { Nil, ObjKey } from './app-models';
 
 export function wait(milliseconds?: number) {
   return new Promise<void>(resolve => setTimeout(resolve, milliseconds));

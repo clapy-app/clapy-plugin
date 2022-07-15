@@ -1,8 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { Nil } from '../../common/app-models';
-import { RootState } from '../redux/store';
-import { AccessTokenDecoded } from './auth-service';
+import type { Nil } from '../../common/app-models';
+import type { RootState } from '../redux/store';
+import type { AccessTokenDecoded } from './auth-service';
 
 export interface AuthState {
   loading: boolean;
@@ -50,5 +51,5 @@ export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
-export const selectIsZipEnabled = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_zip');
+export const selectIsPaidUser = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('paid_user');

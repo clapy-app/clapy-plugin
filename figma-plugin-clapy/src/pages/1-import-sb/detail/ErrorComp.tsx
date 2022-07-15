@@ -1,7 +1,8 @@
-import { Button } from '@mui/material';
-import { FC, memo } from 'react';
+import Button from '@mui/material/Button';
+import type { FC } from 'react';
+import { memo } from 'react';
 
-import classes from '../1-ImportSb.module.scss';
+import classes from '../1-ImportSb.module.css';
 import { parseErrorForDisplay, useCallbackAsync2 } from '../../../common/front-utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { env } from '../../../environment/env';

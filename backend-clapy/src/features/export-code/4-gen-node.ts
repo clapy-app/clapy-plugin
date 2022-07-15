@@ -1,20 +1,23 @@
-import { DeclarationPlain } from 'css-tree';
-import ts from 'typescript';
+import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
-import { flags } from '../../env-and-config/app-config';
-import { env } from '../../env-and-config/env';
-import { handleError } from '../../utils';
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { getOrGenComponent } from './3-gen-component';
-import { genInstanceOverrides } from './5-instance-overrides';
-import { mapCommonStyles, mapTagStyles, mapTextStyles, postMapStyles } from './6-figma-to-code-map';
-import { InstanceContext, JsxOneOrMore, NodeContext } from './code.model';
-import { writeAsset } from './create-ts-compiler/2-write-asset';
-import {
+import { flags } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
+import { handleError } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map.js';
+import type { NodeContext } from './code.model.js';
+import { writeAsset } from './create-ts-compiler/2-write-asset.js';
+import type {
   ChildrenMixin2,
   FlexNode,
   GroupNode2,
   InstanceNode2,
+  Masker,
+  SceneNode2,
+  ValidNode,
+} from './create-ts-compiler/canvas-utils.js';
+import {
   isBlendMixin,
   isBlockNode,
   isChildrenMixin,
@@ -26,34 +29,48 @@ import {
   isText,
   isValidNode,
   isVector,
-  Masker,
-  SceneNode2,
-  ValidNode,
-} from './create-ts-compiler/canvas-utils';
-import { stylesToList } from './css-gen/css-type-utils';
-import { readSvg } from './figma-code-map/details/process-nodes-utils';
+} from './create-ts-compiler/canvas-utils.js';
+import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
+import { stylesToList } from './css-gen/css-type-utils.js';
+import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils.js';
+import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
+import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
-  genClassName,
-  genComponentImportName,
-  mkClassAttr,
-  mkClassesAttribute,
-  mkComponentUsage,
-  mkNamedImportsDeclaration,
+  createClassAttrForNode,
+  fillIsRootInComponent,
+  getOrGenClassName,
+  getOrGenHideProp,
+  mkIdAttribute,
+  mkSwapInstanceAndHideWrapper,
   mkTag,
+  mkWrapHideAndTextOverrideAst,
   removeCssRule,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
-import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils';
-import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName';
+  updateCssRuleClassName,
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 
-export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = false) {
+export function prepareNode(context: NodeContext, node: SceneNode2) {
   try {
-    if (!node.visible) {
+    node.nodeContext = context;
+    node.styles = {};
+    if (!node.visible && context.moduleContext.isRootComponent) {
+      node.skip = true;
       return;
     }
 
-    const { parentNode, moduleContext } = context;
+    const { parentNode, moduleContext, isRootInComponent } = context;
+    fillIsRootInComponent(moduleContext, node);
+    if (isRootInComponent) {
+      // Always generate the className prop for root nodes
+      getOrGenClassName(moduleContext, node);
+    }
+    node.hideDefaultValue = !node.visible;
+    if (!node.visible) {
+      getOrGenHideProp(moduleContext, node);
+    }
 
     let styles: Dict<DeclarationPlain> = {};
 
@@ -65,43 +82,25 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
 
       // Add tag styles
       mapCommonStyles(context, node2, styles);
-      const attributes = addNodeStyles(context, node2, styles, isRoot);
-
-      return mkMuiComponentAst(context, muiConfig, node2, attributes);
+      styles = addNodeStyles1(context, node2, styles);
+      node.styles = styles;
+      node.muiConfig = muiConfig;
     }
 
-    // If component or instance, generate the code in a separate component file and reference it here.
-    if (isComponent(node) || isInstance(node)) {
-      const componentContext = getOrGenComponent(moduleContext, node, context.parentNode);
-
-      if (!flags.enableInstanceOverrides) {
-        return mkComponentUsage(componentContext.compName);
-      }
-
-      // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.
-      const instanceContext: InstanceContext = {
-        ...context,
-        instanceClasses: {},
-        instanceAttributes: {},
-        componentContext,
-        nodeOfComp: componentContext.node,
-      };
-      genInstanceOverrides(instanceContext, node, isRoot);
-
-      const { root, ...instanceClasses } = instanceContext.instanceClasses;
-
-      const classAttr = mkClassAttr(root);
-      const classesAttr = mkClassesAttribute(instanceClasses);
-      const attrs = classesAttr ? [classAttr, classesAttr] : [classAttr];
-
-      return mkComponentUsage(componentContext.compName, attrs);
+    const isComp = isComponent(node);
+    const isInst = isInstance(node);
+    if (!isRootInComponent && (isComp || isInst)) {
+      prepareCompUsageWithOverrides(context, node);
+      return;
     }
 
     const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
     if (newNode) node = newNode;
+    node.extraAttributes = extraAttributes;
 
     if (!isValidNode(node) && !isGroup(node)) {
       warnNode(node, 'TODO Unsupported node');
+      node.skip = true;
       return;
     }
     const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
@@ -113,96 +112,41 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
     // Note: skipping the group may not be desired if it contains masks. Behavior to investigate on Figma.
     // Also check the existing logic on group when not skipped. It may have an assumption on the use case (e.g. assumes it's absolute positioning), which may become wrong if we change the conditions here.
     if (isGroup(node) && (!parentIsAutoLayout || isGroup(parentNode))) {
-      const childrenAst: ts.JsxChild[] = [];
-      recurseOnChildren(context, node, childrenAst, styles, true);
-      return childrenAst.length ? childrenAst : undefined;
+      node.noLayoutWithChildren = true;
+      recurseOnChildren(context, node, styles, true);
+      return;
     }
 
     // Add common styles (text and tags)
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
-      // Add text styles
-      let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-      if (!ast) {
-        warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
-        return;
-      }
-
-      const flexStyles: Dict<DeclarationPlain> = {};
-      mapTagStyles(context, node, flexStyles);
-
-      if (!context.parentStyles || Object.keys(flexStyles).length) {
-        Object.assign(styles, flexStyles);
-        styles = postMapStyles(context, node, styles);
-        const className = genClassName(context, node, isRoot);
-        const styleDeclarations = stylesToList(styles);
-        let attributes: ts.JsxAttribute[] = [];
-        if (styleDeclarations.length) {
-          addCssRule(context, className, styleDeclarations);
-          attributes.push(mkClassAttr(className, true));
-        }
-        ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
-      } else {
-        styles = postMapStyles(context, node, styles);
-        Object.assign(context.parentStyles, styles);
-        // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
-        // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
-
-        // return txt;
-      }
-      return ast;
+      prepareStylesOnTextSegments(context, node, styles);
+      return;
     } else if (isVector(node)) {
       const { projectContext } = moduleContext;
-      let svgContent = readSvg(node);
+      let svgContent = readSvg(context, node);
       if (!svgContent) {
-        warnNode(node, 'BUG No SVG content, skipping.');
+        if (node.visible) {
+          warnNode(node, 'BUG No SVG content, skipping.');
+        }
         return;
       }
 
-      const svgPathVarName = genComponentImportName(context);
+      const svgPathVarName = registerSvgForWrite(context, svgContent);
 
-      // Save SVG to convert to React component later, so that we isolate the execution time, which is significant (second most expensive after Prettier formatting).
-      projectContext.svgToWrite[`${moduleContext.compDir}/${svgPathVarName}.tsx`] = {
-        svgPathVarName,
-        svgContent,
-      };
-      // console.log(svgContent);
+      addNodeStyles1(context, node, styles);
 
-      // Add import in file
-      moduleContext.imports.push(mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}`));
-
-      const attributes = addNodeStyles(context, node, styles, isRoot);
-
-      // Generate AST
-      const ast = mkComponentUsage(svgPathVarName, attributes);
-      return ast;
+      node.svgPathVarName = svgPathVarName;
     } else if (isBlockNode(node)) {
       // Add tag styles
       mapTagStyles(context, node, styles);
 
-      const className = genClassName(context, node, isRoot);
-
-      // the CSS rule is created before checking the children so that it appears first in the CSS file.
-      // After generating the children, we can add the final list of rules or remove it if no rule.
-      const cssRule = addCssRule(context, className);
-
-      const children: ts.JsxChild[] = [];
       if (isChildrenMixin(node)) {
-        recurseOnChildren(context, node, children, styles);
+        recurseOnChildren(context, node, styles);
       }
 
-      styles = postMapStyles(context, node, styles);
-      const styleDeclarations = stylesToList(styles);
-      let attributes: ts.JsxAttribute[] = [];
-      if (styleDeclarations.length) {
-        cssRule.block.children.push(...styleDeclarations);
-        attributes.push(mkClassAttr(className, true));
-      } else {
-        removeCssRule(context, cssRule, node);
-      }
-
-      return mkTag(context.tagName, [...attributes, ...extraAttributes], children);
+      postMapStyles(context, node, styles);
     }
   } catch (error) {
     warnNode(node, 'Failed to generate node with error below. Skipping the node.');
@@ -215,23 +159,15 @@ export function figmaToAstRec(context: NodeContext, node: SceneNode2, isRoot = f
   }
 }
 
-function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>, isRoot: boolean) {
+function addNodeStyles1(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   mapTagStyles(context, node, styles);
-  const className = genClassName(context, node, isRoot);
   styles = postMapStyles(context, node, styles);
-  const styleDeclarations = stylesToList(styles);
-  let attributes: ts.JsxAttribute[] = [];
-  if (styleDeclarations.length) {
-    addCssRule(context, className, styleDeclarations);
-    attributes.push(mkClassAttr(className, true));
-  }
-  return attributes;
+  return styles;
 }
 
 function recurseOnChildren(
   context: NodeContext,
   node: SceneNode2 & ChildrenMixin2,
-  children: ts.JsxChild[],
   styles: Dict<DeclarationPlain>,
   passParentToChildContext?: boolean,
 ) {
@@ -244,7 +180,7 @@ function recurseOnChildren(
         warnNode(child, 'BUG Mask is not a vector, which is unexpected and unsupported. Ignoring the mask node.');
         continue;
       }
-      let svgContent = readSvg(child);
+      let svgContent = readSvg(context, child);
       if (!svgContent) {
         warnNode(child, 'BUG Mask SVG has no content, skipping.');
         continue;
@@ -280,16 +216,101 @@ function recurseOnChildren(
       tagName: 'div', // Default value, will be overridden. To avoid undefined in typing.
       nodeNameLower: child.name.toLowerCase(),
       parentNode: passParentToChildContext ? parentNode : (node as FlexNode | GroupNode2),
-      parentStyles: passParentToChildContext ? parentStyles : styles,
+      parentStyles: passParentToChildContext ? parentStyles : mergeWithInheritedStyles(context, styles),
       parentContext: passParentToChildContext ? parentContext : context,
+      isRootInComponent: false,
     };
-    const childTsx = figmaToAstRec(contextForChildren, child);
+    prepareNode(contextForChildren, child);
+  }
+}
+
+export function genNodeAst(node: SceneNode2) {
+  try {
+    const { nodeContext: context, styles, muiConfig, svgPathVarName, extraAttributes } = node;
+    if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
+    const { moduleContext } = context;
+
+    if (node.skip) return;
+
+    if (node.componentContext) {
+      return genCompUsage(node);
+    }
+
+    if (!styles) {
+      throw new Error(`[genNodeAst] node ${node.name} has no styles`);
+    }
+
+    if (muiConfig) {
+      const node2 = node as InstanceNode2;
+      const attributes = addNodeStyles(context, node2, styles);
+      return mkMuiComponentAst(context, muiConfig, node2, attributes);
+    }
+
+    if (node.noLayoutWithChildren) {
+      return genNodeAstLoopChildren(node);
+    }
+
+    if (isText(node)) {
+      return genTextAst(node);
+    } else if (isVector(node)) {
+      if (!svgPathVarName) {
+        if (node.visible) {
+          console.warn(`BUG [genNodeAst] node ${node.name} has no svgPathVarName`);
+        }
+        return mkSwapInstanceAndHideWrapper(context, undefined, node);
+      }
+
+      let ast = createSvgAst(context, node, styles, svgPathVarName, true);
+      return ast;
+    } else if (isBlockNode(node)) {
+      // the CSS rule is created before checking the children so that it appears first in the CSS file.
+      // After generating the children, we can add the final list of rules or remove it if no rule.
+      const cssRule = addCssRule(context, '_tmp');
+
+      const children = genNodeAstLoopChildren(node);
+
+      const styleDeclarations = stylesToList(styles);
+      let attributes: ts.JsxAttribute[] = [];
+      if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
+      if (styleDeclarations.length) {
+        const className = getOrGenClassName(moduleContext, node);
+        updateCssRuleClassName(context, cssRule, className);
+        cssRule.block.children.push(...styleDeclarations);
+        attributes.push(createClassAttrForNode(node));
+      } else {
+        removeCssRule(context, cssRule, node);
+      }
+
+      const ast2 = mkTag(context.tagName, [...attributes, ...(extraAttributes || [])], children || []);
+      return mkWrapHideAndTextOverrideAst(context, ast2, node);
+    }
+    throw new Error(`[genNodeAst] Unsupported type for node ${node.name}`);
+  } catch (error) {
+    warnNode(node, '[genNodeAst] Failed to generate node with error below. Skipping the node.');
+    if (!env.isProd) {
+      throw error;
+    }
+    // Production: don't block the process
+    handleError(error);
+    return;
+  }
+}
+
+function genNodeAstLoopChildren(node: SceneNode2) {
+  if (!isChildrenMixin(node)) return;
+  const childrenAst: ts.JsxChild[] = [];
+  for (const child of node.children) {
+    if (child.skip) {
+      continue;
+    }
+    const childTsx = genNodeAst(child);
     if (childTsx) {
       if (Array.isArray(childTsx)) {
-        children.push(...childTsx);
+        childrenAst.push(...childTsx);
       } else {
-        children.push(childTsx);
+        childrenAst.push(childTsx);
       }
     }
   }
+  return childrenAst.length ? childrenAst : undefined;
 }

@@ -1,5 +1,6 @@
-import { ButtonHTMLAttributes, FC, memo } from 'react';
-import { Options } from 'react-lottie';
+import type { ButtonHTMLAttributes, FC } from 'react';
+import { memo } from 'react';
+import type { Options } from 'react-lottie';
 
 import { Loading } from '../../../../components-used/Loading/Loading';
 import animationData from '../../../../lotties/loading.json';

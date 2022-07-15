@@ -1,29 +1,31 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  FormControlLabel,
-  FormGroup,
-  Switch,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { FC, memo, useCallback, useRef, useState } from 'react';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import Switch from '@mui/material/Switch';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import type { FC } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
+import type { ExtractionProgress } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
-import { apiPost } from '../../../common/http.utils';
-import { fetchPlugin } from '../../../common/plugin-utils';
-import { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model';
+import { apiPost } from '../../../common/http.utils.js';
+import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
+import type { Disposer } from '../../../common/plugin-utils';
+import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
+import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser, selectIsZipEnabled } from '../../../core/auth/auth-slice';
-import { env } from '../../../environment/env';
-import { uploadAssetFromUintArrayRaw } from '../cloudinary';
-import { downloadFile } from '../export-code-utils';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { env } from '../../../environment/env.js';
+import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
+import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
@@ -50,8 +52,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
-  const isZipEnabled = useSelector(selectIsZipEnabled);
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -77,79 +79,112 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
+    let unsubscribe: Disposer | undefined;
     try {
       setIsLoading(true);
       setSandboxId('loading');
       track('gen-code', 'start');
+      perfReset();
 
       // Extract the Figma configuration
-      const [extraConfig, parent, root, components, imagesExtracted, styles, tokens] = await fetchPlugin(
-        'serializeSelectedNode',
-      );
-      const images: ExportImageMap2 = {};
-      const { zip, ...userSettings } = advancedOptionsRef.current;
-      const nodes: ExportCodePayload = {
-        parent,
-        root,
-        components,
-        images,
-        styles,
-        extraConfig: {
-          ...extraConfig,
-          enableMUIFramework: isAlphaDTCUser,
-          output: zip ? 'zip' : 'csb',
-          ...userSettings,
-        },
-        tokens,
-      };
 
-      // Upload assets to a CDN before generating the code
-      for (const [imageHash, imageFigmaEntry] of Object.entries(imagesExtracted)) {
-        const { bytes, ...imageEntryRest } = imageFigmaEntry;
-        // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
-        // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
-
-        // Replace Figma asset URL with our own CDN. Benefits:
-        // - Avoid CORS issue in codesandbox when exporting the project as zip
-        // - Allows image compression if useful later, instead of keeping the original HD image.
-        let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
-        if (!url) {
-          handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
+      unsubscribe = subscribePlugin('figmaConfigExtractionProgress', (error, progress) => {
+        if (error) {
+          const durationInS = getDuration(timer, performance.now());
+          track('gen-code-progress', 'error', { error: error?.message, durationInS });
+          handleError(error);
         } else {
-          images[imageHash] = { ...imageEntryRest, url };
+          setProgress(progress);
         }
-      }
+      });
 
-      // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
-      // TODO improvements for images
-      // Small UI update: 2 steps loading (show a loader?)
-      // Check if the hash is already in database. If yes, reuse the URL.
-      // If not, upload to CDN and save the hash + URL in database.
-      // When a node has an image, apply relevant formattings using the info from the node.
-      // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
+      setProgress({ stepId: 'init', stepNumber: 1 });
+      const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
+        await fetchPlugin('serializeSelectedNode');
+      unsubscribe?.();
+      perfMeasure(`Figma configuration extracted in`);
 
-      if (env.isDev) {
-        console.log(JSON.stringify(nodes));
-      }
-      if (!env.isDev || sendToApi) {
-        const { data } = await apiPost<CSBResponse>('code/export', nodes);
-        const durationInS = getDuration(timer, performance.now());
-        if (data?.sandbox_id) {
-          if (env.isDev) {
-            console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`);
+      setProgress({ stepId: 'extractSVGs', stepNumber: 5 });
+      const svgs = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
+      perfMeasure(`SVGs extracted in`);
+
+      setProgress({ stepId: 'extractImages', stepNumber: 6 });
+      const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
+      perfMeasure(`Images extracted in`);
+
+      if (components && styles && imagesExtracted) {
+        const images: ExportImageMap2 = {};
+        const { zip, ...userSettings } = advancedOptionsRef.current;
+        const nodes: ExportCodePayload = {
+          parent,
+          root,
+          components,
+          svgs,
+          images,
+          styles,
+          extraConfig: {
+            ...extraConfig,
+            enableMUIFramework: isAlphaDTCUser,
+            output: zip ? 'zip' : 'csb',
+            ...userSettings,
+          },
+          tokens,
+        };
+
+        // Upload assets to a CDN before generating the code
+        const imagesEntries = Object.entries(imagesExtracted);
+        let i = 0;
+        for (const [imageHash, imageFigmaEntry] of imagesEntries) {
+          setProgress({ stepId: 'uploadAsset', stepNumber: 7, nodeName: `Asset ${++i} / ${imagesEntries.length}` });
+          const { bytes, ...imageEntryRest } = imageFigmaEntry;
+          // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
+          // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+
+          // Replace Figma asset URL with our own CDN. Benefits:
+          // - Avoid CORS issue in codesandbox when exporting the project as zip
+          // - Allows image compression if useful later, instead of keeping the original HD image.
+          let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
+          if (!url) {
+            handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
+          } else {
+            images[imageHash] = { ...imageEntryRest, url };
           }
-          // window.open(url, '_blank', 'noopener');
-          setSandboxId(data.sandbox_id);
-          track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
-          //
-          return;
-        } else {
-          track('gen-code', 'completed-no-data', { durationInS });
+          perfMeasure(`Image uploaded`);
         }
 
-        // Tmp code:
-        downloadFile(data as unknown as Blob, 'foo.zip');
+        // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
+        // TODO improvements for images
+        // Small UI update: 2 steps loading (show a loader?)
+        // Check if the hash is already in database. If yes, reuse the URL.
+        // If not, upload to CDN and save the hash + URL in database.
+        // When a node has an image, apply relevant formattings using the info from the node.
+        // Include the image in the generated project using codesandbox binary feature and point to it in the HTML
+
+        if (env.isDev) {
+          console.log(JSON.stringify(nodes));
+        }
+        if (!env.isDev || sendToApi) {
+          setProgress({ stepId: 'generateCode', stepNumber: 8 });
+          const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
+          const durationInS = getDuration(timer, performance.now());
+          if (data?.sandbox_id) {
+            if (env.isDev) {
+              console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`, `(in ${durationInS} seconds)`);
+            }
+            // window.open(url, '_blank', 'noopener');
+            setSandboxId(data.sandbox_id);
+            track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
+            return;
+          } else {
+            track('gen-code', 'completed-no-data', { durationInS });
+          }
+
+          // Tmp code:
+          downloadFile(data as unknown as Blob, 'Code export.zip');
+        }
       }
+
       // Dont put in Finally, there is a return above. Set to undefined is only if not successfully completed.
       setSandboxId(undefined);
     } catch (error: any) {
@@ -161,7 +196,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       }
       throw error;
     } finally {
+      unsubscribe?.();
       setIsLoading(false);
+      setProgress(undefined);
     }
   }, [isAlphaDTCUser]);
 
@@ -182,7 +219,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}
       </div>
-      <SelectionPreview state={state} selectionPreview={selectionPreview} />
+      <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
       {state !== 'generated' && (
         <>
           <Accordion classes={{ root: classes.accordionRoot }}>
@@ -196,24 +233,22 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
-                {isZipEnabled && (
-                  <Tooltip
-                    title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
-                    disableInteractive
-                  >
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name='zip'
-                          onChange={updateAdvancedOption}
-                          defaultChecked={advancedOptionsRef.current.zip}
-                        />
-                      }
-                      label='Download as zip'
-                      disabled={isLoading}
-                    />
-                  </Tooltip>
-                )}
+                <Tooltip
+                  title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+                  disableInteractive
+                >
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name='zip'
+                        onChange={updateAdvancedOption}
+                        defaultChecked={advancedOptionsRef.current.zip}
+                      />
+                    }
+                    label='Download as zip'
+                    disabled={isLoading}
+                  />
+                </Tooltip>
                 <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
                   <FormControlLabel
                     control={

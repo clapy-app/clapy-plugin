@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
-import { env } from '../../env-and-config/env';
+import { env } from '../../env-and-config/env.js';
 
 export const apolloClient = createApolloClient();
 

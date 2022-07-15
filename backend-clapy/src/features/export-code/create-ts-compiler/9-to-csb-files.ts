@@ -1,4 +1,4 @@
-import { CodeDict, CsbDict } from '../code.model';
+import type { CodeDict, CsbDict } from '../code.model.js';
 
 export function toCSBFiles(...files: CodeDict[]) {
   const csbFiles: CsbDict = {};

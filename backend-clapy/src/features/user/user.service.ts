@@ -1,7 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { ManagementClient, User } from 'auth0';
+import type { User } from 'auth0';
+import { ManagementClient } from 'auth0';
 
-import { env } from '../../env-and-config/env';
+import { env } from '../../env-and-config/env.js';
 
 const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
 
@@ -14,12 +15,17 @@ var auth0Management = new ManagementClient({
 
 export async function getAuth0User(userId: string | undefined) {
   if (!userId) throw new UnauthorizedException();
-  return auth0Management.getUser({ id: userId });
+  return await auth0Management.getUser({ id: userId });
 }
 
 export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
   if (!userId) throw new UnauthorizedException();
   return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
+}
+
+export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
+  if (!userId) throw new UnauthorizedException();
+  return auth0Management.assignRolestoUser({ id: userId }, { roles });
 }
 
 export interface UserMetadata {
@@ -28,7 +34,11 @@ export interface UserMetadata {
   companyName?: string;
   jobRole?: string;
   techTeamSize?: string;
+  email?: string;
+  picture?: string;
   usage?: UserMetaUsage;
+  licenceStartDate?: number;
+  licenceExpirationDate?: number;
 }
 
 export interface UserMetaUsage {

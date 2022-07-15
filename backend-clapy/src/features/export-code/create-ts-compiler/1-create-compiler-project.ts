@@ -8,10 +8,10 @@
 //   Project,
 //   QuoteKind,
 // } from 'ts-morph';
-// import { flags } from '../../../env-and-config/app-config';
-// import { env } from '../../../env-and-config/env';
-// import { exportTemplatesDir } from '../../../root';
-// import { reactRootInMemory } from './load-file-utils-and-paths';
+// import { flags } from '../../../env-and-config/app-config.js';
+// import { env } from '../../../env-and-config/env.js';
+// import { exportTemplatesDir } from '../../../root.js';
+// import { reactRootInMemory } from './load-file-utils-and-paths.js';
 
 // const nodeModulesTemplatePath = `${exportTemplatesDir}/node_modules`;
 

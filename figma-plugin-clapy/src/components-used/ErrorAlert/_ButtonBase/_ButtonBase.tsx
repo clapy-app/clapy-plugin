@@ -1,8 +1,11 @@
-import { FC, memo } from 'react';
+import type { FC, ReactNode } from 'react';
+import { memo } from 'react';
 
 import classes from './_ButtonBase.module.css';
 
 interface Props {
+  // Like PropsWithChildren<...>
+  children?: ReactNode;
   icon: React.ReactElement;
 }
 

@@ -1,3 +1,5 @@
+import { env } from './env.js';
+
 export const appConfig = {};
 
 export const flags = {
@@ -10,8 +12,12 @@ export const flags = {
   useCssBoxSizingBorderBox: true,
   useFilterDropShadow: true,
   writeClapyFiles: false,
-  destructureClassNames: false, // Need to fix name conflicts between props and imported components before enabling
-  enableInstanceOverrides: false,
+  destructureClassNames: false, // KO - Need to fix name conflicts between props and imported components before enabling
+  enableInstanceOverrides: env.isDev,
+  throwOnWarnings: false /* env.isDev */,
+  indexOverrideByNodeId: false, // easier debugging when overrides are wrong
+  writeFigmaIdOnNode: false,
+  listUnreadSVGs: false,
 };
 
 // What takes time:

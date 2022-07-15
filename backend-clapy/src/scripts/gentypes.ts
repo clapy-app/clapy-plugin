@@ -1,4 +1,4 @@
-import { generateTypes } from './details/hasura-schema.utils';
+import { generateTypes } from './details/hasura-schema.utils.js';
 
 // Run it from the host machine, not inside docker. This script needs to access the backend and plugin project directories.
 (async () => {

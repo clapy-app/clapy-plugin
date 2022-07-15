@@ -1,5 +1,8 @@
 import { randomBytes } from 'crypto';
 
+import { flags } from './env-and-config/app-config.js';
+import { env } from './env-and-config/env.js';
+
 type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
 export function entries<T>(o: T): Entry<T>[] {
   return Object.entries(o) as unknown as Entry<T>[];
@@ -7,6 +10,14 @@ export function entries<T>(o: T): Entry<T>[] {
 
 export function handleError(error: any) {
   console.error(error);
+}
+
+export function warnOrThrow(message: string) {
+  if (env.isDev && flags.throwOnWarnings) {
+    throw new Error(message);
+  } else {
+    console.warn(message);
+  }
 }
 
 export async function generateToken() {

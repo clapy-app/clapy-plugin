@@ -1,9 +1,10 @@
 import ts from 'typescript';
 
-import { NodeContext } from '../../../code.model';
-import { FrameNode2, InstanceNode2, isText, TextNode2 } from '../../../create-ts-compiler/canvas-utils';
-import { MUIConfig, VariantProps } from '../mui-config';
-import { iconInstanceToAst } from '../mui-utils';
+import type { NodeContext } from '../../../code.model.js';
+import type { FrameNode2, InstanceNode2, TextNode2 } from '../../../create-ts-compiler/canvas-utils.js';
+import { isText } from '../../../create-ts-compiler/canvas-utils.js';
+import type { MUIConfig, VariantProps } from '../mui-config.js';
+import { iconInstanceToAst } from '../mui-utils.js';
 
 const { factory } = ts;
 
@@ -17,9 +18,9 @@ function iconValueFactory(figmaVal: string, node: InstanceNode2, context: NodeCo
   const content = unstyledButton?.children[0] as FrameNode2 | undefined;
   const maskedIcon = content?.children[isLeft ? 0 : 1] as FrameNode2 | undefined;
   const icon = maskedIcon?.children[0] as InstanceNode2 | undefined;
-  const [importAst, jsxAst] = iconInstanceToAst(icon);
+  const [iconVarName, importAst, jsxAst] = iconInstanceToAst(icon);
   if (!importAst || !jsxAst) return;
-  context.moduleContext.imports.push(importAst);
+  context.moduleContext.imports[iconVarName] = importAst;
   return jsxAst;
 }
 

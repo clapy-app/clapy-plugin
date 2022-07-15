@@ -1,4 +1,5 @@
-import { AnchorHTMLAttributes, ButtonHTMLAttributes, FC, memo } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, FC } from 'react';
+import { memo } from 'react';
 
 import { _ButtonBase } from '../_ButtonBase/_ButtonBase';
 import classes from './Button.module.css';

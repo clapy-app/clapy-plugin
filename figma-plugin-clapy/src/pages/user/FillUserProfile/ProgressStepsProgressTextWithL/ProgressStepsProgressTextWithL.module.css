@@ -5,15 +5,15 @@
   margin-bottom: -3px;
   margin-top: 3px;
 }
-._StepBase {
+.stepBase {
   flex: 1;
   align-self: stretch;
   overflow: visible;
   height: 4px;
 }
-._StepBase1 {
+.stepBase1 {
   background-color: #155EEF;
 }
-._StepBase2 {
+.stepBase2 {
   background-color: #EAECF0;
 }

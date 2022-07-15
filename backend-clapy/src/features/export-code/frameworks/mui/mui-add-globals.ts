@@ -1,9 +1,9 @@
 import ts from 'typescript';
 
-import { ModuleContext, ProjectContext } from '../../code.model';
-import { mkNamedImportsDeclaration } from '../../figma-code-map/details/ts-ast-utils';
-import { getSetInMap } from '../../figma-code-map/font';
-import { mkThemeVarCreation } from './mui-theme';
+import type { ModuleContext, ProjectContext } from '../../code.model.js';
+import { getSetInMap } from '../../figma-code-map/font.js';
+import { mkNamedImportsDeclaration } from '../../gen-node-utils/ts-ast-utils.js';
+import { mkThemeVarCreation } from './mui-theme.js';
 
 const { factory } = ts;
 
@@ -23,7 +23,7 @@ export function addMUIProvidersImports(lightAppModuleContext: ModuleContext) {
     if (addBaseline) {
       namedImports.push('CssBaseline');
     }
-    imports.push(mkNamedImportsDeclaration(namedImports, '@mui/material'));
+    imports['@mui/material'] = mkNamedImportsDeclaration(namedImports, '@mui/material');
 
     statements.push(mkThemeVarCreation(lightAppModuleContext));
   }

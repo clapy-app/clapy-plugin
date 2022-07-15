@@ -1,10 +1,11 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { isFlexNode, isGroup, isLine, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
-import { round } from './details/utils-and-reset';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import { isFlexNode, isGroup, isLine, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle } from '../css-gen/css-factories-high.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
 
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // The rotation is already included in the SVG itself when exporting from Figma

@@ -23,7 +23,7 @@
   background-color: #f2f2f3;
 }
 
-._ButtonBase {
+.buttonBase {
   width: 50px;
   flex: 1;
   flex-direction: row;

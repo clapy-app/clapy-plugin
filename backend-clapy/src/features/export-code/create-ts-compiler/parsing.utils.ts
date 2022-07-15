@@ -1,4 +1,6 @@
-import ts, { ScriptTarget } from 'typescript';
+import ts from 'typescript';
+
+const { ScriptTarget } = ts;
 
 export function printStandalone(node: ts.Node | ts.Node[] | undefined) {
   if (!node) {

@@ -1,9 +1,10 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
-import { SbAnySelection } from '../../common/app-models';
-import { Args } from '../../common/sb-serialize.model';
+import type { SbAnySelection } from '../../common/app-models';
+import type { Args } from '../../common/sb-serialize.model';
 import { propArrayToMap } from '../../common/storybook-utils';
-import { RootState } from '../../core/redux/store';
+import type { RootState } from '../../core/redux/store';
 
 export interface ImportState {
   selections: SbAnySelection[];

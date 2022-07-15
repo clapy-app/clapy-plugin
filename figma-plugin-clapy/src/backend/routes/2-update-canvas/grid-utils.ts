@@ -1,6 +1,7 @@
-import { ArgTypeObj } from '../../../common/app-models';
-import { Args } from '../../../common/sb-serialize.model';
-import { isComponentSet, WithChildrenNode } from '../../common/node-type-utils';
+import type { ArgTypeObj } from '../../../common/app-models';
+import type { Args } from '../../../common/sb-serialize.model';
+import type { WithChildrenNode } from '../../common/node-type-utils';
+import { isComponentSet } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { resizeNode } from './update-canvas-utils';
 

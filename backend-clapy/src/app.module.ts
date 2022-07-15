@@ -3,16 +3,19 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthGuard } from './auth/auth.guard';
-import { LoginPrivateController } from './auth/login-private.controller';
-import { LoginTokensEntity } from './auth/login-tokens.entity';
-import { LoginController } from './auth/login.controller';
-import { env } from './env-and-config/env';
-import { CodeController } from './features/export-code/1-code-controller';
-import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller';
-import { UserController } from './features/user/user.controller';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { AuthGuard } from './auth/auth.guard.js';
+import { LoginPrivateController } from './auth/login-private.controller.js';
+import { LoginTokensEntity } from './auth/login-tokens.entity.js';
+import { LoginController } from './auth/login.controller.js';
+import { env } from './env-and-config/env.js';
+import { CodeController } from './features/export-code/1-code-controller.js';
+import { GenerationHistoryEntity } from './features/export-code/generation-history.entity.js';
+import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller.js';
+import { StripeController } from './features/stripe/stripe.controller.js';
+import { StripeService } from './features/stripe/stripe.service.js';
+import { UserController } from './features/user/user.controller.js';
 
 @Module({
   imports: [
@@ -31,16 +34,17 @@ import { UserController } from './features/user/user.controller';
       autoLoadEntities: true,
       retryAttempts: Number.MAX_SAFE_INTEGER,
     }),
-    TypeOrmModule.forFeature([LoginTokensEntity]),
+    TypeOrmModule.forFeature([LoginTokensEntity, GenerationHistoryEntity]),
   ],
   controllers: [
     AppController,
     LoginController,
     LoginPrivateController,
     UserController,
+    StripeController,
     SbSerializeController,
     CodeController,
   ],
-  providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [AppService, StripeService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

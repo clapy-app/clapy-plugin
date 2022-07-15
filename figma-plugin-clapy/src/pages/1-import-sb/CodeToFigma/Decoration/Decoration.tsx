@@ -1,4 +1,5 @@
-import Lottie, { Options } from 'react-lottie';
+import type { Options } from 'react-lottie';
+import Lottie from 'react-lottie';
 
 import animationData from '../../../../lotties/code-to-design-later.json';
 import classes from './Decoration.module.css';

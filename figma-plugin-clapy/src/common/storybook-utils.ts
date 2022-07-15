@@ -1,5 +1,5 @@
-import { ArgTypeObj, ArgTypeUsed } from './app-models';
-import { Args, ArgType } from './sb-serialize.model';
+import type { ArgTypeObj, ArgTypeUsed } from './app-models';
+import type { Args, ArgType } from './sb-serialize.model';
 
 export function sanitizeSbUrl(storybookBaseUrl: string) {
   return (

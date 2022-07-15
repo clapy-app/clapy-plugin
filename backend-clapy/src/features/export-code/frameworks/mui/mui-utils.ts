@@ -1,19 +1,21 @@
 import ts from 'typescript';
 
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { ModuleContext, NodeContext } from '../../code.model';
-import { InstanceNode2, isComponentSet, isInstance, SceneNode2 } from '../../create-ts-compiler/canvas-utils';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { ModuleContext, NodeContext } from '../../code.model.js';
+import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import { isComponentSet, isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import {
   genUniqueName,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
-} from '../../figma-code-map/details/ts-ast-utils';
-import { muiComponents } from './mui-all-components';
-import { isPropConfigMap, MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config';
+} from '../../gen-node-utils/ts-ast-utils.js';
+import { muiComponents } from './mui-all-components.js';
+import type { MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config.js';
+import { isPropConfigMap } from './mui-config.js';
 
 const { factory } = ts;
 
-export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNode2) {
+export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNode2): MUIConfig | false {
   const {
     moduleContext: { projectContext },
   } = context;
@@ -37,11 +39,15 @@ export function checkAndProcessMuiComponent(context: NodeContext, node: SceneNod
 export function addMuiImport(context: ModuleContext, config: MUIConfig) {
   const { imports, subComponentNamesAlreadyUsed, importsAlreadyAdded } = context;
   const importHashKey = `${config.name}__${config.moduleSpecifier}`;
+  // Potential debt to refactor later: we have importsAlreadyAdded to deduplicate imports,
+  // But later I have also turned imports into a Dict to deduplicate by import key.
+  // There is an overlap. importsAlreadyAdded may not be required, and if the imports dictionary is not enough, its concept may need to be strenghtened.
   if (!importsAlreadyAdded.has(importHashKey)) {
     // Rename import name if already in scope
     const name = genUniqueName(subComponentNamesAlreadyUsed, config.name, true);
-    imports.push(
-      mkNamedImportsDeclaration([name === config.name ? name : [config.name, name]], config.moduleSpecifier),
+    imports[importHashKey] = mkNamedImportsDeclaration(
+      [name === config.name ? name : [config.name, name]],
+      config.moduleSpecifier,
     );
     if (name !== config.name) {
       config = { ...config, name };
@@ -164,6 +170,7 @@ export function iconInstanceToAst(icon: InstanceNode2 | undefined, size?: 'small
   }
   const iconVarName = `${iconName}Icon`;
   return [
+    iconVarName,
     mkDefaultImportDeclaration(iconVarName, `@mui/icons-material/${iconName}`),
     factory.createJsxSelfClosingElement(
       factory.createIdentifier(iconVarName),

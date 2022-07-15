@@ -1,9 +1,9 @@
-import { TypographyStyle, TypographyVariant } from '@mui/material';
-import { Variant } from '@mui/material/styles/createTypography';
+import type { TypographyStyle, TypographyVariant } from '@mui/material';
+import type { Variant } from '@mui/material/styles/createTypography';
 import ts from 'typescript';
 
-import { Dict } from '../../../sb-serialize-preview/sb-serialize.model';
-import { figmaTypoToJss } from '../../figma-code-map/font';
+import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import { figmaTypoToJss } from '../../figma-code-map/font.js';
 
 const { factory } = ts;
 

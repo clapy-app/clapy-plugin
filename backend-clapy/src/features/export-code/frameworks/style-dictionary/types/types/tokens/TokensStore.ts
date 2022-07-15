@@ -1,5 +1,5 @@
-import { UsedTokenSetsMap } from '../UsedTokenSetsMap';
-import { AnyTokenList } from './AnyTokenList';
+import type { UsedTokenSetsMap } from '../UsedTokenSetsMap.js';
+import type { AnyTokenList } from './AnyTokenList.js';
 
 export type TokenStore = {
   version: string;

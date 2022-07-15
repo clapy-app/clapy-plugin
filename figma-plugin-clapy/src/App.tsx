@@ -1,9 +1,11 @@
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { FC, memo, useEffect } from 'react';
+import createTheme from '@mui/material/styles/createTheme';
+import ThemeProvider from '@mui/material/styles/ThemeProvider';
+import type { FC } from 'react';
+import { memo, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import classes from './App.module.scss';
+import classes from './App.module.css';
 import { track } from './common/analytics';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';

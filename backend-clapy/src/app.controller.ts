@@ -1,17 +1,17 @@
-import { Controller, Get, Render } from '@nestjs/common';
+import { Controller, Get, Inject, Render } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 
-import { AppService } from './app.service';
-import { IsBrowserGet } from './auth/IsBrowserGet.decorator';
-import { LoginTokensEntity } from './auth/login-tokens.entity';
-import { PublicRoute } from './auth/public-route-annotation';
+import { AppService } from './app.service.js';
+import { IsBrowserGet } from './auth/IsBrowserGet.decorator.js';
+import { LoginTokensEntity } from './auth/login-tokens.entity.js';
+import { PublicRoute } from './auth/public-route-annotation.js';
 
 @PublicRoute()
 @Controller()
 export class AppController {
   constructor(
-    private readonly appService: AppService,
+    @Inject(AppService) private readonly appService: AppService,
     @InjectRepository(LoginTokensEntity) private usersRepository: Repository<LoginTokensEntity>,
   ) {}
 

@@ -1,7 +1,7 @@
-import { AnyAction } from '@reduxjs/toolkit';
+import type { AnyAction } from '@reduxjs/toolkit';
 import type { Selector } from 'reselect';
 
-import { RootState } from './store';
+import type { RootState } from './store';
 import { getStore } from './storeIsolated';
 
 export function readSelectorOnce<T>(selector: Selector<RootState, T>): T {

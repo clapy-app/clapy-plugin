@@ -1,14 +1,14 @@
 import { HttpService } from '@nestjs/axios';
-import { Body, Controller, Get, Headers, Post, Query, Render } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Inject, Post, Query, Render } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { map } from 'rxjs';
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 
-import { env } from '../env-and-config/env';
-import { generateToken } from '../utils';
-import { IsBrowserGet } from './IsBrowserGet.decorator';
-import { LoginTokensEntity } from './login-tokens.entity';
-import { PublicRoute } from './public-route-annotation';
+import { env } from '../env-and-config/env.js';
+import { generateToken } from '../utils.js';
+import { IsBrowserGet } from './IsBrowserGet.decorator.js';
+import { LoginTokensEntity } from './login-tokens.entity.js';
+import { PublicRoute } from './public-route-annotation.js';
 
 const { auth0Domain, auth0ClientId, baseUrl } = env;
 const authEnv = JSON.stringify({ auth0Domain, auth0ClientId, baseUrl });
@@ -17,7 +17,7 @@ const authEnv = JSON.stringify({ auth0Domain, auth0ClientId, baseUrl });
 @PublicRoute()
 export class LoginController {
   constructor(
-    private httpService: HttpService,
+    @Inject(HttpService) private httpService: HttpService,
     @InjectRepository(LoginTokensEntity) private usersRepository: Repository<LoginTokensEntity>,
   ) {}
 

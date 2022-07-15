@@ -1,13 +1,18 @@
-import { ArrowForward } from '@mui/icons-material';
+import ArrowForward from '@mui/icons-material/ArrowForward';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, MenuItem, SvgIcon, TextField } from '@mui/material';
-import { ChangeEvent, FC, memo, MouseEvent, useCallback, useRef, useState } from 'react';
+import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
+import SvgIcon from '@mui/material/SvgIcon';
+import TextField from '@mui/material/TextField';
+import type { ChangeEvent, FC, MouseEvent } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useCallbackAsync2 } from '../../../common/front-utils';
-import { Dict } from '../../../common/sb-serialize.model';
+import type { Dict } from '../../../common/sb-serialize.model';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
-import { updateUserMetaUsage, UserMetaUsage } from '../user-service';
+import type { UserMetaUsage } from '../user-service';
+import { updateUserMetaUsage } from '../user-service';
 import { selectHasMissingMetaUsage, selectUserMetaUsage } from '../user-slice';
 import classes from './FillUserProfile.module.css';
 import { FastForwardIcon } from './icons/FastForwardIcon';

@@ -1,10 +1,16 @@
-import { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
+import type { CssNode, Declaration, DeclarationPlain, List, Rule, Selector, SelectorList, StyleSheet } from 'css-tree';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { csstree } from '../create-ts-compiler/csstree';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import { csstree } from '../create-ts-compiler/csstree.js';
 
 export function isStyleSheet(node: CssNode): node is StyleSheet {
   return node.type === 'StyleSheet';
+}
+
+export function assertStyleSheet(node: CssNode): asserts node is StyleSheet {
+  if (node.type !== 'StyleSheet') {
+    throw new Error(`Node is not StyleSheet: ${JSON.stringify(node)}`);
+  }
 }
 
 export function isRule(node: CssNode): node is Rule {
@@ -52,9 +58,5 @@ function getRuleFirstSelector(node: Rule) {
 }
 
 export function stylesToList(styles: Dict<DeclarationPlain>): DeclarationPlain[] {
-  const stylesList: DeclarationPlain[] = [];
-  for (const style of Object.values(styles)) {
-    stylesList.push(style);
-  }
-  return stylesList;
+  return Object.values(styles);
 }

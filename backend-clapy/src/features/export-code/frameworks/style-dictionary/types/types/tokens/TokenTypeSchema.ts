@@ -1,6 +1,6 @@
-import { TokenTypes } from '../../constants/TokenTypes';
-import { DeepKeyTokenMap } from './DeepKeyTokenMap';
-import { SingleToken } from './SingleToken';
+import type { TokenTypes } from '../../constants/TokenTypes.js';
+import type { DeepKeyTokenMap } from './DeepKeyTokenMap.js';
+import type { SingleToken } from './SingleToken.js';
 
 export type TokenTypeSchema = {
   label: string;

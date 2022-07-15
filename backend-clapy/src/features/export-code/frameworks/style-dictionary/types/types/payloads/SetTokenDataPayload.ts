@@ -1,6 +1,6 @@
-import { TokenTypes } from '../../constants/TokenTypes';
-import { AnyTokenList, SingleToken } from '../tokens';
-import { UsedTokenSetsMap } from '../UsedTokenSetsMap';
+import type { TokenTypes } from '../../constants/TokenTypes.js';
+import type { AnyTokenList, SingleToken } from '../tokens';
+import type { UsedTokenSetsMap } from '../UsedTokenSetsMap.js';
 
 type ShallowTokenMap = Record<string, SingleToken<false>>;
 type DeepTokenMap = Record<string, Record<string, SingleToken<false>>>;

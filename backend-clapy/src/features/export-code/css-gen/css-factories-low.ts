@@ -1,4 +1,4 @@
-import {
+import type {
   AtrulePlain,
   BlockPlain,
   ClassSelector,
@@ -21,8 +21,8 @@ import {
   WhiteSpace,
 } from 'css-tree';
 
-import { csstree } from '../create-ts-compiler/csstree';
-import { round } from '../figma-code-map/details/utils-and-reset';
+import { csstree } from '../create-ts-compiler/csstree.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
 
 export function cssAstToString(css: CssNodePlain) {
   // Clone because fromPlainObject changes the original object, which is not desired when comparing the instance and component styles.
@@ -99,10 +99,10 @@ export function mkDeclarationCss(property: string, value: ValuePlain, important 
 
 type ValueFragment = Dimension | Identifier | NumberNode | Operator | Raw;
 
-export function mkValueCss(children: ValueFragment[]) {
+export function mkValueCss(children: string) {
   const value: ValuePlain = {
     type: 'Value',
-    children,
+    children: [mkRawCss(children)],
   };
   return value;
 }
@@ -112,12 +112,7 @@ export function mkDimensionCss(value: number, unit: string) {
   if (value === 0) {
     return mkNumberCss(0);
   }
-  const dimension: Dimension = {
-    type: 'Dimension',
-    value: round(value).toString(),
-    unit,
-  };
-  return dimension;
+  return mkRawCss(`${round(value).toString()}${unit}`);
 }
 
 export function mkIdentifierCss(name: string) {
@@ -136,11 +131,7 @@ export function mkRawCss(value: string) {
 }
 
 export function mkNumberCss(value: number) {
-  const dimension: NumberNode = {
-    type: 'Number',
-    value: round(value).toString(),
-  };
-  return dimension;
+  return mkRawCss(round(value).toString());
 }
 
 export const cssOperators = [','] as const;

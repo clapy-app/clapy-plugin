@@ -3,16 +3,25 @@
 - `yarn install:all` to install dependencies in root and subprojects
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
-  - "Start Debugging" command (Ctrl+F11 with my keyboard shortcuts) to start the debugger for the webservice
+  - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 - Alternatively, to develop on the webservice only:
   - `yarn up` through command-line to start all docker containers
-  - "Start Debugging" command (Ctrl+F11 with my keyboard shortcuts) to start the debugger for the webservice
+  - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 
 (1) Alternative: `yarn dev` through command-line to start everything
 
 Note: for now, `Hasura console` task is excluded from the default build because it's rarely useful in current developments. To start it, run this task or `yarn console` in the terminal. If you often need it, feel free to uncomment it in the default build task (.vscode/tasks.json, first task).
 
 ## Troubleshooting
+
+### Switch to production branch
+
+- Arrêter toutes les tâches en cours d'exécution et le webservice si en mode debug
+- changer de branche
+- yarn install dans les 2 dossiers (front/webservice)
+- changer la fin de .env en copiant-collant le template
+- webservice : supprimer dist et node_modules/.cache/tsconfig.tsbuildinfo
+- Lancer les tâches (ctrl shift B). Ca inclut le webservice.
 
 ### `Error: Cannot find module '/app/dist/main2'`
 

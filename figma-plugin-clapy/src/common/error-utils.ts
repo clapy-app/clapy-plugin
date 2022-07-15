@@ -7,7 +7,12 @@ export function handleError(error: any) {
   console.error('[handleError]', error);
 }
 
-export function warnNode(node: SceneNode | StyledTextSegment | PageNode | DocumentNode, ...msg: any[]) {
+// AnyNode3 is generating weird typing errors below I don't understand: the guard isStyledTextSegment doesn't work anymore and the type StyledTextSegment is still there in the `else` body, resulting in errors like node.parent KO.
+// To allow using warnNode with AnyNode3, we use any instead (workaround).
+export function warnNode(
+  node: any /* | SceneNode | PageNode | StyledTextSegment | DocumentNode */ /* | AnyNode3 */,
+  ...msg: any[]
+) {
   if (isStyledTextSegment(node)) {
     console.warn(...msg, node.characters);
   } else {

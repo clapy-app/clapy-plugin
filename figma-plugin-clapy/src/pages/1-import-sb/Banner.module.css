@@ -1,0 +1,109 @@
+.root {
+  box-sizing: border-box;
+  border: 0;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  text-align: center;
+  border-radius: 8px 8px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 133px;
+  justify-content: center;
+}
+.root, .root p {
+  font-size: 16px;
+  line-height: 26px;
+  font-family: 'Nunito Sans', sans-serif;
+  color: #f8f8f8;
+  letter-spacing: 0.5px;
+  -webkit-font-smoothing: antialiased;
+}
+.root:before {
+  top: 0;
+  left: 0;
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: rgba(33, 55, 127, 0.75);
+}
+.image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -1;
+  object-fit: cover;
+}
+.joinSocial {
+  box-sizing: border-box;
+  border: 0;
+  position: relative;
+}
+.or {
+  box-sizing: border-box;
+  border: 0;
+  position: relative;
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.dorikBtn {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 19px;
+  padding-right: 19px;
+  text-decoration: none;
+  justify-content: flex-start;
+  border-radius: 50px 50px 50px 50px;
+  border-width: 0px;
+  background-color: #fff;
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 700;
+  box-shadow: 0px 0px 0px 0px #000;
+  gap: 12px;
+}
+.dorikBtn, .dorikBtn * {
+  color: #386fe2;
+}
+.dorikBtn:hover {
+  border-style: solid;
+  box-shadow: 0px 4px 1px 0px #181c6f;
+}
+.btnSvgWrapper {
+  display: flex;
+}
+.btnSvg {
+  box-sizing: border-box;
+  display: inline-block;
+  font-size: inherit;
+  height: 1em;
+  vertical-align: middle;
+  text-align: center;
+  transition: null;
+  overflow: visible;
+  line-height: 18px;
+  font-weight: 700;
+}
+.btnSvg, .btnSvg * {
+  color: #386fe2;
+}
+.btnText {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}

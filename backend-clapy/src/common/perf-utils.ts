@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks';
 
-import { flags } from '../env-and-config/app-config';
+import { flags } from '../env-and-config/app-config.js';
 
 export interface PerfContext {
   initial: number;
@@ -10,7 +10,7 @@ export interface PerfContext {
 let context: PerfContext = makeNewContext();
 
 export function perfReset(logMessage?: string) {
-  if (logMessage) {
+  if (flags.measurePerf && logMessage) {
     console.log(logMessage);
   }
   context = makeNewContext();

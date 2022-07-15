@@ -1,10 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import expressjwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 
-import { env } from '../env-and-config/env';
+import { env } from '../env-and-config/env.js';
 
 // express-jwt is stuck at version 6.1.2 for now. 7.4.3 is not working with jwks secret.
 // See https://github.com/auth0/express-jwt/issues/282
@@ -32,7 +33,7 @@ async function hasValidationError(req: Request, res: Response) {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(@Inject(Reflector) private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext) {
     const http = context.switchToHttp();

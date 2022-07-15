@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { readFile } from 'fs/promises';
 
-import '../env-and-config/env';
-import { backendDir } from '../root';
+import '../env-and-config/env.js';
+import { backendDir } from '../root.js';
 
 // Script to migrate analytics data from a database to another, each having a hasura instance in front of it.
 // Usage:
@@ -68,7 +68,7 @@ async function insertTracking(entry: Clapy_Analytics, url: string, hasuraAdminSe
     if (axios.isAxiosError(error)) {
       const { response } = error;
       const { data } = response || {};
-      if (data?.code === 'constraint-violation') {
+      if ((data as any)?.code === 'constraint-violation') {
         console.log('Skipping existing analytic log', entry.id);
         return;
       }

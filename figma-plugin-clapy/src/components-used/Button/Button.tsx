@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, FC, memo } from 'react';
+import type { ButtonHTMLAttributes, FC } from 'react';
+import { memo } from 'react';
 
 import { _ButtonBase } from '../../pages/2-export-code/FigmaToCodeHome/_ButtonBase/_ButtonBase';
 import classes from './Button.module.css';

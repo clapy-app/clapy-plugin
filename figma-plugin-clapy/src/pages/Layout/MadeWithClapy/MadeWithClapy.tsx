@@ -9,7 +9,7 @@ export function MadeWithClapy() {
       target='_blank'
       rel='noreferrer'
     >
-      <div className={classes._ButtonBase}>
+      <div className={classes.buttonBase}>
         <div className={classes.frame66}>
           <div className={classes.text}>UI made by</div>
         </div>

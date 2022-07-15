@@ -4,7 +4,7 @@ import { logout } from '../core/auth/auth-service';
 import { mkUrl } from '../core/auth/auth-service.utils';
 import { env } from '../environment/env';
 import { wait } from './general-utils';
-import { Dict } from './sb-serialize.model';
+import type { Dict } from './sb-serialize.model';
 
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;

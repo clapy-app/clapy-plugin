@@ -1,22 +1,18 @@
-import { TypographyStyle } from '@mui/material';
-import { DeclarationPlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
-import { isPlainObject } from 'lodash';
+import type { TypographyStyle } from '@mui/material';
+import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
+import equal from 'fast-deep-equal';
+import lodashPkg from 'lodash';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { MySingleToken, NodeContext } from '../code.model';
-import { ValidNode } from '../create-ts-compiler/canvas-utils';
-import { round } from '../figma-code-map/details/utils-and-reset';
-import {
-  CssOperators,
-  cssOperators,
-  mkDeclarationCss,
-  mkDimensionCss,
-  mkNumberCss,
-  mkOperatorCss,
-  mkRawCss,
-  mkValueCss,
-} from './css-factories-low';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import { isInstanceContext } from '../code.model.js';
+import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import { isText } from '../create-ts-compiler/canvas-utils.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
+import { mkDeclarationCss, mkValueCss } from './css-factories-low.js';
+
+const { isPlainObject } = lodashPkg;
 
 type CssUnit = 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw';
 
@@ -90,32 +86,41 @@ export function addStyle<T extends keyof PropertiesHyphen>(
     }
   }
 
-  styles[name] = mkDeclarationCss(
+  const newStyle = mkDeclarationCss(
     name,
     mkValueCss(
-      values.map(val => {
-        if (isPlainObject(val)) {
-          // Unwrap value from annotation object
-          const [figmaTokenProp, value] = Object.entries(val)[0];
-          val = value;
+      values
+        .map(val => {
+          if (isPlainObject(val)) {
+            // Unwrap value from annotation object
+            const [figmaTokenProp, value] = Object.entries(val)[0];
+            val = value;
 
-          const token = applyToken(context, node, figmaTokenProp, val);
-          if (token) {
-            return mkRawCss(token);
+            const token = applyToken(context, node, figmaTokenProp, val);
+            if (token) {
+              return token;
+            }
           }
-        }
-        return val === 0
-          ? mkNumberCss(0)
-          : !Array.isArray(val)
-          ? cssOperators.includes(val as CssOperators)
-            ? mkOperatorCss(val as CssOperators)
+          return val === 0
+            ? '0'
+            : Array.isArray(val)
+            ? val[0] === 0
+              ? 0
+              : `${round(val[0] * (val[2] || 1))}${val[1]}`
             : typeof val === 'number'
-            ? mkNumberCss(val)
-            : mkRawCss(val.toString())
-          : mkDimensionCss(val[0] * (val[2] || 1), val[1]);
-      }),
+            ? round(val).toString()
+            : typeof val === 'string'
+            ? val
+            : val.toString();
+        })
+        .join(' '),
     ),
   );
+
+  const inheritedStyle = getInheritedNodeStyle(context, name);
+  if (isText(node) || !equal(newStyle, inheritedStyle)) {
+    styles[name] = newStyle;
+  }
 }
 
 export function applyToken<T extends keyof PropertiesHyphen>(
@@ -142,63 +147,8 @@ export function applyToken<T extends keyof PropertiesHyphen>(
   }
 }
 
-export function applyTokenGroup(
-  context: NodeContext,
-  node: ValidNode,
-  tokenNames: string | (string | [string, string])[] | undefined,
-) {
-  const varNames = getVarNamesFromTokenNames(context, node, tokenNames);
-  return buildCssValueWithVariables(varNames);
-}
-
 function varNameToCSSVar(varName: string | number) {
   return `var(--${varName})`;
-}
-
-type Variables = string | number | Array<Variables> | Dict<Variables>;
-
-function buildCssValueWithVariables<T extends Variables | undefined>(varNames: T): T {
-  if (!varNames) return varNames;
-  if (typeof varNames === 'string' || typeof varNames === 'number') {
-    return varNameToCSSVar(varNames) as T;
-  }
-  if (Array.isArray(varNames)) {
-    return varNames.map(varName => buildCssValueWithVariables(varName)) as T;
-  }
-  if (isPlainObject(varNames)) {
-    return Object.entries(varNames).reduce((obj, [key, val]) => {
-      (obj as any)[key] = key === 'type' ? val : buildCssValueWithVariables(val);
-      return obj;
-    }, {} as T);
-  }
-  throw new Error(`BUG Unsupported varNames value: ${JSON.stringify(varNames)}`);
-}
-
-// To refactor? It's very similar to getVarNameFromTokenNames below (that I actually copied to get started), but the workflow is slightly different. To test carefully.
-export function getVarNamesFromTokenNames(
-  context: NodeContext,
-  node: ValidNode,
-  tokenNames: string | (string | [string, string])[] | undefined,
-) {
-  const { varNamesMap, tokensRawMap } = context.moduleContext.projectContext;
-
-  if (!varNamesMap || !tokenNames || !tokensRawMap) return;
-  if (!Array.isArray(tokenNames)) {
-    tokenNames = [tokenNames];
-  }
-  for (let name of tokenNames) {
-    let subKey: string | undefined = undefined;
-    if (Array.isArray(name)) {
-      [name, subKey] = name;
-    }
-    let tokenName = (node as any)._tokens?.[name];
-    if (tokenName) {
-      if (subKey) {
-        tokenName = `${tokenName}.${subKey}`;
-      }
-      return prepareFullTokenNames(varNamesMap, tokensRawMap, tokenName);
-    }
-  }
 }
 
 function getVarNameFromTokenNames(
@@ -228,37 +178,6 @@ function getVarNameFromTokenNames(
   }
 }
 
-function prepareFullTokenNames(varNamesMap: Dict<string>, tokensRawMap: Dict<MySingleToken>, tokenName: string) {
-  if (!tokensRawMap[tokenName]) {
-    throw new Error(
-      `BUG tokensRawMap does not have the key ${tokenName}, which is unexpected because varNamesMap should have been checked before with this key.`,
-    );
-  }
-  const value = tokensRawMap[tokenName].value; // string, array or object
-  return _prepareFullTokenNames(varNamesMap, tokenName, value);
-  // Map the same structure, build the key then map to the corresponding variable(s) keeping the same structure
-}
-
-function _prepareFullTokenNames(
-  varNamesMap: Dict<string>,
-  key: string,
-  value: MySingleToken['value'] | string | number,
-): Variables {
-  if (varNamesMap[key]) {
-    return varNamesMap[key];
-  }
-  if (Array.isArray(value)) {
-    return value.map((v, i) => _prepareFullTokenNames(varNamesMap, `${key}.${i}`, v));
-  }
-  if (isPlainObject(value)) {
-    return Object.entries(value).reduce((obj, [k, v]) => {
-      obj[k] = k === 'type' ? v.value : _prepareFullTokenNames(varNamesMap, `${key}.${k}`, v);
-      return obj;
-    }, {} as Dict<Variables>);
-  }
-  throw new Error(`BUG unsupported token value type: ${JSON.stringify(value)}`);
-}
-
 /**
  * Include in T those types that are assignable to U
  */
@@ -286,4 +205,72 @@ export function addJss<T extends keyof TypographyStyle /* Include<keyof CSSStyle
       : `${round(val[0])}${val[1]}`,
   );
   (styles as any)[name] = style.length === 1 && typeof style[0] === 'number' ? style[0] : style.join('');
+}
+
+/**
+ *
+ * @param context
+ * @param node
+ * @param styles
+ * @param name
+ * @param value A value to add a condition to reset. If `value` is defined, the rule `name` is reset only if the inherited CSS rule found has the value `value`. The filter only works if `value` is of type Raw in the CSS AST.
+ */
+export function resetStyleIfOverriding<T extends keyof PropertiesHyphen>(
+  context: NodeContext,
+  node: ValidNode,
+  styles: Dict<DeclarationPlain>,
+  name: keyof PropertiesHyphen,
+  value?: StyleValue<T>,
+) {
+  if (intermediateNodesDefinedThisStyle(context, name, value)) {
+    addStyle(context, node, styles, name, 'initial');
+  }
+}
+
+function intermediateNodesDefinedThisStyle<T extends keyof PropertiesHyphen>(
+  context: NodeContext,
+  name: keyof PropertiesHyphen,
+  value?: StyleValue<T>,
+) {
+  const style = getInheritedNodeStyle(context, name);
+  if (style) {
+    const inheritedValue = ((style.value as ValuePlain)?.children?.[0] as Raw)?.value;
+    const isCSSReset = inheritedValue === 'initial';
+    return !isCSSReset && (value == null || inheritedValue === value);
+  }
+  return false;
+}
+
+export function getInheritedNodeStyle(context: NodeContext, name: keyof PropertiesHyphen) {
+  if (isInstanceContext(context)) {
+    const inheritedStyles = getInheritedNodeStyles(context);
+    return inheritedStyles?.[name];
+  }
+  return undefined;
+}
+
+function getInheritedNodeStyles(context: NodeContext) {
+  if (isInstanceContext(context)) {
+    if (!context.inheritedStyles) {
+      const inheritedStyles: Dict<DeclarationPlain> = {};
+      for (let i = context.intermediateNodes.length - 1; i >= 1; i--) {
+        const style = context.intermediateNodes[i]?.styles;
+        if (style) {
+          Object.assign(inheritedStyles, style);
+        }
+      }
+      context.inheritedStyles = inheritedStyles;
+    }
+    return context.inheritedStyles;
+  }
+  return undefined;
+}
+
+export function mergeWithInheritedStyles(context: NodeContext, styles: Dict<DeclarationPlain>) {
+  const inheritedStyles = getInheritedNodeStyles(context);
+  if (inheritedStyles) {
+    return Object.assign({}, inheritedStyles, styles);
+  } else {
+    return styles;
+  }
 }

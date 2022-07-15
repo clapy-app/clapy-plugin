@@ -1,0 +1,50 @@
+.absolute {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .button {
+    width: 50px;
+    align-self: stretch;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  
+  /* .button:not(.disabled):focus {
+    outline: solid 1px #155eef;
+    background-color: #155eef;
+  } */
+  
+  .button:not(.disabled):hover {
+    background-color: #f9fafB;
+  }
+  
+  .button:not(.disabled):active {
+    background-color: #f2f2f3;
+  }
+  
+  .buttonBase {
+    width: 50px;
+    flex: 1;
+    flex-direction: row;
+    place-content: center;
+    align-items: center;
+    padding: 14.875px;
+    overflow: hidden;
+  }
+  
+  .account {
+    width: 21.25px;
+    height: 21.25px;
+  }
+  
+  .rectangle11 {
+    height: 1px;
+    align-self: stretch;
+  }
+  
+  .rectangle12 {
+    height: 1px;
+    align-self: stretch;
+    background-color: #eaecf0;
+  }

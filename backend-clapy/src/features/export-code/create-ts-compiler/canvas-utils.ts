@@ -1,7 +1,13 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
-import { Nil } from '../../../common/general-utils';
-import { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model';
+import type { Nil } from '../../../common/general-utils.js';
+import type { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
+import type { MUIConfig } from '../frameworks/mui/mui-config.js';
+import { warnNode } from '../gen-node-utils/utils-and-reset.js';
+
+// Most of this file has a big overlap with sb-serialize.model.ts. To refactor later.
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;
@@ -60,23 +66,57 @@ export interface Masker {
   y: number;
 }
 
+interface TextExtender {
+  _textSegments?: TextSegment2[];
+  _segmentsStyles?: Dict<DeclarationPlain>[];
+}
+
 type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
   GlobalExtender &
   SpecificExtender;
 
 interface GlobalExtender {
+  isRootInComponent?: boolean;
   maskedBy?: Masker;
-  skip?: boolean;
+  // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.
+  className?: string;
+  classOverride?: boolean;
+  swapName?: string;
+  swapOfNode?: InstanceNode2;
+  foundIntermediateSwap?: boolean;
+  hideProp?: string;
+  hideDefaultValue?: boolean;
+  textOverrideProp?: string;
+  parent?: (BaseNode & ChildrenMixin) | null;
+  autoWidth?: boolean;
+  autoHeight?: boolean;
+  mapHidesToProps?: () => void;
+  mapSwapsToProps?: () => void;
+  mapTextOverridesToProps?: () => void;
+  nodeContext?: NodeContext;
+  /** access it using getOrCreateCompContext() to ensure it is initialized */
+  _context?: CompContext;
+  visibleStrokes?: FrameNode2['strokes'];
+  visibleFills?: Paint[];
+  // Attributes useful for AST generation
   styles?: Dict<DeclarationPlain>;
+  skip?: boolean;
+  muiConfig?: MUIConfig | false; // For MUI instances
+  componentContext?: ModuleContext; // For instance nodes
+  noLayoutWithChildren?: boolean; // For groups to skip styling and directly process children
+  textInlineWrapperStyles?: Dict<DeclarationPlain>; // For text nodes
+  textSkipStyles?: boolean; // For text nodes
+  svgPathVarName?: string; // For SVG nodes
+  extraAttributes?: ts.JsxAttribute[];
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
 export type BaseNode2 = ExtendNodeType<BaseNode>;
 export type PageNode2 = ExtendNodeType<PageNode> & ChildrenMixin2;
-export type SceneNode2 = ExtendNodeType<SceneNode, { className?: string }>;
+export type SceneNode2 = ExtendNodeType<SceneNode>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
 export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
-export type TextNode2 = ExtendNodeType<TextNode, { _textSegments?: StyledTextSegment[] }>;
+export type TextNode2 = ExtendNodeType<TextNode, TextExtender>;
 export type FrameNode2 = ExtendNodeType<FrameNode> & ChildrenMixin2;
 export type ComponentNode2 = ExtendNodeType<ComponentNode> & ChildrenMixin2;
 export type InstanceNode2 = ExtendNodeType<InstanceNode> & ChildrenMixin2;
@@ -125,7 +165,8 @@ export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
 
 export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNodeDerived {
   // Patch because BooleanOp are very likely to be converted into vectors. Vectors can be from BooleanOp, so we should ensure we only use available properties, or we need to be more specific.
-  return node?.type === 'VECTOR';
+  const isVectorDetected = !!(node as VectorNode2)?._svg;
+  return isVectorDetected || node?.type === 'VECTOR';
 }
 
 export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
@@ -145,20 +186,45 @@ export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is Comp
 }
 
 export function isFrame(node: BaseNode2 | SceneNode2 | Nil): node is FrameNode2 {
-  return (node as BaseNode2)?.type === 'FRAME';
+  // Components and instances are special frames. Does everything that happens to frame should also apply to components and instances in this project?
+  // If yes, we can change the condition below to also match component and instance types.
+  return (node as BaseNode2)?.type === 'FRAME' && !isVector(node);
 }
 
 export function isComponent(node: BaseNode2 | SceneNode2 | Nil): node is ComponentNode2 {
-  return node?.type === 'COMPONENT';
+  const isComp = node?.type === 'COMPONENT';
+  // A component can't be a vector (prohibited by the extraction)
+  if (isComp && isVector(node)) {
+    warnNode(
+      node,
+      'Is both a component and a vector, which is supposed to be prohibited in the config extraction (plugin).',
+    );
+  }
+  return isComp;
 }
 
 export function isInstance(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
-  return node?.type === 'INSTANCE';
+  const isInst = node?.type === 'INSTANCE';
+  // An instance can't be a vector (prohibited by the extraction)
+  if (isInst && isVector(node)) {
+    warnNode(
+      node,
+      'Is both an instance and a vector, which is supposed to be prohibited in the config extraction (plugin).',
+    );
+  }
+  return isInst;
+}
+
+// Assertion in control flow analysis
+export function assertInstance(node: BaseNode2 | SceneNode2 | Nil): asserts node is InstanceNode2 {
+  if (!isInstance(node)) {
+    throw new Error(node ? `node ${(node as BaseNode2).name} is not an Instance` : `node is nil`);
+  }
 }
 
 export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): node is InstanceNode2 {
   // For cases like fill with default values where we need to recognize what was originally an instance, even if we changed the type, e.g. to SVG.
-  return !!(node as InstanceNode2).mainComponent;
+  return !!(node as InstanceNode2).mainComponent || node?.type === 'INSTANCE';
 }
 
 export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node is BaseFrameMixin {
@@ -166,11 +232,18 @@ export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node i
 }
 
 export interface ChildrenMixin2 {
-  readonly children: ReadonlyArray<SceneNode2>;
+  children: ReadonlyArray<SceneNode2>;
 }
 
 export function isChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): node is ChildrenMixin2 {
   return !!(node as ChildrenMixin2)?.children;
+}
+
+// Assertion in control flow analysis
+export function assertChildrenMixin(node: BaseNode2 | ChildrenMixin2 | Nil): asserts node is ChildrenMixin2 {
+  if (!isChildrenMixin(node)) {
+    throw new Error(node ? `node ${(node as BaseNode2).name} is not a ChildrenMixin` : `node is nil`);
+  }
 }
 
 // Has isMask property
@@ -191,7 +264,7 @@ export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSeg
 export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
 
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
-  return isFrame(node) || isComponent(node) || isInstance(node);
+  return (isFrame(node) || isComponent(node) || isInstance(node)) && !isVector(node);
 }
 
 // GroupNode doesn't have auto-layout

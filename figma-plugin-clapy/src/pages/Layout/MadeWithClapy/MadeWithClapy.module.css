@@ -11,7 +11,7 @@
 .root:active {
   background-color: #ffffff33;
 }
-._ButtonBase {
+.buttonBase {
   outline: solid 0.8235px #fff;
   outline-offset: -0.8235px;
   align-self: flex-start;

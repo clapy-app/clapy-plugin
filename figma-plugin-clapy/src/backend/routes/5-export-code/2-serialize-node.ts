@@ -1,16 +1,30 @@
-import {
-  ComponentNodeNoMethod,
-  ExportImagesFigma,
-  FrameNodeNoMethod,
-  InstanceNodeNoMethod,
-  PageNodeNoMethod,
-} from '../../../common/sb-serialize.model';
-import { env } from '../../../environment/env';
+import type { ExtractionProgress, NextFn } from '../../../common/app-models';
+import { wait } from '../../../common/general-utils.js';
+import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
+import { env } from '../../../environment/env.js';
+import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
-import { nodeToObject, SerializeContext } from './3-nodeToObject';
-import { extractFigmaTokens } from './4-extract-tokens';
+import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
+import { optimizeConfig } from './4-optimize-config.js';
+import { extractFigmaTokens } from './9-extract-tokens.js';
+import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
+
+let _notifyProgress: ((progress: ExtractionProgress) => void) | undefined;
+
+export function figmaConfigExtractionProgress(next: NextFn<ExtractionProgress>) {
+  _notifyProgress = async (progress: ExtractionProgress) => next(progress);
+}
+
+async function notifyProgress(progress: ExtractionProgress) {
+  await wait();
+  if (progress.nodeName) {
+    progress.nodeName = `Component: ${progress.nodeName}`;
+  }
+  _notifyProgress?.(progress);
+}
 
 export async function serializeSelectedNode() {
+  perfReset();
   const selection = getFigmaSelection();
   if (selection?.length !== 1) {
     throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
@@ -18,16 +32,52 @@ export async function serializeSelectedNode() {
   const node = selection[0];
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
-  const images: ExportImagesFigma = {};
-  const context: SerializeContext = {
-    images,
+  const nodeParent = node.parent as SceneNode | undefined;
+  if (nodeParent) {
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: nodeParent.name });
+  }
+  const parentConfig = nodeParent ? readParentNodeConfig(nodeParent) : undefined;
+
+  const extractBatchContext: ExtractBatchContext = {
+    images: {},
     components: {},
+    componentsToProcess: [node],
+    componentsCache: {},
+    componentsCallbacks: {},
     textStyles: {},
     fillStyles: {},
     strokeStyles: {},
     effectStyles: {},
     gridStyles: {},
+    nodeIdsToExtractAsSVG: new Set(),
+    imageHashesToExtract: new Set(),
   };
+  perfMeasure('Start readFigmaNodesConfig');
+
+  // Tip to unfreeze a bit the UI, the time to show the progress:
+  // await wait(0) or a bit more than 0, to let the UI refresh.
+  // Example, run it every 100 nodes processed
+  // idea from: https://forum.figma.com/t/figma-layers-tree-traversal-estimating-size/551/6
+
+  const nodes: AnyNode3[] = [];
+  for (const compToProcess of extractBatchContext.componentsToProcess) {
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: compToProcess.name });
+    nodes.push(readFigmaNodesConfig(compToProcess, extractBatchContext));
+    perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
+  }
+
+  await notifyProgress({ stepId: 'optimizeConfig', stepNumber: 3 });
+  linkInstancesToComponents(extractBatchContext);
+  perfMeasure('End linkInstancesToComponents');
+
+  const [mainNode, ...components2] = nodes.map(node => optimizeConfig(node, extractBatchContext));
+  const components3 = components2.filter(c => c) as ComponentNode2[];
+  perfMeasure('End optimizeConfig');
+
+  await notifyProgress({ stepId: 'extractTokens', stepNumber: 4 });
+  const tokens = extractFigmaTokens();
+  perfMeasure('End extracting Figma Tokens global config');
+
   const extraConfig = {
     ...(env.isDev
       ? {
@@ -36,24 +86,32 @@ export async function serializeSelectedNode() {
       : {}),
     isFTD: figma.root.name?.includes('Clapy — Token demo file'),
   };
+  perfMeasure('End prepare extra config');
 
-  const tokens = extractFigmaTokens();
+  // console.log(JSON.stringify(mainNode));
+  // console.log('--------------------');
+  // console.log(JSON.stringify(components3));
 
-  const enableMUIFramework = true;
-  // Later, once variants are handled, we will use instances as well, but differently?
-  const skipInstance = !enableMUIFramework;
-  const [parentConf, nodesConf] = await Promise.all([
-    node.parent
-      ? (nodeToObject(node.parent as SceneNode, context, {
-          skipChildren: true,
-        }) as Promise<FrameNodeNoMethod | ComponentNodeNoMethod | InstanceNodeNoMethod | PageNodeNoMethod | undefined>)
-      : null,
-    nodeToObject(node, context, { skipChildren: false, skipInstance }),
-  ]);
-  const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = context;
+  const { images, nodeIdsToExtractAsSVG, imageHashesToExtract } = extractBatchContext;
+  const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = extractBatchContext;
   const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
-  return [extraConfig, parentConf, nodesConf, Object.values(context.components), images, styles, tokens] as const;
+  return {
+    extraConfig,
+    parent: parentConfig,
+    root: mainNode,
+    components: components3,
+    nodeIdsToExtractAsSVG: Array.from(nodeIdsToExtractAsSVG),
+    imageHashesToExtract: Array.from(imageHashesToExtract),
+    // imagesExtracted: undefined,
+    styles,
+    tokens,
+  } as const;
+
+  // TODO test that the extracted config is ready, then:
+  // TODO it's still missing svg and images extraction
+
+  // return [undefined, undefined, undefined, undefined, undefined, undefined, undefined] as const;
 }
 
 // Let's keep this code for now, it's useful to extract images and upload to CDN.

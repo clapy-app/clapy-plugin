@@ -1,39 +1,42 @@
-import { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
 import ts from 'typescript';
 
-import { Dict } from '../sb-serialize-preview/sb-serialize.model';
-import { isInstanceContext, JsxOneOrMore, NodeContext } from './code.model';
-import { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils';
-import { addStyle } from './css-gen/css-factories-high';
-import { stylesToList } from './css-gen/css-type-utils';
-import { backgroundFigmaToCode } from './figma-code-map/background';
-import { borderFigmaToCode } from './figma-code-map/border';
-import { borderRadiusFigmaToCode } from './figma-code-map/border-radius';
-import { borderBoxFigmaToCode } from './figma-code-map/box-sizing';
-import { colorFigmaToCode } from './figma-code-map/color';
-import { cursorFigmaToCode } from './figma-code-map/cursor';
-import { escapeHTML } from './figma-code-map/details/process-nodes-utils';
+import { warnOrThrow } from '../../utils.js';
+import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { JsxOneOrMore, NodeContext } from './code.model.js';
+import { isInstanceContext } from './code.model.js';
+import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
+import { isText } from './create-ts-compiler/canvas-utils.js';
+import { addStyle } from './css-gen/css-factories-high.js';
+import { stylesToList } from './css-gen/css-type-utils.js';
+import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
+import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
+import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
+import { borderBoxFigmaToCode } from './figma-code-map/box-sizing.js';
+import { colorFigmaToCode } from './figma-code-map/color.js';
+import { cursorFigmaToCode } from './figma-code-map/cursor.js';
+import { effectsFigmaToCode } from './figma-code-map/effects.js';
+import { flexFigmaToCode } from './figma-code-map/flex.js';
+import { fontFigmaToCode } from './figma-code-map/font.js';
+import { maskFigmaToCode } from './figma-code-map/mask.js';
+import { opacityFigmaToCode } from './figma-code-map/opacity.js';
+import { overflowFigmaToCode } from './figma-code-map/overflow.js';
+import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute.js';
+import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches.js';
+import { postTransform, transformFigmaToCode } from './figma-code-map/transform.js';
+import { zindexFigmaToCode } from './figma-code-map/zindex.js';
+import { escapeHTML } from './gen-node-utils/process-nodes-utils.js';
 import {
   addCssRule,
-  genClassName,
-  mkClassAttr,
+  createClassAttrForClassNoOverride,
+  getOrGenClassName,
   mkHrefAttr,
   mkNoReferrerAttr,
   mkTag,
   mkTargetBlankAttr,
-} from './figma-code-map/details/ts-ast-utils';
-import { warnNode } from './figma-code-map/details/utils-and-reset';
-import { effectsFigmaToCode } from './figma-code-map/effects';
-import { flexFigmaToCode } from './figma-code-map/flex';
-import { fontFigmaToCode } from './figma-code-map/font';
-import { maskFigmaToCode } from './figma-code-map/mask';
-import { opacityFigmaToCode } from './figma-code-map/opacity';
-import { overflowFigmaToCode } from './figma-code-map/overflow';
-import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute';
-import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches';
-import { postTransform, transformFigmaToCode } from './figma-code-map/transform';
-import { zindexFigmaToCode } from './figma-code-map/zindex';
+} from './gen-node-utils/ts-ast-utils.js';
+import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
 const { factory } = ts;
 
@@ -55,11 +58,18 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, node, styles);
-  if (isInstanceContext(context)) {
-    // 2) On the instance, only keep the styles different from the component.
-    // console.log(context.nodeOfComp.name, '<=', node.name);
-    const compStyles = context.nodeOfComp.styles;
-    // console.log('Comp styles:', context.nodeOfComp.styles, '-- inst:', styles);
+  if (isInstanceContext(context) && !isText(node)) {
+    // On the instance, only keep the styles different from the next intermediate component.
+    const nextIntermediateNode = context.intermediateNodes[1];
+    if (!nextIntermediateNode) {
+      throw new Error(
+        `BUG? context of instance node ${node.name} has undefined nextIntermediateNode (intermediateNodes[1])`,
+      );
+    }
+    const compStyles = nextIntermediateNode.styles;
+    if (!compStyles && nextIntermediateNode.visible) {
+      warnOrThrow(`node ${nextIntermediateNode.name} has no styles attached when checking its instance.`);
+    }
     if (compStyles) {
       const instanceStyles: Dict<DeclarationPlain> = {};
       for (const [ruleName, astValue] of Object.entries(styles)) {
@@ -68,24 +78,24 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
           instanceStyles[ruleName] = astValue;
         }
       }
-      return instanceStyles;
+      styles = instanceStyles;
     }
-  } else if (context.moduleContext.isComponent) {
-    // 1) save the component styles for 2) above.
-    node.styles = styles;
   }
+  node.styles = styles;
   return styles;
 }
 
 // Styles applying "outside" the component and/or impacting the component independently of how the component is designed
 function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   zindexFigmaToCode(context2, node, styles);
-  flexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);
+  flexFigmaToCode(context2, node, styles);
 }
 
 // Styles that are the responsibility of the component, typically the look and feel.
 function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  prepareBorders(context, node, styles);
+  prepareBackgrounds(context, node, styles);
   borderFigmaToCode(context, node, styles);
   borderRadiusFigmaToCode(context, node, styles);
   backgroundFigmaToCode(context, node, styles);
@@ -98,7 +108,7 @@ function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<Decl
   return context;
 }
 
-function mapTextSegmentStyles(
+export function mapTextSegmentStyles(
   context: NodeContext,
   textSegment: TextSegment2,
   styles: Dict<DeclarationPlain>,
@@ -141,6 +151,7 @@ function textNodeToAst(
   node: TextNode2,
   firstChildStylesRef: StylesRef,
 ) {
+  const { moduleContext } = context;
   const styles: Dict<DeclarationPlain> = {};
   const singleChild = node._textSegments?.length === 1;
 
@@ -153,9 +164,9 @@ function textNodeToAst(
 
   let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
   if (!singleChild) {
-    const className = genClassName(context);
+    const className = getOrGenClassName(moduleContext);
     addCssRule(context, className, stylesToList(styles));
-    const classAttr = mkClassAttr(className);
+    const classAttr = createClassAttrForClassNoOverride(className);
     if (textSegment.hyperlink) {
       if (textSegment.hyperlink.type === 'URL') {
         // hyperlink of type NODE not handled for now
@@ -182,6 +193,7 @@ export function mapTextStyles(
   node: TextNode2,
   styles: Dict<DeclarationPlain>,
 ): JsxOneOrMore | undefined {
+  const { moduleContext } = context;
   const textSegments: StyledTextSegment[] | undefined = node._textSegments;
   if (!textSegments) return;
   const firstChildStylesRef: StylesRef = {};
@@ -212,9 +224,9 @@ export function mapTextStyles(
       };
       // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
       addStyle(context, node, wrapperStyles, 'flex-shrink', 1);
-      const className = genClassName(context, undefined, undefined, 'labelWrapper');
+      const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
       addCssRule(context, className, stylesToList(wrapperStyles));
-      classAttr = mkClassAttr(className);
+      classAttr = createClassAttrForClassNoOverride(className);
     } else {
       warnNode(
         node,

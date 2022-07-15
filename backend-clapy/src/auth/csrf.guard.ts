@@ -1,8 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
+import type { Request } from 'express';
 
-import { env } from '../env-and-config/env';
+import { env } from '../env-and-config/env.js';
 
 @Injectable()
 export class CsrfGuard implements CanActivate {

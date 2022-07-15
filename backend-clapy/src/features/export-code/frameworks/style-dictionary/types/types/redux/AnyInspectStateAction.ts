@@ -1,5 +1,5 @@
-// import { RootModel } from '../RootModel';
-// import { ActionMeta } from './ActionMeta';
+// import { RootModel } from '../RootModel.js';
+// import { ActionMeta } from './ActionMeta.js';
 
 export type AnyInspectStateAction<GlobalScope = false> = /* {
   [K in keyof RootModel['inspectState']['reducers']]: {

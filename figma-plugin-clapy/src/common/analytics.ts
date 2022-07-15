@@ -1,5 +1,5 @@
 // import { gql } from '@apollo/client';
-import { Clapy_Analytics } from '../../generated/schema';
+import type { Clapy_Analytics } from '../../generated/schema';
 import { _accessTokenDecoded } from '../core/auth/auth-service';
 import { env } from '../environment/env';
 import { handleError } from './error-utils';

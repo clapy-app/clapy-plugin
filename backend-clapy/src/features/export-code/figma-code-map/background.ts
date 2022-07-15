@@ -1,20 +1,42 @@
 import { extractLinearGradientParamsFromTransform, extractRadialOrDiamondGradientParams } from '@figma-plugin/helpers';
-import { DeclarationPlain } from 'css-tree';
-import { PropertiesHyphen } from 'csstype';
+import type { DeclarationPlain } from 'css-tree';
+import type { PropertiesHyphen } from 'csstype';
 
-import { Dict } from '../../sb-serialize-preview/sb-serialize.model';
-import { NodeContext } from '../code.model';
-import { writeAsset } from '../create-ts-compiler/2-write-asset';
-import { isGroup, isText, isVector, ValidNode } from '../create-ts-compiler/canvas-utils';
-import { addStyle } from '../css-gen/css-factories-high';
-import { figmaColorToCssHex, round, warnNode } from './details/utils-and-reset';
-import { addOpacity } from './opacity';
+import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { NodeContext } from '../code.model.js';
+import { writeAsset } from '../create-ts-compiler/2-write-asset.js';
+import type {
+  BooleanOperationNode2,
+  GroupNode2,
+  TextNode2,
+  ValidNode,
+  VectorNodeDerived,
+} from '../create-ts-compiler/canvas-utils.js';
+import { isGroup, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset.js';
+import { addOpacity } from './opacity.js';
+
+export function prepareBackgrounds(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
+  if (doesNotHaveBorders(node)) {
+    // Ignore borders for Vectors. They are already included in the SVG.
+    return;
+  }
+  node.visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
+}
+
+function doesNotHaveBorders(
+  node: ValidNode,
+): node is TextNode2 | VectorNodeDerived | GroupNode2 | BooleanOperationNode2 {
+  return isText(node) || isVector(node) || isGroup(node);
+}
 
 export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
-  if (isText(node) || isVector(node) || isGroup(node)) return;
+  if (doesNotHaveBorders(node)) return;
 
-  const visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
+  const visibleFills = node.visibleFills!;
+
   if (visibleFills.length) {
     const { width, height } = node;
     const { images } = context.moduleContext.projectContext;
@@ -44,11 +66,6 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         const content = imageEntry.url;
         const assetCssUrl = writeAsset(context, node, extension, content);
 
-        // webpackIgnore is a workaround for webpack to ignore those public paths (to work with CRA CLI)
-        // - codesandbox: put assets in public folder instead of source (csb bundling doesn't process CSS url() :( )
-        // - CRA CLI with the above comment to leave the public URL instead of having webpack processing it.
-        bgImages.push(`/* webpackIgnore: true */ url("${assetCssUrl}")`);
-
         let scaleMode = fill.scaleMode;
         if (!scaleModeToBgSize[scaleMode]) {
           warnNode(
@@ -57,6 +74,11 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
           );
           scaleMode = 'FILL';
         }
+
+        // webpackIgnore is a workaround for webpack to ignore those public paths (to work with CRA CLI)
+        // - codesandbox: put assets in public folder instead of source (csb bundling doesn't process CSS url() :( )
+        // - CRA CLI with the above comment to leave the public URL instead of having webpack processing it.
+        bgImages.push(`/* webpackIgnore: true */ url("${assetCssUrl}")`);
         bgSizes.push(scaleModeToBgSize[scaleMode]);
 
         // Apply the first opacity I find
@@ -79,6 +101,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
             .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
             .join(', ')})`,
         );
+        bgSizes.push(undefined);
       } else if (fill.type === 'GRADIENT_RADIAL' || fill.type === 'GRADIENT_DIAMOND') {
         let {
           rotation,
@@ -92,6 +115,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
             .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
             .join(', ')})`,
         );
+        bgSizes.push(undefined);
       } else if (fill.type === 'GRADIENT_ANGULAR') {
         let {
           rotation,
@@ -104,20 +128,37 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
             .map(colorStop => `${figmaColorToCssHex(colorStop.color)} ${Math.round(colorStop.position * 100)}%`)
             .join(', ')})`,
         );
+        bgSizes.push(undefined);
       } else {
         warnNode(node, 'TODO Unsupported background fill', JSON.stringify(fill));
       }
     }
     if (bgColors.length) {
       addStyle(context, node, styles, 'background-color', bgColors.reverse().join(', '));
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'background-color');
     }
     if (bgImages.length) {
       addStyle(context, node, styles, 'background-image', bgImages.reverse().join(', '));
       addStyle(context, node, styles, 'background-position', 'center');
       addStyle(context, node, styles, 'background-repeat', 'no-repeat');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'background-image');
+      resetStyleIfOverriding(context, node, styles, 'background-position');
+      resetStyleIfOverriding(context, node, styles, 'background-repeat');
+      resetStyleIfOverriding(context, node, styles, 'background-size');
     }
     if (bgSizes.length) {
-      addStyle(context, node, styles, 'background-size', bgSizes.reverse().join(', '));
+      addStyle(
+        context,
+        node,
+        styles,
+        'background-size',
+        bgSizes
+          .reverse()
+          .map(s => s || 'initial')
+          .join(', '),
+      );
     }
     // Previous logic, disabled for now:
     // Apply the rotation only if there is one image
@@ -125,6 +166,12 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
     // if (bgImages.length === 1) {
     //   applyRotate(context, rotation, styles);
     // }
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'background-color');
+    resetStyleIfOverriding(context, node, styles, 'background-image');
+    resetStyleIfOverriding(context, node, styles, 'background-position');
+    resetStyleIfOverriding(context, node, styles, 'background-repeat');
+    resetStyleIfOverriding(context, node, styles, 'background-size');
   }
 }
 

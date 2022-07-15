@@ -58,6 +58,10 @@ export function isArrayOf<T>(node: any): node is T[] {
   return Array.isArray(node);
 }
 
+export async function importJsonFile<T = any>(path: string): Promise<T> {
+  return JSON.parse(await readFile(new URL('./some-file.json', import.meta.url), { encoding: 'utf8' }));
+}
+
 export function renameField(object: Dict<any>, oldKey: string, newKey: string) {
   // Change the key of a field. Src: https://stackoverflow.com/a/50101979/4053349
   delete Object.assign(object, { [newKey]: object[oldKey] })[oldKey];
