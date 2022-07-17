@@ -18,11 +18,11 @@ export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneN
   // If component or instance, generate the code in a separate component file and reference it here.
   const componentContext = getOrGenComponent(moduleContext, node, parentNode, isRootComponent);
 
+  node.componentContext = componentContext;
+
   if (!flags.enableInstanceOverrides || !isInst) {
     return componentContext;
   }
-
-  node.componentContext = componentContext;
 
   const instanceNode = node as ComponentNode2 | InstanceNode2;
   // Get the styles for all instance overrides. Styles only, for all nodes. No need to generate any AST.

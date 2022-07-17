@@ -239,7 +239,7 @@ function prepareRootNode(moduleContext: ModuleContext, root: SceneNode2, parent:
 
 function genAstFromRootNode(moduleContext: ModuleContext) {
   const { node } = moduleContext;
-  const tsx = genNodeAst(node);
+  const tsx = genNodeAst(node, true);
   const cssAst = mkStylesheetCss(moduleContext.cssRules);
   return [tsx, cssAst] as const;
 }

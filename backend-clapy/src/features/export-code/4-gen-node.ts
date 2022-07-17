@@ -224,7 +224,7 @@ function recurseOnChildren(
   }
 }
 
-export function genNodeAst(node: SceneNode2) {
+export function genNodeAst(node: SceneNode2, isRootInComponent?: boolean) {
   try {
     const { nodeContext: context, styles, muiConfig, svgPathVarName, extraAttributes } = node;
     if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
@@ -232,7 +232,11 @@ export function genNodeAst(node: SceneNode2) {
 
     if (node.skip) return;
 
-    if (node.componentContext) {
+    if (!isRootInComponent && node.componentContext) {
+      // Note: if the node is a component (i.e. in Figma, we have a component in the middle of a Frame),
+      // its NodeContext is wrong, because the node is shared: it's used both for the component and for the instance.
+      // But it doesn't matter because the only information we need is isRootInComponent.
+      // Otherwise, we need to find a trick to get the NodeContext of the instance we create.
       return genCompUsage(node);
     }
 
