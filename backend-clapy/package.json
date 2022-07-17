@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "start": "yarn up",
-    "dev": "yarn dev:clean && yarn dev:swc && npm-run-all --parallel dev:swc:watch dev:nodemon",
+    "dev": "rm -rf dist-dev && swc src -s -d dist-dev && npm-run-all --parallel dev:swc:watch dev:nodemon",
     "dev2": "yarn dev:clean && yarn dev:swc && npm-run-all --parallel dev:swc:watch dev:nodemon2",
     "dev:debug": "yarn dev --debug 0.0.0.0:9229",
     "dev:debug2": "yarn dev --debug 0.0.0.0:9229 --config nest-cli-main2.json",
