@@ -1,7 +1,6 @@
 import equal from 'fast-deep-equal';
 
 import type { Nil } from '../../../common/app-models.js';
-import { isArrayOf } from '../../../common/general-utils.js';
 import type {
   ComponentNode2,
   ComponentNodeNoMethod,
@@ -11,17 +10,16 @@ import type {
   LayoutTypes,
   NodeLight,
   NodeWithDefaults,
-  RectangleNode2,
   SceneNode2,
 } from '../../../common/sb-serialize.model.js';
 import { nodeDefaults } from '../../../common/sb-serialize.model.js';
 import {
-  isChildrenMixin2,
-  isGroup2,
+  isEmptyFrame,
+  isGroup0,
   isInstance,
   isInstance2,
   isLayout2,
-  isRectangle2,
+  isRectangle0,
   isShapeExceptDivable,
 } from '../../common/node-type-utils.js';
 
@@ -68,8 +66,9 @@ export interface ExtractNodeContext {
   isComp?: boolean;
 }
 
-export function shouldGroupAsSVG(node: AnyNode3) {
-  if (!isChildrenMixin2(node) || !node.children.length) return false;
+export function shouldGroupAsSVG(nodeOriginal: SceneNode) {
+  const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
+  if (!children) return false;
   // If only one child, don't group as SVG
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
   // if (!(node.children.length > 1)) return false;
@@ -78,10 +77,18 @@ export function shouldGroupAsSVG(node: AnyNode3) {
   // If no other shapes, it should generate divs.
   let foundNonRectangleShape = false;
   // If one of the children is not a shape (or neutral), don't group as SVG
-  for (const child of node.children) {
-    const isShape0 = isShapeExceptDivable(child);
-    if (isShape0 && !foundNonRectangleShape) foundNonRectangleShape = true;
-    const isShape = isShape0 || isRectangleWithoutImage(child) || (isGroup2(child) && shouldGroupAsSVG(child));
+  for (const child of children) {
+    const { type } = child;
+    const childAsFrame = child as FrameNode;
+    const { isMask, fills } = childAsFrame;
+    const isShape0 = isShapeExceptDivable(type, isMask);
+    const isGrp = isGroup0(type);
+    if ((isShape0 || isGrp) && !foundNonRectangleShape) foundNonRectangleShape = true;
+    const isShape =
+      isShape0 ||
+      isRectangleWithoutImage(type, fills as Paint[]) ||
+      ((isGrp || isEmptyFrame(type, fills as Paint[], childAsFrame.strokes, childAsFrame.effects)) &&
+        shouldGroupAsSVG(child));
     if (!isShape) {
       return false;
     }
@@ -98,15 +105,15 @@ export function isProcessableInstance2(node: any, mainComponent?: ComponentNode 
   return !!(isInstance(node) && (mainComponent || node.mainComponent));
 }
 
-function isRectangleWithoutImage(node: AnyNode3): node is RectangleNode2 {
-  if (!isRectangle2(node)) {
+function isRectangleWithoutImage(type: string, fills: Paint[] | undefined): boolean {
+  if (!isRectangle0(type)) {
     return false;
   }
-  if (!isArrayOf<Paint>(node.fills)) {
+  if (!Array.isArray(fills)) {
     return true;
   }
-  for (const fill of node.fills) {
-    if (fill.type === 'IMAGE') {
+  for (const fill of fills) {
+    if (fill.visible && fill.type === 'IMAGE') {
       return false;
     }
   }

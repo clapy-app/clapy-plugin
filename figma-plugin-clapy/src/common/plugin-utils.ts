@@ -24,10 +24,15 @@ export async function fetchPlugin<T extends keyof Routes>(
     }
   }
   return new Promise<UnPromise<ReturnType<Routes[T]>>>((resolve, reject) => {
+    const requestId = getRequestId();
+    let start: number = 0;
+    if (!isFigmaPlugin) {
+      start = new Date().getTime();
+      console.info('[plugin req]', { type: routeName, __id: requestId, payload: args });
+    }
+    openRequests.add(requestId);
     // Add an abortable event listener to cancel the subscription once the response is received.
     const aborter = new AbortController();
-    const requestId = getRequestId();
-    openRequests.add(requestId);
     // Listen to responses from the server. We listen to all messages and filter by type.
     // Then, for a one-shot fetch, we cancel the subscription.
     window.addEventListener(
@@ -48,7 +53,9 @@ export async function fetchPlugin<T extends keyof Routes>(
         if (env.isDev && flags.logWebsocketRequests) {
           const sourceIsFigma = event.data.__source === 'figma';
           if (!isFigmaPlugin && sourceIsFigma) {
-            console.info('[plugin resp]', event.data.pluginMessage);
+            const now = new Date().getTime();
+            const measured = Math.round(now - start) / 1000;
+            console.info('[plugin resp]', event.data.pluginMessage, 'in', measured, 'seconds');
           }
         }
         const { type, payload, error } = event.data.pluginMessage;

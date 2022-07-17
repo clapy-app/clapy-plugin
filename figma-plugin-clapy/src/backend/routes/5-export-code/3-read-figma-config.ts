@@ -101,13 +101,12 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
   const isBlend = isBlendMixin(node);
   const isMask = isBlend && node.isMask;
 
-  const changeToVector =
+  const vectorRequirement =
     // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
     // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
-    !isInstance2(node) &&
-    !nodeIsComp &&
-    !isPage2(node) &&
-    (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(node as AnyNode3));
+    !isInstance2(node) && !nodeIsComp && !isPage2(node);
+
+  const changeToVector = vectorRequirement && (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(nodeOriginal));
 
   if (changeToVector) {
     node.type = 'VECTOR';

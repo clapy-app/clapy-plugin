@@ -95,6 +95,10 @@ export function isLayout2(node: BaseNode2 | null | undefined): node is LayoutMix
   return !!node && layoutTypes.has(node.type);
 }
 
+export function isGroup0(type: string): boolean {
+  return type === 'GROUP';
+}
+
 export function isGroup(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode {
   return node?.type === 'GROUP';
 }
@@ -105,6 +109,10 @@ export function isGroup2(node: BaseNode2 | SceneNode2 | Nil): node is GroupNode2
 
 export function isSlice(node: BaseNode2 | SceneNode2 | Nil): node is SliceNode {
   return node?.type === 'SLICE';
+}
+
+export function isRectangle0(type: string): boolean {
+  return type === 'RECTANGLE';
 }
 
 export function isRectangle(node: BaseNode2 | SceneNode2 | Nil): node is RectangleNode {
@@ -119,12 +127,20 @@ export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode {
   return node?.type === 'LINE';
 }
 
+export function isEllipse0(type: string): boolean {
+  return type === 'ELLIPSE';
+}
+
 export function isEllipse(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNode {
   return node?.type === 'ELLIPSE';
 }
 
 export function isEllipse2(node: BaseNode2 | SceneNode2 | Nil): node is EllipseNode2 {
   return node?.type === 'ELLIPSE';
+}
+
+export function isPolygon0(type: string): boolean {
+  return type === 'POLYGON';
 }
 
 export function isPolygon(node: BaseNode2 | SceneNode2 | Nil): node is PolygonNode {
@@ -135,12 +151,20 @@ export function isPolygon2(node: BaseNode2 | SceneNode2 | Nil): node is PolygonN
   return node?.type === 'POLYGON';
 }
 
+export function isStar0(type: string): boolean {
+  return type === 'STAR';
+}
+
 export function isStar(node: BaseNode2 | SceneNode2 | Nil): node is StarNode {
   return node?.type === 'STAR';
 }
 
 export function isStar2(node: BaseNode2 | SceneNode2 | Nil): node is StarNode2 {
   return node?.type === 'STAR';
+}
+
+export function isVector0(type: string): boolean {
+  return type === 'VECTOR';
 }
 
 export function isVector(node: BaseNode2 | SceneNode2 | Nil): node is VectorNode {
@@ -157,6 +181,10 @@ export function isText(node: BaseNode2 | SceneNode2 | Nil): node is TextNode {
 
 export function isText2(node: BaseNode2 | SceneNode2 | Nil): node is TextNode2 {
   return node?.type === 'TEXT';
+}
+
+export function isBooleanOperation0(type: string): boolean {
+  return type === 'BOOLEAN_OPERATION';
 }
 
 export function isBooleanOperation(node: BaseNode2 | SceneNode2 | Nil): node is BooleanOperationNode {
@@ -177,6 +205,10 @@ export function isComponentSet(node: BaseNode2 | SceneNode2 | Nil): node is Comp
 
 export function isComponentSet2(node: BaseNode2 | SceneNode2 | Nil): node is ComponentSetNode2 {
   return node?.type === 'COMPONENT_SET';
+}
+
+export function isFrame0(type: string): boolean {
+  return type === 'FRAME';
 }
 
 export function isFrame(
@@ -244,15 +276,15 @@ export function isMyComp(node: BaseNode2 | SceneNode2 | Nil): node is MyCompNode
 
 export type ShapeNode = LineNode | EllipseNode | PolygonNode | StarNode | VectorNode | BooleanOperationNode;
 
-export function isShapeExceptDivable(node: BaseNode2 | SceneNode2 | Nil): node is ShapeNode {
+export function isShapeExceptDivable(type: string, isMask: boolean): boolean {
   // Rectangle and line are excluded
   return (
-    isEllipse(node) ||
-    isPolygon(node) ||
-    isStar(node) ||
-    isVector(node) ||
-    isBooleanOperation(node) ||
-    (isFrame(node) && node.isMask)
+    isEllipse0(type) ||
+    isPolygon0(type) ||
+    isStar0(type) ||
+    isVector0(type) ||
+    isBooleanOperation0(type) ||
+    (isFrame0(type) && isMask)
   );
 }
 
@@ -275,4 +307,18 @@ export function isStyledTextSegment(
 ): node is StyledTextSegment {
   const sts = node as StyledTextSegment;
   return sts.characters != null && sts.start != null && sts.end != null;
+}
+
+export function isEmptyFrame(
+  type: string,
+  fills: ReadonlyArray<Paint> | undefined,
+  strokes: ReadonlyArray<Paint> | undefined,
+  effects: ReadonlyArray<Effect> | undefined,
+): boolean {
+  return (
+    isFrame0(type) &&
+    (!Array.isArray(fills) || (fills as Paint[]).every(fill => !fill.visible)) &&
+    (!Array.isArray(strokes) || (strokes as Paint[]).every(stroke => !stroke.visible)) &&
+    (!Array.isArray(effects) || (effects as Effect[]).every(effect => !effect.visible))
+  );
 }

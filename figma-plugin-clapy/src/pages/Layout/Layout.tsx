@@ -54,9 +54,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
     });
-    if (env.isDev) {
-      fetchPluginNoResponse('getSelectionPreview');
-    }
+    fetchPluginNoResponse('getSelectionPreview');
     return dispose;
   }, []);
   if (authError) {

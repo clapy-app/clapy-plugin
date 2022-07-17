@@ -79,6 +79,10 @@ window.addEventListener('unload', function () {
 
 export const App: FC = memo(function App() {
   useEffect(() => {
+    // This call to the API ensure an access token is available on the front (automatically done behind apiGet), and that the application is displayed. Behind the scene:
+    // The default state in the auth service is that the auth is loading (which we actually start here)
+    // when apiGet completes, this state changes to auth loaded => condition to show the app
+    // Another thing that happens: by calling the server with a token, the server checks that the token is valid. If not, the client refreshes the token.
     apiGet('check-session')
       .catch(handleError)
       .finally(() => track('open-plugin'));
