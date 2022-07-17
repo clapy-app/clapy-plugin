@@ -2,7 +2,7 @@
 /.env
 
 # compiled output
-/dist
+/dist*
 /node_modules
 /atest-gen
 
