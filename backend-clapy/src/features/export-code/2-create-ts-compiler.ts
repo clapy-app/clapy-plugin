@@ -185,6 +185,7 @@ export async function exportCode(
       return csbResponse;
     }
   }
+  return { sandbox_id: 'false' };
 }
 
 function addCompToAppRoot(
