@@ -1,5 +1,3 @@
-import { env } from './env.js';
-
 export const appConfig = {};
 
 export const flags = {
