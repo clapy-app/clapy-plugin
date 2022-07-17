@@ -112,7 +112,8 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
         // No change in value, ignore.
         return;
       }
-      modelRef.current[name2] = value;
+      const foo = modelRef.current[name2];
+      modelRef.current[name2] = value as any;
       updateAllFilled(modelRef.current, allFilled, setAllFilled);
     },
     [allFilled],
