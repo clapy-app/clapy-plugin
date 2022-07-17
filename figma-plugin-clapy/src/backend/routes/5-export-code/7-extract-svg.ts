@@ -3,7 +3,7 @@ import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils.js';
 import { isArrayOf } from '../../../common/general-utils.js';
 import type { SVGsExtracted } from '../../../common/sb-serialize.model.js';
-import { isMinimalStrokesMixin } from '../../common/node-type-utils.js';
+import { isLayout0, isMinimalStrokesMixin } from '../../common/node-type-utils.js';
 import { perfReset } from '../../common/perf-utils.js';
 import type { AnyNodeOriginal } from './read-figma-config-utils.js';
 import { utf8ArrayToStr } from './Utf8ArrayToStr.js';
@@ -29,6 +29,9 @@ async function extractSVG(nodeIdToExtractAsSVG: string) {
   const svgNode = figma.getNodeById(nodeIdToExtractAsSVG) as AnyNodeOriginal | null;
   if (!svgNode) {
     throw new Error(`Node with ID ${nodeIdToExtractAsSVG} not found, cannot export as SVG.`);
+  }
+  if (!isLayout0(svgNode) || svgNode.absoluteRenderBounds == null) {
+    return;
   }
 
   const svgNode2 = svgNode.clone();

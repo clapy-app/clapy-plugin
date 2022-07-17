@@ -47,6 +47,9 @@ export async function exportCode(
   { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
 ) {
+  if (env.isDev) {
+    uploadToCsb = false;
+  }
   if (!extraConfig.output) extraConfig.output = 'csb';
   extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
   const parent = p as ParentNode | Nil;
