@@ -14,7 +14,9 @@ export function initRoutes(routes: Routes) {
     if (!handler) throw new Error(`Unknown message type for message: ${JSON.stringify({ type, payload })}`);
 
     try {
+      let start: number = 0;
       if (env.isDev) {
+        start = new Date().getTime();
         console.log('Calling route', type);
       }
       const response = await handler(...payload, props);
@@ -27,7 +29,9 @@ export function initRoutes(routes: Routes) {
         figma.ui.postMessage(responseMessage);
       }
       if (env.isDev) {
-        console.log('Completed route', type);
+        const now = new Date().getTime();
+        const measured = Math.round(now - start) / 1000;
+        console.log('Completed route', type, 'in', measured, 'seconds');
       }
     } catch (error: any) {
       error = error || new Error(`[Custom] Unknown error when running controller code on route ${type}.`);
