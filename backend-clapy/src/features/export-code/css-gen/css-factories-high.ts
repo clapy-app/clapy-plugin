@@ -221,9 +221,10 @@ export function resetStyleIfOverriding<T extends keyof PropertiesHyphen>(
   styles: Dict<DeclarationPlain>,
   name: keyof PropertiesHyphen,
   value?: StyleValue<T>,
+  defaultValue = 'initial',
 ) {
-  if (intermediateNodesDefinedThisStyle(context, name, value)) {
-    addStyle(context, node, styles, name, 'initial');
+  if (intermediateNodesDefinedThisStyle(context, name, value, defaultValue)) {
+    addStyle(context, node, styles, name, defaultValue);
   }
 }
 
@@ -231,11 +232,12 @@ function intermediateNodesDefinedThisStyle<T extends keyof PropertiesHyphen>(
   context: NodeContext,
   name: keyof PropertiesHyphen,
   value?: StyleValue<T>,
+  defaultValue = 'initial',
 ) {
   const style = getInheritedNodeStyle(context, name);
   if (style) {
     const inheritedValue = ((style.value as ValuePlain)?.children?.[0] as Raw)?.value;
-    const isCSSReset = inheritedValue === 'initial';
+    const isCSSReset = inheritedValue === defaultValue;
     return !isCSSReset && (value == null || inheritedValue === value);
   }
   return false;

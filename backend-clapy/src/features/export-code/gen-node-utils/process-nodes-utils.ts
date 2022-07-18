@@ -85,7 +85,7 @@ export function addNodeStyles(
       ? getOrGenClassName(moduleContext, undefined, classBaseName)
       : getOrGenClassName(moduleContext, node);
     addCssRule(context, className, styleDeclarations);
-    attributes.push(classBaseName ? mkClassAttr3(classBaseName) : createClassAttrForNode(node));
+    attributes.push(classBaseName ? mkClassAttr3(className) : createClassAttrForNode(node));
   }
   return attributes;
 }
