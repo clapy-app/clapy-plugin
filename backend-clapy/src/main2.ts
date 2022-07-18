@@ -1,7 +1,5 @@
 import { waitInfinite } from './common/general-utils.js';
 import { perfReset, perfTotal } from './common/perf-utils.js';
-import { CodeController } from './features/export-code/1-code-controller.js';
-import { devFigmaConfig } from './features/export-code/dev-figma-config header.js';
 import { round } from './features/export-code/gen-node-utils/utils-and-reset.js';
 
 // To work on features outside the webservice, and keep live reload.
@@ -10,7 +8,8 @@ async function main() {
   perfReset('Starting...');
 
   // Send to codesandbox
-  await new CodeController().exportCode(devFigmaConfig, false);
+  // TODO restore. Find the syntax to instantiate the controller with the right dependencies
+  // await new CodeController().exportCode(devFigmaConfig, false);
 
   // await insertTrackings();
 
