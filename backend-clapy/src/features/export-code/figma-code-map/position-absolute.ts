@@ -12,6 +12,7 @@ import {
   isPage,
 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { addTransform } from './transform.js';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const inheritedStyle = getInheritedNodeStyle(context, 'position');
@@ -66,8 +67,15 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'right', [right, 'px']);
       resetStyleIfOverriding(context, node, styles, 'left');
     } else if (horizontal === 'CENTER') {
-      addStyle(context, node, styles, 'left', [-9999 - (parentNode.width / 2 - (left + node.width / 2)), 'px']);
-      addStyle(context, node, styles, 'right', [-9999, 'px']);
+      const toSubstractForLeftShift = parentNode.width / 2 - (left + node.width / 2);
+      addTransform(context, 'translate(-50%, -50%)');
+      addStyle(
+        context,
+        node,
+        styles,
+        'left',
+        toSubstractForLeftShift ? `calc(50% - ${toSubstractForLeftShift}px)` : '50%',
+      );
       horizontalMarginAuto = true;
     } else if (horizontal === 'STRETCH') {
       addStyle(context, node, styles, 'left', [left, 'px']);
@@ -97,8 +105,15 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
       resetStyleIfOverriding(context, node, styles, 'top');
     } else if (vertical === 'CENTER') {
-      addStyle(context, node, styles, 'top', [-9999 - (parentNode.height / 2 - (top + node.height / 2)), 'px']);
-      addStyle(context, node, styles, 'bottom', [-9999, 'px']);
+      const toSubstractForTopShift = parentNode.height / 2 - (top + node.height / 2);
+      addTransform(context, 'translate(-50%, -50%)');
+      addStyle(
+        context,
+        node,
+        styles,
+        'top',
+        toSubstractForTopShift ? `calc(50% - ${toSubstractForTopShift}px)` : '50%',
+      );
       verticalMarginAuto = true;
     } else if (vertical === 'STRETCH') {
       addStyle(context, node, styles, 'top', [top, 'px']);
