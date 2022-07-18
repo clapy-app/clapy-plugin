@@ -101,6 +101,8 @@ export interface NodeContext {
   isRootNode?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];
+  transformTranslateX?: string;
+  transformTranslateY?: string;
   className?: string;
   overriddenContext?: NodeContext;
   // Provided for instances (interface below). It is added here as an optional field so that

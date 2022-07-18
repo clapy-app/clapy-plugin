@@ -31,7 +31,22 @@ export function addTransform(context: NodeContext, transform: string) {
   context.tranforms.push(transform);
 }
 
+export function addTransformTranslateX(context: NodeContext, value: string) {
+  context.transformTranslateX = value;
+}
+
+export function addTransformTranslateY(context: NodeContext, value: string) {
+  context.transformTranslateY = value;
+}
+
 export function postTransform(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  if (context.transformTranslateX && context.transformTranslateY) {
+    addTransform(context, `translate(${context.transformTranslateX}, ${context.transformTranslateY})`);
+  } else if (context.transformTranslateX) {
+    addTransform(context, `translateX(${context.transformTranslateX})`);
+  } else if (context.transformTranslateY) {
+    addTransform(context, `translateY(${context.transformTranslateY})`);
+  }
   if (context.tranforms) {
     addStyle(context, node, styles, 'transform', context.tranforms.join(' '));
   }
