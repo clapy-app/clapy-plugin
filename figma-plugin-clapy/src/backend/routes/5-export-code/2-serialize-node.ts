@@ -2,6 +2,7 @@ import type { ExtractionProgress, NextFn } from '../../../common/app-models';
 import { wait } from '../../../common/general-utils.js';
 import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
+import { isComponentSet } from '../../common/node-type-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
@@ -15,10 +16,15 @@ export function figmaConfigExtractionProgress(next: NextFn<ExtractionProgress>) 
   _notifyProgress = async (progress: ExtractionProgress) => next(progress);
 }
 
-async function notifyProgress(progress: ExtractionProgress) {
+async function notifyProgress(progress: ExtractionProgress, node?: SceneNode) {
   await wait();
-  if (progress.nodeName) {
-    progress.nodeName = `Component: ${progress.nodeName}`;
+  if (node) {
+    let nodeName = node.name;
+    const parent = node?.parent;
+    if (isComponentSet(parent)) {
+      nodeName = `${parent.name} - ${nodeName}`;
+    }
+    progress.nodeName = `Component: ${nodeName}`;
   }
   _notifyProgress?.(progress);
 }
@@ -34,7 +40,7 @@ export async function serializeSelectedNode() {
 
   const nodeParent = node.parent as SceneNode | undefined;
   if (nodeParent) {
-    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: nodeParent.name });
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2 }, nodeParent);
   }
   const parentConfig = nodeParent ? readParentNodeConfig(nodeParent) : undefined;
 
@@ -61,7 +67,7 @@ export async function serializeSelectedNode() {
 
   const nodes: AnyNode3[] = [];
   for (const compToProcess of extractBatchContext.componentsToProcess) {
-    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2, nodeName: compToProcess.name });
+    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2 }, compToProcess);
     nodes.push(readFigmaNodesConfig(compToProcess, extractBatchContext));
     perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
   }
