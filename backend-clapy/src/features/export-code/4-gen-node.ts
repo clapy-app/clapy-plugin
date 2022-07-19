@@ -326,6 +326,7 @@ function genNodeAstLoopChildren(node: SceneNode2) {
     const context = child.nodeContext;
     if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
     context.parentIsRootInComponent = node.nodeContext!.isRootInComponent;
+    context.isRootInComponent = false;
     const childTsx = genNodeAst(child);
     if (childTsx) {
       if (Array.isArray(childTsx)) {
