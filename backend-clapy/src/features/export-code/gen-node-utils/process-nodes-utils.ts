@@ -14,6 +14,7 @@ import {
   getOrGenClassName,
   mkClassAttr3,
   mkComponentUsage,
+  mkHtmlFullClass,
   mkIdAttribute,
   mkNamedImportsDeclaration,
   mkSwapInstanceAlone,
@@ -79,13 +80,18 @@ export function addNodeStyles(
 ) {
   const { moduleContext } = context;
   const styleDeclarations = stylesToList(styles);
+  const isSubWrapperNotNode = !!classBaseName;
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
-    const className = classBaseName
+    const className = isSubWrapperNotNode
       ? getOrGenClassName(moduleContext, undefined, classBaseName)
       : getOrGenClassName(moduleContext, node);
-    addCssRule(context, className, styleDeclarations);
-    attributes.push(classBaseName ? mkClassAttr3(className) : createClassAttrForNode(node));
+    addCssRule(context, className, styleDeclarations, node);
+    const htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
+    if (!isSubWrapperNotNode) {
+      node.htmlClass = htmlClass;
+    }
+    attributes.push(isSubWrapperNotNode ? mkClassAttr3(htmlClass) : createClassAttrForNode(node, htmlClass));
   }
   return attributes;
 }
@@ -171,4 +177,9 @@ export function escapeHTML(str: string) {
   // Replaces all line breaks with HTML tag <br /> to preserve line breaks
   str = str.replace(/\r\n|\r|\n|[\x0B\x0C\u0085\u2028\u2029]/g, '<br />');
   return str;
+}
+
+export function useBem(context: NodeContext) {
+  const { scss, bem } = context.moduleContext.projectContext.extraConfig;
+  return scss && bem;
 }

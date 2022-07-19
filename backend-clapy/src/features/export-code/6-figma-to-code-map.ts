@@ -4,12 +4,10 @@ import ts from 'typescript';
 
 import { warnOrThrow } from '../../utils.js';
 import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
-import type { JsxOneOrMore, NodeContext } from './code.model.js';
+import type { NodeContext } from './code.model.js';
 import { isInstanceContext } from './code.model.js';
 import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
 import { isText } from './create-ts-compiler/canvas-utils.js';
-import { addStyle } from './css-gen/css-factories-high.js';
-import { stylesToList } from './css-gen/css-type-utils.js';
 import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
 import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
@@ -26,17 +24,6 @@ import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute.
 import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches.js';
 import { postTransform, transformFigmaToCode } from './figma-code-map/transform.js';
 import { zindexFigmaToCode } from './figma-code-map/zindex.js';
-import { escapeHTML } from './gen-node-utils/process-nodes-utils.js';
-import {
-  addCssRule,
-  createClassAttrForClassNoOverride,
-  getOrGenClassName,
-  mkHrefAttr,
-  mkNoReferrerAttr,
-  mkTag,
-  mkTargetBlankAttr,
-} from './gen-node-utils/ts-ast-utils.js';
-import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
 const { factory } = ts;
 
@@ -135,105 +122,4 @@ export function mapTextSegmentStyles(
   //     textStyleId,
   //   } = segment;
   // Inherited rules that are the same accross all segments can be moved to the container.
-}
-
-//--------------------------------------------------------------------------------
-// Details for text - it is split into segments, each applying its styles
-
-interface StylesRef {
-  styles?: Dict<DeclarationPlain>;
-}
-
-function textNodeToAst(
-  context: NodeContext,
-  textSegment: TextSegment2,
-  parentStyles: Dict<DeclarationPlain>,
-  node: TextNode2,
-  firstChildStylesRef: StylesRef,
-) {
-  const { moduleContext } = context;
-  const styles: Dict<DeclarationPlain> = {};
-  const singleChild = node._textSegments?.length === 1;
-
-  // Add text segment styles
-  mapTextSegmentStyles(context, textSegment, styles, node);
-
-  if (!firstChildStylesRef.styles) {
-    firstChildStylesRef.styles = styles;
-  }
-
-  let ast: ts.JsxChild = factory.createJsxText(escapeHTML(textSegment.characters), false);
-  if (!singleChild) {
-    const className = getOrGenClassName(moduleContext);
-    addCssRule(context, className, stylesToList(styles));
-    const classAttr = createClassAttrForClassNoOverride(className);
-    if (textSegment.hyperlink) {
-      if (textSegment.hyperlink.type === 'URL') {
-        // hyperlink of type NODE not handled for now
-        ast = mkTag(
-          'a',
-          [classAttr, mkHrefAttr(textSegment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr()],
-          [ast],
-        );
-      } else {
-        warnNode(textSegment, 'TODO Unsupported hyperlink of type node');
-        ast = mkTag('span', [classAttr], [ast]);
-      }
-    } else {
-      ast = mkTag('span', [classAttr], [ast]);
-    }
-  } else {
-    Object.assign(parentStyles, styles);
-  }
-  return ast;
-}
-
-export function mapTextStyles(
-  context: NodeContext,
-  node: TextNode2,
-  styles: Dict<DeclarationPlain>,
-): JsxOneOrMore | undefined {
-  const { moduleContext } = context;
-  const textSegments: StyledTextSegment[] | undefined = node._textSegments;
-  if (!textSegments) return;
-  const firstChildStylesRef: StylesRef = {};
-  const singleChild = textSegments?.length === 1;
-  let ast: ts.JsxChild[] | ts.JsxElement = textSegments.map(segment =>
-    textNodeToAst(context, segment, styles, node, firstChildStylesRef),
-  );
-
-  // TODO Add Figma tokens text rules here to a common style.
-  // Merge with wrapperStyles?
-  // If any rule, should apply to both single and multiple children.
-
-  // If there are multiple text segments, we wrap in a span to:
-  // - preserve the inline, including spaces between text segments
-  // - make its positioning easier, e.g. vertically centered in a flex container
-  if (!singleChild) {
-    if (!firstChildStylesRef.styles) {
-      throw new Error(`BUG Multiple text segments, but firstChildStylesRef.styles is undefined.`);
-    }
-    // If we have the styles of the first child, it means we have more than one text segments, so we should wrap.
-    // And we can use it to extract the font-family and font-size, to apply on the wrapper.
-    // The reason why we need to apply those is that an inline wrapper's layout is impacted by those styles (e.g. it changes the baseline location, and potentially other things).
-    let classAttr: ts.JsxAttribute | undefined = undefined;
-    if (firstChildStylesRef.styles['font-size'] || firstChildStylesRef.styles['font-family']) {
-      const wrapperStyles: Dict<DeclarationPlain> = {
-        'font-size': firstChildStylesRef.styles['font-size'],
-        'font-family': firstChildStylesRef.styles['font-family'],
-      };
-      // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
-      addStyle(context, node, wrapperStyles, 'flex-shrink', 1);
-      const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
-      addCssRule(context, className, stylesToList(wrapperStyles));
-      classAttr = createClassAttrForClassNoOverride(className);
-    } else {
-      warnNode(
-        node,
-        'BUG No font-size or font-family to apply on the span wrapper. As of now, texts are supposed to always have those styles applied. To review.',
-      );
-    }
-    ast = mkTag('span', classAttr ? [classAttr] : [], ast);
-  }
-  return ast;
 }

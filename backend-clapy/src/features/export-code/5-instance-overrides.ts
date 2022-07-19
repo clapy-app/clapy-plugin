@@ -50,7 +50,7 @@ import {
   getOrGenSwapName,
   getOrGenTextOverrideProp,
   removeCssRule,
-  updateCssRuleClassName,
+  updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
@@ -185,7 +185,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
-      const cssRule = addCssRule(context, '_tmp');
+      const cssRule = addCssRule(context, false, [], node);
 
       if (isChildrenMixin(node)) {
         recurseOnChildren(context, node, styles);
@@ -196,8 +196,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext, node);
         getOrGenClassName(componentContext, nodeOfComp);
-        updateCssRuleClassName(context, cssRule, className);
-        cssRule.block.children.push(...styleDeclarations);
+        // TODO add parentRule and the rules loop for instances
+        updateCssRule(context, cssRule, className, undefined, styleDeclarations);
         addStyleOverride(context, node);
       } else {
         removeCssRule(context, cssRule, node);
@@ -227,7 +227,7 @@ function addNodeStyles(
   if (styleDeclarations.length) {
     const className = getOrGenClassName(moduleContext, node);
     getOrGenClassName(componentContext, nodeOfComp);
-    addCssRule(context, className, styleDeclarations);
+    addCssRule(context, className, styleDeclarations, node);
     addStyleOverride(context, node);
   }
 }

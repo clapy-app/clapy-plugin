@@ -99,6 +99,7 @@ export interface NodeContext {
   parentContext: NodeContext | Nil;
   isRootInComponent: boolean;
   isRootNode?: boolean;
+  parentIsRootInComponent?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];
   transformTranslateX?: string;

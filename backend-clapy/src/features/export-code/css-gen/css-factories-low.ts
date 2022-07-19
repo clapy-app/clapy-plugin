@@ -58,7 +58,7 @@ export function mkSelectorListCss(children: SelectorNode[]) {
   return selectorList;
 }
 
-type SelectorFragment = IdSelector | ClassSelector | TypeSelector | Combinator;
+type SelectorFragment = IdSelector | ClassSelector | TypeSelector | Combinator | Raw;
 
 export function mkSelectorCss(children: SelectorFragment[]) {
   const selector: SelectorPlain = {
@@ -78,7 +78,7 @@ export function mkClassSelectorCss(name: string) {
 
 // type BlockChild = DeclarationPlain; // If required - find a better type name
 
-export function mkBlockCss(children: DeclarationPlain[]) {
+export function mkBlockCss(children: (DeclarationPlain | Raw)[]) {
   const block: BlockPlain = {
     type: 'Block',
     children,

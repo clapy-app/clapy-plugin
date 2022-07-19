@@ -42,12 +42,13 @@ import {
   fillIsRootInComponent,
   getOrGenClassName,
   getOrGenHideProp,
+  mkHtmlFullClass,
   mkIdAttribute,
   mkSwapInstanceAndHideWrapper,
   mkTag,
   mkWrapHideAndTextOverrideAst,
   removeCssRule,
-  updateCssRuleClassName,
+  updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
@@ -224,13 +225,23 @@ function recurseOnChildren(
   }
 }
 
-export function genNodeAst(node: SceneNode2, isRootInComponent?: boolean) {
+export interface GenContext {
+  isRootInComponent: boolean;
+  parentIsRootInComponent: boolean;
+}
+
+export function genNodeAst(node: SceneNode2) {
   try {
     const { nodeContext: context, styles, muiConfig, svgPathVarName, extraAttributes } = node;
     if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
+    const { isRootInComponent, parentIsRootInComponent } = context;
     const { moduleContext } = context;
 
     if (node.skip) return;
+
+    node.htmlClass = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.htmlClass;
+    const parentRule = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.rule;
+    node.rule = parentRule;
 
     if (!isRootInComponent && node.componentContext) {
       // Note: if the node is a component (i.e. in Figma, we have a component in the middle of a Frame),
@@ -269,18 +280,23 @@ export function genNodeAst(node: SceneNode2, isRootInComponent?: boolean) {
     } else if (isBlockNode(node)) {
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
-      const cssRule = addCssRule(context, '_tmp');
-
-      const children = genNodeAstLoopChildren(node);
+      const cssRule = addCssRule(context, false, [], node);
 
       const styleDeclarations = stylesToList(styles);
+      const hasStyles = !!styleDeclarations.length;
+      let className: string | undefined = undefined;
+      if (hasStyles) {
+        className = getOrGenClassName(moduleContext, node);
+        node.htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
+      }
+
+      const children = genNodeAstLoopChildren(node);
       let attributes: ts.JsxAttribute[] = [];
       if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
-      if (styleDeclarations.length) {
-        const className = getOrGenClassName(moduleContext, node);
-        updateCssRuleClassName(context, cssRule, className);
-        cssRule.block.children.push(...styleDeclarations);
-        attributes.push(createClassAttrForNode(node));
+
+      if (hasStyles) {
+        updateCssRule(context, cssRule, className!, parentRule, styleDeclarations);
+        attributes.push(createClassAttrForNode(node, node.htmlClass));
       } else {
         removeCssRule(context, cssRule, node);
       }
@@ -307,6 +323,9 @@ function genNodeAstLoopChildren(node: SceneNode2) {
     if (child.skip) {
       continue;
     }
+    const context = child.nodeContext;
+    if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
+    context.parentIsRootInComponent = node.nodeContext!.isRootInComponent;
     const childTsx = genNodeAst(child);
     if (childTsx) {
       if (Array.isArray(childTsx)) {

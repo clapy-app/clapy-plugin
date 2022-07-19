@@ -5,12 +5,20 @@ import equal from 'fast-deep-equal';
 import lodashPkg from 'lodash';
 
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { NodeContext } from '../code.model.js';
+import type { InstanceContext, NodeContext } from '../code.model.js';
 import { isInstanceContext } from '../code.model.js';
-import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import type { RulePlainExtended, ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { isText } from '../create-ts-compiler/canvas-utils.js';
+import { useBem } from '../gen-node-utils/process-nodes-utils.js';
 import { round } from '../gen-node-utils/utils-and-reset.js';
-import { mkDeclarationCss, mkValueCss } from './css-factories-low.js';
+import {
+  mkClassSelectorCss,
+  mkDeclarationCss,
+  mkRawCss,
+  mkSelectorCss,
+  mkSelectorListCss,
+  mkValueCss,
+} from './css-factories-low.js';
 
 const { isPlainObject } = lodashPkg;
 
@@ -275,4 +283,21 @@ export function mergeWithInheritedStyles(context: NodeContext, styles: Dict<Decl
   } else {
     return styles;
   }
+}
+
+export function mkSelectorsWithBem(
+  context: NodeContext,
+  className: string | false,
+  parentRule: RulePlainExtended | undefined,
+) {
+  const bem = useBem(context);
+  const increaseSpecificity = shouldIncreaseSpecificity(context) && !bem;
+  const cls = className || '_tmp';
+  const classSelector = bem && parentRule ? mkRawCss(`&__${cls}`) : mkClassSelectorCss(cls);
+  return mkSelectorListCss([mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector])]);
+}
+
+export function shouldIncreaseSpecificity(context: NodeContext) {
+  const isInstanceContext = !!(context as InstanceContext).instanceNode;
+  return isInstanceContext;
 }
