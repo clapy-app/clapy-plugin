@@ -2,56 +2,98 @@ import type { DeclarationPlain, RulePlain } from 'css-tree';
 import type { Statement } from 'typescript';
 import ts from 'typescript';
 
-import { mapTagStyles, mapTextStyles, postMapStyles } from '../6-figma-to-code-map.js';
 import { flags } from '../../../env-and-config/app-config.js';
 import { env } from '../../../env-and-config/env.js';
 import { warnOrThrow } from '../../../utils.js';
-import type { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
   CompContext,
   FigmaOverride,
-  InstanceContext,
   JsxOneOrMore,
   ModuleContext,
   NodeContext,
   ProjectContext,
   StyleOverride,
 } from '../code.model.js';
-import type { SceneNode2, TextNode2 } from '../create-ts-compiler/canvas-utils.js';
+import type { RulePlainExtended, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isComponentSet, isInstance } from '../create-ts-compiler/canvas-utils.js';
+import { mkSelectorsWithBem, shouldIncreaseSpecificity } from '../css-gen/css-factories-high.js';
 import {
+  cssAstToString,
   mkBlockCss,
-  mkClassSelectorCss,
+  mkRawCss,
   mkRuleCss,
   mkSelectorCss,
   mkSelectorListCss,
 } from '../css-gen/css-factories-low.js';
-import { stylesToList } from '../css-gen/css-type-utils.js';
+import { useBem } from './process-nodes-utils.js';
 import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
 
-export function addCssRule(context: NodeContext, className: string, styles: DeclarationPlain[] = []) {
-  const isInstanceContext = !!(context as InstanceContext).instanceNode;
-  const increaseSpecificity = isInstanceContext;
-  const classSelector = mkClassSelectorCss(className);
+export function addCssRule(
+  context: NodeContext,
+  className: string | false,
+  styleDeclarations: DeclarationPlain[],
+  node: SceneNode2,
+  skipAssignRule?: boolean,
+) {
+  const bem = useBem(context);
+  const increaseSpecificity = shouldIncreaseSpecificity(context);
+
   const { cssRules } = context.moduleContext;
-  const cssRule = mkRuleCss(
-    mkSelectorListCss([mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector])]),
-    mkBlockCss(styles),
-  );
-  cssRules.push(cssRule);
+  const selectors = mkSelectorsWithBem(context, className, node.rule);
+  const block = mkBlockCss(styleDeclarations);
+  let cssRule: RulePlain;
+  if (bem && increaseSpecificity && className) {
+    // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
+    const sel = mkSelectorListCss([mkSelectorCss([mkRawCss('&#{&}')])]);
+    const ruleAsStr = cssAstToString(mkRuleCss(sel, block));
+    cssRule = mkRuleCss(selectors, mkBlockCss([mkRawCss(ruleAsStr)]));
+  } else {
+    cssRule = mkRuleCss(selectors, block);
+  }
+  const parentRule = node.rule;
+  if (bem && parentRule) {
+    bindRuleToParent(parentRule, cssRule);
+  } else {
+    cssRules.push(cssRule);
+  }
+  if (bem && !skipAssignRule) {
+    node.rule = cssRule;
+  }
   return cssRule;
 }
 
-export function updateCssRuleClassName(context: NodeContext, cssRule: RulePlain, className: string) {
-  const isInstanceContext = !!(context as InstanceContext).instanceNode;
-  const increaseSpecificity = isInstanceContext;
-  const classSelector = mkClassSelectorCss(className);
-  cssRule.prelude = mkSelectorListCss([
-    mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector]),
-  ]);
+export function bindRuleToParent(parentRule: RulePlainExtended, cssRule: RulePlain) {
+  if (!parentRule.childRules) parentRule.childRules = [];
+  parentRule.childRules.push(cssRule);
+  // If the tree should be the other way around (link to parent instead of children):
+  (cssRule as RulePlainExtended).parentRule = parentRule;
+}
+
+export function updateCssRule(
+  context: NodeContext,
+  cssRule: RulePlain,
+  className: string,
+  parentRule: RulePlainExtended | undefined,
+  styleDeclarations: DeclarationPlain[],
+) {
+  const bem = useBem(context);
+  const increaseSpecificity = shouldIncreaseSpecificity(context);
+
+  cssRule.prelude = mkSelectorsWithBem(context, className, parentRule);
+
+  if (bem && increaseSpecificity) {
+    // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
+    const sel = mkSelectorListCss([mkSelectorCss([mkRawCss('&#{&}')])]);
+    const block = mkBlockCss(styleDeclarations);
+    const ruleAsStr = cssAstToString(mkRuleCss(sel, block));
+    cssRule.block.children.push(mkRawCss(ruleAsStr));
+  } else {
+    cssRule.block.children.push(...styleDeclarations);
+  }
 }
 
 export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: SceneNodeNoMethod) {
@@ -82,6 +124,13 @@ export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode
     node.className = className;
   }
   return className;
+}
+
+export function mkHtmlFullClass(context: NodeContext, className: string, parentClassName?: string) {
+  // If following the BEM conventions, the HTML class name includes the parent class name.
+  // So mkHtmlFullClass needs to be called in the right order, from parent to child.
+  const bem = useBem(context);
+  return bem && parentClassName ? `${parentClassName}__${className || ''}` : className || '';
 }
 
 export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNode2, swapBaseName?: string) {
@@ -269,44 +318,10 @@ export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 |
   return !nodeIsInstance || !nextNodeIsInstance || node.mainComponent!.id === nextNode.mainComponent!.id; // = not swapped in Figma
 }
 
-export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
-  const { moduleContext } = context;
-
-  // Add text styles
-  let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-  if (!ast) {
-    warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
-    return;
-  }
-
-  const flexStyles: Dict<DeclarationPlain> = {};
-  mapTagStyles(context, node, flexStyles);
-
-  if (!context.parentStyles || Object.keys(flexStyles).length) {
-    Object.assign(styles, flexStyles);
-    styles = postMapStyles(context, node, styles);
-    const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
-    if (styleDeclarations.length) {
-      const className = getOrGenClassName(moduleContext, node);
-      addCssRule(context, className, styleDeclarations);
-      attributes.push(createClassAttrForNode(node));
-    }
-    ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
-  } else {
-    styles = postMapStyles(context, node, styles);
-    Object.assign(context.parentStyles, styles);
-    // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
-    // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
-
-    // return txt;
-  }
-  return ast;
-}
-
-export function createClassAttrForNode(node: SceneNode2) {
+export function createClassAttrForNode(node: SceneNode2, className?: string) {
+  const className2 = className || node.className;
   const overrideEntry: BaseStyleOverride = {
-    overrideValue: node.className,
+    overrideValue: className2,
     propValue: node.classOverride ? node.className : undefined,
   };
   return mkClassAttr2(overrideEntry);

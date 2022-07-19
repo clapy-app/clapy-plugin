@@ -46,13 +46,20 @@ interface Props {
 interface AdvancedOptions {
   zip?: boolean;
   scss?: boolean;
+  bem?: boolean;
 }
+
+const defaultOptions: AdvancedOptions = {
+  scss: env.isDev,
+  bem: env.isDev,
+};
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
+  const [scssSelected, setScssSelected] = useState<boolean>(!!defaultOptions.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
 
   const state: MyStates = isLoading
@@ -65,7 +72,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'selectionko'
     : 'noselection';
 
-  const advancedOptionsRef = useRef<AdvancedOptions>({});
+  const advancedOptionsRef = useRef<AdvancedOptions>({ ...defaultOptions });
 
   const updateAdvancedOption = useCallback((event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
     if (!event.target.name) {
@@ -75,6 +82,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       return;
     }
     advancedOptionsRef.current[event.target.name as keyof AdvancedOptions] = checked;
+
+    // Specific state updates for the UI
+    if (event.target.name === 'scss') {
+      setScssSelected(checked);
+    }
   }, []);
 
   const generateCode = useCallbackAsync2(async () => {
@@ -239,11 +251,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 >
                   <FormControlLabel
                     control={
-                      <Switch
-                        name='zip'
-                        onChange={updateAdvancedOption}
-                        defaultChecked={advancedOptionsRef.current.zip}
-                      />
+                      <Switch name='zip' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.zip} />
                     }
                     label='Download as zip'
                     disabled={isLoading}
@@ -252,16 +260,26 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
                   <FormControlLabel
                     control={
-                      <Switch
-                        name='scss'
-                        onChange={updateAdvancedOption}
-                        defaultChecked={advancedOptionsRef.current.scss}
-                      />
+                      <Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.scss} />
                     }
                     label='SCSS instead of CSS (beta)'
                     disabled={isLoading}
                   />
                 </Tooltip>
+                {scssSelected && (
+                  <Tooltip
+                    title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
+                    disableInteractive
+                  >
+                    <FormControlLabel
+                      control={
+                        <Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.bem} />
+                      }
+                      label='Indent classes with BEM convention'
+                      disabled={isLoading}
+                    />
+                  </Tooltip>
+                )}
               </FormGroup>
             </AccordionDetails>
           </Accordion>

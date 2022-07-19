@@ -1,4 +1,4 @@
-import type { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain, RulePlain } from 'css-tree';
 import type ts from 'typescript';
 
 import type { Nil } from '../../../common/general-utils.js';
@@ -66,6 +66,8 @@ export interface Masker {
   y: number;
 }
 
+export type RulePlainExtended = RulePlain & { parentRule?: RulePlain; childRules?: RulePlain[] };
+
 interface TextExtender {
   _textSegments?: TextSegment2[];
   _segmentsStyles?: Dict<DeclarationPlain>[];
@@ -108,6 +110,8 @@ interface GlobalExtender {
   textSkipStyles?: boolean; // For text nodes
   svgPathVarName?: string; // For SVG nodes
   extraAttributes?: ts.JsxAttribute[];
+  rule?: RulePlainExtended;
+  htmlClass?: string;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.

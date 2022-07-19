@@ -252,6 +252,7 @@ export interface ExtraConfig {
   output?: 'csb' | 'zip';
   useViteJS?: boolean;
   scss?: boolean;
+  bem?: boolean;
 }
 
 export type SVGsExtracted = Dict<{ svg: string; name: string }>;

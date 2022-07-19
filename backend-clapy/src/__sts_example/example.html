@@ -1,0 +1,71 @@
+<div (click)="setClicked()">
+    <div class="promotion-filters">
+        <button class="promotion__filter-button icon-bonuses"
+                [ngClass]="getFilterIconActiveClass()"
+                (click)="resetPromosFilter()">
+            <span class="promotion__filter-text">{{ 'PROMOTIONS.FILTER.ALL' | translate }}</span>
+        </button>
+        <button class="promotion__filter-button icon-sports"
+                [ngClass]="getFilterIconActiveClass(productType.Sports)"
+                (click)="filterPromos(productType.Sports)">
+            <span class="promotion__filter-text">{{ 'PROMOTIONS.FILTER.SPORTS' | translate }}</span>
+        </button>
+        <button class="promotion__filter-button icon-casino"
+                [ngClass]="getFilterIconActiveClass(productType.Casino)"
+                (click)="filterPromos(productType.Casino)">
+            <span class="promotion__filter-text">{{ 'PROMOTIONS.FILTER.CASINO' | translate }}</span>
+        </button>
+    </div>
+    <div class="promotion-list">
+        <div class="promotion__item"
+             *ngFor="let promo of promos; trackBy: trackByFn"
+             (click)="setClicked(promo.id, $event)"
+             [ngClass]="{ 'promotion__item--clicked': promo.id === clickedPromoId }"
+             [ngStyle]="{ display: promo.product === productFilter || !productFilter ? 'flex' : 'none' }">
+            <aside class="promotion__bg">
+                <img class="promotion__bg-img"
+                     stsBetCloudflareImageMerger
+                     [symbol]="isDesktop ? promo.image : promo.mobileImage"
+                     [bg]="promo.background"
+                     [mobileSize]="{ height: 184, width: 265 }"
+                     [tabletSize]="{ height: 184, width: 275 }"
+                     [desktopSize]="{ height: 250, width: 538 }"
+                     [alt]="promo.header" />
+                <div class="promotion__trapezoid promotion__trapezoid--small"></div>
+                <div class="promotion__trapezoid promotion__trapezoid--large"></div>
+                <div class="promotion__terms" *ngIf="promo.additionalText">
+                    <p class="promotion__terms-title">{{ 'PROMOTIONS.TERMS.AND.CONDITIONS' | translate }}</p>
+                    <p class="promotion__terms-text">
+                        <sts-bet-seo-paragraph [seoText]="promo.additionalText"></sts-bet-seo-paragraph>
+                    </p>
+                </div>
+            </aside>
+            <i class="promotion__item-icon icon-{{ promo.product }}" *ngIf="promo.product"></i>
+            <div class="promotion__content">
+                <h2 class="promotion__header">{{ promo.header }}</h2>
+                <p class="promotion__sub-header">{{ promo.subHeader }}</p>
+                <div class="promotion__buttons">
+                    <a class="promotion__button promotion__button--info"
+                       [stsBetRouterLinkWithHref]="promo.slug | localize"
+                       [externalCanNavigate]="isDesktop || !promo.additionalText || promo.id === clickedPromoId"
+                       [target]="promo.target"
+                       [title]="'PROMOTIONS.MORE.INFO' | translate">{{ 'PROMOTIONS.MORE.INFO' | translate }}</a>
+                    <ng-container *ngIf="promo.buttonType === buttonType.Navigate; else optBtn">
+                        <a class="promotion__button promotion__button--cta"
+                           *ngIf="promo.promoButtonText"
+                           [stsBetRouterLinkWithHref]="promo.promoButtonUrl | localize"
+                           [externalCanNavigate]="isDesktop || !promo.additionalText || promo.id === clickedPromoId"
+                           [target]="promo.promoButtonTarget"
+                           [title]="promo.promoButtonText">{{ promo.promoButtonText }}</a>
+                    </ng-container>
+                    <ng-template #optBtn>
+                        <button (click)="handleOptBtn(promo.promoButtonUrl, promo.header)"
+                                class="promotion__button promotion__button--cta">{{ promo.promoButtonText }}</button>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="promotion-load" *ngIf="promos && showLoadMoreButton"
+            (click)="loadOldPromos()">{{ 'PROMOTIONS.COMPLETED.PROMOTIONS' | translate }}</button>
+</div>
