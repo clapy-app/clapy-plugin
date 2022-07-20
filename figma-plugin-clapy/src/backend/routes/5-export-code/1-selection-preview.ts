@@ -12,7 +12,7 @@ export function selectionPreview(next: NextFn<string | undefined | false>) {
   sendSelectionPreview = async () => next(await generatePreview());
   figma.on('selectionchange', sendSelectionPreview);
   // Initial emit, for dev, when the figma plugin is open after the webapp.
-  sendSelectionPreview();
+  setTimeout(sendSelectionPreview);
 }
 
 export async function generatePreview() {

@@ -4,7 +4,7 @@ import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { isFlexNode, isGroup, isLine, isVector } from '../create-ts-compiler/canvas-utils.js';
-import { addStyle } from '../css-gen/css-factories-high.js';
+import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { round } from '../gen-node-utils/utils-and-reset.js';
 
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -49,5 +49,7 @@ export function postTransform(context: NodeContext, node: ValidNode, styles: Dic
   }
   if (context.tranforms) {
     addStyle(context, node, styles, 'transform', context.tranforms.join(' '));
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'transform');
   }
 }
