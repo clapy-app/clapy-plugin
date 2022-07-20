@@ -151,6 +151,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
+      context.notOverridingAnotherClass = true;
       addTextOverride(context, node, styles);
     } else if (isVector(node)) {
       const { intermediateNodes } = context;
@@ -163,6 +164,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       if (nextIntermediateNode && !isVector(nextIntermediateNode)) {
         warnNode(node, `nextIntermediateNode ${nextIntermediateNode.name} is not a SVG although the node is a SVG.`);
       } else {
+        context.notOverridingAnotherClass = true;
         const intermediateNodeSvg = nextIntermediateNode ? readSvg(context, nextIntermediateNode) : undefined;
         if (svg && svg !== intermediateNodeSvg) {
           const svgPathVarName = registerSvgForWrite(context, svg);

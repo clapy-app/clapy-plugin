@@ -1,4 +1,4 @@
-import type { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
 
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
@@ -16,7 +16,7 @@ import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const inheritedStyle = getInheritedNodeStyle(context, 'position');
-  if (!inheritedStyle) {
+  if (!inheritedStyle || ((inheritedStyle.value as ValuePlain).children[0] as Raw).value === 'initial') {
     addStyle(context, node, styles, 'position', 'relative');
   }
 }
@@ -42,7 +42,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     !isRootNode &&
     !(isRootInComponent && isComponent(node) && isPage(node.parent)) &&
     (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
-  //
   if (parentIsAbsolute) {
     addStyle(context, node, styles, 'position', 'absolute');
     const { horizontal, vertical } =
