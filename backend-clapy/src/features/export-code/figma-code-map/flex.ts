@@ -121,7 +121,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // If no parent rule, it means it's already stretch (the default one).
   if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || (context.isRootNode && !parentCounterAxisHugContents)) {
     addStyle(context, node, styles, 'align-self', 'stretch');
-    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'auto');
+    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'initial');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
