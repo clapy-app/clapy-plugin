@@ -83,6 +83,9 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         // Apply the first opacity I find.
         // But not ideal, the whole content has opacity instead of just the fill.
         // addOpacity(context, node, styles, fill.opacity);
+        if (fill.opacity != null && fill.opacity !== 1) {
+          console.warn(`UNSUPPORTED fill opacity; ignored - node: ${node.name}`);
+        }
 
         // Rotation in background is not supported yet. The below code does not work that well.
         // if (fill.rotation && !rotation) {

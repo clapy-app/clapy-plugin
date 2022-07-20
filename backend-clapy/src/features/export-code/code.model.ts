@@ -109,6 +109,7 @@ export interface NodeContext {
   // Provided for instances (interface below). It is added here as an optional field so that
   // when writing style, we can have a different behavior depending on the original component styles
   nodeOfComp?: SceneNode2;
+  notOverridingAnotherClass?: boolean;
 }
 
 export type TextOValue = JsxOneOrMore | string | false;

@@ -294,7 +294,12 @@ export function mkSelectorsWithBem(
   const increaseSpecificity = shouldIncreaseSpecificity(context) && !bem;
   const cls = className || '_tmp';
   const classSelector = bem && parentRule ? mkRawCss(`&__${cls}`) : mkClassSelectorCss(cls);
-  return mkSelectorListCss([mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector])]);
+  let overrideDepth = context.notOverridingAnotherClass ? 1 : (context as InstanceContext).intermediateNodes?.length;
+  // if the CSS selector specificity should be increased, the selector is repeated `overrideDepth` times.
+  // (hack for overrides when using CSS modules)
+  return mkSelectorListCss([
+    mkSelectorCss(increaseSpecificity ? Array(overrideDepth).fill(classSelector) : [classSelector]),
+  ]);
 }
 
 export function shouldIncreaseSpecificity(context: NodeContext) {

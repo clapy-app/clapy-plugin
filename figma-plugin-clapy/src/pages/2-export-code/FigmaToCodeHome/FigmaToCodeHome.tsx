@@ -50,8 +50,8 @@ interface AdvancedOptions {
 }
 
 const defaultOptions: AdvancedOptions = {
-  scss: env.isDev,
-  bem: env.isDev,
+  // scss: env.isDev,
+  // bem: env.isDev,
 };
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
