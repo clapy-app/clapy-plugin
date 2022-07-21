@@ -20,20 +20,21 @@ import { writeSVGReactComponents } from './7-write-svgr.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
 import type { BaseStyleOverride, CodeDict, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model.js';
-import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
+import { readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
-import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
+import { separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
-import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals.js';
-import { addMUIPackages } from './frameworks/mui/mui-add-packages.js';
-import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './frameworks/scss/scss-utils.js';
-import { genStyles } from './frameworks/style-dictionary/gen-styles.js';
-import type { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
+import { frameworkConnectors } from './frameworks/framework-connectors.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
 import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
+import { addMUIProviders, addMUIProvidersImports } from './tech-integration/mui/mui-add-globals.js';
+import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
+import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './tech-integration/scss/scss-utils.js';
+import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
+import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
@@ -50,8 +51,12 @@ export async function exportCode(
   if (env.isDev) {
     uploadToCsb = false;
   }
-  if (!extraConfig.output) extraConfig.output = 'csb';
+  if (!extraConfig.output) {
+    extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
+  }
   extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
+  const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
+
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
@@ -77,7 +82,7 @@ export async function exportCode(
   const appCompDir = 'src';
   const appCompName = 'App';
   // Initialize the project template with base files
-  const filesCsb = await readReactTemplateFiles(extraConfig.useViteJS ? reactViteDir : reactCRADir);
+  const filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
   const appCssPath = getAppCssPathAndRenameSCSS(filesCsb, extraConfig, appCompDir, appCompName);
   // If useful, resources['tsconfig.json']
   const [tsFiles, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(filesCsb);

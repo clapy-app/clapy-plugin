@@ -1,8 +1,6 @@
 import { exportTemplatesDir } from '../../../root.js';
 import type { CodeDict, ProjectContext } from '../code.model.js';
 
-export const reactCRADir = `${exportTemplatesDir}/react-cra`;
-export const reactViteDir = `${exportTemplatesDir}/react-vite`;
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
 export function getIndexHtmlPath({ extraConfig: { useViteJS } }: ProjectContext) {

@@ -4,8 +4,8 @@ import type ts from 'typescript';
 import type { Nil } from '../../../common/general-utils.js';
 import type { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
-import type { MUIConfig } from '../frameworks/mui/mui-config.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
+import type { MUIConfig } from '../tech-integration/mui/mui-config.js';
 
 // Most of this file has a big overlap with sb-serialize.model.ts. To refactor later.
 

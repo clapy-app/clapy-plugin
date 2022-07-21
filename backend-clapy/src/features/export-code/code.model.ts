@@ -18,7 +18,7 @@ import type {
   SceneNode2,
 } from './create-ts-compiler/canvas-utils.js';
 import type { CssRootNode } from './css-gen/css-factories-low.js';
-import type { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken.js';
+import type { SingleToken } from './tech-integration/style-dictionary/types/types/tokens/SingleToken.js';
 
 export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;

@@ -123,6 +123,10 @@ export function isRectangle2(node: BaseNode2 | SceneNode2 | Nil): node is Rectan
   return node?.type === 'RECTANGLE';
 }
 
+export function isLine0(type: string): boolean {
+  return type === 'LINE';
+}
+
 export function isLine(node: BaseNode2 | SceneNode2 | Nil): node is LineNode {
   return node?.type === 'LINE';
 }

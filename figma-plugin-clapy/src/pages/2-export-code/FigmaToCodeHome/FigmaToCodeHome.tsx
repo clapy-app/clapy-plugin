@@ -2,13 +2,17 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import Radio from '@mui/material/Radio';
+import type { RadioGroupProps } from '@mui/material/RadioGroup';
+import RadioGroup from '@mui/material/RadioGroup';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
@@ -20,7 +24,12 @@ import { apiPost } from '../../../common/http.utils.js';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
-import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
+import type {
+  CSBResponse,
+  ExportCodePayload,
+  ExportImageMap2,
+  UserSettings,
+} from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env.js';
@@ -43,24 +52,31 @@ interface Props {
   selectionPreview: string | false | undefined;
 }
 
-interface AdvancedOptions {
-  zip?: boolean;
-  scss?: boolean;
-  bem?: boolean;
-}
-
-const defaultOptions: AdvancedOptions = {
+let defaultSettings: UserSettings = {
+  framework: 'react',
   // scss: env.isDev,
   // bem: env.isDev,
 };
+
+type UserSettingsKeys = keyof UserSettings;
+type UserSettingsValues = NonNullable<UserSettings[UserSettingsKeys]>;
+
+const userSettings = { ...defaultSettings };
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
-  const [scssSelected, setScssSelected] = useState<boolean>(!!defaultOptions.scss);
+  const [scssSelected, setScssSelected] = useState<boolean>(!!defaultSettings.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
+
+  useEffect(
+    () => () => {
+      defaultSettings = { ...userSettings };
+    },
+    [],
+  );
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -72,22 +88,23 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'selectionko'
     : 'noselection';
 
-  const advancedOptionsRef = useRef<AdvancedOptions>({ ...defaultOptions });
+  const updateAdvancedOption = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, checked: UserSettingsValues) => {
+      if (!event.target.name) {
+        handleError(
+          new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
+        );
+        return;
+      }
+      (userSettings as any)[event.target.name as UserSettingsKeys] = checked;
 
-  const updateAdvancedOption = useCallback((event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-    if (!event.target.name) {
-      handleError(
-        new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
-      );
-      return;
-    }
-    advancedOptionsRef.current[event.target.name as keyof AdvancedOptions] = checked;
-
-    // Specific state updates for the UI
-    if (event.target.name === 'scss') {
-      setScssSelected(checked);
-    }
-  }, []);
+      // Specific state updates for the UI
+      if (event.target.name === 'scss') {
+        setScssSelected(checked as boolean);
+      }
+    },
+    [],
+  );
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
@@ -126,7 +143,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
-        const { zip, ...userSettings } = advancedOptionsRef.current;
         const nodes: ExportCodePayload = {
           parent,
           root,
@@ -137,7 +153,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            output: zip ? 'zip' : 'csb',
+            // output: to remove later. It's defined in the webservice.
+            output: userSettings.zip ? 'zip' : 'csb',
             ...userSettings,
           },
           tokens,
@@ -232,62 +249,89 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      {state !== 'generated' && (
-        <>
-          <Accordion classes={{ root: classes.accordionRoot }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls='panel1a-content'
-              id='panel1a-header'
-              disabled={isLoading}
-            >
-              <Typography>Advanced options</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <FormGroup>
-                <Tooltip
-                  title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
-                  disableInteractive
-                >
-                  <FormControlLabel
-                    control={
-                      <Switch name='zip' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.zip} />
-                    }
-                    label='Download as zip'
-                    disabled={isLoading}
-                  />
-                </Tooltip>
-                <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
-                  <FormControlLabel
-                    control={
-                      <Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.scss} />
-                    }
-                    label='SCSS instead of CSS (beta)'
-                    disabled={isLoading}
-                  />
-                </Tooltip>
-                {scssSelected && (
-                  <Tooltip
-                    title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
-                    disableInteractive
+      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' && classes.hide}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls='panel1a-content'
+          id='panel1a-header'
+          disabled={isLoading}
+        >
+          <Typography>Advanced options</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <FormGroup>
+            {env.isDev && (
+              <Tooltip title='Framework' disableInteractive placement='bottom-start'>
+                <FormControl disabled={isLoading}>
+                  <RadioGroup
+                    row
+                    name='framework'
+                    onChange={updateAdvancedOption as RadioGroupProps['onChange']}
+                    defaultValue={defaultSettings.framework}
                   >
-                    <FormControlLabel
-                      control={
-                        <Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.bem} />
-                      }
-                      label='Indent classes with BEM convention'
-                      disabled={isLoading}
-                    />
-                  </Tooltip>
-                )}
-              </FormGroup>
-            </AccordionDetails>
-          </Accordion>
-          <Button onClick={generateCode} disabled={state === 'loading' || state === 'noselection'} loading={isLoading}>
-            &lt; Generate code &gt;
-          </Button>
-        </>
-      )}
+                    <FormControlLabel value='react' control={<Radio />} label='React' />
+                    <FormControlLabel value='angular' control={<Radio />} label='Angular' />
+                  </RadioGroup>
+                </FormControl>
+              </Tooltip>
+            )}
+            <Tooltip
+              title='If enabled, the selected node will be stretched to use all width and height available, even if "Fill container" is not configured. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
+              disableInteractive
+              placement='bottom-start'
+            >
+              <FormControlLabel
+                control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
+                label='Full width/height'
+                disabled={isLoading}
+              />
+            </Tooltip>
+            <Tooltip
+              title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+              disableInteractive
+              placement='bottom-start'
+            >
+              <FormControlLabel
+                control={<Switch name='zip' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.zip} />}
+                label='Download as zip'
+                disabled={isLoading}
+              />
+            </Tooltip>
+            <Tooltip
+              title='If enabled, styles will be written in .scss files instead of .css.'
+              disableInteractive
+              placement='bottom-start'
+            >
+              <FormControlLabel
+                control={<Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.scss} />}
+                label='SCSS instead of CSS (beta)'
+                disabled={isLoading}
+              />
+            </Tooltip>
+            {scssSelected && (
+              <Tooltip
+                title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
+                disableInteractive
+                placement='bottom-start'
+              >
+                <FormControlLabel
+                  control={<Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.bem} />}
+                  label='Indent classes with BEM convention'
+                  disabled={isLoading}
+                />
+              </Tooltip>
+            )}
+          </FormGroup>
+        </AccordionDetails>
+      </Accordion>
+      <Button
+        onClick={generateCode}
+        disabled={state === 'loading' || state === 'noselection'}
+        loading={isLoading}
+        className={state === 'generated' && classes.hide}
+      >
+        &lt; Generate code &gt;
+      </Button>
       {state === 'generated' && (
         <>
           <div className={classes.openResult}>

@@ -19,6 +19,7 @@ import {
   isInstance,
   isInstance2,
   isLayout2,
+  isLine0,
   isRectangle0,
   isShapeExceptDivable,
 } from '../../common/node-type-utils.js';
@@ -73,9 +74,7 @@ export function shouldGroupAsSVG(nodeOriginal: SceneNode) {
   // TODO reactivate after having fixed the divider bug on Clément's wireframe
   // if (!(node.children.length > 1)) return false;
 
-  // The rectangle is neutral. If mixed with shapes only, it allows grouping as SVG.
-  // If no other shapes, it should generate divs.
-  let foundNonRectangleShape = false;
+  let foundNonNeutralShape = false;
   // If one of the children is not a shape (or neutral), don't group as SVG
   for (const child of children) {
     const { type } = child;
@@ -83,10 +82,10 @@ export function shouldGroupAsSVG(nodeOriginal: SceneNode) {
     const { isMask, fills } = childAsFrame;
     const isShape0 = isShapeExceptDivable(type, isMask);
     const isGrp = isGroup0(type);
-    if ((isShape0 || isGrp) && !foundNonRectangleShape) foundNonRectangleShape = true;
+    if ((isShape0 || isGrp) && !foundNonNeutralShape) foundNonNeutralShape = true;
     const isShape =
       isShape0 ||
-      isRectangleWithoutImage(type, fills as Paint[]) ||
+      isNeutralShape(type, fills) ||
       ((isGrp || isEmptyFrame(type, fills as Paint[], childAsFrame.strokes, childAsFrame.effects)) &&
         shouldGroupAsSVG(child));
     if (!isShape) {
@@ -95,7 +94,13 @@ export function shouldGroupAsSVG(nodeOriginal: SceneNode) {
   }
   // Otherwise, group as SVG if there is at least one shape (apart from neutrals).
   // If neutrals only, render as HTML (div).
-  return foundNonRectangleShape;
+  return foundNonNeutralShape;
+}
+
+// The rectangle and the line are neutral. If mixed with shapes only, it allows grouping as SVG.
+// If no other shapes, it should generate divs.
+function isNeutralShape(type: SceneNode['type'], fills: FrameNode['fills']) {
+  return isRectangleWithoutImage(type, fills as Paint[]) || isLine0(type);
 }
 
 type WithCompMixin2 = AnyNode3 & {

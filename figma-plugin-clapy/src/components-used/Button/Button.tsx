@@ -16,9 +16,9 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export const Button: FC<Props> = memo(function Button(props) {
-  const { disabled, loading, ...buttonProps } = props;
+  const { disabled, loading, className, ...buttonProps } = props;
   return (
-    <button className={classes.root} disabled={disabled} {...buttonProps}>
+    <button className={`${classes.root} ${className}`} disabled={disabled} {...buttonProps}>
       <_ButtonBase {...props} />
     </button>
   );
