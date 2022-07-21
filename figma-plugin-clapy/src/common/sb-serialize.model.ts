@@ -246,6 +246,7 @@ export type OmitMethods<T> = {
 };
 
 export interface UserSettings {
+  page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;

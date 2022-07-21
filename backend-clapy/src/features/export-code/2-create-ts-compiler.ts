@@ -51,7 +51,9 @@ export async function exportCode(
   if (env.isDev) {
     uploadToCsb = false;
   }
-  if (!extraConfig.output) extraConfig.output = 'csb';
+  if (!extraConfig.output) {
+    extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
+  }
   extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
 
