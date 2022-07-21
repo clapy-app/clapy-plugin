@@ -17,6 +17,7 @@ export function getCSSExtension(extraConfig: ExtraConfig) {
   return extraConfig.scss ? 'scss' : 'css';
 }
 
+/** @deprecated */
 export function getAppCssPathAndRenameSCSS(
   filesCsb: CodeDict,
   extraConfig: ExtraConfig,

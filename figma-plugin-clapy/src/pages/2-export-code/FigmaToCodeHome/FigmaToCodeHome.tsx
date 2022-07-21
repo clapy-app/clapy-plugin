@@ -2,8 +2,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import Radio from '@mui/material/Radio';
+import type { RadioGroupProps } from '@mui/material/RadioGroup';
+import RadioGroup from '@mui/material/RadioGroup';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -20,7 +24,12 @@ import { apiPost } from '../../../common/http.utils.js';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
-import type { CSBResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
+import type {
+  CSBResponse,
+  ExportCodePayload,
+  ExportImageMap2,
+  UserSettings,
+} from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { env } from '../../../environment/env.js';
@@ -43,16 +52,13 @@ interface Props {
   selectionPreview: string | false | undefined;
 }
 
-interface AdvancedOptions {
-  zip?: boolean;
-  scss?: boolean;
-  bem?: boolean;
-}
-
-const defaultOptions: AdvancedOptions = {
+const defaultOptions: UserSettings = {
   // scss: env.isDev,
   // bem: env.isDev,
 };
+
+type UserSettingsKeys = keyof UserSettings;
+type UserSettingsValues = NonNullable<UserSettings[UserSettingsKeys]>;
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const { selectionPreview } = props;
@@ -72,22 +78,25 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'selectionko'
     : 'noselection';
 
-  const advancedOptionsRef = useRef<AdvancedOptions>({ ...defaultOptions });
+  const advancedOptionsRef = useRef<UserSettings>({ ...defaultOptions });
 
-  const updateAdvancedOption = useCallback((event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-    if (!event.target.name) {
-      handleError(
-        new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
-      );
-      return;
-    }
-    advancedOptionsRef.current[event.target.name as keyof AdvancedOptions] = checked;
+  const updateAdvancedOption = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, checked: UserSettingsValues) => {
+      if (!event.target.name) {
+        handleError(
+          new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
+        );
+        return;
+      }
+      (advancedOptionsRef.current as any)[event.target.name as UserSettingsKeys] = checked;
 
-    // Specific state updates for the UI
-    if (event.target.name === 'scss') {
-      setScssSelected(checked);
-    }
-  }, []);
+      // Specific state updates for the UI
+      if (event.target.name === 'scss') {
+        setScssSelected(checked as boolean);
+      }
+    },
+    [],
+  );
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
@@ -245,9 +254,20 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
+                {env.isDev && (
+                  <Tooltip title='Framework' disableInteractive placement='bottom-start'>
+                    <FormControl>
+                      <RadioGroup row name='framework' onChange={updateAdvancedOption as RadioGroupProps['onChange']}>
+                        <FormControlLabel value='react' control={<Radio />} label='React' />
+                        <FormControlLabel value='angular' control={<Radio />} label='Angular' />
+                      </RadioGroup>
+                    </FormControl>
+                  </Tooltip>
+                )}
                 <Tooltip
                   title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
                   disableInteractive
+                  placement='bottom-start'
                 >
                   <FormControlLabel
                     control={
@@ -257,7 +277,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     disabled={isLoading}
                   />
                 </Tooltip>
-                <Tooltip title='If enabled, styles will be written in .scss files instead of .css.' disableInteractive>
+                <Tooltip
+                  title='If enabled, styles will be written in .scss files instead of .css.'
+                  disableInteractive
+                  placement='bottom-start'
+                >
                   <FormControlLabel
                     control={
                       <Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultOptions.scss} />
@@ -270,6 +294,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                   <Tooltip
                     title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
                     disableInteractive
+                    placement='bottom-start'
                   >
                     <FormControlLabel
                       control={
