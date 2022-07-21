@@ -13,7 +13,6 @@ import type { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectConte
 import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
-import { getCSSExtension } from './frameworks/scss/scss-utils.js';
 import {
   getComponentName,
   mkCompFunction,
@@ -22,6 +21,7 @@ import {
   mkPropInterface,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import { getCSSExtension } from './tech-integration/scss/scss-utils.js';
 
 const { factory } = ts;
 

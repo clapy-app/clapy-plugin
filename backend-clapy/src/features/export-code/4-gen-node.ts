@@ -32,7 +32,6 @@ import {
 } from './create-ts-compiler/canvas-utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
-import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './frameworks/mui/mui-utils.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
@@ -52,6 +51,7 @@ import {
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
+import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './tech-integration/mui/mui-utils.js';
 
 export function prepareNode(context: NodeContext, node: SceneNode2) {
   try {

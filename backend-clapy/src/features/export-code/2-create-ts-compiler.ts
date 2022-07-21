@@ -26,14 +26,14 @@ import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-comp
 import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
-import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals.js';
-import { addMUIPackages } from './frameworks/mui/mui-add-packages.js';
-import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './frameworks/scss/scss-utils.js';
-import { genStyles } from './frameworks/style-dictionary/gen-styles.js';
-import type { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
 import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
+import { addMUIProviders, addMUIProvidersImports } from './tech-integration/mui/mui-add-globals.js';
+import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
+import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './tech-integration/scss/scss-utils.js';
+import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
+import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
