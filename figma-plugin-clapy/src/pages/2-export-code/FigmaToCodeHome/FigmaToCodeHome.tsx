@@ -276,7 +276,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               </Tooltip>
             )}
             <Tooltip
-              title='If enabled, the selected node will be stretched to use all width and height available, even if "Fill container" is not configured. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
+              title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not configured. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
               disableInteractive
               placement='bottom-start'
             >

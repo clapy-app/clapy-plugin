@@ -67,6 +67,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             { border: hex },
           );
           addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
+          if (node.dashPattern.length === 2) {
+            addStyle(context, node, styles, 'border-style', 'dashed');
+          } else {
+            resetStyleIfOverriding(context, node, styles, 'border-style');
+          }
           resetStyleIfOverriding(context, node, styles, 'outline');
           resetStyleIfOverriding(context, node, styles, 'outline-offset');
           resetStyleIfOverriding(context, node, styles, 'border');
@@ -87,6 +92,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             { borderWidth: [borderWidth, 'px', 0.5] },
             { border: hex },
           );
+          if (node.dashPattern.length === 2) {
+            addStyle(context, node, styles, 'outline-style', 'dashed');
+          } else {
+            resetStyleIfOverriding(context, node, styles, 'outline-style');
+          }
           resetStyleIfOverriding(context, node, styles, 'outline-offset');
           resetStyleIfOverriding(context, node, styles, 'border');
           resetStyleIfOverriding(context, node, styles, 'border-top');
@@ -102,6 +112,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
       } else if (node.width <= 1) {
         addStyle(context, node, styles, 'border-right', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
         addStyle(context, node, styles, 'margin-right', { borderWidth: [borderWidth, 'px', -1] });
+        if (node.dashPattern.length === 2) {
+          addStyle(context, node, styles, 'border-style', 'dashed');
+        } else {
+          resetStyleIfOverriding(context, node, styles, 'border-style');
+        }
         resetStyleIfOverriding(context, node, styles, 'outline');
         resetStyleIfOverriding(context, node, styles, 'outline-offset');
         resetStyleIfOverriding(context, node, styles, 'border');
@@ -123,6 +138,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
           { border: hex },
         );
         addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
+        if (node.dashPattern.length === 2) {
+          addStyle(context, node, styles, 'border-style', 'dashed');
+        } else {
+          resetStyleIfOverriding(context, node, styles, 'border-style');
+        }
         resetStyleIfOverriding(context, node, styles, 'outline');
         resetStyleIfOverriding(context, node, styles, 'outline-offset');
         resetStyleIfOverriding(context, node, styles, 'border');
@@ -142,6 +162,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         } else {
           resetStyleIfOverriding(context, node, styles, 'outline-offset');
         }
+        if (node.dashPattern.length === 2) {
+          addStyle(context, node, styles, 'outline-style', 'dashed');
+        } else {
+          resetStyleIfOverriding(context, node, styles, 'outline-style');
+        }
         resetStyleIfOverriding(context, node, styles, 'border');
         resetStyleIfOverriding(context, node, styles, 'border-top');
         resetStyleIfOverriding(context, node, styles, 'border-right');
@@ -159,6 +184,7 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
   } else {
     resetStyleIfOverriding(context, node, styles, 'outline');
     resetStyleIfOverriding(context, node, styles, 'outline-offset');
+    resetStyleIfOverriding(context, node, styles, 'outline-style');
     resetStyleIfOverriding(context, node, styles, 'border');
     resetStyleIfOverriding(context, node, styles, 'border-top');
     resetStyleIfOverriding(context, node, styles, 'border-right');

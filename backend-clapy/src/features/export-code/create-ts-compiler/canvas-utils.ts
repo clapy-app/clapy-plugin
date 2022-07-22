@@ -268,14 +268,21 @@ export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSeg
 export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
 
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
-  return (isFrame(node) || isComponent(node) || isInstance(node)) && !isVector(node);
+  return (isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node)) && !isVector(node);
 }
 
 // GroupNode doesn't have auto-layout
 export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | BooleanOperationNode2 | LineNode2;
 
 export function isBlockNode(node: BaseNode2 | SceneNode2 | Nil): node is BlockNode {
-  return isFlexNode(node) || isRectangle(node) || isGroup(node) || isBooleanOperation(node) || isLine(node);
+  return (
+    isFlexNode(node) ||
+    isRectangle(node) ||
+    isGroup(node) ||
+    isBooleanOperation(node) ||
+    isLine(node) ||
+    isComponentSet(node)
+  );
 }
 
 export type ValidNode = BlockNode | TextNode2 | VectorNodeDerived;
