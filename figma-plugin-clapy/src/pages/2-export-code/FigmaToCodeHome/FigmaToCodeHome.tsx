@@ -53,6 +53,7 @@ interface Props {
 }
 
 let defaultSettings: UserSettings = {
+  // framework: 'angular',
   framework: 'react',
   // scss: env.isDev,
   // bem: env.isDev,
