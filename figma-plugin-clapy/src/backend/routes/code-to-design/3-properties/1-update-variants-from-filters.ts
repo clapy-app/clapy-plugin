@@ -8,11 +8,11 @@ import {
   indexToCoord,
 } from '../2-update-canvas/grid-utils';
 import { removeNode, resizeNode } from '../2-update-canvas/update-canvas-utils';
-import { appConfig } from '../../../common/app-config';
-import type { ArgTypeObj, NewVariant } from '../../../common/app-models';
-import type { Args, ArgTypes } from '../../../common/sb-serialize.model';
-import { argTypesToValues as argTypeToValues, getArgDefaultValue } from '../../../common/storybook-utils';
-import { isComponentSet } from '../../common/node-type-utils';
+import { appConfig } from '../../../../common/app-config.js';
+import type { ArgTypeObj, NewVariant } from '../../../../common/app-models.js';
+import type { Args, ArgTypes } from '../../../../common/sb-serialize.model.js';
+import { argTypesToValues, getArgDefaultValue } from '../../../../common/storybook-utils.js';
+import { isComponentSet } from '../../../common/node-type-utils.js';
 
 export async function updateVariantsFromFilters(
   storyFigmaId: string,
@@ -142,7 +142,7 @@ function variantNameToArgs(name: string) {
 
 function addDefaultsToArgs(args: Args, argTypes: ArgTypes, initialArgs: Args) {
   for (const [argName, argType] of Object.entries(argTypes)) {
-    const values = argTypeToValues(argType);
+    const values = argTypesToValues(argType);
     // values undefined => unsupported argType (not a boolean or a list)
     if (!values) continue;
     const defaultValue = getArgDefaultValue(argName, initialArgs, values);

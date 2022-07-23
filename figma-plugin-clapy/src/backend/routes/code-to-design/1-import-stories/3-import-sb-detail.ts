@@ -1,8 +1,8 @@
 import { resizeNode } from '../2-update-canvas/update-canvas-utils';
-import type { SbCompSelection } from '../../../common/app-models';
-import { sbUrlIframe } from '../../../common/storybook-utils';
-import type { MyCompNode } from '../../common/node-type-utils';
-import { isFrame, isLayout, isMyComp } from '../../common/node-type-utils';
+import type { SbCompSelection } from '../../../../common/app-models';
+import { sbUrlIframe } from '../../../../common/storybook-utils';
+import type { MyCompNode } from '../../../common/node-type-utils';
+import { isFrame, isLayout, isMyComp } from '../../../common/node-type-utils';
 import type { SbStoryWithFolder } from './import-model';
 import { listVariantProps, setStoryFrameProperties } from './import-sb-utils';
 

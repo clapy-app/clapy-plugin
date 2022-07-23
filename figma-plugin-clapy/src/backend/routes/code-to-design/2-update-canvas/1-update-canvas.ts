@@ -1,5 +1,5 @@
-import type { CNode } from '../../../common/sb-serialize.model';
-import { isComponentSet } from '../../common/node-type-utils';
+import type { CNode } from '../../../../common/sb-serialize.model.js';
+import { isComponentSet } from '../../../common/node-type-utils.js';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
 

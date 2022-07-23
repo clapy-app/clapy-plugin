@@ -20,7 +20,7 @@ import type {
   TextNode2,
   VectorNode2,
 } from '../../common/sb-serialize.model';
-import type { AnyNode3 } from '../routes/5-export-code/read-figma-config-utils.js';
+import type { AnyNode3 } from '../routes/1-export-code/read-figma-config-utils.js';
 
 export function getPageById(pageId: string) {
   return figma.getNodeById(pageId) as PageNode;

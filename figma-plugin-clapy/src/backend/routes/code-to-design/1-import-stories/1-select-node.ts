@@ -1,8 +1,8 @@
-import type { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../common/app-models';
-import type { ArgTypes, Dict } from '../../../common/sb-serialize.model';
-import { sbUrlIframe } from '../../../common/storybook-utils';
-import { isComponentSet, isInstance } from '../../common/node-type-utils';
-import { getFigmaSelection } from '../../common/selection-utils';
+import type { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '../../../../common/app-models';
+import type { ArgTypes, Dict } from '../../../../common/sb-serialize.model';
+import { sbUrlIframe } from '../../../../common/storybook-utils';
+import { isComponentSet, isInstance } from '../../../common/node-type-utils';
+import { getFigmaSelection } from '../../../common/selection-utils';
 import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {

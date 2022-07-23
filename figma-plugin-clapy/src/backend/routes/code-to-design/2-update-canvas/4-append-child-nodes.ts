@@ -1,11 +1,16 @@
 import type { Property } from 'csstype';
 
 import type { RenderContext } from '../1-import-stories/import-model';
-import type { Nil } from '../../../common/app-models';
-import { entries } from '../../../common/general-utils';
-import type { CElementNode, CNode, CPseudoElementNode, MyStyles } from '../../../common/sb-serialize.model';
-import { ELEMENT_NODE, isCElementNode, isCPseudoElementNode, isCTextNode } from '../../../common/sb-serialize.model';
-import { isGroup, isText } from '../../common/node-type-utils';
+import type { Nil } from '../../../../common/app-models.js';
+import { entries } from '../../../../common/general-utils.js';
+import type { CElementNode, CNode, CPseudoElementNode, MyStyles } from '../../../../common/sb-serialize.model.js';
+import {
+  ELEMENT_NODE,
+  isCElementNode,
+  isCPseudoElementNode,
+  isCTextNode,
+} from '../../../../common/sb-serialize.model.js';
+import { isGroup, isText } from '../../../common/node-type-utils.js';
 import { cssToFontStyle } from './fonts';
 import {
   appendBackgroundColor,

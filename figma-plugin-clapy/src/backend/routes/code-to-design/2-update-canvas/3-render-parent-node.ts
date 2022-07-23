@@ -1,9 +1,9 @@
 import type { RenderContext } from '../1-import-stories/import-model';
-import { entries } from '../../../common/general-utils';
-import type { CElementNode, CNode } from '../../../common/sb-serialize.model';
-import { cssDefaults, isCElementNode } from '../../../common/sb-serialize.model';
-import type { MyCompNode } from '../../common/node-type-utils';
-import { isFrame } from '../../common/node-type-utils';
+import { entries } from '../../../../common/general-utils.js';
+import type { CElementNode, CNode } from '../../../../common/sb-serialize.model.js';
+import { cssDefaults, isCElementNode } from '../../../../common/sb-serialize.model.js';
+import type { MyCompNode } from '../../../common/node-type-utils.js';
+import { isFrame } from '../../../common/node-type-utils.js';
 import { appendChildNodes } from './4-append-child-nodes';
 import { horizontalFixedSize, verticalHugContents } from './autolayout-utils';
 import {

@@ -69,18 +69,11 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     return (
       <div className={loginHomeClasses.content}>
         <Loading />
-        {authLoading && (
-          <>
-            <p>Checking your session...</p>
-          </>
-        )}
+        {authLoading && <p>Checking your session...</p>}
         {stripeLoading && (
-          <>
-            <p>
-              The payment page has been opened in your browser. Please complete the payment there, then come back here
-              🙏
-            </p>
-          </>
+          <p>
+            The payment page has been opened in your browser. Please complete the payment there, then come back here 🙏
+          </p>
         )}
       </div>
     );

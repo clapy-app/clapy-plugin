@@ -1,8 +1,8 @@
-import type { ArgTypeObj } from '../../../common/app-models';
-import type { Args } from '../../../common/sb-serialize.model';
-import type { WithChildrenNode } from '../../common/node-type-utils';
-import { isComponentSet } from '../../common/node-type-utils';
-import { getFigmaSelection } from '../../common/selection-utils';
+import type { ArgTypeObj } from '../../../../common/app-models.js';
+import type { Args } from '../../../../common/sb-serialize.model.js';
+import type { WithChildrenNode } from '../../../common/node-type-utils.js';
+import { isComponentSet } from '../../../common/node-type-utils.js';
+import { getFigmaSelection } from '../../../common/selection-utils.js';
 import { resizeNode } from './update-canvas-utils';
 
 // The front gives the index (i = 0, 1, 2...) of the component to insert.

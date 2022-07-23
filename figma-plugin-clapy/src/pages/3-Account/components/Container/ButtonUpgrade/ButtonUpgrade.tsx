@@ -6,7 +6,6 @@ import { upgradeUser } from '../../../../../common/stripeLicense';
 import { refreshTokens } from '../../../../../core/auth/auth-service.js';
 import { dispatchOther } from '../../../../../core/redux/redux.utils.js';
 import { env } from '../../../../../environment/env.js';
-import { findUserMetadata } from '../../../../user/user-service.js';
 import { startLoadingStripe, stopLoadingStripe } from '../../../stripe-slice.js';
 import { _ButtonBase } from '../_ButtonBase/_ButtonBase';
 import classes from './ButtonUpgrade.module.css';
@@ -23,7 +22,7 @@ export const ButtonUpgrade: FC<Props> = memo(function ButtonUpgrade(props = {}) 
       if (data.status) {
         dispatchOther(stopLoadingStripe());
         await refreshTokens();
-        await findUserMetadata();
+        // await fetchUserMetadata();
         eventSource.close();
       }
       eventSource.close();

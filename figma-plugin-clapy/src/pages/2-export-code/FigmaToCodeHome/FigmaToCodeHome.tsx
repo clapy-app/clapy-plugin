@@ -249,7 +249,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' && classes.hide}>
+      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' ? classes.hide : undefined}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls='panel1a-content'
@@ -276,7 +276,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               </Tooltip>
             )}
             <Tooltip
-              title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not configured. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
+              title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
               disableInteractive
               placement='bottom-start'
             >
@@ -328,7 +328,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         onClick={generateCode}
         disabled={state === 'loading' || state === 'noselection'}
         loading={isLoading}
-        className={state === 'generated' && classes.hide}
+        className={state === 'generated' ? classes.hide : undefined}
       >
         &lt; Generate code &gt;
       </Button>

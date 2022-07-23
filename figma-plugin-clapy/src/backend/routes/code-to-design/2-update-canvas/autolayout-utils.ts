@@ -1,5 +1,5 @@
-import type { MyCompNode } from '../../common/node-type-utils';
-import { isBaseFrameMixin } from '../../common/node-type-utils';
+import type { MyCompNode } from '../../../common/node-type-utils.js';
+import { isBaseFrameMixin } from '../../../common/node-type-utils.js';
 
 export function horizontalFillContainer(node: MyCompNode) {
   const parentDirection = checkAndGetParentDirection(node);

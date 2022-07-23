@@ -3,10 +3,11 @@ import jwtDecode from 'jwt-decode';
 import { handleError } from '../../common/error-utils';
 import { openNewTab, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
+import { apiGet } from '../../common/http.utils.js';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { env, isFigmaPlugin } from '../../environment/env';
-import { clearLocalUserMetadata, findUserMetadata } from '../../pages/user/user-service';
+import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
@@ -24,6 +25,37 @@ export let _accessTokenDecoded: AccessTokenDecoded | null = null;
 export let _tokenType: string | null = null;
 
 // Exported methods
+
+/**
+ * This methods makes a light session check by only checking the local cache, to unlock the UI as quickly as possible.
+ * It ends by calling the method for a full check with the server, in case something is wrong. The result will then re-render the UI if something changed.
+ */
+export async function checkSessionLight() {
+  if (!_accessToken) {
+    const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
+    setAccessToken(accessToken);
+    _tokenType = tokenType;
+  }
+
+  // Don't dispatch unless it has changed, to avoid causing errors in the UI
+  // when reading the token in the middle of a component action (and state change).
+  const signedInState = !!_accessToken;
+  const { isSignedIn, loading } = readSelectorOnce(({ auth: { isSignedIn, loading } }) => ({ isSignedIn, loading }));
+  if (loading || signedInState !== isSignedIn) {
+    dispatchOther(setSignedInState(signedInState));
+  }
+  await dispatchLocalUserMetadata();
+  await checkSessionComplete();
+}
+
+/**
+ * This method makes a full session check by calling the Clapy webservice to check the auth token, refresh if required, then fetch the user metadata.
+ * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
+ */
+async function checkSessionComplete() {
+  await apiGet('check-session');
+  await fetchUserMetadata();
+}
 
 export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
@@ -48,9 +80,7 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
 
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    await findUserMetadata();
-
-    await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
+    await Promise.all([fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken), fetchUserMetadata()]);
     dispatchOther(authSuccess());
   } catch (err) {
     if (readToken) {
@@ -70,7 +100,6 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
       setAccessToken(accessToken);
       _tokenType = tokenType;
-      await findUserMetadata();
     }
     if (!_accessToken) {
       await refreshTokens();
@@ -107,7 +136,7 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    await findUserMetadata();
+    // await findUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }

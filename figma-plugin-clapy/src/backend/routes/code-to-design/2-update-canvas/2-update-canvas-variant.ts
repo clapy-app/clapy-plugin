@@ -1,9 +1,9 @@
 import { getLayoutStoryId } from '../1-import-stories/3-import-sb-detail';
 import { listVariantProps, setStoryFrameProperties } from '../1-import-stories/import-sb-utils';
-import { appConfig } from '../../../common/app-config';
-import type { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
-import { propArrayToMap } from '../../../common/storybook-utils';
-import { isComponent, isComponentSet } from '../../common/node-type-utils';
+import { appConfig } from '../../../../common/app-config.js';
+import type { Args, ArgTypes, CNode } from '../../../../common/sb-serialize.model.js';
+import { propArrayToMap } from '../../../../common/storybook-utils.js';
+import { isComponent, isComponentSet } from '../../../common/node-type-utils.js';
 import { renderParentNode } from './3-render-parent-node';
 import { getPageAndNode } from './get-page-and-node';
 import {
