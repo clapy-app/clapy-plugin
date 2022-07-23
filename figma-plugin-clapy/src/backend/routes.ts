@@ -3,7 +3,7 @@ import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/1
 import { extractSVGs } from './routes/1-export-code/7-extract-svg.js';
 import { extractImages } from './routes/1-export-code/8-extract-images.js';
 import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/2-user/getCachedToken';
-import { getUserState, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
+import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
 import { getSbCompSelection, selectedSbComp } from './routes/code-to-design/1-import-stories/1-select-node';
@@ -28,7 +28,7 @@ export const routes = {
   setCachedToken,
   getRefreshToken,
   clearCachedTokens,
-  getUserState,
+  getUserMetadata,
   setUserMetadata,
   setUserMetaUsage,
 

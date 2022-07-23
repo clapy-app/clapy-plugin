@@ -1,26 +1,29 @@
 import type { Dispatch } from '@reduxjs/toolkit';
 import equal from 'fast-deep-equal';
 
-import type { UserMetadata, UserMetaUsage } from '../../common/app-models.js';
+import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import { apiGet, apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
-import { clearMetadata, selectUserMetadata, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
+import { clearMetadata, selectUserProfileState, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
 
-export async function dispatchLocalUserMetadata() {
-  let metadata: UserMetadata | undefined = readSelectorOnce(selectUserMetadata);
+export async function dispatchLocalUserMetadata(signedInState: boolean) {
+  let metadata: UserProfileState = readSelectorOnce(selectUserProfileState);
   if (metadata) return metadata;
-  const userProfileState = await fetchPlugin('getUserState');
-  metadata = userProfileState === true ? {} : userProfileState ? userProfileState : undefined;
-  dispatchOther(setMetadata(metadata));
+  const userProfileState = await fetchPlugin('getUserMetadata');
+  if (signedInState && !userProfileState) {
+    await fetchUserMetadata();
+  } else {
+    dispatchOther(setMetadata(userProfileState));
+  }
 }
 
 export async function fetchUserMetadata() {
   const metadata = (await apiGet<UserMetadata>('user', { _readCachedTokenNoFetch: true })).data;
-  const localMetadata: UserMetadata | undefined = readSelectorOnce(selectUserMetadata);
+  const localMetadata: UserProfileState = readSelectorOnce(selectUserProfileState);
   if (!equal(metadata, localMetadata)) {
     dispatchOther(setMetadata(metadata));
-    await fetchPlugin('setUserMetadata', metadata);
+    await saveUserMetadataInCache(metadata);
   }
 }
 
@@ -28,7 +31,12 @@ export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispa
   metadata = { ...metadata };
   await apiPost('user/update-profile', metadata);
   dispatch(setMetaProfile(metadata));
-  await fetchPlugin('setUserMetadata', metadata);
+  await saveUserMetadataInCache(metadata);
+}
+
+async function saveUserMetadataInCache(metadata: UserMetadata) {
+  const metaToSave = hasMissingMetaProfile(metadata) || hasMissingMetaUsage(metadata.usage) ? metadata : true;
+  await fetchPlugin('setUserMetadata', metaToSave);
 }
 
 export async function updateUserMetaUsage(metaUsage: UserMetaUsage, dispatch: Dispatch) {

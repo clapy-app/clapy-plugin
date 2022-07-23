@@ -11,7 +11,7 @@ import type { Dict } from '../../../common/sb-serialize.model';
 import { Loading } from '../../../components-used/Loading/Loading.js';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
 import { hasMissingMetaProfile, updateUserMetadata } from '../user-service';
-import { selectUserMetadata } from '../user-slice';
+import { selectUserMetadata, selectUserProfileState } from '../user-slice';
 import classes from './FillUserProfile.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
 
@@ -61,7 +61,7 @@ function updateAllFilled(metadata: UserMetadata, allFilled: boolean, setAllFille
 }
 
 export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = {}) {
-  const userMetadata = useSelector(selectUserMetadata);
+  const userMetadata = useSelector(selectUserProfileState);
   if (!userMetadata) {
     return (
       <div className={`${classes.root} ${classes.loadWrapper}`}>

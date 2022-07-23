@@ -44,7 +44,7 @@ export async function checkSessionLight() {
   if (loading || signedInState !== isSignedIn) {
     dispatchOther(setSignedInState(signedInState));
   }
-  await dispatchLocalUserMetadata();
+  await dispatchLocalUserMetadata(signedInState);
   await checkSessionComplete();
 }
 
@@ -80,7 +80,9 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
 
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    await Promise.all([fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken), fetchUserMetadata()]);
+    await fetchUserMetadata();
+
+    await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
   } catch (err) {
     if (readToken) {

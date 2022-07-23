@@ -1,12 +1,12 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
-import type { UserMetadata, UserMetaUsage } from '../../common/app-models.js';
+import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import type { RootState } from '../../core/redux/store';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service';
 
 export interface UserState {
-  userMetadata?: UserMetadata;
+  userMetadata?: UserProfileState;
 }
 
 const initialState: UserState = {};
@@ -16,15 +16,16 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setMetadata: (state, { payload }: PayloadAction<UserMetadata | undefined>) => {
+    setMetadata: (state, { payload }: PayloadAction<UserProfileState>) => {
       state.userMetadata = payload || {};
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
       const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
-      state.userMetadata = { ...state.userMetadata, firstName, lastName, companyName, jobRole, techTeamSize };
+      const meta = !state.userMetadata || state.userMetadata === true ? {} : state.userMetadata;
+      state.userMetadata = { ...meta, firstName, lastName, companyName, jobRole, techTeamSize };
     },
     setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
-      if (!state.userMetadata) state.userMetadata = {};
+      if (!state.userMetadata || state.userMetadata === true) state.userMetadata = {};
       state.userMetadata.usage = payload;
     },
     clearMetadata: state => {
@@ -35,11 +36,15 @@ export const userSlice = createSlice({
 
 export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata } = userSlice.actions;
 
+export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
+export const selectHasMissingMetaProfile = (state: RootState) =>
+  state.user.userMetadata !== true && hasMissingMetaProfile(state.user.userMetadata);
+export const selectHasMissingMetaUsage = (state: RootState) =>
+  state.user.userMetadata !== true && hasMissingMetaUsage(state.user.userMetadata?.usage);
 /**
- * Not undefined, which assumes the value is read after the authentication initial loading is completed
- * (selectAuthLoading === false)
+ * Called in FillUserProfile or FillUserProfileStep2. Assumes it's not `true`, which should have been
+ * filtered earlier in Layout.tsx with the above selectors. And assumes it's not undefined, which
+ * should have been filtered by the FillUserProfile wrapper.
  */
-export const selectUserMetadata = (state: RootState) => state.user.userMetadata!;
-export const selectUserMetaUsage = (state: RootState) => state.user.userMetadata?.usage;
-export const selectHasMissingMetaProfile = (state: RootState) => hasMissingMetaProfile(state.user.userMetadata);
-export const selectHasMissingMetaUsage = (state: RootState) => hasMissingMetaUsage(state.user.userMetadata?.usage);
+export const selectUserMetadata = (state: RootState) => state.user.userMetadata as UserMetadata;
+export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadata as UserMetadata)?.usage;
