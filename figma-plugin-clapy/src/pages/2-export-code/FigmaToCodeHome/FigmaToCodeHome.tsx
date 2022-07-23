@@ -249,7 +249,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' && classes.hide}>
+      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' ? classes.hide : undefined}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls='panel1a-content'
@@ -328,7 +328,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         onClick={generateCode}
         disabled={state === 'loading' || state === 'noselection'}
         loading={isLoading}
-        className={state === 'generated' && classes.hide}
+        className={state === 'generated' ? classes.hide : undefined}
       >
         &lt; Generate code &gt;
       </Button>

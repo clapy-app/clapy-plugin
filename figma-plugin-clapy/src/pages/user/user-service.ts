@@ -1,44 +1,34 @@
 import type { Dispatch } from '@reduxjs/toolkit';
+import equal from 'fast-deep-equal';
 
+import type { UserMetadata, UserMetaUsage } from '../../common/app-models.js';
 import { apiGet, apiPost } from '../../common/http.utils';
+import { fetchPlugin } from '../../common/plugin-utils.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
 import { clearMetadata, selectUserMetadata, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
 
-export interface UserMetadata {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  jobRole?: string;
-  techTeamSize?: string;
-  email?: string;
-  picture?: string;
-  usage?: UserMetaUsage;
-  licenceStartDate?: number;
-  licenceExpirationDate?: number;
+export async function dispatchLocalUserMetadata() {
+  let metadata: UserMetadata | undefined = readSelectorOnce(selectUserMetadata);
+  if (metadata) return metadata;
+  const userProfileState = await fetchPlugin('getUserState');
+  metadata = userProfileState === true ? {} : userProfileState ? userProfileState : undefined;
+  dispatchOther(setMetadata(metadata));
 }
 
-export interface UserMetaUsage {
-  components?: boolean;
-  designSystem?: boolean;
-  landingPages?: boolean;
-  other?: boolean;
-  otherDetail?: string;
-}
-
-export async function findUserMetadata() {
-  let metadata = readSelectorOnce(selectUserMetadata);
-  if (!metadata) {
-    metadata = (await apiGet<UserMetadata>('user', { _readCachedTokenNoFetch: true })).data;
+export async function fetchUserMetadata() {
+  const metadata = (await apiGet<UserMetadata>('user', { _readCachedTokenNoFetch: true })).data;
+  const localMetadata: UserMetadata | undefined = readSelectorOnce(selectUserMetadata);
+  if (!equal(metadata, localMetadata)) {
     dispatchOther(setMetadata(metadata));
+    await fetchPlugin('setUserMetadata', metadata);
   }
-  return metadata;
 }
 
 export async function updateUserMetadata(metadata: UserMetadata, dispatch: Dispatch) {
   metadata = { ...metadata };
-  const res = (await apiPost('user/update-profile', metadata)).data;
+  await apiPost('user/update-profile', metadata);
   dispatch(setMetaProfile(metadata));
-  return res;
+  await fetchPlugin('setUserMetadata', metadata);
 }
 
 export async function updateUserMetaUsage(metaUsage: UserMetaUsage, dispatch: Dispatch) {
@@ -46,9 +36,9 @@ export async function updateUserMetaUsage(metaUsage: UserMetaUsage, dispatch: Di
   if (!metaUsage.other && metaUsage.otherDetail) {
     delete metaUsage.otherDetail;
   }
-  const res = (await apiPost('user/update-usage', metaUsage)).data;
+  await apiPost('user/update-usage', metaUsage);
   dispatch(setMetaUsage(metaUsage));
-  return res;
+  await fetchPlugin('setUserMetaUsage' /* , metaUsage */);
 }
 
 export function clearLocalUserMetadata() {

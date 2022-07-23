@@ -12,6 +12,7 @@ export interface AuthState {
   tokenDecoded?: AccessTokenDecoded | Nil;
 }
 
+// Switch loading to true to block the app until the session is checked.
 const initialState: AuthState = { loading: true };
 
 // To add to src/core/redux/store.ts

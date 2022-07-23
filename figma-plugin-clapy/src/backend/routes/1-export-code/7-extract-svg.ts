@@ -1,10 +1,10 @@
-import { removeNode } from '../2-update-canvas/update-canvas-utils.js';
 import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils.js';
 import { isArrayOf } from '../../../common/general-utils.js';
 import type { SVGsExtracted } from '../../../common/sb-serialize.model.js';
 import { isLayout0, isMinimalStrokesMixin } from '../../common/node-type-utils.js';
 import { perfReset } from '../../common/perf-utils.js';
+import { removeNode } from '../code-to-design/2-update-canvas/update-canvas-utils.js';
 import type { AnyNodeOriginal } from './read-figma-config-utils.js';
 import { utf8ArrayToStr } from './Utf8ArrayToStr.js';
 

@@ -1,8 +1,8 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
+import type { UserMetadata, UserMetaUsage } from '../../common/app-models.js';
 import type { RootState } from '../../core/redux/store';
-import type { UserMetadata, UserMetaUsage } from './user-service';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service';
 
 export interface UserState {
@@ -16,7 +16,7 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setMetadata: (state, { payload }: PayloadAction<UserMetadata>) => {
+    setMetadata: (state, { payload }: PayloadAction<UserMetadata | undefined>) => {
       state.userMetadata = payload || {};
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {

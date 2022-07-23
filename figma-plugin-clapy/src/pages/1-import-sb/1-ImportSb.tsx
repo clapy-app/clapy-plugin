@@ -2,7 +2,10 @@ import type { ChangeEventHandler, FC, MouseEventHandler, MutableRefObject } from
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import type { SbSampleSelection, StoriesSamples } from '../../backend/routes/1-import-stories/import-model';
+import type {
+  SbSampleSelection,
+  StoriesSamples,
+} from '../../backend/routes/code-to-design/1-import-stories/import-model';
 import { track } from '../../common/analytics';
 import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';

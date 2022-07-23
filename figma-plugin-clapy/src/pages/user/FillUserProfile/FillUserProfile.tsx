@@ -5,10 +5,11 @@ import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import type { UserMetadata } from '../../../common/app-models.js';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import type { Dict } from '../../../common/sb-serialize.model';
+import { Loading } from '../../../components-used/Loading/Loading.js';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
-import type { UserMetadata } from '../user-service';
 import { hasMissingMetaProfile, updateUserMetadata } from '../user-service';
 import { selectUserMetadata } from '../user-slice';
 import classes from './FillUserProfile.module.css';
@@ -60,6 +61,19 @@ function updateAllFilled(metadata: UserMetadata, allFilled: boolean, setAllFille
 }
 
 export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = {}) {
+  const userMetadata = useSelector(selectUserMetadata);
+  if (!userMetadata) {
+    return (
+      <div className={`${classes.root} ${classes.loadWrapper}`}>
+        <Loading />
+        <p>Loading your profile data...</p>
+      </div>
+    );
+  }
+  return <FillUserProfileInner {...props} />;
+});
+
+export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInner(props = {}) {
   const dispatch = useDispatch();
   const userMetadata = useSelector(selectUserMetadata);
   const modelRef = useRef<UserMetadata>();

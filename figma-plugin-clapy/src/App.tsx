@@ -9,8 +9,8 @@ import classes from './App.module.css';
 import { track } from './common/analytics';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
-import { apiGet } from './common/http.utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
+import { checkSessionLight } from './core/auth/auth-service.js';
 import { Layout } from './pages/Layout/Layout';
 
 declare module '@mui/material/styles' {
@@ -79,11 +79,7 @@ window.addEventListener('unload', function () {
 
 export const App: FC = memo(function App() {
   useEffect(() => {
-    // This call to the API ensure an access token is available on the front (automatically done behind apiGet), and that the application is displayed. Behind the scene:
-    // The default state in the auth service is that the auth is loading (which we actually start here)
-    // when apiGet completes, this state changes to auth loaded => condition to show the app
-    // Another thing that happens: by calling the server with a token, the server checks that the token is valid. If not, the client refreshes the token.
-    apiGet('check-session')
+    checkSessionLight()
       .catch(handleError)
       .finally(() => track('open-plugin'));
   }, []);
