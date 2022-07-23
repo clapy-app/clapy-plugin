@@ -95,4 +95,4 @@ export interface UserMetaUsage {
   otherDetail?: string;
 }
 
-export type UserProfileState = UserMetadata | boolean | undefined;
+export type UserProfileState = UserMetadata | true | undefined;

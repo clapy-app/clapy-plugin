@@ -1,25 +1,25 @@
-import type { UserMetadata, UserProfileState } from '../../../common/app-models.js';
+import type { UserProfileState } from '../../../common/app-models.js';
 
-export async function getUserState() {
+export async function getUserMetadata() {
   try {
-    const userState = await figma.clientStorage.getAsync('userState');
-    const userState2: UserProfileState = userState ? JSON.parse(userState) : undefined;
-    return userState2;
+    const userMetadata = await figma.clientStorage.getAsync('userMetadata');
+    const userMetadata2: UserProfileState = userMetadata ? JSON.parse(userMetadata) : undefined;
+    return userMetadata2;
   } catch (err) {
     return undefined;
   }
 }
 
-export async function setUserMetadata(userMetadata: UserMetadata) {
-  const userState2 = JSON.stringify(userMetadata);
-  return figma.clientStorage.setAsync('userState', userState2);
+export async function setUserMetadata(userMetadata: UserProfileState) {
+  const userMetadata2 = JSON.stringify(userMetadata);
+  return figma.clientStorage.setAsync('userMetadata', userMetadata2);
 }
 
 export async function setUserMetaUsage(/* userMetaUsage: UserMetaUsage */) {
-  const userState: UserProfileState = true;
+  const userMetadata: UserProfileState = true;
   // The below code would make a full update of the cache instead of just storing true.
   // const userState: UserProfile = (await getUserState()) || {};
   // userState.userMetaUsage = userMetaUsage;
-  const userState2 = JSON.stringify(userState);
-  return figma.clientStorage.setAsync('userState', userState2);
+  const userMetadata2 = JSON.stringify(userMetadata);
+  return figma.clientStorage.setAsync('userMetadata', userMetadata2);
 }
