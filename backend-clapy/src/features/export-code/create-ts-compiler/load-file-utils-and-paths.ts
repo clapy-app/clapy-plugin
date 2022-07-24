@@ -26,7 +26,7 @@ export function separateTsCssAndResources(files: CodeDict, extraConfig: ExtraCon
     // '.ts', '.tsx', '.d.ts', '.js', '.jsx', '.cts', '.d.cts', '.cjs', '.mts', '.d.mts', '.mjs'
     if (path.endsWith('.tsx') || path.endsWith('.ts') || path.endsWith('.jsx') || path.endsWith('.js')) {
       tsFiles[path] = content;
-    } else if (path.endsWith(`.${cssExt}`)) {
+    } else if (path.endsWith(`.css`)) {
       cssFiles[path] = content;
     } else {
       resources[path] = content;

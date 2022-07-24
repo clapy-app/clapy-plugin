@@ -32,7 +32,7 @@ import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-no
 import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { addMUIProviders, addMUIProvidersImports } from './tech-integration/mui/mui-add-globals.js';
 import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
-import { addScssPackage, getCSSExtension, renameTemplateSCSSFiles } from './tech-integration/scss/scss-utils.js';
+import { addScssPackage, getCSSExtension, updateFilesAndContentForScss } from './tech-integration/scss/scss-utils.js';
 import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
 import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens';
 
@@ -81,8 +81,9 @@ export async function exportCode(
 
   // Initialize the project template with base files
   let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
-  filesCsb = renameTemplateSCSSFiles(fwConnector, filesCsb, extraConfig);
   const [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
+  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
+  updateFilesAndContentForScss(extraConfig, tsFiles, cssFiles, resources);
   perfMeasure('b');
 
   const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
