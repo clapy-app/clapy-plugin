@@ -5,7 +5,7 @@ import { getCSSExtension } from '../tech-integration/scss/scss-utils.js';
 
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
-export function getIndexHtmlPath({ extraConfig: { useViteJS } }: ProjectContext) {
+export function getIndexHtmlPath({ extraConfig: { useZipProjectTemplate: useViteJS } }: ProjectContext) {
   return useViteJS ? 'index.html' : 'public/index.html';
 }
 

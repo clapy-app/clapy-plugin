@@ -259,7 +259,7 @@ export type ExtraConfig = {
   enableMUIFramework?: boolean;
   // Next props are derived from user settings
   output?: 'csb' | 'zip';
-  useViteJS?: boolean;
+  useZipProjectTemplate?: boolean;
 } & UserSettings;
 
 export type SVGsExtracted = Dict<{ svg: string; name: string }>;

@@ -54,7 +54,7 @@ export async function exportCode(
   if (!extraConfig.output) {
     extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
   }
-  extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
+  extraConfig.useZipProjectTemplate = env.isDev || extraConfig.output === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
 
   const parent = p as ParentNode | Nil;
@@ -81,9 +81,9 @@ export async function exportCode(
 
   // Initialize the project template with base files
   let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
-  const [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
+  let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
   // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
-  updateFilesAndContentForScss(extraConfig, tsFiles, cssFiles, resources);
+  updateFilesAndContentForScss(fwConnector, extraConfig, tsFiles, cssFiles, resources);
   perfMeasure('b');
 
   const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
@@ -146,7 +146,7 @@ export async function exportCode(
   await writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
-  const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
+  tsFiles = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
   perfMeasure('g');
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
@@ -156,7 +156,7 @@ export async function exportCode(
 
   addPackages(projectContext);
 
-  const csbFiles = toCSBFiles(tsFilesFormatted, cssFiles, resources);
+  const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
   perfMeasure('j');
   if (env.isDev) {
     // Useful to list SVGs that haven't been processed among the list of exported SVGs.

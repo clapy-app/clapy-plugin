@@ -5,7 +5,7 @@ import { reactConnector } from './react/index.js';
 
 export interface FrameworkConnector {
   templateBaseDirectory: (extraConfig: ExtraConfig) => string;
-  patchSCSSInFileContents: (filesCsb: CodeDict, extraConfig: ExtraConfig) => void;
+  patchSCSSInFileContents: (resources: CodeDict, extraConfig: ExtraConfig) => void;
 }
 
 export const frameworkConnectors = makeConnectors({

@@ -94,7 +94,7 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
     moduleSpecifier = `./${moduleSpecifier}`;
   }
 
-  const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
+  const ext = projectContext.extraConfig.useZipProjectTemplate ? '.js' : '';
   callerImports[compName] = mkNamedImportsDeclaration([compName], `${moduleSpecifier}${ext}`);
 }
 

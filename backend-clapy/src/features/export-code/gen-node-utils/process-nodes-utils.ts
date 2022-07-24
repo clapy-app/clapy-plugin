@@ -34,7 +34,7 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
     svgContent,
   };
 
-  const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
+  const ext = projectContext.extraConfig.useZipProjectTemplate ? '.js' : '';
   // Add import in file
   // (Note: could be moved to when AST is generated to have the final imports)
   moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}${ext}`);
