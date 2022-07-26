@@ -1,11 +1,10 @@
-import { env } from './env.js';
-
 export const appConfig = {
   maxQuotas: 3,
 };
 
 export const flags = {
   measurePerf: false,
+  simulateColdStart: false,
   loadLibsTypings: false, // Slower ~1 second
   runDiagnostics: false, // Slower ~1.5 second
   formatCode: true, // Slower ~0.5 second
@@ -15,7 +14,7 @@ export const flags = {
   useFilterDropShadow: true,
   writeClapyFiles: false,
   destructureClassNames: false, // KO - Need to fix name conflicts between props and imported components before enabling
-  enableInstanceOverrides: env.isDev,
+  enableInstanceOverrides: true,
   throwOnWarnings: false /* env.isDev */,
   indexOverrideByNodeId: false, // easier debugging when overrides are wrong
   writeFigmaIdOnNode: false,

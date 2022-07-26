@@ -9,13 +9,14 @@ import type { JsxOneOrMore, NodeContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
 import {
   addCssRule,
   createClassAttrForClassNoOverride,
   createClassAttrForNode,
-  getOrGenClassName,
   mkHrefAttr,
+  mkHtmlFullClass,
   mkIdAttribute,
   mkNoReferrerAttr,
   mkTag,
@@ -97,7 +98,49 @@ export function genTextAst(node: TextNode2) {
   if (!textSegments?.length) return;
   if (!segmentsStyles?.length) return;
 
+  let htmlClass = node.htmlClass;
+
   const singleChild = textSegments.length === 1;
+
+  let textBlockStyleAttributes: ts.JsxAttribute[] | undefined = undefined;
+  let textSpanWrapperAttributes: ts.JsxAttribute[] | undefined = undefined;
+
+  // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
+  // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
+  // So the process is split in 2 steps: prepare the attributes, then generate & wrap the AST.
+
+  // Text block wrapper
+  // If node has styles to render, surround with a styled div
+  if (!node.textSkipStyles) {
+    const styleDeclarations = stylesToList(styles);
+    let attributes: ts.JsxAttribute[] = [];
+    if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
+    if (styleDeclarations.length) {
+      const className = getOrGenClassName(moduleContext, node);
+      htmlClass = mkHtmlFullClass(context, className, htmlClass);
+      addCssRule(context, className, styleDeclarations, node);
+      attributes.push(createClassAttrForNode(node, htmlClass));
+    }
+    textBlockStyleAttributes = attributes;
+  }
+
+  // Text span wrapper
+  // If multiple segments, surround with span to maintain the inline style
+  if (!singleChild) {
+    const attributes: ts.JsxAttribute[] = [];
+    if (node.textInlineWrapperStyles) {
+      const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
+      if (styleDeclarations.length) {
+        const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
+        htmlClass = mkHtmlFullClass(context, className, htmlClass);
+        addCssRule(context, className, styleDeclarations, node);
+        attributes.push(createClassAttrForClassNoOverride(htmlClass));
+      }
+    }
+    if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
+    textSpanWrapperAttributes = attributes;
+  }
+
   let ast: JsxOneOrMore | undefined = [];
 
   // Prepare AST for each text segment
@@ -111,8 +154,9 @@ export function genTextAst(node: TextNode2) {
       const attributes: ts.JsxAttribute[] = [];
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext);
-        addCssRule(context, className, styleDeclarations);
-        attributes.push(createClassAttrForClassNoOverride(className));
+        let htmlClass2 = mkHtmlFullClass(context, className, htmlClass);
+        addCssRule(context, className, styleDeclarations, node, true);
+        attributes.push(createClassAttrForClassNoOverride(htmlClass2));
       }
       let useAnchor = false;
       if (segment.hyperlink) {
@@ -130,32 +174,12 @@ export function genTextAst(node: TextNode2) {
     ast.push(segAst);
   }
 
-  // If multiple segments, surround with span to maintain the inline style
-  if (!singleChild) {
-    const attributes: ts.JsxAttribute[] = [];
-    if (node.textInlineWrapperStyles) {
-      const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
-      if (styleDeclarations.length) {
-        const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
-        addCssRule(context, className, styleDeclarations);
-        attributes.push(createClassAttrForClassNoOverride(className));
-      }
-    }
-    if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
-    ast = mkTag('span', attributes, ast);
+  if (textSpanWrapperAttributes) {
+    ast = mkTag('span', textSpanWrapperAttributes, ast);
   }
 
-  // If node has styles to render, surround with a styled div
-  if (!node.textSkipStyles) {
-    const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
-    if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
-    if (styleDeclarations.length) {
-      const className = getOrGenClassName(moduleContext, node);
-      addCssRule(context, className, styleDeclarations);
-      attributes.push(createClassAttrForNode(node));
-    }
-    ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
+  if (textBlockStyleAttributes) {
+    ast = mkTag('div', textBlockStyleAttributes, Array.isArray(ast) ? ast : [ast]);
   }
 
   ast = mkWrapHideAndTextOverrideAst(context, ast, node);

@@ -1,4 +1,4 @@
-import type { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
 
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
@@ -12,10 +12,11 @@ import {
   isPage,
 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const inheritedStyle = getInheritedNodeStyle(context, 'position');
-  if (!inheritedStyle) {
+  if (!inheritedStyle || ((inheritedStyle.value as ValuePlain).children[0] as Raw).value === 'initial') {
     addStyle(context, node, styles, 'position', 'relative');
   }
 }
@@ -41,7 +42,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     !isRootNode &&
     !(isRootInComponent && isComponent(node) && isPage(node.parent)) &&
     (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
-  //
   if (parentIsAbsolute) {
     addStyle(context, node, styles, 'position', 'absolute');
     const { horizontal, vertical } =
@@ -57,7 +57,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     // Don't subtract borderLeftWidth, it's already included in nodeX.
     const right = parentNode.width - nodeX - node.width;
     const parentWidth = parentNode.width;
-    let horizontalMarginAuto = false;
 
     if (horizontal === 'MIN') {
       addStyle(context, node, styles, 'left', [left, 'px']);
@@ -66,9 +65,16 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'right', [right, 'px']);
       resetStyleIfOverriding(context, node, styles, 'left');
     } else if (horizontal === 'CENTER') {
-      addStyle(context, node, styles, 'left', [-9999 - (parentNode.width / 2 - (left + node.width / 2)), 'px']);
-      addStyle(context, node, styles, 'right', [-9999, 'px']);
-      horizontalMarginAuto = true;
+      // https://stackoverflow.com/a/25776315/4053349
+      const toSubstractForLeftShift = parentNode.width / 2 - (left + node.width / 2);
+      addStyle(
+        context,
+        node,
+        styles,
+        'left',
+        toSubstractForLeftShift ? `calc(50% - ${toSubstractForLeftShift}px)` : '50%',
+      );
+      addTransformTranslateX(context, '-50%');
     } else if (horizontal === 'STRETCH') {
       addStyle(context, node, styles, 'left', [left, 'px']);
       addStyle(context, node, styles, 'right', [right, 'px']);
@@ -84,7 +90,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     // Don't subtract borderTopWidth, it's already included in nodeY.
     const bottom = parentNode.height - nodeY - node.height;
     const parentHeight = parentNode.height;
-    let verticalMarginAuto = false;
 
     if (isLine(node)) {
       top -= node.strokeWeight;
@@ -97,9 +102,15 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
       resetStyleIfOverriding(context, node, styles, 'top');
     } else if (vertical === 'CENTER') {
-      addStyle(context, node, styles, 'top', [-9999 - (parentNode.height / 2 - (top + node.height / 2)), 'px']);
-      addStyle(context, node, styles, 'bottom', [-9999, 'px']);
-      verticalMarginAuto = true;
+      const toSubstractForTopShift = parentNode.height / 2 - (top + node.height / 2);
+      addStyle(
+        context,
+        node,
+        styles,
+        'top',
+        toSubstractForTopShift ? `calc(50% - ${toSubstractForTopShift}px)` : '50%',
+      );
+      addTransformTranslateY(context, '-50%');
     } else if (vertical === 'STRETCH') {
       addStyle(context, node, styles, 'top', [top, 'px']);
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
@@ -108,28 +119,6 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'top', [(top / parentHeight) * 100, '%']);
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
       node.autoHeight = true; // Auto-height
-    }
-
-    if (horizontalMarginAuto && verticalMarginAuto) {
-      addStyle(context, node, styles, 'margin', 'auto');
-    } else if (horizontalMarginAuto) {
-      resetStyleIfOverriding(context, node, styles, 'margin', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-top', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-bottom', 'auto');
-      addStyle(context, node, styles, 'margin-left', 'auto');
-      addStyle(context, node, styles, 'margin-right', 'auto');
-    } else if (verticalMarginAuto) {
-      resetStyleIfOverriding(context, node, styles, 'margin', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-left', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-right', 'auto');
-      addStyle(context, node, styles, 'margin-top', 'auto');
-      addStyle(context, node, styles, 'margin-bottom', 'auto');
-    } else {
-      resetStyleIfOverriding(context, node, styles, 'margin', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-top', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-right', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-bottom', 'auto');
-      resetStyleIfOverriding(context, node, styles, 'margin-left', 'auto');
     }
   } else {
     resetStyleIfOverriding(context, node, styles, 'position', 'absolute');

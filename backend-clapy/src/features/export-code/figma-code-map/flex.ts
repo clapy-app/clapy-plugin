@@ -103,13 +103,11 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const parentPrimaryAxisHugContents = parentAndNodeHaveSameDirection
     ? nodePrimaryAxisHugContents
     : nodeCounterAxisHugContents;
+  const applySettingFullWidthHeight = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
+  const applySettingHugContents = context.isRootNode && !context.moduleContext.projectContext.extraConfig.page;
 
   // Flex: 1 if it's a figma rule or it's a top-level component
-  if (
-    !outerLayoutOnly &&
-    !isLine(node) &&
-    (node.layoutGrow === 1 || (context.isRootNode && !parentPrimaryAxisHugContents))
-  ) {
+  if (!outerLayoutOnly && !isLine(node) && (node.layoutGrow === 1 || applySettingFullWidthHeight)) {
     addStyle(context, node, styles, 'flex', 1);
   }
 
@@ -119,13 +117,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
-  if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || (context.isRootNode && !parentCounterAxisHugContents)) {
+  if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || applySettingFullWidthHeight) {
     addStyle(context, node, styles, 'align-self', 'stretch');
-    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'auto');
+    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'initial');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
-    if (parentStyles && (!parentAlignItems || parentAlignItems === 'stretch')) {
+    if ((parentStyles || applySettingHugContents) && (!parentAlignItems || parentAlignItems === 'stretch')) {
       addStyle(context, node, styles, 'align-self', 'flex-start');
     }
   }
@@ -294,14 +292,13 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
   const parentPrimaryAxisFillContainer = isParentAutoLayout && node?.layoutGrow === 1;
   const parentCounterAxisFillContainer = isParentAutoLayout && node?.layoutAlign === 'STRETCH';
+  const fullWidthHeightFromSetting = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
   // For root absolute container, fill width to try responsiveness,
   // but respect the wireframe height.
   const widthFillContainer =
-    (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) ||
-    (context.isRootNode && !widthHugContents);
+    (isParentVertical ? parentCounterAxisFillContainer : parentPrimaryAxisFillContainer) || fullWidthHeightFromSetting;
   const heightFillContainer =
-    (isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer) ||
-    (isParentAutoLayout && context.isRootNode && !heightHugContents);
+    (isParentVertical ? parentPrimaryAxisFillContainer : parentCounterAxisFillContainer) || fullWidthHeightFromSetting;
 
   const isWidthPositionAbsoluteAutoSize =
     !nodeIsGroup &&

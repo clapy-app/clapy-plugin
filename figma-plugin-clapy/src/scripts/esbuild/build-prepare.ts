@@ -84,10 +84,15 @@ function prepareFrontVarToDefine(context: BuildContext) {
     APP_ENV: JSON.stringify(appEnv),
     PREVIEW_ENV: JSON.stringify(previewEnv),
   };
+  let foundVariable = false;
   for (const [varName, value] of Object.entries(process.env)) {
     if (varName.startsWith('VITE_') || varName.startsWith('REACT_APP_')) {
+      foundVariable = true;
       frontVarToDefine[varName] = JSON.stringify(value);
     }
+  }
+  if (!foundVariable) {
+    throw new Error('.env file not found, could not load environment variables.');
   }
 
   return frontVarToDefine;

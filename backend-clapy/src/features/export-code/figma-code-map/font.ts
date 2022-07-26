@@ -7,8 +7,8 @@ import type { NodeContext, ProjectContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths.js';
 import { addJss, addStyle } from '../css-gen/css-factories-high.js';
-import { addMUIFonts } from '../frameworks/mui/mui-add-globals.js';
 import { parseFontStyle, replaceFontWeightWithLabel } from '../gen-node-utils/fonts-utils.js';
+import { addMUIFonts } from '../tech-integration/mui/mui-add-globals.js';
 
 // Duplicate of below function with slight changes.
 // Always update both or refactor to centralize.

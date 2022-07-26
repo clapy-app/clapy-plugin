@@ -15,7 +15,6 @@ import type {
 import { isGroup, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset.js';
-import { addOpacity } from './opacity.js';
 
 export function prepareBackgrounds(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {
@@ -81,8 +80,12 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         bgImages.push(`/* webpackIgnore: true */ url("${assetCssUrl}")`);
         bgSizes.push(scaleModeToBgSize[scaleMode]);
 
-        // Apply the first opacity I find
-        addOpacity(context, node, styles, fill.opacity);
+        // Apply the first opacity I find.
+        // But not ideal, the whole content has opacity instead of just the fill.
+        // addOpacity(context, node, styles, fill.opacity);
+        if (fill.opacity != null && fill.opacity !== 1) {
+          console.warn(`UNSUPPORTED fill opacity; ignored - node: ${node.name}`);
+        }
 
         // Rotation in background is not supported yet. The below code does not work that well.
         // if (fill.rotation && !rotation) {
@@ -146,7 +149,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
       resetStyleIfOverriding(context, node, styles, 'background-image');
       resetStyleIfOverriding(context, node, styles, 'background-position');
       resetStyleIfOverriding(context, node, styles, 'background-repeat');
-      resetStyleIfOverriding(context, node, styles, 'background-size');
+      resetStyleIfOverriding(context, node, styles, 'background-size', undefined, 'auto');
     }
     if (bgSizes.length) {
       addStyle(
@@ -156,7 +159,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         'background-size',
         bgSizes
           .reverse()
-          .map(s => s || 'initial')
+          .map(s => s || 'auto')
           .join(', '),
       );
     }
@@ -171,7 +174,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
     resetStyleIfOverriding(context, node, styles, 'background-image');
     resetStyleIfOverriding(context, node, styles, 'background-position');
     resetStyleIfOverriding(context, node, styles, 'background-repeat');
-    resetStyleIfOverriding(context, node, styles, 'background-size');
+    resetStyleIfOverriding(context, node, styles, 'background-size', undefined, 'auto');
   }
 }
 

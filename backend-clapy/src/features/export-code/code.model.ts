@@ -18,7 +18,8 @@ import type {
   SceneNode2,
 } from './create-ts-compiler/canvas-utils.js';
 import type { CssRootNode } from './css-gen/css-factories-low.js';
-import type { SingleToken } from './frameworks/style-dictionary/types/types/tokens/SingleToken.js';
+import type { FrameworkConnector } from './frameworks/framework-connectors.js';
+import type { SingleToken } from './tech-integration/style-dictionary/types/types/tokens/SingleToken.js';
 
 export type FigmaId = string;
 export type CsbDict = Dict<{ content: string; isBinary?: boolean }>;
@@ -54,6 +55,7 @@ export interface ProjectContext {
   readonly extraConfig: ExtraConfig;
   readonly newDependencies: Dict<string>;
   readonly newDevDependencies: Dict<string>;
+  readonly fwConnector: FrameworkConnector;
 }
 
 interface OverrideFromProp {
@@ -67,7 +69,7 @@ export interface ModuleContext {
   // For components, it's clearly the component name. For other special imports, it's up to the developer to choose a key that would not collide with other import keys, but still help to deduplicate that specific import if required (e.g. by using the module specifier = relative path of the imported file)
   readonly imports: Dict<ts.ImportDeclaration>;
   readonly statements: ts.Statement[];
-  readonly pageName: string | undefined;
+  readonly pageDir: string | undefined;
   readonly compDir: string;
   readonly compName: string;
   readonly classNamesAlreadyUsed: Set<string>;
@@ -99,13 +101,17 @@ export interface NodeContext {
   parentContext: NodeContext | Nil;
   isRootInComponent: boolean;
   isRootNode?: boolean;
+  parentIsRootInComponent?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];
+  transformTranslateX?: string;
+  transformTranslateY?: string;
   className?: string;
   overriddenContext?: NodeContext;
   // Provided for instances (interface below). It is added here as an optional field so that
   // when writing style, we can have a different behavior depending on the original component styles
   nodeOfComp?: SceneNode2;
+  notOverridingAnotherClass?: boolean;
 }
 
 export type TextOValue = JsxOneOrMore | string | false;

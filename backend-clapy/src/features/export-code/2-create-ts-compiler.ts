@@ -19,21 +19,22 @@ import {
 import { writeSVGReactComponents } from './7-write-svgr.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
-import type { BaseStyleOverride, CodeDict, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model.js';
-import { readReactTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
+import type { BaseStyleOverride, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model.js';
+import { readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
-import { reactCRADir, reactViteDir, separateTsAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
+import { separateTsCssAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
-import { addMUIProviders, addMUIProvidersImports } from './frameworks/mui/mui-add-globals.js';
-import { addMUIPackages } from './frameworks/mui/mui-add-packages.js';
-import { addScssPackage, getAppCssPathAndRenameSCSS, getCSSExtension } from './frameworks/scss/scss-utils.js';
-import { genStyles } from './frameworks/style-dictionary/gen-styles.js';
-import type { TokenStore } from './frameworks/style-dictionary/types/types/tokens';
+import { frameworkConnectors } from './frameworks/framework-connectors.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
 import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
+import { addMUIProviders, addMUIProvidersImports } from './tech-integration/mui/mui-add-globals.js';
+import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
+import { addScssPackage, getCSSExtension, updateFilesAndContentForScss } from './tech-integration/scss/scss-utils.js';
+import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
+import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens';
 
 const { factory } = ts;
 
@@ -47,8 +48,15 @@ export async function exportCode(
   { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
 ) {
-  if (!extraConfig.output) extraConfig.output = 'csb';
-  extraConfig.useViteJS = env.isDev || extraConfig.output === 'zip';
+  if (env.isDev) {
+    uploadToCsb = false;
+  }
+  if (!extraConfig.output) {
+    extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
+  }
+  extraConfig.useZipProjectTemplate = env.isDev || extraConfig.output === 'zip';
+  const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
+
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
@@ -71,14 +79,11 @@ export async function exportCode(
   }
   perfMeasure('a');
 
-  const appCompDir = 'src';
-  const appCompName = 'App';
   // Initialize the project template with base files
-  const filesCsb = await readReactTemplateFiles(extraConfig.useViteJS ? reactViteDir : reactCRADir);
-  const appCssPath = getAppCssPathAndRenameSCSS(filesCsb, extraConfig, appCompDir, appCompName);
-  // If useful, resources['tsconfig.json']
-  const [tsFiles, { [appCssPath]: appCss, ...resources }] = separateTsAndResources(filesCsb);
-  const cssFiles: CodeDict = { [appCssPath]: appCss };
+  let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
+  let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
+  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
+  updateFilesAndContentForScss(fwConnector, extraConfig, tsFiles, cssFiles, resources);
   perfMeasure('b');
 
   const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
@@ -100,13 +105,17 @@ export async function exportCode(
     svgsRead: new Map(),
     images,
     styles,
-    enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
+    enableMUIFramework:
+      extraConfig.framework === 'react' && (env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework),
     varNamesMap,
     tokensRawMap,
     extraConfig,
     newDependencies: {},
     newDevDependencies: {},
+    fwConnector,
   };
+
+  const { appCompDir, appCompName } = fwConnector;
 
   const lightAppModuleContext = mkModuleContext(
     projectContext,
@@ -138,7 +147,7 @@ export async function exportCode(
   await writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
-  const tsFilesFormatted = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
+  tsFiles = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
   perfMeasure('g');
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
@@ -148,7 +157,7 @@ export async function exportCode(
 
   addPackages(projectContext);
 
-  const csbFiles = toCSBFiles(tsFilesFormatted, cssFiles, resources);
+  const csbFiles = toCSBFiles(tsFiles, cssFiles, resources);
   perfMeasure('j');
   if (env.isDev) {
     // Useful to list SVGs that haven't been processed among the list of exported SVGs.
@@ -185,6 +194,7 @@ export async function exportCode(
       return csbResponse;
     }
   }
+  return { sandbox_id: 'false' };
 }
 
 function addCompToAppRoot(

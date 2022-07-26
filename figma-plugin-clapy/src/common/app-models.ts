@@ -73,3 +73,26 @@ export interface ExtractionProgress {
   stepNumber: number;
   nodeName?: string;
 }
+
+export interface UserMetadata {
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  jobRole?: string;
+  techTeamSize?: string;
+  email?: string;
+  picture?: string;
+  usage?: UserMetaUsage;
+  licenceStartDate?: number;
+  licenceExpirationDate?: number;
+}
+
+export interface UserMetaUsage {
+  components?: boolean;
+  designSystem?: boolean;
+  landingPages?: boolean;
+  other?: boolean;
+  otherDetail?: string;
+}
+
+export type UserProfileState = UserMetadata | true | undefined;

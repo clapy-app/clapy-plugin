@@ -1,11 +1,11 @@
-import type { DeclarationPlain } from 'css-tree';
+import type { DeclarationPlain, RulePlain } from 'css-tree';
 import type ts from 'typescript';
 
 import type { Nil } from '../../../common/general-utils.js';
 import type { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
-import type { MUIConfig } from '../frameworks/mui/mui-config.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
+import type { MUIConfig } from '../tech-integration/mui/mui-config.js';
 
 // Most of this file has a big overlap with sb-serialize.model.ts. To refactor later.
 
@@ -66,6 +66,8 @@ export interface Masker {
   y: number;
 }
 
+export type RulePlainExtended = RulePlain & { parentRule?: RulePlain; childRules?: RulePlain[] };
+
 interface TextExtender {
   _textSegments?: TextSegment2[];
   _segmentsStyles?: Dict<DeclarationPlain>[];
@@ -108,6 +110,8 @@ interface GlobalExtender {
   textSkipStyles?: boolean; // For text nodes
   svgPathVarName?: string; // For SVG nodes
   extraAttributes?: ts.JsxAttribute[];
+  rule?: RulePlainExtended;
+  htmlClass?: string;
 }
 
 // Incomplete typings. Complete by adding other node types when needed.
@@ -264,14 +268,21 @@ export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSeg
 export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
 
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
-  return (isFrame(node) || isComponent(node) || isInstance(node)) && !isVector(node);
+  return (isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node)) && !isVector(node);
 }
 
 // GroupNode doesn't have auto-layout
 export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | BooleanOperationNode2 | LineNode2;
 
 export function isBlockNode(node: BaseNode2 | SceneNode2 | Nil): node is BlockNode {
-  return isFlexNode(node) || isRectangle(node) || isGroup(node) || isBooleanOperation(node) || isLine(node);
+  return (
+    isFlexNode(node) ||
+    isRectangle(node) ||
+    isGroup(node) ||
+    isBooleanOperation(node) ||
+    isLine(node) ||
+    isComponentSet(node)
+  );
 }
 
 export type ValidNode = BlockNode | TextNode2 | VectorNodeDerived;

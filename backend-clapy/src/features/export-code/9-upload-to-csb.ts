@@ -2,7 +2,7 @@ import axios from 'axios';
 import { createWriteStream } from 'fs';
 import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
 import JSZip from 'jszip';
-import { dirname, join, resolve } from 'path';
+import { basename, dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
 
@@ -51,24 +51,31 @@ export async function makeZip(files: CsbDict) {
 }
 
 const srcCompPrefix = 'src/components/';
+const allowedEmptyFiles = new Set(['.gitkeep', 'app.component.css', 'app.component.scss']);
 
-export async function writeToDisk(files: CsbDict, moduleContext: ModuleContext, isClapyFile: boolean | undefined) {
+export async function writeToDisk(
+  files: CsbDict,
+  moduleContext: ModuleContext | undefined,
+  isClapyFile: boolean | undefined,
+) {
   const glob = (await import('glob')).default;
   const globPromise = promisify(glob);
-  const { compName } = moduleContext;
+  const { compName } = moduleContext || {};
 
   const filePaths: string[] = [];
   const filesToWrite: CodeDict = {};
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
       if (!content) {
-        if (!path.endsWith('css')) {
-          console.warn('BUG No content at path', path);
+        if (!allowedEmptyFiles.has(basename(path))) {
+          if (!path.endsWith('css')) {
+            console.warn('BUG No content at path', path);
+          }
+          if (isBinary) {
+            console.warn('(is binary)');
+          }
+          return;
         }
-        if (isBinary) {
-          console.warn('(is binary)');
-        }
-        return;
       }
 
       const files = [`${backendDir}/atest-gen/${path}`];
@@ -101,10 +108,12 @@ export async function writeToDisk(files: CsbDict, moduleContext: ModuleContext, 
   const dirsToClean = [
     // src
     `${backendDir}/atest-gen/src`,
-    // public
-    `${backendDir}/atest-gen/public`,
   ];
-  if (flags.writeClapyFiles && isClapyFile) {
+  if (moduleContext?.projectContext.extraConfig.framework === 'react') {
+    // public
+    dirsToClean.push(`${backendDir}/atest-gen/public`);
+  }
+  if (flags.writeClapyFiles && isClapyFile && compName) {
     // clapy plugin
     dirsToClean.push(`${dockerPluginCompDir}/${compName}`);
   }
@@ -112,14 +121,22 @@ export async function writeToDisk(files: CsbDict, moduleContext: ModuleContext, 
   // Is a delay useful here to wait for webpack to rebuild first?
 
   // Remove extra files
-  const globsToClean = dirsToClean.map(dir => `${dir}/**/*.*`);
-  const [srcMatches, publicMatches, clapyMatches] = await Promise.all(
-    globsToClean.map(g => globPromise(resolve(g), { ignore: filePaths })),
-  );
-  await Promise.all([...srcMatches, ...publicMatches, ...(clapyMatches || [])].map(match => unlink(match)));
+  try {
+    const globsToClean = dirsToClean.map(dir => `${dir}/**/*.*`);
+    const [srcMatches, publicMatches, clapyMatches] = await Promise.all(
+      globsToClean.map(g => globPromise(resolve(g), { ignore: filePaths })),
+    );
+    await Promise.all([...srcMatches, ...(publicMatches || []), ...(clapyMatches || [])].map(match => unlink(match)));
 
-  // Then remove empty folders
-  await Promise.all(dirsToClean.map(dir => cleanEmptyFoldersRecursively(dir)));
+    // Then remove empty folders
+    await Promise.all(dirsToClean.map(dir => cleanEmptyFoldersRecursively(dir)));
+  } catch (error) {
+    // Warn, because some file system errors don't leave any stack trace, which makes it harder to find the code throwing the error just from the error description.
+    console.warn(
+      'It seems a file to delete or directory to clean does not exist. Add a breakpoint here for investigation.',
+    );
+    throw error;
+  }
 }
 
 const finished = promisify(stream.finished);

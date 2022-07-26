@@ -37,6 +37,12 @@ import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
+import {
+  getOrGenClassName,
+  getOrGenHideProp,
+  getOrGenSwapName,
+  getOrGenTextOverrideProp,
+} from './gen-node-utils/gen-unique-name-utils.js';
 import { createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
@@ -45,12 +51,8 @@ import {
   createComponentUsageWithAttributes,
   fillIsRootInComponent,
   getOrCreateCompContext,
-  getOrGenClassName,
-  getOrGenHideProp,
-  getOrGenSwapName,
-  getOrGenTextOverrideProp,
   removeCssRule,
-  updateCssRuleClassName,
+  updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
@@ -151,6 +153,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     mapCommonStyles(context, node, styles);
 
     if (isText(node)) {
+      context.notOverridingAnotherClass = true;
       addTextOverride(context, node, styles);
     } else if (isVector(node)) {
       const { intermediateNodes } = context;
@@ -163,6 +166,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       if (nextIntermediateNode && !isVector(nextIntermediateNode)) {
         warnNode(node, `nextIntermediateNode ${nextIntermediateNode.name} is not a SVG although the node is a SVG.`);
       } else {
+        context.notOverridingAnotherClass = true;
         const intermediateNodeSvg = nextIntermediateNode ? readSvg(context, nextIntermediateNode) : undefined;
         if (svg && svg !== intermediateNodeSvg) {
           const svgPathVarName = registerSvgForWrite(context, svg);
@@ -185,7 +189,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
 
       // the CSS rule is created before checking the children so that it appears first in the CSS file.
       // After generating the children, we can add the final list of rules or remove it if no rule.
-      const cssRule = addCssRule(context, '_tmp');
+      const cssRule = addCssRule(context, false, [], node);
 
       if (isChildrenMixin(node)) {
         recurseOnChildren(context, node, styles);
@@ -196,8 +200,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext, node);
         getOrGenClassName(componentContext, nodeOfComp);
-        updateCssRuleClassName(context, cssRule, className);
-        cssRule.block.children.push(...styleDeclarations);
+        // TODO add parentRule and the rules loop for instances
+        updateCssRule(context, cssRule, className, undefined, styleDeclarations);
         addStyleOverride(context, node);
       } else {
         removeCssRule(context, cssRule, node);
@@ -227,7 +231,7 @@ function addNodeStyles(
   if (styleDeclarations.length) {
     const className = getOrGenClassName(moduleContext, node);
     getOrGenClassName(componentContext, nodeOfComp);
-    addCssRule(context, className, styleDeclarations);
+    addCssRule(context, className, styleDeclarations, node);
     addStyleOverride(context, node);
   }
 }

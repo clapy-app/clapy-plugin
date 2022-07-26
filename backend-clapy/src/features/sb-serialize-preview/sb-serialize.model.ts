@@ -245,14 +245,22 @@ export type OmitMethods<T> = {
   -readonly [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
-export interface ExtraConfig {
+export interface UserSettings {
+  page?: boolean;
+  zip?: boolean;
+  scss?: boolean;
+  bem?: boolean;
+  framework?: 'angular' | 'react';
+}
+
+export type ExtraConfig = {
   isClapyFile?: boolean;
   isFTD?: boolean;
   enableMUIFramework?: boolean;
+  // Next props are derived from user settings
   output?: 'csb' | 'zip';
-  useViteJS?: boolean;
-  scss?: boolean;
-}
+  useZipProjectTemplate?: boolean;
+} & UserSettings;
 
 export type SVGsExtracted = Dict<{ svg: string; name: string }>;
 

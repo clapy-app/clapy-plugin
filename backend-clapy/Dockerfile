@@ -5,8 +5,8 @@ RUN apk -U upgrade && apk add git
 ENV NODE_ENV production
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN NODE_ENV=development yarn
+RUN NODE_ENV=development yarn install --pure-lockfile
 COPY . .
-RUN yarn build && yarn
+RUN yarn build && yarn install --pure-lockfile
 
 CMD [ "yarn", "start:prod" ]

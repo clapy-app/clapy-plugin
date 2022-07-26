@@ -1,3 +1,4 @@
+import type { RulePlain } from 'css-tree';
 import { relative } from 'path';
 import type { Statement } from 'typescript';
 import ts from 'typescript';
@@ -9,18 +10,17 @@ import { warnOrThrow } from '../../utils.js';
 import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
 import { genNodeAst, prepareNode } from './4-gen-node.js';
 import type { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
-import type { ComponentNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
+import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
-import { cssAstToString, mkStylesheetCss } from './css-gen/css-factories-low.js';
-import { getCSSExtension } from './frameworks/scss/scss-utils.js';
+import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
 import {
-  getComponentName,
   mkCompFunction,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
   mkPropInterface,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import { getCSSExtension } from './tech-integration/scss/scss-utils.js';
 
 const { factory } = ts;
 
@@ -93,7 +93,7 @@ function ensureComponentIsImported(parentModuleContext: ModuleContext, moduleCon
     moduleSpecifier = `./${moduleSpecifier}`;
   }
 
-  const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
+  const ext = projectContext.extraConfig.useZipProjectTemplate ? '.js' : '';
   callerImports[compName] = mkNamedImportsDeclaration([compName], `${moduleSpecifier}${ext}`);
 }
 
@@ -114,7 +114,7 @@ export function mkModuleContext(
     node,
     imports: {},
     statements: [],
-    pageName,
+    pageDir: pageName,
     compDir,
     compName,
     classNamesAlreadyUsed: new Set(['root']),
@@ -139,17 +139,23 @@ function createModuleContextForNode(
   isRootComponent = false,
 ) {
   const { projectContext } = parentModuleContext;
+  const { fwConnector } = projectContext;
 
   const isComp = isComponent(node);
 
-  const pageName = parentModuleContext.pageName;
-  const compName = getComponentName(projectContext, node);
-  const compDir = pageName ? `src/components/${pageName}/${compName}` : `src/components/${compName}`;
+  const pageDir = parentModuleContext.pageDir;
+  const baseCompName = fwConnector.getBaseCompName(projectContext, node);
+  const compName = fwConnector.getCompName(projectContext, node, baseCompName);
+  const compDirName = fwConnector.getCompDirName(baseCompName);
+  // const compFileName = fwConnector.getCompFileName(compDirName);
+  const compDir = pageDir
+    ? `${fwConnector.appCompDir}/components/${pageDir}/${compDirName}`
+    : `${fwConnector.appCompDir}/components/${compDirName}`;
 
   const moduleContext = mkModuleContext(
     projectContext,
     node,
-    pageName || compName,
+    pageDir || compDirName,
     compDir,
     compName,
     parentModuleContext,
@@ -239,9 +245,32 @@ function prepareRootNode(moduleContext: ModuleContext, root: SceneNode2, parent:
 
 function genAstFromRootNode(moduleContext: ModuleContext) {
   const { node } = moduleContext;
+  const { nodeContext: context } = node;
+  if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
+  context.isRootInComponent = true;
   const tsx = genNodeAst(node);
+  const { scss, bem } = moduleContext.projectContext.extraConfig;
+  const useBem = scss && bem;
+  if (useBem) {
+    generateScssBemTree2(moduleContext.cssRules as RulePlain[]);
+  }
   const cssAst = mkStylesheetCss(moduleContext.cssRules);
   return [tsx, cssAst] as const;
+}
+
+function generateScssBemTree2(rules: RulePlain[]) {
+  for (const rule of rules) {
+    const rule2 = rule as RulePlainExtended;
+    const childRules = rule2.childRules;
+    if (childRules) {
+      generateScssBemTree2(childRules);
+      const childStylesRoot = mkStylesheetCss(childRules);
+      const childStylesRootStr = cssAstToString(childStylesRoot);
+      rule.block.children.push(mkRawCss(childStylesRootStr));
+    }
+    delete rule2.childRules;
+    delete rule2.parentRule;
+  }
 }
 
 export function createNodeContext(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {

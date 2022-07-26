@@ -2,56 +2,97 @@ import type { DeclarationPlain, RulePlain } from 'css-tree';
 import type { Statement } from 'typescript';
 import ts from 'typescript';
 
-import { mapTagStyles, mapTextStyles, postMapStyles } from '../6-figma-to-code-map.js';
 import { flags } from '../../../env-and-config/app-config.js';
 import { env } from '../../../env-and-config/env.js';
 import { warnOrThrow } from '../../../utils.js';
-import type { Dict, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
   CompContext,
   FigmaOverride,
-  InstanceContext,
   JsxOneOrMore,
   ModuleContext,
   NodeContext,
-  ProjectContext,
   StyleOverride,
 } from '../code.model.js';
-import type { SceneNode2, TextNode2 } from '../create-ts-compiler/canvas-utils.js';
-import { isComponentSet, isInstance } from '../create-ts-compiler/canvas-utils.js';
+import type { RulePlainExtended, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
+import { isInstance } from '../create-ts-compiler/canvas-utils.js';
+import { mkSelectorsWithBem, shouldIncreaseSpecificity } from '../css-gen/css-factories-high.js';
 import {
+  cssAstToString,
   mkBlockCss,
-  mkClassSelectorCss,
+  mkRawCss,
   mkRuleCss,
   mkSelectorCss,
   mkSelectorListCss,
 } from '../css-gen/css-factories-low.js';
-import { stylesToList } from '../css-gen/css-type-utils.js';
+import { useBem } from './process-nodes-utils.js';
 import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
 
-export function addCssRule(context: NodeContext, className: string, styles: DeclarationPlain[] = []) {
-  const isInstanceContext = !!(context as InstanceContext).instanceNode;
-  const increaseSpecificity = isInstanceContext;
-  const classSelector = mkClassSelectorCss(className);
+export function addCssRule(
+  context: NodeContext,
+  className: string | false,
+  styleDeclarations: DeclarationPlain[],
+  node: SceneNode2,
+  skipAssignRule?: boolean,
+) {
+  const bem = useBem(context);
+  const increaseSpecificity = shouldIncreaseSpecificity(context);
+
   const { cssRules } = context.moduleContext;
-  const cssRule = mkRuleCss(
-    mkSelectorListCss([mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector])]),
-    mkBlockCss(styles),
-  );
-  cssRules.push(cssRule);
+  const selectors = mkSelectorsWithBem(context, className, node.rule);
+  const block = mkBlockCss(styleDeclarations);
+  let cssRule: RulePlain;
+  if (bem && increaseSpecificity && className) {
+    // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
+    const sel = mkSelectorListCss([mkSelectorCss([mkRawCss('&#{&}')])]);
+    const ruleAsStr = cssAstToString(mkRuleCss(sel, block));
+    cssRule = mkRuleCss(selectors, mkBlockCss([mkRawCss(ruleAsStr)]));
+  } else {
+    cssRule = mkRuleCss(selectors, block);
+  }
+  const parentRule = node.rule;
+  if (bem && parentRule) {
+    bindRuleToParent(parentRule, cssRule);
+  } else {
+    cssRules.push(cssRule);
+  }
+  if (bem && !skipAssignRule) {
+    node.rule = cssRule;
+  }
   return cssRule;
 }
 
-export function updateCssRuleClassName(context: NodeContext, cssRule: RulePlain, className: string) {
-  const isInstanceContext = !!(context as InstanceContext).instanceNode;
-  const increaseSpecificity = isInstanceContext;
-  const classSelector = mkClassSelectorCss(className);
-  cssRule.prelude = mkSelectorListCss([
-    mkSelectorCss(increaseSpecificity ? [classSelector, classSelector] : [classSelector]),
-  ]);
+export function bindRuleToParent(parentRule: RulePlainExtended, cssRule: RulePlain) {
+  if (!parentRule.childRules) parentRule.childRules = [];
+  parentRule.childRules.push(cssRule);
+  // If the tree should be the other way around (link to parent instead of children):
+  (cssRule as RulePlainExtended).parentRule = parentRule;
+}
+
+export function updateCssRule(
+  context: NodeContext,
+  cssRule: RulePlain,
+  className: string,
+  parentRule: RulePlainExtended | undefined,
+  styleDeclarations: DeclarationPlain[],
+) {
+  const bem = useBem(context);
+  const increaseSpecificity = shouldIncreaseSpecificity(context);
+
+  cssRule.prelude = mkSelectorsWithBem(context, className, parentRule);
+
+  if (bem && increaseSpecificity) {
+    // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
+    const sel = mkSelectorListCss([mkSelectorCss([mkRawCss('&#{&}')])]);
+    const block = mkBlockCss(styleDeclarations);
+    const ruleAsStr = cssAstToString(mkRuleCss(sel, block));
+    cssRule.block.children.push(mkRawCss(ruleAsStr));
+  } else {
+    cssRule.block.children.push(...styleDeclarations);
+  }
 }
 
 export function removeCssRule(context: NodeContext, cssRule: RulePlain, node: SceneNodeNoMethod) {
@@ -69,104 +110,11 @@ export function fillIsRootInComponent(moduleContext: ModuleContext, node: SceneN
   node.isRootInComponent = node === moduleContext.node;
 }
 
-export function getOrGenClassName(moduleContext: ModuleContext, node?: SceneNode2, defaultClassName = 'label'): string {
-  if (node?.className) {
-    return node.className;
-  }
-  // It may be equivalent to `isComponent(node)`, but for safety, I keep the legacy test. We can refactor later, and test when the app is stable.
-  const isRootInComponent = node === moduleContext.node;
-  // No node when working on text segments. But can we find better class names than 'label' for this case?
-  const baseName = node?.name || defaultClassName;
-  const className = isRootInComponent ? 'root' : genUniqueName(moduleContext.classNamesAlreadyUsed, baseName);
-  if (node) {
-    node.className = className;
-  }
-  return className;
-}
-
-export function getOrGenSwapName(componentContext: ModuleContext, node?: SceneNode2, swapBaseName?: string) {
-  if (node?.swapName) {
-    return node.swapName;
-  }
-  if (!node?.name && !swapBaseName) {
-    throw new Error(
-      `Either a node with a name or a swapBaseName is required to generate a swapName on module ${componentContext.compName}`,
-    );
-  }
-  const baseName = node?.name || swapBaseName!;
-  const swapName = genUniqueName(componentContext.swaps, baseName);
-  if (node) {
-    node.swapName = swapName;
-  }
-  return swapName;
-}
-
-export function getOrGenHideProp(componentContext: ModuleContext, node?: SceneNode2, hideBaseName?: string) {
-  if (node?.hideProp) {
-    return node.hideProp;
-  }
-  if (!node?.name && !hideBaseName) {
-    throw new Error(
-      `Either a node with a name or a hideBaseName is required to generate a hideProp on module ${componentContext.compName}`,
-    );
-  }
-  const baseName = node?.name || hideBaseName!;
-  const hideProp = genUniqueName(componentContext.hideProps, baseName);
-  if (node) {
-    node.hideProp = hideProp;
-  }
-  return hideProp;
-}
-
-export function getOrGenTextOverrideProp(
-  componentContext: ModuleContext,
-  node?: SceneNode2,
-  textOverrideBaseName?: string,
-) {
-  if (node?.textOverrideProp) {
-    return node.textOverrideProp;
-  }
-  if (!node?.name && !textOverrideBaseName) {
-    throw new Error(
-      `Either a node with a name or a textOverrideBaseName is required to generate a textOverrideProp on module ${componentContext.compName}`,
-    );
-  }
-  const baseName = node?.name || textOverrideBaseName!;
-  const textOverrideProp = genUniqueName(componentContext.textOverrideProps, baseName);
-  if (node) {
-    node.textOverrideProp = textOverrideProp;
-  }
-  return textOverrideProp;
-}
-
-export function genComponentImportName(context: NodeContext) {
-  // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
-  let baseName =
-    context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower
-      ? context.parentContext?.nodeNameLower
-      : context.nodeNameLower;
-  if (baseName !== 'icon') {
-    baseName = `${baseName}Icon`;
-  }
-  return genUniqueName(context.moduleContext.subComponentNamesAlreadyUsed, baseName, true);
-}
-
-export function getComponentName(projectContext: ProjectContext, node: SceneNode2) {
-  const name = isComponentSet(node.parent) ? `${node.parent.name}_${node.name}` : node.name;
-  return genUniqueName(projectContext.compNamesAlreadyUsed, name, true);
-}
-
-export function genUniqueName(usageCache: Set<string>, baseName: string, pascalCase = false) {
-  const sanitize = pascalCase ? pascalize : camelize;
-  const sanitizedName = sanitize(baseName) || 'unnamed';
-  let name = sanitizedName;
-  let i = 1;
-  while (usageCache.has(name)) {
-    ++i;
-    name = `${sanitizedName}${i}`;
-  }
-  usageCache.add(name);
-  return name;
+export function mkHtmlFullClass(context: NodeContext, className: string, parentClassName?: string) {
+  // If following the BEM conventions, the HTML class name includes the parent class name.
+  // So mkHtmlFullClass needs to be called in the right order, from parent to child.
+  const bem = useBem(context);
+  return bem && parentClassName ? `${parentClassName}__${className || ''}` : className || '';
 }
 
 export function getOrCreateCompContext(node: SceneNode2) {
@@ -180,39 +128,6 @@ export function getOrCreateCompContext(node: SceneNode2) {
     };
   }
   return node._context;
-}
-
-// https://stackoverflow.com/a/2970667/4053349
-function pascalize(str: string) {
-  return prefixIfNumber(
-    removeAccents(str)
-      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, match => {
-        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-        return match.toUpperCase();
-      })
-      // Truncate if variable name is too long
-      .substring(0, 30),
-  );
-}
-
-function camelize(str: string) {
-  return prefixIfNumber(
-    removeAccents(str)
-      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
-        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-        return index === 0 ? match.toLowerCase() : match.toUpperCase();
-      })
-      // Truncate if variable name is too long
-      .substring(0, 30),
-  );
-}
-
-function removeAccents(value: string) {
-  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-}
-
-function prefixIfNumber(varName: string) {
-  return varName.match(/^\d/) ? `_${varName}` : varName;
 }
 
 export function createComponentUsageWithAttributes(compContext: CompContext, componentModuleContext: ModuleContext) {
@@ -269,44 +184,10 @@ export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 |
   return !nodeIsInstance || !nextNodeIsInstance || node.mainComponent!.id === nextNode.mainComponent!.id; // = not swapped in Figma
 }
 
-export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
-  const { moduleContext } = context;
-
-  // Add text styles
-  let ast: JsxOneOrMore | undefined = mapTextStyles(context, node, styles);
-  if (!ast) {
-    warnNode(node, 'No text segments found in node. Cannot generate the HTML tag.');
-    return;
-  }
-
-  const flexStyles: Dict<DeclarationPlain> = {};
-  mapTagStyles(context, node, flexStyles);
-
-  if (!context.parentStyles || Object.keys(flexStyles).length) {
-    Object.assign(styles, flexStyles);
-    styles = postMapStyles(context, node, styles);
-    const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
-    if (styleDeclarations.length) {
-      const className = getOrGenClassName(moduleContext, node);
-      addCssRule(context, className, styleDeclarations);
-      attributes.push(createClassAttrForNode(node));
-    }
-    ast = mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]);
-  } else {
-    styles = postMapStyles(context, node, styles);
-    Object.assign(context.parentStyles, styles);
-    // Later, here, we can add the code that will handle conflicts between parent node and child text nodes,
-    // i.e. if the text node has different (and conflicting) styles with the parent (that potentially still need its style to apply to itself and/or siblings of the text node), then add an intermediate DOM node and apply the text style on it.
-
-    // return txt;
-  }
-  return ast;
-}
-
-export function createClassAttrForNode(node: SceneNode2) {
+export function createClassAttrForNode(node: SceneNode2, className?: string) {
+  const className2 = className || node.className;
   const overrideEntry: BaseStyleOverride = {
-    overrideValue: node.className,
+    overrideValue: className2,
     propValue: node.classOverride ? node.className : undefined,
   };
   return mkClassAttr2(overrideEntry);

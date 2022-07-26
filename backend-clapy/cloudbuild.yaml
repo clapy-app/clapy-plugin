@@ -3,52 +3,51 @@ steps:
     args:
       - '-c'
       - >-
-        docker pull $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest
+        docker pull ${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest
         || exit 0
     entrypoint: bash
     id: Pull cache
   - name: gcr.io/cloud-builders/docker
     dir: backend-clapy
     args:
-      - build
+      - 'build'
       - '--cache-from'
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
       - '-t'
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
-      - .
-      - '-f'
-      - Dockerfile
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
+      - '.'
+      # - '-f'
+      # - Dockerfile
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
     id: Push
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
-    args:
-      - run
-      - services
-      - update
-      - $_SERVICE_NAME
-      - '--platform=managed'
-      - '--image=$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
-      - >-
-        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID,$_LABELS
-      - '--region=$_DEPLOY_REGION'
-      - '--quiet'
     id: Deploy
     entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - $_SERVICE_NAME
+      - '--image'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
+      - '--region'
+      - '$_DEPLOY_REGION'
+      - '--quiet'
 # Default timeout is 10 minutes (600s). Increasing because the full image is regularly rebuilt, which
 # tends to exceed 10 minutes.
 timeout: 900s
 images:
-  - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
+  - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
 options:
   substitutionOption: ALLOW_LOOSE
 substitutions:
+  _LOCATION: europe
   _GCR_HOSTNAME: eu.gcr.io
   _PLATFORM: managed
-  _SERVICE_NAME: applab-backend
+  _SERVICE_NAME: clapy-backend
   _LABELS: gcb-trigger-id=b5a3f473-3af5-4182-8ce5-0a6945326c4a
   _TRIGGER_ID: b5a3f473-3af5-4182-8ce5-0a6945326c4a
   _DEPLOY_REGION: europe-west1

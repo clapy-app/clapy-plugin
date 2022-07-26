@@ -1,50 +1,55 @@
-import { getSbCompSelection, selectedSbComp } from './routes/1-import-stories/1-select-node';
-import { detachPage, getStoriesSamples, importStories } from './routes/1-import-stories/2-import-sb-routes';
-import { commitUndo, updateCanvas } from './routes/2-update-canvas/1-update-canvas';
-import { updateCanvasVariant } from './routes/2-update-canvas/2-update-canvas-variant';
-import { runGrid } from './routes/2-update-canvas/grid-utils';
-import { updateVariantsFromFilters } from './routes/3-properties/1-update-variants-from-filters';
-import { getCurrentUser } from './routes/4-analytics/get-current-user';
-import { getSelectionPreview, selectionPreview } from './routes/5-export-code/1-selection-preview';
-import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/5-export-code/2-serialize-node';
-import { extractSVGs } from './routes/5-export-code/7-extract-svg.js';
-import { extractImages } from './routes/5-export-code/8-extract-images.js';
+import { getSelectionPreview, selectionPreview } from './routes/1-export-code/1-selection-preview';
+import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/1-export-code/2-serialize-node';
+import { extractSVGs } from './routes/1-export-code/7-extract-svg.js';
+import { extractImages } from './routes/1-export-code/8-extract-images.js';
+import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/2-user/getCachedToken';
+import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
+import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
-import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/getCachedToken';
+import { getSbCompSelection, selectedSbComp } from './routes/code-to-design/1-import-stories/1-select-node';
+import {
+  detachPage,
+  getStoriesSamples,
+  importStories,
+} from './routes/code-to-design/1-import-stories/2-import-sb-routes';
+import { commitUndo, updateCanvas } from './routes/code-to-design/2-update-canvas/1-update-canvas.js';
+import { updateCanvasVariant } from './routes/code-to-design/2-update-canvas/2-update-canvas-variant.js';
+import { runGrid } from './routes/code-to-design/2-update-canvas/grid-utils.js';
+import { updateVariantsFromFilters } from './routes/code-to-design/3-properties/1-update-variants-from-filters.js';
 
 export const routes = {
   // Common
-  reloadUI: reloadUI,
-
-  // Auth routes
-  getCachedToken: getCachedToken,
-  setCachedToken: setCachedToken,
-  getRefreshToken: getRefreshToken,
-  clearCachedTokens: clearCachedTokens,
-
+  reloadUI,
   closePlugin: () => figma.closePlugin(),
+  getCurrentUser,
 
-  // Import storybook
-  getSbCompSelection: getSbCompSelection,
-  getStoriesSamples: getStoriesSamples,
-  importStories: importStories,
-  detachPage: detachPage,
-  updateCanvas: updateCanvas,
-  updateCanvasVariant: updateCanvasVariant,
-  commitUndo: commitUndo,
+  // User and auth routes
+  getCachedToken,
+  setCachedToken,
+  getRefreshToken,
+  clearCachedTokens,
+  getUserMetadata,
+  setUserMetadata,
+  setUserMetaUsage,
 
-  updateVariantsFromFilters: updateVariantsFromFilters,
+  // Design to code: generate code
+  getSelectionPreview,
+  serializeSelectedNode,
+  extractSVGs,
+  extractImages,
 
-  getCurrentUser: getCurrentUser,
+  // Code to design (old)
+  getSbCompSelection,
+  getStoriesSamples,
+  importStories,
+  detachPage,
+  updateCanvas,
+  updateCanvasVariant,
+  commitUndo,
 
-  runGrid: runGrid,
+  updateVariantsFromFilters,
 
-  serializeSelectedNode: serializeSelectedNode,
-  extractSVGs: extractSVGs,
-  extractImages: extractImages,
-
-  // Gen code
-  getSelectionPreview: getSelectionPreview,
+  runGrid,
 };
 
 export const subscriptions = {

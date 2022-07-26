@@ -9,8 +9,8 @@ import classes from './App.module.css';
 import { track } from './common/analytics';
 import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
-import { apiGet } from './common/http.utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
+import { checkSessionLight } from './core/auth/auth-service.js';
 import { dispatchOther } from './core/redux/redux.utils.js';
 import { Layout } from './pages/Layout/Layout';
 import { setQuota } from './pages/user/user-slice.js';
@@ -82,7 +82,7 @@ window.addEventListener('unload', function () {
 export const App: FC = memo(function App() {
   useEffect(() => {
     let checkSession = async () => {
-      const { data } = await apiGet('check-session').catch(handleError);
+      const { data } = await checkSessionLight().catch(handleError);
       track('open-plugin');
 
       dispatchOther(setQuota(data));

@@ -1,7 +1,10 @@
 import { BadRequestException, Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 
+import { wait } from '../../common/general-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
+import { flags } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
 import { UserService } from './user.service.js';
@@ -20,6 +23,11 @@ export class UserController {
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
+    // Simulates a potential cold start on Google Cloud Run.
+    // This API is one of the first calls.
+    if (env.isDev && flags.simulateColdStart) {
+      await wait(3000);
+    }
     const userId = (request as any).user.sub;
     const auth0User = await getAuth0User(userId);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};

@@ -7,13 +7,13 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import { genComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
-  genComponentImportName,
-  getOrGenClassName,
   mkClassAttr3,
   mkComponentUsage,
+  mkHtmlFullClass,
   mkIdAttribute,
   mkNamedImportsDeclaration,
   mkSwapInstanceAlone,
@@ -33,7 +33,7 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
     svgContent,
   };
 
-  const ext = projectContext.extraConfig.useViteJS ? '.js' : '';
+  const ext = projectContext.extraConfig.useZipProjectTemplate ? '.js' : '';
   // Add import in file
   // (Note: could be moved to when AST is generated to have the final imports)
   moduleContext.imports[svgPathVarName] = mkNamedImportsDeclaration([svgPathVarName], `./${svgPathVarName}${ext}`);
@@ -79,13 +79,18 @@ export function addNodeStyles(
 ) {
   const { moduleContext } = context;
   const styleDeclarations = stylesToList(styles);
+  const isSubWrapperNotNode = !!classBaseName;
   let attributes: ts.JsxAttribute[] = [];
   if (styleDeclarations.length) {
-    const className = classBaseName
+    const className = isSubWrapperNotNode
       ? getOrGenClassName(moduleContext, undefined, classBaseName)
       : getOrGenClassName(moduleContext, node);
-    addCssRule(context, className, styleDeclarations);
-    attributes.push(classBaseName ? mkClassAttr3(classBaseName) : createClassAttrForNode(node));
+    addCssRule(context, className, styleDeclarations, node);
+    const htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
+    if (!isSubWrapperNotNode) {
+      node.htmlClass = htmlClass;
+    }
+    attributes.push(isSubWrapperNotNode ? mkClassAttr3(htmlClass) : createClassAttrForNode(node, htmlClass));
   }
   return attributes;
 }
@@ -171,4 +176,9 @@ export function escapeHTML(str: string) {
   // Replaces all line breaks with HTML tag <br /> to preserve line breaks
   str = str.replace(/\r\n|\r|\n|[\x0B\x0C\u0085\u2028\u2029]/g, '<br />');
   return str;
+}
+
+export function useBem(context: NodeContext) {
+  const { scss, bem } = context.moduleContext.projectContext.extraConfig;
+  return scss && bem;
 }
