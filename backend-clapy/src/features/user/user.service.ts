@@ -1,110 +1,72 @@
-import { UnauthorizedException } from '@nestjs/common';
-import type { User } from 'auth0';
-import { ManagementClient } from 'auth0';
+import type { StreamableFile } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import type { Repository } from 'typeorm';
 
-import { env } from '../../env-and-config/env.js';
+import { appConfig } from '../../env-and-config/app-config.js';
+import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
+import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
+import { StripeService } from '../stripe/stripe.service.js';
+import type { AccessTokenDecoded } from './user.utils.js';
 
-const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
+@Injectable()
+export class UserService {
+  constructor(
+    @Inject(StripeService) private stripeService: StripeService,
 
-var auth0Management = new ManagementClient({
-  domain: auth0Domain,
-  clientId: auth0BackendClientId,
-  clientSecret: auth0BackendClientSecret,
-  scope: 'read:users update:users',
-});
+    @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
+  ) {}
 
-export async function getAuth0User(userId: string | undefined) {
-  if (!userId) throw new UnauthorizedException();
-  return await auth0Management.getUser({ id: userId });
-}
+  getQuotaCount = async (userId: string) => {
+    let result = 0;
+    const csbNumber = await this.generationHistoryRepository
+      .createQueryBuilder('generationHistory')
+      .select('generationHistory.generated_link')
+      .distinctOn(['generationHistory.generated_link'])
+      .where({ auth0id: userId })
+      .execute();
+    console.log(userId);
+    const zipNumber = await this.generationHistoryRepository
+      .createQueryBuilder('generationHistory')
+      .where({ auth0id: userId, generatedLink: '_zip' })
+      .execute();
+    console.log(zipNumber);
 
-export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
-}
-
-export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.assignRolestoUser({ id: userId }, { roles });
-}
-
-export interface UserMetadata {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  jobRole?: string;
-  techTeamSize?: string;
-  email?: string;
-  picture?: string;
-  usage?: UserMetaUsage;
-  licenceStartDate?: number;
-  licenceExpirationDate?: number;
-}
-
-export interface UserMetaUsage {
-  components?: boolean;
-  designSystem?: boolean;
-  landingPages?: boolean;
-  other?: boolean;
-  otherDetail?: string;
-}
-
-/**
- * @example
- * ```typescript
- * const [firstName, lastName] = getFirstLastName(user);
- * ```
- */
-export function getAuth0FirstLastName(user: User) {
-  try {
-    let firstName: string | undefined;
-    let lastName: string | undefined;
-    const metadata: UserMetadata | undefined = user.user_metadata;
-    ({ firstName, lastName } = metadata || {});
-    if (!firstName && !lastName) {
-      [firstName, lastName] = [user.given_name, user.family_name];
+    result = csbNumber.length + zipNumber.length;
+    if (zipNumber.length >= 1) {
+      result--;
     }
-    if (!firstName && !lastName) {
-      [firstName, lastName] = splitName(removeSuffix(user.name));
+    return result;
+  };
+
+  checkUserOrThrow = async (user: AccessTokenDecoded) => {
+    const userId = user.sub;
+    const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licenceExpirationDate']);
+    if ((await this.getQuotaCount(userId)) >= appConfig.maxQuotas && isLicenceExpired) {
+      throw new Error('Free code generations used up, you can get more by having a call with us or pay a licence');
     }
-    if (!firstName && !lastName) {
-      [firstName, lastName] = [user.nickname || removeSuffix(user.email) || '', ''];
+  };
+
+  saveInHistoryUserCodeGeneration = async (
+    genType: 'csb' | 'zip' | undefined,
+    res: StreamableFile | CSBResponse | undefined,
+    user: AccessTokenDecoded,
+  ) => {
+    if (res === undefined) return res;
+    const generationHistory = new GenerationHistoryEntity();
+    const userId = user.sub;
+    generationHistory.auth0id = userId;
+    if (genType === 'csb') {
+      generationHistory.generatedLink = (res as CSBResponse).sandbox_id;
+      await this.generationHistoryRepository.save(generationHistory);
+      (res as CSBResponse).quotas = await this.getQuotaCount(userId);
+      // TODO; si une erreur surviens, ne pas bloquer l'execution de code et envoyé la réponse a l'utilisateur dans ce cas.
+      // faire un push slack pour avoir le corps de l'erreur
+    } else if (genType === 'zip') {
+      generationHistory.generatedLink = '_zip';
+      await this.generationHistoryRepository.save(generationHistory);
+    } else {
+      throw new Error('Unsupported output format');
     }
-    if (firstName == null) firstName = '';
-    if (lastName == null) lastName = '';
-    return [firstName, lastName] as const;
-  } catch (err) {
-    return ['', ''] as const;
-  }
-}
-
-function splitName(name: string | undefined) {
-  if (!name) return [name, ''];
-  const i = name.indexOf(' ');
-  if (i === -1) return [name, ''];
-  return [name.substring(0, i), name.substring(i + 1)];
-}
-
-function removeSuffix(name: string | undefined) {
-  if (!name) return name;
-  for (const separator of ['@']) {
-    const i = name.indexOf(separator);
-    if (i !== -1) {
-      name = name.substring(0, i);
-    }
-  }
-  return name;
-}
-
-// Ensure this method is synced with the plugin equivalent: figma-plugin-clapy/src/pages/user/user-service.ts
-export function hasMissingMetaProfile(
-  { firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata,
-) {
-  return !firstName || !lastName || !companyName || !jobRole || !techTeamSize;
-}
-
-// Ensure this method is synced with the plugin equivalent: figma-plugin-clapy/src/pages/user/user-service.ts
-export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
-  const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage || {};
-  return !components && !designSystem && !landingPages && !(other && otherDetail);
+  };
 }

@@ -1,20 +1,22 @@
-import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
-import type { UserMetadata, UserMetaUsage } from './user.service.js';
+import { UserService } from './user.service.js';
+import type { UserMetadata, UserMetaUsage } from './user.utils.js';
 import {
   getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
   updateAuth0UserMetadata,
-} from './user.service.js';
+} from './user.utils.js';
 
 @Controller('user')
 export class UserController {
+  constructor(@Inject(UserService) private userService: UserService) {}
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
@@ -23,6 +25,7 @@ export class UserController {
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
     userMetadata.picture = auth0User.picture;
     userMetadata.email = auth0User.email;
+    userMetadata.quotas = await this.userService.getQuotaCount(userId);
     // If missing name, pre-fill with other profile info available.
     if (!userMetadata.firstName || !userMetadata.lastName) {
       const [firstName, lastName] = getAuth0FirstLastName(auth0User);

@@ -13,6 +13,7 @@ interface Props {
 }
 export const _BadgeBase: FC<Props> = memo(function _BadgeBase(props: Props) {
   const isPaid = useSelector(selectIsPaidUser);
+
   const bgColor = isPaid ? classes.green : classes.root;
 
   return (

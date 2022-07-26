@@ -2,6 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
 import type { Nil } from '../../common/app-models';
+import { isUserLicenceStillActive } from '../../common/stripeLicense.js';
 import type { RootState } from '../redux/store';
 import type { AccessTokenDecoded } from './auth-service';
 
@@ -51,5 +52,7 @@ export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
+export const selectUserLicenceExpirationDate = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/licenceExpirationDate'];
 export const selectIsPaidUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('paid_user');
+  isUserLicenceStillActive(state.auth.tokenDecoded?.['https://clapy.co/licenceExpirationDate']);

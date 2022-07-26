@@ -7,12 +7,16 @@ import { Stripe } from 'stripe';
 import { IsBrowserGet } from '../../auth/IsBrowserGet.decorator.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { env } from '../../env-and-config/env.js';
-import { getAuth0User, updateAuth0UserMetadata, updateAuth0UserRoles } from '../user/user.service.js';
+import { UserService } from '../user/user.service.js';
+import { getAuth0User, updateAuth0UserMetadata } from '../user/user.utils.js';
 import { StripeService } from './stripe.service.js';
 
 @Controller('stripe')
 export class StripeController {
-  constructor(@Inject(StripeService) private stripeService: StripeService) {}
+  constructor(
+    @Inject(StripeService) private stripeService: StripeService,
+    @Inject(UserService) private userService: UserService,
+  ) {}
 
   @Get('/checkout')
   async stripeCheckout(@Req() request: Request, @Query('from') from: string) {
@@ -62,6 +66,34 @@ export class StripeController {
     return session.url;
   }
 
+  @Get('/getUserQuota')
+  async getUserQuotas(@Req() request: Request) {
+    const userId = (request as any).user.sub;
+    const quotas = await this.userService.getQuotaCount(userId);
+    return { quotas: quotas };
+  }
+  @Get('/customerPortal')
+  async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {
+    const redirectUri = `${env.baseUrl}/stripe/customerPortal-callback?from=${from}`;
+    const userId = (request as any).user.sub;
+    let auth0User = await getAuth0User(userId);
+    const stripe = new Stripe(env.stripeSecretKey, {
+      apiVersion: '2020-08-27',
+      appInfo: {
+        name: 'clapy-dev/checkout',
+        version: '0.0.1',
+      },
+    });
+    const customerExist = await stripe.customers.search({
+      query: `email:'${auth0User.email}'`,
+    });
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerExist.data[0].id,
+      return_url: redirectUri,
+    });
+
+    return session.url;
+  }
   @PublicRoute()
   @IsBrowserGet()
   @Post('webhook')
@@ -82,7 +114,7 @@ export class StripeController {
       throw new HttpException(`Webhook Error: ${err}`, 401);
     }
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object as any;
         if (session.payment_status === 'paid') {
           const { auth0Id } = session.metadata;
@@ -94,17 +126,63 @@ export class StripeController {
             licenceStartDate: current_period_start,
             licenceExpirationDate: current_period_end,
           });
-          await updateAuth0UserRoles(auth0Id, [env.auth0PaidRole]);
         }
         break;
-      case 'payment_intent.succeeded':
+      }
+      case 'customer.subscription.updated':
+        {
+          const session = event.data.object as any;
+          const { current_period_start, current_period_end } = session;
+          const customer = await stripe.customers.retrieve(session.customer);
+          const { auth0Id } = customer!.metadata;
+          await updateAuth0UserMetadata(auth0Id, {
+            licenceStartDate: current_period_start,
+            licenceExpirationDate: current_period_end,
+          });
+        }
         break;
-      case 'payment_intent.failed':
-        console.log('failed');
-        //emailCustomerAboutFailedPayment(session);
+      case 'customer.deleted': {
+        const session = event.data.object as any;
+        console.log(session);
+        const { auth0Id } = session!.metadata;
+        await updateAuth0UserMetadata(auth0Id, {
+          licenceStartDate: null,
+          licenceExpirationDate: null,
+        });
         break;
+      }
+      case 'customer.subscription.deleted': {
+        const session = event.data.object as any;
+        const { current_period_start, current_period_end, canceled_at } = session;
+        const customer = await stripe.customers.retrieve(session.customer);
+        if (customer!.metadata?.auth0Id) {
+          const { auth0Id } = customer!.metadata;
+          await updateAuth0UserMetadata(auth0Id, {
+            licenceStartDate: current_period_start,
+            licenceExpirationDate: canceled_at,
+          });
+        }
+        console.log('subscription was canceled from dashboard or customer portal.');
+        break;
+      }
+      // case 'charge.refunded': {
+      //   const session = event.data.object as any;
+      //   const customer = await stripe.customers.retrieve(session.customer);
+      //   if (
+      //     session.refunds.data[0].object === 'refund' &&
+      //     session.refunds.data[0].status === 'succeeded' &&
+      //     customer!.metadata?.auth0Id
+      //   ) {
+      //     const { auth0Id } = customer!.metadata;
+      //     await updateAuth0UserMetadata(auth0Id, {
+      //       licenceExpirationDate: session.refunds.data[0].created,
+      //     });
+      //   }
+      //   console.log(session.refunds.data[0]);
+      //   break;
+      // }
       default:
-        //console.log(event.type);
+        console.log(event.type);
         break;
     }
     // Return a response to acknowledge receipt of the event
@@ -121,6 +199,17 @@ export class StripeController {
   ) {
     if (!state) throw new Error(`No state in query parameters.`);
     return { from, state };
+  }
+
+  @PublicRoute()
+  @IsBrowserGet()
+  @Get('/customerPortal-callback')
+  @Render('customerPortal-callback')
+  async customerPortalCallback(
+    @Query('from') from: string = 'browser' || 'desktop',
+    @Query('state') state: string = 'completed' || 'canceled',
+  ) {
+    return { from };
   }
 
   @PublicRoute()

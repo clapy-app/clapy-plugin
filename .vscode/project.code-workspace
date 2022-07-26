@@ -38,5 +38,6 @@
     "typescript.preferences.importModuleSpecifierEnding": "js",
     "git.mergeEditor": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.updateImportsOnFileMove.enabled": "always",
   }
 }

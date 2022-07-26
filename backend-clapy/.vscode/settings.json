@@ -34,7 +34,9 @@
   },
   "css.format.spaceAroundSelectorSeparator": true,
   "less.format.spaceAroundSelectorSeparator": true,
-  "scss.format.spaceAroundSelectorSeparator": true
+  "scss.format.spaceAroundSelectorSeparator": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always"
   // "[html]": {
   //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   // },

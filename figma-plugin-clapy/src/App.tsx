@@ -11,7 +11,9 @@ import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
 import { apiGet } from './common/http.utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
+import { dispatchOther } from './core/redux/redux.utils.js';
 import { Layout } from './pages/Layout/Layout';
+import { setQuota } from './pages/user/user-slice.js';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -79,9 +81,13 @@ window.addEventListener('unload', function () {
 
 export const App: FC = memo(function App() {
   useEffect(() => {
-    apiGet('check-session')
-      .catch(handleError)
-      .finally(() => track('open-plugin'));
+    let checkSession = async () => {
+      const { data } = await apiGet('check-session').catch(handleError);
+      track('open-plugin');
+
+      dispatchOther(setQuota(data));
+    };
+    checkSession();
   }, []);
 
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'

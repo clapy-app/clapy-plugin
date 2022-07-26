@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { selectIsPaidUser } from '../../../../core/auth/auth-slice.js';
 import { selectUserMetadata } from '../../../user/user-slice.js';
+import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
 import { Badge } from './Badge/Badge';
@@ -33,9 +34,8 @@ interface Props {
   };
 }
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
+  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
   const isPaid = useSelector(selectIsPaidUser);
-  console.log(quotas);
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.imageWrapOuter} ${props.classes?.imageWrapOuter || ''}`}>
@@ -56,8 +56,19 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             </div>
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
-                <Badge />
-                {isPaid && <Badge2 />}
+                {!isPaid && (
+                  <>
+                    <Badge />
+                    <BadgeQuotas />
+                  </>
+                )}
+                {isPaid && (
+                  <>
+                    {' '}
+                    <Badge />
+                    <Badge2 />
+                  </>
+                )}
               </div>
             </div>
           </div>
