@@ -55,6 +55,7 @@ import {
   updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 
 export function genInstanceOverrides(context: InstanceContext, node: SceneNode2) {
   try {
@@ -105,7 +106,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
           : nodeOfComp;
         assertInstance(nodeOfComp2);
 
-        const instanceNode = node;
+        const instanceNode = node as InstanceNode2;
         const instanceContext: InstanceContext = {
           ...context,
           componentContext,
@@ -135,6 +136,10 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         return;
       }
     }
+
+    const [newNode, extraAttributes] = guessTagNameAndUpdateNode(context, node, styles);
+    if (newNode) node = newNode;
+    node.extraAttributes = extraAttributes;
 
     if (!isValidNode(node) && !isGroup(node)) {
       warnNode(node, 'TODO Unsupported instance node');

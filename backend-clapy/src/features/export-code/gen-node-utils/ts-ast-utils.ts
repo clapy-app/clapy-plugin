@@ -83,6 +83,7 @@ export function updateCssRule(
   const increaseSpecificity = shouldIncreaseSpecificity(context);
 
   cssRule.prelude = mkSelectorsWithBem(context, className, parentRule);
+  context.selector = cssAstToString(cssRule.prelude);
 
   if (bem && increaseSpecificity) {
     // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
@@ -516,19 +517,23 @@ export function mkTag(tagName: string, classAttr: ts.JsxAttribute[] | null, chil
 }
 
 export function mkInputTypeAttr(value = 'checkbox') {
-  return factory.createJsxAttribute(factory.createIdentifier('type'), factory.createStringLiteral(value));
+  return mkStringAttr('type', value);
 }
 
 export function mkHrefAttr(url: string) {
-  return factory.createJsxAttribute(factory.createIdentifier('href'), factory.createStringLiteral(url));
+  return mkStringAttr('href', url);
 }
 
 export function mkTargetBlankAttr() {
-  return factory.createJsxAttribute(factory.createIdentifier('target'), factory.createStringLiteral('_blank'));
+  return mkStringAttr('target', '_blank');
 }
 
 export function mkNoReferrerAttr() {
-  return factory.createJsxAttribute(factory.createIdentifier('rel'), factory.createStringLiteral('noreferrer'));
+  return mkStringAttr('rel', 'noreferrer');
+}
+
+export function mkStringAttr(attributeName: string, value: string) {
+  return factory.createJsxAttribute(factory.createIdentifier(attributeName), factory.createStringLiteral(value));
 }
 
 // If useful. Keep a couple of weeks and remove later.

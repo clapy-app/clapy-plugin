@@ -112,6 +112,8 @@ export interface NodeContext {
   // when writing style, we can have a different behavior depending on the original component styles
   nodeOfComp?: SceneNode2;
   notOverridingAnotherClass?: boolean;
+  firstChildIsPlaceholder?: boolean;
+  selector?: string;
 }
 
 export type TextOValue = JsxOneOrMore | string | false;

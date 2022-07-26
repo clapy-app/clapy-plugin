@@ -8,6 +8,7 @@ import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { JsxOneOrMore, NodeContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
+import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
 import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
@@ -190,4 +191,23 @@ export function genTextAst(node: TextNode2) {
 export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
   prepareStylesOnTextSegments(context, node, styles);
   return genTextAst(node);
+}
+
+export function genInputPlaceholderStyles(context: NodeContext, node: TextNode2) {
+  const { moduleContext } = context;
+  const textSegments: TextSegment2[] | undefined = node._textSegments;
+  const segmentsStyles = node._segmentsStyles;
+  if (!textSegments?.length) return;
+  if (!segmentsStyles?.length) return;
+
+  const segmentStyles = segmentsStyles[0];
+  const styleDeclarations = stylesToList(segmentStyles);
+  if (styleDeclarations.length) {
+    const { cssRules } = moduleContext;
+    const selector = mkRawCss(`${context.selector}::placeholder`);
+    const selectors = mkSelectorListCss([mkSelectorCss([selector])]);
+    const block = mkBlockCss(styleDeclarations);
+    let cssRule = mkRuleCss(selectors, block);
+    cssRules.push(cssRule);
+  }
 }
