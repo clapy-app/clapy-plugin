@@ -37,6 +37,12 @@ import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
+import {
+  getOrGenClassName,
+  getOrGenHideProp,
+  getOrGenSwapName,
+  getOrGenTextOverrideProp,
+} from './gen-node-utils/gen-unique-name-utils.js';
 import { createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
@@ -45,10 +51,6 @@ import {
   createComponentUsageWithAttributes,
   fillIsRootInComponent,
   getOrCreateCompContext,
-  getOrGenClassName,
-  getOrGenHideProp,
-  getOrGenSwapName,
-  getOrGenTextOverrideProp,
   removeCssRule,
   updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';

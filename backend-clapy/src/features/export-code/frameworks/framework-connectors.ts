@@ -1,11 +1,17 @@
-import type { Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { CodeDict } from '../code.model.js';
+import type { Dict3, ExtraConfig, SceneNode2, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { CodeDict, ProjectContext } from '../code.model.js';
 import { angularConnector } from './angular/index.js';
 import { reactConnector } from './react/index.js';
 
 export interface FrameworkConnector {
   templateBaseDirectory: (extraConfig: ExtraConfig) => string;
   patchSCSSInFileContents: (resources: CodeDict, extraConfig: ExtraConfig) => void;
+  appCompDir: string;
+  appCompName: string;
+  getBaseCompName: (projectContext: ProjectContext, node: SceneNode2) => string;
+  getCompName: (projectContext: ProjectContext, node: SceneNode2, baseCompName: string) => string;
+  getCompDirName: (baseCompName: string) => string;
+  getCompFileName: (compDir: string) => string;
 }
 
 export const frameworkConnectors = makeConnectors({

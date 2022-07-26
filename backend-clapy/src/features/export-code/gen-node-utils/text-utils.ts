@@ -9,12 +9,12 @@ import type { JsxOneOrMore, NodeContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
 import {
   addCssRule,
   createClassAttrForClassNoOverride,
   createClassAttrForNode,
-  getOrGenClassName,
   mkHrefAttr,
   mkHtmlFullClass,
   mkIdAttribute,

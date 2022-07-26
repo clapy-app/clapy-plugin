@@ -7,11 +7,10 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import { genComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
-  genComponentImportName,
-  getOrGenClassName,
   mkClassAttr3,
   mkComponentUsage,
   mkHtmlFullClass,

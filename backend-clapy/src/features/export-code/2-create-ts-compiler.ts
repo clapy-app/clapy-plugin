@@ -105,16 +105,17 @@ export async function exportCode(
     svgsRead: new Map(),
     images,
     styles,
-    enableMUIFramework: env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework,
+    enableMUIFramework:
+      extraConfig.framework === 'react' && (env.isDev ? enableMUIInDev : !!extraConfig.enableMUIFramework),
     varNamesMap,
     tokensRawMap,
     extraConfig,
     newDependencies: {},
     newDevDependencies: {},
+    fwConnector,
   };
 
-  const appCompDir = 'src';
-  const appCompName = 'App';
+  const { appCompDir, appCompName } = fwConnector;
 
   const lightAppModuleContext = mkModuleContext(
     projectContext,

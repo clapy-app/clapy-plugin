@@ -4,11 +4,8 @@ import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext } from '../../code.model.js';
 import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isComponentSet, isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import {
-  genUniqueName,
-  mkDefaultImportDeclaration,
-  mkNamedImportsDeclaration,
-} from '../../gen-node-utils/ts-ast-utils.js';
+import { genUniqueName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
+import { mkDefaultImportDeclaration, mkNamedImportsDeclaration } from '../../gen-node-utils/ts-ast-utils.js';
 import { muiComponents } from './mui-all-components.js';
 import type { MUIConfig, MUIConfigs, ValidAstPropValue } from './mui-config.js';
 import { isPropConfigMap } from './mui-config.js';
@@ -44,7 +41,7 @@ export function addMuiImport(context: ModuleContext, config: MUIConfig) {
   // There is an overlap. importsAlreadyAdded may not be required, and if the imports dictionary is not enough, its concept may need to be strenghtened.
   if (!importsAlreadyAdded.has(importHashKey)) {
     // Rename import name if already in scope
-    const name = genUniqueName(subComponentNamesAlreadyUsed, config.name, true);
+    const name = genUniqueName(subComponentNamesAlreadyUsed, config.name, TextCase.Pascal);
     imports[importHashKey] = mkNamedImportsDeclaration(
       [name === config.name ? name : [config.name, name]],
       config.moduleSpecifier,

@@ -33,14 +33,13 @@ import {
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { getOrGenClassName, getOrGenHideProp } from './gen-node-utils/gen-unique-name-utils.js';
 import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
   fillIsRootInComponent,
-  getOrGenClassName,
-  getOrGenHideProp,
   mkHtmlFullClass,
   mkIdAttribute,
   mkSwapInstanceAndHideWrapper,

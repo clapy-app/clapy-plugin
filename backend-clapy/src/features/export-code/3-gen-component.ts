@@ -14,7 +14,6 @@ import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-
 import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
 import {
-  getComponentName,
   mkCompFunction,
   mkDefaultImportDeclaration,
   mkNamedImportsDeclaration,
@@ -115,7 +114,7 @@ export function mkModuleContext(
     node,
     imports: {},
     statements: [],
-    pageName,
+    pageDir: pageName,
     compDir,
     compName,
     classNamesAlreadyUsed: new Set(['root']),
@@ -140,17 +139,23 @@ function createModuleContextForNode(
   isRootComponent = false,
 ) {
   const { projectContext } = parentModuleContext;
+  const { fwConnector } = projectContext;
 
   const isComp = isComponent(node);
 
-  const pageName = parentModuleContext.pageName;
-  const compName = getComponentName(projectContext, node);
-  const compDir = pageName ? `src/components/${pageName}/${compName}` : `src/components/${compName}`;
+  const pageDir = parentModuleContext.pageDir;
+  const baseCompName = fwConnector.getBaseCompName(projectContext, node);
+  const compName = fwConnector.getCompName(projectContext, node, baseCompName);
+  const compDirName = fwConnector.getCompDirName(baseCompName);
+  // const compFileName = fwConnector.getCompFileName(compDirName);
+  const compDir = pageDir
+    ? `${fwConnector.appCompDir}/components/${pageDir}/${compDirName}`
+    : `${fwConnector.appCompDir}/components/${compDirName}`;
 
   const moduleContext = mkModuleContext(
     projectContext,
     node,
-    pageName || compName,
+    pageDir || compDirName,
     compDir,
     compName,
     parentModuleContext,
