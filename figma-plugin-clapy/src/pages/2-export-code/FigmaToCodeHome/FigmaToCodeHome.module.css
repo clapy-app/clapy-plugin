@@ -26,14 +26,22 @@
   gap: 16px;
 }
 
-.accordionRoot.accordionRoot {
+.accordionRoot.accordionRoot.accordionRoot {
   align-self: stretch;
   display: block;
   box-shadow: none;
+  margin-left: -12px;
+  margin-right: -12px;
 }
+
 .accordionRoot.accordionRoot::before {
   content: none;
 }
+
 html body :where(.accordionRoot) * {
   display: block;
+}
+
+.outerOption {
+  align-self: start;
 }
