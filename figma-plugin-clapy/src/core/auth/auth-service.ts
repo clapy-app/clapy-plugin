@@ -45,7 +45,7 @@ export async function checkSessionLight() {
     dispatchOther(setSignedInState(signedInState));
   }
   await dispatchLocalUserMetadata(signedInState);
-  await checkSessionComplete();
+  return await checkSessionComplete();
 }
 
 /**
@@ -53,8 +53,9 @@ export async function checkSessionLight() {
  * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
  */
 async function checkSessionComplete() {
-  await apiGet('check-session');
+  const { data } = await apiGet('check-session');
   await fetchUserMetadata();
+  return data;
 }
 
 export const signup = toConcurrencySafeAsyncFn(async () => {

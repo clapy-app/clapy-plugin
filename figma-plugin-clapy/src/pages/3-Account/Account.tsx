@@ -7,9 +7,5 @@ interface Props {
   className?: string;
 }
 export const Account: FC<Props> = memo(function Account(props = {}) {
-  return (
-    <div>
-      <Container />
-    </div>
-  );
+  return <Container />;
 });

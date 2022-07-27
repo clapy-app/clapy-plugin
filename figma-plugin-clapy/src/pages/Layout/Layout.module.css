@@ -18,4 +18,5 @@
   gap: 16px;
   overflow: auto;
   flex-direction: column;
+  justify-content: center;
 }

@@ -1,6 +1,9 @@
 import type { FC, MouseEvent } from 'react';
 import { memo, useCallback, useRef } from 'react';
+import { useSelector } from 'react-redux';
 
+import { Loading } from '../../../components-used/Loading/Loading.js';
+import { selectUserMetadata } from '../../user/user-slice.js';
 import { _TabButtonBase } from '../_TabButtonBase/_TabButtonBase';
 import { CodeIcon } from '../Header/CodeIcon';
 import { SettingsIcon } from '../Header/SettingsIcon';
@@ -13,6 +16,8 @@ interface Props {
 
 export const HorizontalTabs: FC<Props> = memo(function HorizontalTabs(props) {
   const { activeTab, selectTab } = props;
+  const { picture } = useSelector(selectUserMetadata);
+
   const previousIndexRef = useRef<number>();
   const _selectTab = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
@@ -36,6 +41,7 @@ export const HorizontalTabs: FC<Props> = memo(function HorizontalTabs(props) {
           </span>
         </_TabButtonBase>
         <_TabButtonBase active={activeTab === 1} data-index={1} onClick={_selectTab}>
+          {typeof picture === 'undefined' && <Loading height={24} width={24} />}
           Settings
           <span style={{ marginLeft: 8, marginTop: 3 }}>
             <SettingsIcon />

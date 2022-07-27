@@ -1,8 +1,10 @@
 .root {
   flex: 1;
   align-self: stretch;
+  justify-content: stretch;
   flex-direction: column;
   overflow-y: auto;
+  
 }
 .imageWrapOuter {
   height: 88px;
@@ -91,4 +93,13 @@
   flex-direction: column;
   gap: 16px;
   padding: 0 0 32px;
+}
+.loader {
+  flex:1;
+  align-self: stretch;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  padding: 0  32px;
+  
 }

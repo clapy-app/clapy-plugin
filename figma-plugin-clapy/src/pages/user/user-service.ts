@@ -15,7 +15,6 @@ export async function dispatchLocalUserMetadata(signedInState: boolean) {
     await fetchUserMetadata();
   } else {
     dispatchOther(setMetadata(userProfileState));
-  quotas?: number;
   }
 }
 

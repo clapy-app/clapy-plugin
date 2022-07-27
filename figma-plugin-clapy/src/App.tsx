@@ -30,7 +30,10 @@ declare module '@mui/material/Button' {
     neutral: true;
   }
 }
-
+interface apiResponse {
+  ok: boolean;
+  quotas?: number;
+}
 const theme = createTheme({
   palette: {
     primary: {
@@ -82,10 +85,12 @@ window.addEventListener('unload', function () {
 export const App: FC = memo(function App() {
   useEffect(() => {
     let checkSession = async () => {
-      const { data } = await checkSessionLight().catch(handleError);
+      const res = (await checkSessionLight().catch(handleError)) as apiResponse;
       track('open-plugin');
-
-      dispatchOther(setQuota(data));
+      console.log(res);
+      if (res.quotas !== undefined) {
+        dispatchOther(setQuota(res));
+      }
     };
     checkSession();
   }, []);

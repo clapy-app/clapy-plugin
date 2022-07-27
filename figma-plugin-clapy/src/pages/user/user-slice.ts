@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import type { RootState } from '../../core/redux/store';
+import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
 export interface UserState {
   userMetadata?: UserProfileState;
@@ -31,14 +32,18 @@ export const userSlice = createSlice({
       state.userMetadata = undefined;
     },
     setQuota: (state, { payload }: PayloadAction<UserMetadata>) => {
-      state.userMetadata!.quotas = payload.quotas;
+      (state.userMetadata as UserMetadata).quotas = payload.quotas;
     },
   },
 });
 
 export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setQuota } = userSlice.actions;
-export const selectUserQuota = (state: RootState) => state.user.userMetadata?.quotas!;
-
+export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
+export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
+export const selectHasMissingMetaProfile = (state: RootState) =>
+  state.user.userMetadata !== true && hasMissingMetaProfile(state.user.userMetadata);
+export const selectHasMissingMetaUsage = (state: RootState) =>
+  state.user.userMetadata !== true && hasMissingMetaUsage(state.user.userMetadata?.usage);
 /**
  * Called in FillUserProfile or FillUserProfileStep2. Assumes it's not `true`, which should have been
  * filtered earlier in Layout.tsx with the above selectors. And assumes it's not undefined, which

@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
+import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsPaidUser } from '../../../../core/auth/auth-slice.js';
 import { selectUserMetadata } from '../../../user/user-slice.js';
 import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas.js';
@@ -31,11 +32,20 @@ interface Props {
     badges?: string;
     row?: string;
     actions?: string;
+    loader?: string;
   };
 }
 export const Container: FC<Props> = memo(function Container(props = {}) {
   const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
   const isPaid = useSelector(selectIsPaidUser);
+  if (typeof picture === 'undefined') {
+    return (
+      <div className={`${classes.loader} ${props.classes?.loader || ''}`}>
+        <Loading />
+        <p>the informations of settings page are being loaded. </p>
+      </div>
+    );
+  }
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.imageWrapOuter} ${props.classes?.imageWrapOuter || ''}`}>
@@ -64,7 +74,6 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
                 )}
                 {isPaid && (
                   <>
-                    {' '}
                     <Badge />
                     <Badge2 />
                   </>
