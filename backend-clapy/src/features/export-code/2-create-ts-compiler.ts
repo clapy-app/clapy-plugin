@@ -8,7 +8,7 @@ import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
-import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CSBResponse, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import {
   createModuleCode,
   createNodeContext,
@@ -194,7 +194,7 @@ export async function exportCode(
       return csbResponse;
     }
   }
-  return { sandbox_id: 'false' };
+  return { sandbox_id: 'false' } as CSBResponse;
 }
 
 function addCompToAppRoot(

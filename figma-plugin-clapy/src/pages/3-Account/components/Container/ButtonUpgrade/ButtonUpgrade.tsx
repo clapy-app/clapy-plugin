@@ -21,9 +21,9 @@ export const ButtonUpgrade: FC<Props> = memo(function ButtonUpgrade(props = {}) 
     eventSource.onmessage = async e => {
       let data = JSON.parse(e.data);
       if (data.status) {
-        dispatchOther(stopLoadingStripe());
         await refreshTokens();
         await fetchUserMetadata();
+        dispatchOther(stopLoadingStripe());
         eventSource.close();
       }
       eventSource.close();

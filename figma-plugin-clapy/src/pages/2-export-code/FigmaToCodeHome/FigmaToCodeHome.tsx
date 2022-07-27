@@ -20,7 +20,7 @@ import type { ExtractionProgress } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
-import { apiPost } from '../../../common/http.utils.js';
+import { apiGet, apiPost } from '../../../common/http.utils.js';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
@@ -32,7 +32,9 @@ import type {
 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
+import { setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -196,6 +198,13 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         if (!env.isDev || sendToApi) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          if (!data.quotas) {
+            const { data } = await apiGet('stripe/get-user-quota');
+            dispatchOther(setStripeData(data));
+          } else {
+            dispatchOther(setStripeData(data));
+          }
+
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
           if (data?.sandbox_id) {

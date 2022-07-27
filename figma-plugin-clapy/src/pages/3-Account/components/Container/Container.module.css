@@ -1,15 +1,18 @@
 .root {
   flex: 1;
   align-self: stretch;
+  justify-content: stretch;
   flex-direction: column;
   overflow-y: auto;
 }
+
 .imageWrapOuter {
   height: 88px;
   align-self: stretch;
   align-items: flex-start;
   position: relative;
 }
+
 .imageWrapInner {
   height: 120px;
   align-items: flex-start;
@@ -19,18 +22,22 @@
   top: 0;
   overflow: hidden;
 }
+
 .image {
   height: 120px;
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
-  background-image:/* webpackIgnore: true */ url('../../../../public/image.jpeg');
+  background-image:
+    /* webpackIgnore: true */
+    url('../../../../public/image.jpeg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   overflow: hidden;
 }
+
 .settingsContainer {
   flex: 1;
   align-self: stretch;
@@ -38,27 +45,32 @@
   gap: 32px;
   padding: 0 32px;
 }
+
 .userMetadata {
   align-self: stretch;
   flex-direction: column;
   align-items: flex-start;
   gap: 24px;
 }
+
 .textAndSupportingText {
   align-self: stretch;
   flex-direction: column;
   gap: 8px;
 }
+
 .frame136 {
   align-self: stretch;
   flex-direction: column;
   gap: 4px;
 }
+
 .textAndOnlineIndicator {
   align-self: stretch;
   place-content: space-between;
   align-items: center;
 }
+
 .text {
   color: #101828;
   font-size: 24px;
@@ -68,6 +80,7 @@
     'Liberation Sans', sans-serif;
   white-space: nowrap;
 }
+
 .supportingText {
   color: #667085;
   font-size: 16px;
@@ -76,19 +89,31 @@
     'Liberation Sans', sans-serif;
   align-self: stretch;
 }
+
 .badges {
   align-self: stretch;
   flex-direction: column;
 }
+
 .row {
   align-self: stretch;
   align-items: flex-start;
   gap: 4px;
 }
+
 .actions {
   flex: 1;
   align-self: stretch;
   flex-direction: column;
   gap: 16px;
   padding: 0 0 32px;
+}
+
+.loader {
+  flex: 1;
+  align-self: stretch;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  padding: 0 32px;
 }

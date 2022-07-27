@@ -2,8 +2,9 @@ import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectIsPaidUser } from '../../../../core/auth/auth-slice.js';
-import { selectUserMetadata } from '../../../user/user-slice.js';
+import { Loading } from '../../../../components-used/Loading/Loading.js';
+import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
+import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
 import { Badge } from './Badge/Badge';
@@ -30,11 +31,20 @@ interface Props {
     badges?: string;
     row?: string;
     actions?: string;
+    loader?: string;
   };
 }
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata) as any;
-  const isPaid = useSelector(selectIsPaidUser);
+  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
+  const isFreeUser = useSelector(selectIsFreeUser);
+  if (typeof picture === 'undefined') {
+    return (
+      <div className={`${classes.loader} ${props.classes?.loader || ''}`}>
+        <Loading />
+        <p>Your settings page are being loaded...</p>
+      </div>
+    );
+  }
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.imageWrapOuter} ${props.classes?.imageWrapOuter || ''}`}>
@@ -55,20 +65,30 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             </div>
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
-                <Badge />
-                {isPaid && <Badge2 />}
+                {isFreeUser && (
+                  <>
+                    <Badge />
+                    <BadgeQuotas />
+                  </>
+                )}
+                {!isFreeUser && (
+                  <>
+                    <Badge />
+                    <Badge2 />
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
         <div className={`${classes.actions} ${props.classes?.actions || ''}`}>
-          {!isPaid && (
+          {isFreeUser && (
             <>
               <ButtonUpgrade />
               <ButtonUpgrade2 />
             </>
           )}
-          {isPaid && (
+          {!isFreeUser && (
             <>
               <ButtonViewPlan />
               <ButtonContact />
