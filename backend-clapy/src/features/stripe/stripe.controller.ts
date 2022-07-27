@@ -6,8 +6,10 @@ import { Stripe } from 'stripe';
 
 import { IsBrowserGet } from '../../auth/IsBrowserGet.decorator.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
+import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
+import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { getAuth0User, updateAuth0UserMetadata } from '../user/user.utils.js';
 import { StripeService } from './stripe.service.js';
 
@@ -23,13 +25,7 @@ export class StripeController {
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${from}`;
     const userId = (request as any).user.sub;
     let auth0User = await getAuth0User(userId);
-    const stripe = new Stripe(env.stripeSecretKey, {
-      apiVersion: '2020-08-27',
-      appInfo: {
-        name: 'clapy-dev/checkout',
-        version: '0.0.1',
-      },
-    });
+    const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     //search if customer already exists in stripe
     //We use Full-text search instead of search by id to avoid having to register the stripe id in auth0 and not do an api call to auth0
     //Stripe api has better rate limits than Auth0 api.
@@ -66,15 +62,20 @@ export class StripeController {
     return session.url;
   }
 
-  @Get('/getUserQuota')
+  @Get('/get-user-quota')
   async getUserQuotas(@Req() request: Request) {
     const userId = (request as any).user.sub;
+    const user = (request as any).user as AccessTokenDecoded;
+
     const quotas = await this.userService.getQuotaCount(userId);
-    return { quotas: quotas };
+    const isLicenceExpired = await this.stripeService.isLicenceExpired(
+      user['https://clapy.co/licence-expiration-date'],
+    );
+    return { quotas: quotas, isLicenceExpired: isLicenceExpired };
   }
-  @Get('/customerPortal')
+  @Get('/customer-portal')
   async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {
-    const redirectUri = `${env.baseUrl}/stripe/customerPortal-callback?from=${from}`;
+    const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
     const userId = (request as any).user.sub;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, {
@@ -143,7 +144,6 @@ export class StripeController {
         break;
       case 'customer.deleted': {
         const session = event.data.object as any;
-        console.log(session);
         const { auth0Id } = session!.metadata;
         await updateAuth0UserMetadata(auth0Id, {
           licenceStartDate: null,
@@ -162,9 +162,13 @@ export class StripeController {
             licenceExpirationDate: canceled_at,
           });
         }
-        console.log('subscription was canceled from dashboard or customer portal.');
+        // console.log('subscription was canceled from dashboard or customer portal.');
         break;
       }
+      /**
+       * "If we want to add a logic in the app reacting to isolated payment refunds, here is a sample:"
+       */
+
       // case 'charge.refunded': {
       //   const session = event.data.object as any;
       //   const customer = await stripe.customers.retrieve(session.customer);
@@ -182,7 +186,7 @@ export class StripeController {
       //   break;
       // }
       default:
-        console.log(event.type);
+        // console.log(event.type);
         break;
     }
     // Return a response to acknowledge receipt of the event
@@ -203,7 +207,7 @@ export class StripeController {
 
   @PublicRoute()
   @IsBrowserGet()
-  @Get('/customerPortal-callback')
+  @Get('/customer-portal-callback')
   @Render('customerPortal-callback')
   async customerPortalCallback(
     @Query('from') from: string = 'browser' || 'desktop',

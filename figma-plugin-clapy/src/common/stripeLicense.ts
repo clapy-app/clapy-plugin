@@ -7,21 +7,8 @@ export const upgradeUser = async () => {
   openNewTab(data as string);
 };
 export const openCustomerPortal = async () => {
-  const { data } = await apiGet('stripe/customerPortal', {
+  const { data } = await apiGet('stripe/customer-portal', {
     query: { from: env.isFigmaPlugin ? 'desktop' : 'browser' },
   });
   openNewTab(data as string);
-};
-export const isUserLicenceStillActive = (licenceExpirationDate: number | undefined) => {
-  if (typeof licenceExpirationDate === 'undefined') return false;
-  const now = new Date();
-  const expirationDate = new Date(licenceExpirationDate * 1000);
-  const isExpired = now.getTime() - expirationDate.getTime();
-  // console.log('expiration Date: ' + expirationDate.getTime(), 'now date : ' + now.getTime());
-
-  if (isExpired < 0) {
-    return true;
-  } else {
-    return false;
-  }
 };

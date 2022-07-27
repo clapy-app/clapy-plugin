@@ -3,8 +3,7 @@ import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
-import { selectIsPaidUser } from '../../../../core/auth/auth-slice.js';
-import { selectUserMetadata } from '../../../user/user-slice.js';
+import { selectIsPaidUser, selectUserMetadata } from '../../../user/user-slice.js';
 import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
@@ -36,8 +35,8 @@ interface Props {
   };
 }
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
-  const isPaid = useSelector(selectIsPaidUser);
+  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
+  const isNotPaid = useSelector(selectIsPaidUser);
   if (typeof picture === 'undefined') {
     return (
       <div className={`${classes.loader} ${props.classes?.loader || ''}`}>
@@ -66,13 +65,13 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             </div>
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
-                {!isPaid && (
+                {isNotPaid && (
                   <>
                     <Badge />
                     <BadgeQuotas />
                   </>
                 )}
-                {isPaid && (
+                {!isNotPaid && (
                   <>
                     <Badge />
                     <Badge2 />
@@ -83,13 +82,13 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
           </div>
         </div>
         <div className={`${classes.actions} ${props.classes?.actions || ''}`}>
-          {!isPaid && (
+          {isNotPaid && (
             <>
               <ButtonUpgrade />
               <ButtonUpgrade2 />
             </>
           )}
-          {isPaid && (
+          {!isNotPaid && (
             <>
               <ButtonViewPlan />
               <ButtonContact />

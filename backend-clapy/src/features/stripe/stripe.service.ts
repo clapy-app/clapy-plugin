@@ -10,16 +10,15 @@ export class StripeService {
     return stripeSubject.asObservable();
   }
   isLicenceExpired(licenceExpirationDate: number | undefined) {
+    console.log(licenceExpirationDate);
+
     if (typeof licenceExpirationDate === 'undefined') return true;
     const now = new Date();
     const expirationDate = new Date(licenceExpirationDate * 1000);
 
-    const isExpired = now.getTime() - expirationDate.getTime();
-    if (isExpired >= 0) {
-      return true;
-    } else {
-      return false;
-    }
+    const timeDiff = now.getTime() - expirationDate.getTime();
+    const isExpired = timeDiff >= 0;
+    return isExpired;
   }
   emitStripePaymentStatus(status: boolean) {
     stripeSubject.next({ data: JSON.stringify({ status: status }) });

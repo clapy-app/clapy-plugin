@@ -1,5 +1,14 @@
+import type Stripe from 'stripe';
+
 export const appConfig = {
-  maxQuotas: 3,
+  codeGenFreeQuota: 3,
+  stripeConfig: {
+    apiVersion: '2020-08-27',
+    appInfo: {
+      name: 'clapy-dev/checkout',
+      version: '0.0.1',
+    },
+  } as Stripe.StripeConfig,
 };
 
 export const flags = {

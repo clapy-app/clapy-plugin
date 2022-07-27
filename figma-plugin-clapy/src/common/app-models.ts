@@ -86,6 +86,7 @@ export interface UserMetadata {
   licenceStartDate?: number;
   licenceExpirationDate?: number;
   quotas?: number;
+  isLicenceExpired?: boolean;
 }
 
 export interface UserMetaUsage {

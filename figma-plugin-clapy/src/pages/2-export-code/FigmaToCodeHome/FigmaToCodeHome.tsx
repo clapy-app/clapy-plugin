@@ -34,7 +34,7 @@ import { Button } from '../../../components-used/Button/Button';
 import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
-import { setQuota } from '../../user/user-slice.js';
+import { setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -199,11 +199,10 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
           if (!data.quotas) {
-            const { data } = await apiGet('stripe/getUserQuota');
-            console.log(data);
-            dispatchOther(setQuota(data));
+            const { data } = await apiGet('stripe/get-user-quota');
+            dispatchOther(setStripeData(data));
           } else {
-            dispatchOther(setQuota(data));
+            dispatchOther(setStripeData(data));
           }
 
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);

@@ -409,6 +409,7 @@ export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'ma
 export interface CSBResponse {
   sandbox_id: string;
   quotas: number;
+  isLicenceExpired?: boolean;
 }
 
 // From magic-bytes.js, for portability with the backend that doesn't have the lib

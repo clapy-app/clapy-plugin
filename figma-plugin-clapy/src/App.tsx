@@ -13,7 +13,7 @@ import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { checkSessionLight } from './core/auth/auth-service.js';
 import { dispatchOther } from './core/redux/redux.utils.js';
 import { Layout } from './pages/Layout/Layout';
-import { setQuota } from './pages/user/user-slice.js';
+import { setStripeData } from './pages/user/user-slice.js';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -33,6 +33,7 @@ declare module '@mui/material/Button' {
 interface apiResponse {
   ok: boolean;
   quotas?: number;
+  isLicenceExpired?: boolean;
 }
 const theme = createTheme({
   palette: {
@@ -87,9 +88,8 @@ export const App: FC = memo(function App() {
     let checkSession = async () => {
       const res = (await checkSessionLight().catch(handleError)) as apiResponse;
       track('open-plugin');
-      console.log(res);
       if (res.quotas !== undefined) {
-        dispatchOther(setQuota(res));
+        dispatchOther(setStripeData(res));
       }
     };
     checkSession();

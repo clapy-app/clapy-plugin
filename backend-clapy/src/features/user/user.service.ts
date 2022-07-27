@@ -25,12 +25,11 @@ export class UserService {
       .distinctOn(['generationHistory.generated_link'])
       .where({ auth0id: userId })
       .execute();
-    console.log(userId);
     const zipNumber = await this.generationHistoryRepository
       .createQueryBuilder('generationHistory')
       .where({ auth0id: userId, generatedLink: '_zip' })
       .execute();
-    console.log(zipNumber);
+    // console.log(zipNumber);
 
     result = csbNumber.length + zipNumber.length;
     if (zipNumber.length >= 1) {
@@ -41,8 +40,8 @@ export class UserService {
 
   checkUserOrThrow = async (user: AccessTokenDecoded) => {
     const userId = user.sub;
-    const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licenceExpirationDate']);
-    if ((await this.getQuotaCount(userId)) >= appConfig.maxQuotas && isLicenceExpired) {
+    const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licence-expiration-date']);
+    if ((await this.getQuotaCount(userId)) >= appConfig.codeGenFreeQuota && isLicenceExpired) {
       throw new Error('Free code generations used up, you can get more by having a call with us or pay a licence');
     }
   };
@@ -55,13 +54,16 @@ export class UserService {
     if (res === undefined) return res;
     const generationHistory = new GenerationHistoryEntity();
     const userId = user.sub;
+
     generationHistory.auth0id = userId;
     if (genType === 'csb') {
       generationHistory.generatedLink = (res as CSBResponse).sandbox_id;
       await this.generationHistoryRepository.save(generationHistory);
       (res as CSBResponse).quotas = await this.getQuotaCount(userId);
-      // TODO; si une erreur surviens, ne pas bloquer l'execution de code et envoyé la réponse a l'utilisateur dans ce cas.
-      // faire un push slack pour avoir le corps de l'erreur
+      (res as CSBResponse).isLicenceExpired = this.stripeService.isLicenceExpired(
+        user['https://clapy.co/licence-expiration-date'],
+      );
+      // TODO: si une erreur survient, ne pas bloquer l'exécution du code et envoyer la réponse à l'utilisateur dans ce cas.
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
       await this.generationHistoryRepository.save(generationHistory);

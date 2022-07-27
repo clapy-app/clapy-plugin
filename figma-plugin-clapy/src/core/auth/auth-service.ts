@@ -140,6 +140,7 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     setAccessToken(accessToken);
     _tokenType = tokenType;
     // await findUserMetadata();
+    // await fetchUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }
@@ -180,7 +181,7 @@ export interface AccessTokenDecoded {
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
   'https://clapy.co/roles'?: string[];
-  'https://clapy.co/licenceExpirationDate'?: number;
+  'https://clapy.co/licence-expiration-date'?: number;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"

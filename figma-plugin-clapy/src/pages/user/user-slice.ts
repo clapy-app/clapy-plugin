@@ -31,14 +31,17 @@ export const userSlice = createSlice({
     clearMetadata: state => {
       state.userMetadata = undefined;
     },
-    setQuota: (state, { payload }: PayloadAction<UserMetadata>) => {
+    setStripeData: (state, { payload }: PayloadAction<UserMetadata>) => {
       (state.userMetadata as UserMetadata).quotas = payload.quotas;
+      (state.userMetadata as UserMetadata).isLicenceExpired = payload.isLicenceExpired;
     },
   },
 });
 
-export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setQuota } = userSlice.actions;
+export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStripeData } = userSlice.actions;
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
+export const selectIsPaidUser = (state: RootState) => (state.user.userMetadata as UserMetadata)?.isLicenceExpired!;
+
 export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
 export const selectHasMissingMetaProfile = (state: RootState) =>
   state.user.userMetadata !== true && hasMissingMetaProfile(state.user.userMetadata);
