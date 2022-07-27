@@ -47,7 +47,7 @@ export class UserController {
   @Post('update-profile')
   async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
-    const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
+    const { firstName, lastName, companyName, jobRole, techTeamSize, phone } = userMetadata;
     if (hasMissingMetaProfile(userMetadata)) {
       throw new BadRequestException(
         `Cannot update user profile, missing fields: ${Object.entries({
@@ -56,6 +56,7 @@ export class UserController {
           companyName,
           jobRole,
           techTeamSize,
+          phone,
         })
           .filter(([_, value]) => !value)
           .map(([name, _]) => name)
@@ -69,6 +70,7 @@ export class UserController {
       companyName,
       jobRole,
       techTeamSize,
+      phone,
     });
 
     // Insert data in Pipedrive asynchronously (non-blocking operation).

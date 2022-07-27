@@ -20,9 +20,9 @@ export const userSlice = createSlice({
       state.userMetadata = payload || {};
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
-      const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
+      const { firstName, lastName, phone, jobRole, techTeamSize } = payload;
       const meta = !state.userMetadata || state.userMetadata === true ? {} : state.userMetadata;
-      state.userMetadata = { ...meta, firstName, lastName, companyName, jobRole, techTeamSize };
+      state.userMetadata = { ...meta, firstName, lastName, phone, jobRole, techTeamSize };
     },
     setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
       if (!state.userMetadata || state.userMetadata === true) state.userMetadata = {};
