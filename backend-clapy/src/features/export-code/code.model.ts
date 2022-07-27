@@ -104,6 +104,7 @@ export interface NodeContext {
   parentIsRootInComponent?: boolean;
   outerLayoutOnly?: boolean;
   tranforms?: string[];
+  boxShadows?: string[];
   transformTranslateX?: string;
   transformTranslateY?: string;
   className?: string;

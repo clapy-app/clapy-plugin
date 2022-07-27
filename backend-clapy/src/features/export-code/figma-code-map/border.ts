@@ -11,6 +11,7 @@ import type {
 import { isGroup, isLine, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
+import { addBoxShadow } from './effects.js';
 
 export function prepareBorders(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {
@@ -154,18 +155,61 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         resetStyleIfOverriding(context, node, styles, 'margin-right');
         resetStyleIfOverriding(context, node, styles, 'margin-left');
       } else {
-        addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
-        if (strokeAlign === 'INSIDE') {
-          addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -1] });
-        } else if (strokeAlign === 'CENTER') {
-          addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -0.5] });
+        const { strokeTopWeight, strokeRightWeight, strokeBottomWeight, strokeLeftWeight } = node;
+        if (
+          strokeTopWeight === strokeRightWeight &&
+          strokeTopWeight === strokeBottomWeight &&
+          strokeTopWeight === strokeLeftWeight
+        ) {
+          addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
+          if (strokeAlign === 'INSIDE') {
+            addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -1] });
+          } else if (strokeAlign === 'CENTER') {
+            addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -0.5] });
+          } else {
+            resetStyleIfOverriding(context, node, styles, 'outline-offset');
+          }
+          if (node.dashPattern.length === 2) {
+            addStyle(context, node, styles, 'outline-style', 'dashed');
+          } else {
+            resetStyleIfOverriding(context, node, styles, 'outline-style');
+          }
         } else {
-          resetStyleIfOverriding(context, node, styles, 'outline-offset');
-        }
-        if (node.dashPattern.length === 2) {
-          addStyle(context, node, styles, 'outline-style', 'dashed');
-        } else {
-          resetStyleIfOverriding(context, node, styles, 'outline-style');
+          // Individual strokes. Outline doesn't work, so we use shadows instead.
+          if (strokeAlign !== 'CENTER') {
+            const isInside = strokeAlign === 'INSIDE';
+            const multiplier = isInside ? -1 : 1;
+            const insetPrefix = isInside ? 'inset ' : '';
+            if (strokeTopWeight) {
+              addBoxShadow(context, `${insetPrefix} 0 ${-multiplier * strokeTopWeight}px 0 ${hex}`);
+            }
+            if (strokeRightWeight) {
+              addBoxShadow(context, `${insetPrefix} ${multiplier * strokeRightWeight}px 0 0 ${hex}`);
+            }
+            if (strokeBottomWeight) {
+              addBoxShadow(context, `${insetPrefix} 0 ${multiplier * strokeBottomWeight}px 0 ${hex}`);
+            }
+            if (strokeLeftWeight) {
+              addBoxShadow(context, `${insetPrefix} ${-multiplier * strokeLeftWeight}px 0 0 ${hex}`);
+            }
+          } else {
+            if (strokeTopWeight) {
+              addBoxShadow(context, `0 ${-strokeTopWeight}px 0 ${hex}`);
+              addBoxShadow(context, `inset 0 ${strokeTopWeight}px 0 ${hex}`);
+            }
+            if (strokeRightWeight) {
+              addBoxShadow(context, `${strokeRightWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, `inset ${-strokeRightWeight}px 0 0 ${hex}`);
+            }
+            if (strokeBottomWeight) {
+              addBoxShadow(context, `0 ${strokeBottomWeight}px 0 ${hex}`);
+              addBoxShadow(context, `inset 0 ${-strokeBottomWeight}px 0 ${hex}`);
+            }
+            if (strokeLeftWeight) {
+              addBoxShadow(context, `${-strokeLeftWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, `inset ${strokeLeftWeight}px 0 0 ${hex}`);
+            }
+          }
         }
         resetStyleIfOverriding(context, node, styles, 'border');
         resetStyleIfOverriding(context, node, styles, 'border-top');
