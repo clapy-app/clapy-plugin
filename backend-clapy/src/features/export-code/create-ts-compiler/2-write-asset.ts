@@ -1,5 +1,5 @@
 import type { NodeContext } from '../code.model.js';
-import { genUniqueName } from '../gen-node-utils/ts-ast-utils.js';
+import { genUniqueName } from '../gen-node-utils/gen-unique-name-utils.js';
 import type { BaseNode2 } from './canvas-utils.js';
 import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths.js';
 

@@ -271,8 +271,10 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
-  const nodePrimaryAxisHugContents = isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO';
-  const nodeCounterAxisHugContents = isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO';
+  const nodePrimaryAxisHugContents =
+    isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
+  const nodeCounterAxisHugContents =
+    isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
   const widthHugContents = isFlex
     ? isNodeVertical
       ? nodeCounterAxisHugContents

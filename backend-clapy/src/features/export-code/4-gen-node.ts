@@ -15,6 +15,7 @@ import type {
   InstanceNode2,
   Masker,
   SceneNode2,
+  TextNode2,
   ValidNode,
 } from './create-ts-compiler/canvas-utils.js';
 import {
@@ -33,14 +34,13 @@ import {
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { getOrGenClassName, getOrGenHideProp } from './gen-node-utils/gen-unique-name-utils.js';
 import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
-import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
+import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
   createClassAttrForNode,
   fillIsRootInComponent,
-  getOrGenClassName,
-  getOrGenHideProp,
   mkHtmlFullClass,
   mkIdAttribute,
   mkSwapInstanceAndHideWrapper,
@@ -290,13 +290,16 @@ export function genNodeAst(node: SceneNode2) {
         node.htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
       }
 
-      const children = genNodeAstLoopChildren(node);
+      const children = context.firstChildIsPlaceholder ? undefined : genNodeAstLoopChildren(node);
       let attributes: ts.JsxAttribute[] = [];
       if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
 
       if (hasStyles) {
         updateCssRule(context, cssRule, className!, parentRule, styleDeclarations);
         attributes.push(createClassAttrForNode(node, node.htmlClass));
+        if (context.firstChildIsPlaceholder) {
+          genInputPlaceholderStyles(context, (node as ChildrenMixin2).children[0] as TextNode2);
+        }
       } else {
         removeCssRule(context, cssRule, node);
       }

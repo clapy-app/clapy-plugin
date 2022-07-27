@@ -49,6 +49,9 @@ export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
 
     // Formatting
     if (flags.formatCode && path.startsWith('src')) {
+      if (content == null) {
+        throw new Error(`Undefined content for file in tsFiles at path ${path}`);
+      }
       // Native TS (ts-morph using ts methods internally)
       // file.formatText(tsFormatCodeSettings);
       //
@@ -83,6 +86,9 @@ export async function prepareCssFiles(cssFiles: CodeDict) {
   for (const [path, content] of Object.entries(cssFiles)) {
     if (flags.formatCode && path.startsWith('src')) {
       try {
+        if (content == null) {
+          throw new Error(`Undefined content for file in cssFiles at path ${path}`);
+        }
         cssFiles[path] = await formatCssFile(path, content);
       } catch (error) {
         console.error(error);

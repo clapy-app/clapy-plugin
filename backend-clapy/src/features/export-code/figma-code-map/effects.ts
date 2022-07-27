@@ -8,8 +8,15 @@ import { isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
 
+export function addBoxShadow(context: NodeContext, boxShadow: string) {
+  if (!context.boxShadows) {
+    context.boxShadows = [];
+  }
+  context.boxShadows.push(boxShadow);
+}
+
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  if (!node.effects?.length) {
+  if (!node.effects?.length && !context.boxShadows?.length) {
     resetStyleIfOverriding(context, node, styles, 'text-shadow');
     resetStyleIfOverriding(context, node, styles, 'box-shadow');
     resetStyleIfOverriding(context, node, styles, 'filter');
@@ -24,7 +31,6 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   const nodeIsText = isText(node);
 
   const textShadowStyles: string[] = [];
-  const boxShadowStyles: string[] = [];
   const backdropFilters: string[] = [];
   const filters: string[] = [];
 
@@ -78,7 +84,7 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
           textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
         } else if (insetPrefix || spread || !flags.useFilterDropShadow || !isVector(node)) {
           if (!noBackgroundNoBorder) {
-            boxShadowStyles.push(`${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
+            addBoxShadow(context, `${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
           }
         } else {
           filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
@@ -100,8 +106,8 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   } else {
     resetStyleIfOverriding(context, node, styles, 'text-shadow');
   }
-  if (boxShadowStyles.length) {
-    addStyle(context, node, styles, 'box-shadow', boxShadowStyles.join(', '));
+  if (context.boxShadows?.length) {
+    addStyle(context, node, styles, 'box-shadow', context.boxShadows.join(', '));
   } else {
     resetStyleIfOverriding(context, node, styles, 'box-shadow');
   }

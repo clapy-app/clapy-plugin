@@ -1,18 +1,17 @@
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict } from '../../code.model.js';
 
-export function renameTemplateCSSFiles(filesCsb: CodeDict, extraConfig: ExtraConfig) {
-  if (extraConfig.scss) {
-    // TODO
-    //
-    // const cssExt = getCSSExtension(extraConfig);
-    // const appCssTemplateFileName = `${reactAppCompName}.module.css`;
-    // const appCssFileName = `${reactAppCompName}.module.${cssExt}`;
-    // const appCssPathTemplate = `${reactAppCompDir}/${appCssTemplateFileName}`;
-    // const appCssPath = `${reactAppCompDir}/${appCssFileName}`;
-    // renameField(filesCsb, appCssPathTemplate, appCssPath);
-    // renameField(filesCsb, 'src/resets.css', 'src/resets.scss');
-    // const indexTsxPath = extraConfig.useViteJS ? 'src/main.tsx' : 'src/index.tsx';
-    // filesCsb[indexTsxPath] = filesCsb[indexTsxPath].replace('resets.css', 'resets.scss');
+export function patchSCSSInFileContents(resources: CodeDict, extraConfig: ExtraConfig) {
+  if (extraConfig.useZipProjectTemplate) {
+    const angularJson = JSON.parse(resources['angular.json']);
+    const proj = angularJson.projects[Object.keys(angularJson.projects)[0]];
+    proj.schematics = {
+      '@schematics/angular:component': {
+        style: 'scss',
+      },
+    };
+    proj.architect.build.options.inlineStyleLanguage = 'scss';
+    proj.architect.test.options.inlineStyleLanguage = 'scss';
+    resources['angular.json'] = JSON.stringify(angularJson, null, 2);
   }
 }
