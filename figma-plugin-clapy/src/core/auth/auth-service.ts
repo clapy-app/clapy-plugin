@@ -139,8 +139,6 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    // await findUserMetadata();
-    // await fetchUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }

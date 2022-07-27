@@ -30,6 +30,7 @@ export class LoginPrivateController {
     }
 
     const result = await this.userService.getQuotaCount(userId);
+
     return { ok: true, quotas: result, isLicenceExpired: isLicenceExpired };
   }
 }

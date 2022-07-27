@@ -40,7 +40,13 @@ export const userSlice = createSlice({
 
 export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStripeData } = userSlice.actions;
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
-export const selectIsPaidUser = (state: RootState) => (state.user.userMetadata as UserMetadata)?.isLicenceExpired!;
+export const selectIsFreeUser = (state: RootState) => {
+  const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
+  if (isLicenceExpired == null) {
+    return true;
+  }
+  return isLicenceExpired!;
+};
 
 export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
 export const selectHasMissingMetaProfile = (state: RootState) =>

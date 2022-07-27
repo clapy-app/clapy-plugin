@@ -162,7 +162,6 @@ export class StripeController {
             licenceExpirationDate: canceled_at,
           });
         }
-        // console.log('subscription was canceled from dashboard or customer portal.');
         break;
       }
       /**
@@ -186,6 +185,9 @@ export class StripeController {
       //   break;
       // }
       default:
+        /**
+         * this log will be usefull if we ever come back to this stripe feature in the future
+         */
         // console.log(event.type);
         break;
     }

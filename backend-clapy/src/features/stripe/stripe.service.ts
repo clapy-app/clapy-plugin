@@ -10,8 +10,6 @@ export class StripeService {
     return stripeSubject.asObservable();
   }
   isLicenceExpired(licenceExpirationDate: number | undefined) {
-    console.log(licenceExpirationDate);
-
     if (typeof licenceExpirationDate === 'undefined') return true;
     const now = new Date();
     const expirationDate = new Date(licenceExpirationDate * 1000);

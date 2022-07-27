@@ -12,13 +12,13 @@ interface Props {
   };
 }
 export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}) {
-  const CustomerPortal = useCallbackAsync2(async () => {
+  const customerPortal = useCallbackAsync2(async () => {
     await openCustomerPortal();
   }, []);
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <button className={`${classes.text} ${props.classes?.text || ''}`} onClick={CustomerPortal}>
+      <button className={`${classes.text} ${props.classes?.text || ''}`} onClick={customerPortal}>
         Billing
       </button>
     </div>

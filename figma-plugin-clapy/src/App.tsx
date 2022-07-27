@@ -30,7 +30,7 @@ declare module '@mui/material/Button' {
     neutral: true;
   }
 }
-interface apiResponse {
+interface ApiResponse {
   ok: boolean;
   quotas?: number;
   isLicenceExpired?: boolean;
@@ -86,10 +86,14 @@ window.addEventListener('unload', function () {
 export const App: FC = memo(function App() {
   useEffect(() => {
     let checkSession = async () => {
-      const res = (await checkSessionLight().catch(handleError)) as apiResponse;
-      track('open-plugin');
-      if (res.quotas !== undefined) {
-        dispatchOther(setStripeData(res));
+      try {
+        const res = (await checkSessionLight()) as ApiResponse;
+        track('open-plugin');
+        if (res.quotas != null) {
+          dispatchOther(setStripeData(res));
+        }
+      } catch (e) {
+        handleError(e);
       }
     };
     checkSession();
