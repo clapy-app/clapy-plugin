@@ -239,17 +239,26 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   return (
     <>
       <div className={classes.previewTitle}>
-        {state === 'noselection' && (
-          <>
-            Choose the element <br />
-            you need to code
-          </>
-        )}
+        {state === 'noselection' && <>Choose an element to code</>}
         {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
+      <Tooltip
+        title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
+        disableInteractive
+        placement='bottom-start'
+        className={state === 'generated' ? classes.hide : undefined}
+      >
+        <FormControl disabled={isLoading} className={classes.outerOption}>
+          <FormControlLabel
+            control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
+            label='Full width/height (for pages)'
+            disabled={isLoading}
+          />
+        </FormControl>
+      </Tooltip>
       <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' ? classes.hide : undefined}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -276,17 +285,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 </FormControl>
               </Tooltip>
             )}
-            <Tooltip
-              title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames. If generating a page, this is likely the expected behavior.'
-              disableInteractive
-              placement='bottom-start'
-            >
-              <FormControlLabel
-                control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
-                label='Full width/height'
-                disabled={isLoading}
-              />
-            </Tooltip>
             <Tooltip
               title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
               disableInteractive
