@@ -72,6 +72,7 @@ export interface ModuleContext {
   readonly pageDir: string | undefined;
   readonly compDir: string;
   readonly compName: string;
+  readonly baseCompName: string;
   readonly classNamesAlreadyUsed: Set<string>;
   // In a component, lists the nodes for which a prop can override the class. It is used to generate the list of props in the component source.
   readonly classOverrides: Set<string>;

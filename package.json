@@ -9,7 +9,7 @@
     "________________ development ________________": "",
     "install:all": "yarn && yarn install:backend && yarn install:plugin",
     "dev": "npm-run-all --parallel plugin-dev up console",
-    "preview": "cd backend-clapy/atest-gen && yarn start",
+    "preview": "cd backend-clapy/atest-gen && yarn && yarn start",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive --latest",
     "up": "docker compose stop dev && docker compose up -d db hasura",

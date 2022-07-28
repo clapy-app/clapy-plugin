@@ -2,9 +2,9 @@ import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.mod
 import type { CodeDict } from '../../code.model.js';
 
 export function patchSCSSInFileContents(resources: CodeDict, extraConfig: ExtraConfig) {
-  if (extraConfig.useZipProjectTemplate) {
-    const angularJson = JSON.parse(resources['angular.json']);
-    const proj = angularJson.projects[Object.keys(angularJson.projects)[0]];
+  const angularJson = JSON.parse(resources['angular.json']);
+  const proj = angularJson.projects[Object.keys(angularJson.projects)[0]];
+  if (extraConfig.scss && extraConfig.useZipProjectTemplate) {
     proj.schematics = {
       '@schematics/angular:component': {
         style: 'scss',
@@ -12,6 +12,10 @@ export function patchSCSSInFileContents(resources: CodeDict, extraConfig: ExtraC
     };
     proj.architect.build.options.inlineStyleLanguage = 'scss';
     proj.architect.test.options.inlineStyleLanguage = 'scss';
-    resources['angular.json'] = JSON.stringify(angularJson, null, 2);
   }
+
+  proj.architect.build.options.styles.push('src/resets.css');
+  proj.architect.test.options.styles.push('src/resets.css');
+
+  resources['angular.json'] = JSON.stringify(angularJson, null, 2);
 }

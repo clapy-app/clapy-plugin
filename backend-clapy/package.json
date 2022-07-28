@@ -73,6 +73,7 @@
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "opentype.js": "https://github.com/antoineol/opentype.js#feat--loadFromUrl-on-node.js",
+    "parse5": "^7.0.0",
     "pg": "^8.7.3",
     "pipedrive": "^15.0.1",
     "prettier": "^2.7.1",

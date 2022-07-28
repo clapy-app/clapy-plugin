@@ -1,15 +1,9 @@
 import { getOrGenComponent } from '../3-gen-component.js';
 import { genInstanceOverrides } from '../5-instance-overrides.js';
 import { flags } from '../../../env-and-config/app-config.js';
-import type { InstanceContext, JsxOneOrMore, NodeContext, SwapAst } from '../code.model.js';
+import type { InstanceContext, NodeContext } from '../code.model.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../create-ts-compiler/canvas-utils.js';
-import {
-  createComponentUsageWithAttributes,
-  getOrCreateCompContext,
-  mkComponentUsage,
-  mkSwapInstanceAndHideWrapper,
-} from './ts-ast-utils.js';
 
 export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneNode2, isRootComponent = false) {
   const { parentNode, moduleContext } = context;
@@ -42,38 +36,4 @@ export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneN
   genInstanceOverrides(instanceContext, node);
 
   return componentContext;
-}
-
-export function genCompUsage(node: SceneNode2) {
-  if (isInstance(node)) {
-    return genInstanceAst(node);
-  } else {
-    return genInstanceLikeAst(node);
-  }
-}
-
-function genInstanceAst(node: InstanceNode2) {
-  const { nodeContext: context, componentContext } = node;
-  if (!componentContext) {
-    throw new Error(
-      `node ${node.name} should be an instance with componentContext attribute. But componentContext is undefined.`,
-    );
-  }
-  if (!context) {
-    throw new Error(`nodeContext is undefined in node ${node.name}.`);
-  }
-  const compContext = getOrCreateCompContext(node);
-  let compAst = createComponentUsageWithAttributes(compContext, componentContext);
-
-  // Surround instance usage with a syntax to swap with render props
-  const compAst2: SwapAst | JsxOneOrMore | undefined = mkSwapInstanceAndHideWrapper(context, compAst, node);
-  return compAst2;
-}
-
-function genInstanceLikeAst(node: SceneNode2) {
-  const { nodeContext: context, componentContext } = node;
-  if (!componentContext) {
-    throw new Error(`[genInstanceLikeAst] node ${node.name} has no componentContext.`);
-  }
-  return mkComponentUsage(componentContext.compName);
 }

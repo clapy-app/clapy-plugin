@@ -12,10 +12,12 @@ let _prettierConfig: any;
 
 export async function getPrettierConfig() {
   if (!_prettierConfig) {
-    const { importOrderParserPlugins, ...conf } = JSON.parse(
-      await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }),
-    );
-    // importOrderParserPlugins is not supported here (I don't know why), and anyway it's useless, it's to support annotations. Useful for the webservice source code.
+    let conf = JSON.parse(await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }));
+    // // Remove importOrderParserPlugins if any issue with below code.
+    // // But it is required to format Angular code, which contains annotations.
+    // // It should also be left in the original .prettierrc because our webservice uses it.
+    // let importOrderParserPlugins: any;
+    // ({ importOrderParserPlugins, ...conf } = conf);
     _prettierConfig = conf;
   }
   return _prettierConfig;

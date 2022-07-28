@@ -29,8 +29,8 @@ export function updateFilesAndContentForScss(
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);
-    fwConnector.patchSCSSInFileContents(resources, extraConfig);
   }
+  fwConnector.patchSCSSInFileContents(resources, extraConfig);
 }
 
 function renameTemplateSCSSFiles(cssFiles: CodeDict) {

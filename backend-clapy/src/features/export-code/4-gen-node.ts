@@ -33,23 +33,21 @@ import {
 } from './create-ts-compiler/canvas-utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
-import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { getOrGenClassName, getOrGenHideProp } from './gen-node-utils/gen-unique-name-utils.js';
 import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
 import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
-  createClassAttrForNode,
   fillIsRootInComponent,
   mkHtmlFullClass,
   mkIdAttribute,
   mkSwapInstanceAndHideWrapper,
-  mkTag,
-  mkWrapHideAndTextOverrideAst,
   removeCssRule,
   updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
+import type { Attribute } from './html-gen/html-gen.js';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './tech-integration/mui/mui-utils.js';
 
@@ -234,8 +232,9 @@ export function genNodeAst(node: SceneNode2) {
   try {
     const { nodeContext: context, styles, muiConfig, svgPathVarName, extraAttributes } = node;
     if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
-    const { isRootInComponent, parentIsRootInComponent } = context;
-    const { moduleContext } = context;
+    const { moduleContext, isRootInComponent, parentIsRootInComponent } = context;
+    const { projectContext } = moduleContext;
+    const { fwConnector } = projectContext;
 
     if (node.skip) return;
 
@@ -248,7 +247,7 @@ export function genNodeAst(node: SceneNode2) {
       // its NodeContext is wrong, because the node is shared: it's used both for the component and for the instance.
       // But it doesn't matter because the only information we need is isRootInComponent.
       // Otherwise, we need to find a trick to get the NodeContext of the instance we create.
-      return genCompUsage(node);
+      return fwConnector.genCompUsage(projectContext, node);
     }
 
     if (!styles) {
@@ -291,12 +290,12 @@ export function genNodeAst(node: SceneNode2) {
       }
 
       const children = context.firstChildIsPlaceholder ? undefined : genNodeAstLoopChildren(node);
-      let attributes: ts.JsxAttribute[] = [];
+      let attributes: (ts.JsxAttribute | Attribute)[] = [];
       if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
 
       if (hasStyles) {
         updateCssRule(context, cssRule, className!, parentRule, styleDeclarations);
-        attributes.push(createClassAttrForNode(node, node.htmlClass));
+        attributes.push(fwConnector.createClassAttribute(node, node.htmlClass!));
         if (context.firstChildIsPlaceholder) {
           genInputPlaceholderStyles(context, (node as ChildrenMixin2).children[0] as TextNode2);
         }
@@ -304,8 +303,7 @@ export function genNodeAst(node: SceneNode2) {
         removeCssRule(context, cssRule, node);
       }
 
-      const ast2 = mkTag(context.tagName, [...attributes, ...(extraAttributes || [])], children || []);
-      return mkWrapHideAndTextOverrideAst(context, ast2, node);
+      return fwConnector.createNodeTag(context, [...attributes, ...(extraAttributes || [])], children || [], node);
     }
     throw new Error(`[genNodeAst] Unsupported type for node ${node.name}`);
   } catch (error) {

@@ -245,12 +245,18 @@ export type OmitMethods<T> = {
   -readonly [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
+export interface ReactConfig {}
+export interface AngularConfig {
+  prefix: string;
+}
+
 export interface UserSettings {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
   framework?: 'angular' | 'react';
+  frameworkConfig?: ReactConfig | AngularConfig;
 }
 
 export type ExtraConfig = {

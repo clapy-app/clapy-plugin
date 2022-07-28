@@ -1,0 +1,55 @@
+import { serialize } from 'parse5';
+import type { Attribute as Attribute0 } from 'parse5/dist/common/token';
+import type { ChildNode as ChildNode0, Element as Element0, Node as Node0 } from 'parse5/dist/tree-adapters/default';
+
+export type ChildNode = ChildNode0;
+export type Element = Element0;
+export type Node = Node0;
+export type Attribute = Attribute0;
+
+// Documentation: https://parse5.js.org/modules/parse5.html
+// Online playground (AST explorer): http://astexplorer.net/#/1CHlCXc4n4
+
+// KO: import { NS } from 'parse5/dist/common/html';
+enum NS {
+  HTML = 'http://www.w3.org/1999/xhtml',
+  MATHML = 'http://www.w3.org/1998/Math/MathML',
+  SVG = 'http://www.w3.org/2000/svg',
+  XLINK = 'http://www.w3.org/1999/xlink',
+  XML = 'http://www.w3.org/XML/1998/namespace',
+  XMLNS = 'http://www.w3.org/2000/xmlns/',
+}
+
+export function mkHtmlElement(
+  tagName: string,
+  attributes: Attribute | Attribute[] = [],
+  children: ChildNode | ChildNode[] = [],
+) {
+  if (!Array.isArray(attributes)) attributes = [attributes];
+  if (!Array.isArray(children)) children = [children];
+  const el: Element = {
+    nodeName: tagName,
+    tagName,
+    attrs: attributes,
+    namespaceURI: NS.HTML,
+    parentNode: null,
+    childNodes: children,
+  };
+  return el;
+}
+
+export function mkHtmlAttribute(name: string, value: string) {
+  return { name, value } as Attribute;
+}
+
+export function serializeHtml(node: Node) {
+  return serialize(mkHtmlElement('div', undefined, [node as ChildNode]));
+}
+
+// # Example 1:
+// const document = parse('<!DOCTYPE html><html><head></head><body><div></div><p></p></body></html>');
+// console.log(serialize(document));
+// const tag = ((document.childNodes[1] as Element).childNodes[1] as Element).childNodes[1];
+// console.log(serializeHtml(tag));
+// # Example 2:
+// console.log(serializeHtml(mkHtmlElement('div', mkHtmlAttribute('class', 'bar'))));
