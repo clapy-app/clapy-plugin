@@ -38,6 +38,10 @@ export const angularConnector: FrameworkConnector = {
   mkSelector: (context, className) =>
     !context.hasExtraAttributes && className === 'root' ? mkRawCss(':host') : mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
+    const { isRootInComponent } = context;
+    if (isRootInComponent && !context.hasExtraAttributes) {
+      return children as ChildNode[];
+    }
     return mkHtmlElement(context.tagName, attributes as Attribute[], children as ChildNode[]);
   },
   writeFileCode: (ast, moduleContext) => {

@@ -47,7 +47,7 @@ import {
   updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
-import type { Attribute } from './html-gen/html-gen.js';
+import type { Attribute, ChildNode } from './html-gen/html-gen.js';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './tech-integration/mui/mui-utils.js';
 
@@ -304,9 +304,6 @@ export function genNodeAst(node: SceneNode2) {
         removeCssRule(context, cssRule, node);
       }
 
-      if (!context.hasExtraAttributes) {
-        return children;
-      }
       return fwConnector.createNodeTag(context, [...attributes, ...(extraAttributes || [])], children || [], node);
     }
     throw new Error(`[genNodeAst] Unsupported type for node ${node.name}`);
@@ -323,7 +320,7 @@ export function genNodeAst(node: SceneNode2) {
 
 function genNodeAstLoopChildren(node: SceneNode2) {
   if (!isChildrenMixin(node)) return;
-  const childrenAst: ts.JsxChild[] = [];
+  const childrenAst: (ts.JsxChild | ChildNode)[] = [];
   for (const child of node.children) {
     if (child.skip) {
       continue;

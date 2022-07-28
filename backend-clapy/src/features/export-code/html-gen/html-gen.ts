@@ -42,8 +42,9 @@ export function mkHtmlAttribute(name: string, value: string) {
   return { name, value } as Attribute;
 }
 
-export function serializeHtml(node: Node) {
-  return serialize(mkHtmlElement('div', undefined, [node as ChildNode]));
+export function serializeHtml(node: Node | Node[]) {
+  if (!Array.isArray(node)) node = [node];
+  return serialize(mkHtmlElement('div', undefined, node as ChildNode[]));
 }
 
 // # Example 1:

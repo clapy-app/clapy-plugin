@@ -24,9 +24,9 @@ export interface FrameworkConnector {
   createNodeTag: (
     context: NodeContext,
     attributes: (ts.JsxAttribute | Attribute)[],
-    children: ts.JsxChild[] | ChildNode[],
+    children: (ts.JsxChild | ChildNode)[],
     node: BlockNode,
-  ) => JsxOneOrMore | Element | undefined;
+  ) => JsxOneOrMore | Element | ChildNode[] | undefined;
   writeFileCode: (ast: ReturnType<typeof genAstFromRootNode>, moduleContext: ModuleContext) => void;
   genCompUsage: (projectContext: ProjectContext, node: SceneNode2) => CompAst | Element | undefined;
   writeRootCompFileCode: (appModuleContext: ModuleContext, compAst: CompAst | Element | undefined) => void;
