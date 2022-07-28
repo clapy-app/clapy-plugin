@@ -37,19 +37,20 @@ export const Layout: FC = memo(function Layout() {
     </div>
   );
 });
-
 export const LayoutInner: FC = memo(function LayoutInner() {
   const [activeTab, setActiveTab] = useState(0);
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
   const stripeLoading = useSelector(selectStripeState);
   const isSignedIn = useSelector(selectSignedIn);
+
   let hasMissingMetaProfile = useSelector(selectHasMissingMetaProfile);
   // hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
   // hasMissingMetaUsage = false;
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   // Show selection
+
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
@@ -87,11 +88,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}
-      {activeTab === 1 && (
-        <div className={classes.generatorContent}>
-          <Account />
-        </div>
-      )}
+      {activeTab === 1 && <Account />}
     </>
   ) : (
     <>

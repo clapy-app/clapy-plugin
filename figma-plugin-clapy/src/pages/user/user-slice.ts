@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import type { RootState } from '../../core/redux/store';
-import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service';
+import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
 export interface UserState {
   userMetadata?: UserProfileState;
@@ -17,12 +17,16 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setMetadata: (state, { payload }: PayloadAction<UserProfileState>) => {
-      state.userMetadata = payload || {};
+      if (typeof payload === 'object' && typeof state.userMetadata === 'object') {
+        Object.assign(state.userMetadata, payload);
+      } else {
+        state.userMetadata = payload || {};
+      }
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
-      const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
+      const { firstName, lastName, phone, jobRole, techTeamSize } = payload;
       const meta = !state.userMetadata || state.userMetadata === true ? {} : state.userMetadata;
-      state.userMetadata = { ...meta, firstName, lastName, companyName, jobRole, techTeamSize };
+      state.userMetadata = { ...meta, firstName, lastName, phone, jobRole, techTeamSize };
     },
     setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
       if (!state.userMetadata || state.userMetadata === true) state.userMetadata = {};
@@ -31,10 +35,19 @@ export const userSlice = createSlice({
     clearMetadata: state => {
       state.userMetadata = undefined;
     },
+    setStripeData: (state, { payload }: PayloadAction<UserMetadata>) => {
+      (state.userMetadata as UserMetadata).quotas = payload.quotas;
+      (state.userMetadata as UserMetadata).isLicenceExpired = payload.isLicenceExpired;
+    },
   },
 });
 
-export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata } = userSlice.actions;
+export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStripeData } = userSlice.actions;
+export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
+export const selectIsFreeUser = (state: RootState) => {
+  const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
+  return isLicenceExpired!;
+};
 
 export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
 export const selectHasMissingMetaProfile = (state: RootState) =>

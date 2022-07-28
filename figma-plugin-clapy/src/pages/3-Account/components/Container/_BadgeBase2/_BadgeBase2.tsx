@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUserMetadata } from '../../../../user/user-slice.js';
+import { selectUserLicenceExpirationDate } from '../../../../../core/auth/auth-slice.js';
 import classes from './_BadgeBase2.module.css';
 import { ClockIcon } from './ClockIcon';
 
@@ -23,7 +23,8 @@ function calcColor(licenceExpirationDate: number | undefined, daysLeftTillRenewa
 }
 
 export const _BadgeBase2: FC<Props> = memo(function _BadgeBase2(props = {}) {
-  const { licenceExpirationDate } = useSelector(selectUserMetadata);
+  const licenceExpirationDate = useSelector(selectUserLicenceExpirationDate);
+
   let daysLeftTillRenewal;
   if (licenceExpirationDate) {
     let difference = new Date(licenceExpirationDate * 1000).getTime() - new Date().getTime();

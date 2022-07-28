@@ -11,7 +11,9 @@ import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { checkSessionLight } from './core/auth/auth-service.js';
+import { dispatchOther } from './core/redux/redux.utils.js';
 import { Layout } from './pages/Layout/Layout';
+import { setStripeData } from './pages/user/user-slice.js';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -28,7 +30,11 @@ declare module '@mui/material/Button' {
     neutral: true;
   }
 }
-
+interface ApiResponse {
+  ok: boolean;
+  quotas?: number;
+  isLicenceExpired?: boolean;
+}
 const theme = createTheme({
   palette: {
     primary: {
@@ -79,9 +85,18 @@ window.addEventListener('unload', function () {
 
 export const App: FC = memo(function App() {
   useEffect(() => {
-    checkSessionLight()
-      .catch(handleError)
-      .finally(() => track('open-plugin'));
+    let checkSession = async () => {
+      try {
+        const res = (await checkSessionLight()) as ApiResponse;
+        track('open-plugin');
+        if (res.quotas != null || !res.isLicenceExpired) {
+          dispatchOther(setStripeData(res));
+        }
+      } catch (e) {
+        handleError(e);
+      }
+    };
+    checkSession();
   }, []);
 
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'

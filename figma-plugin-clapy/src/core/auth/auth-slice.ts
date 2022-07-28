@@ -52,5 +52,5 @@ export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
-export const selectIsPaidUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('paid_user');
+export const selectUserLicenceExpirationDate = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];

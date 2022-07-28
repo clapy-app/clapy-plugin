@@ -2,8 +2,8 @@ import type { User } from 'auth0';
 import pipedrive from 'pipedrive';
 
 import { env } from '../../env-and-config/env.js';
-import type { UserMetadata, UserMetaUsage } from '../user/user.service.js';
-import { getAuth0FirstLastName } from '../user/user.service.js';
+import type { UserMetadata, UserMetaUsage } from '../user/user.utils.js';
+import { getAuth0FirstLastName } from '../user/user.utils.js';
 
 // Pipedrive client documentation: https://github.com/pipedrive/client-nodejs
 // API reference: https://developers.pipedrive.com/docs/api/v1/Persons#searchPersons
@@ -20,6 +20,7 @@ const F = {
   name: 'name',
   firstName: 'first_name',
   lastName: 'last_name',
+  phone: 'Phone',
   marketingStatus: 'marketing_status',
   auth0Id: '2919b1fdf1051bf7aadb26c29a063aefbea7b89d',
   auth0CreatedAt: 'f53b7669a76aacc5c3019ae73cd1f5350f50b74b',
@@ -41,7 +42,7 @@ const F = {
 export async function upsertPipedrivePersonByAuth0Id(auth0User: User) {
   const [firstName, lastName] = getAuth0FirstLastName(auth0User);
   const metadata: UserMetadata = auth0User.user_metadata || {};
-  const { companyName, jobRole, techTeamSize, usage = {} } = metadata;
+  const { companyName, jobRole, techTeamSize, usage = {}, phone } = metadata;
   const whyClapy = prepareWhyClapy(usage);
 
   const {
@@ -61,6 +62,7 @@ export async function upsertPipedrivePersonByAuth0Id(auth0User: User) {
     [F.name]: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || '-',
     [F.firstName]: firstName,
     [F.lastName]: lastName,
+    [F.phone]: [{ value: phone }],
     [F.marketingStatus]: new pipedrive.MarketingStatus().subscribed,
     [F.auth0Id]: auth0Id,
     [F.auth0CreatedAt]: created_at,

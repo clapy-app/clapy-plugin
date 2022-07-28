@@ -8,7 +8,12 @@ import { perfMeasure } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { warnOrThrow } from '../../utils.js';
-import type { AngularConfig, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type {
+  AngularConfig,
+  CSBResponse,
+  Dict,
+  ExportCodePayload,
+} from '../sb-serialize-preview/sb-serialize.model.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
 import { writeSVGReactComponents } from './7-write-svgr.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
@@ -193,7 +198,7 @@ export async function exportCode(
       return csbResponse;
     }
   }
-  return { sandbox_id: 'false' };
+  return { sandbox_id: 'false' } as CSBResponse;
 }
 
 function addCompToAppRoot(

@@ -45,16 +45,17 @@ export async function checkSessionLight() {
     dispatchOther(setSignedInState(signedInState));
   }
   await dispatchLocalUserMetadata(signedInState);
-  await checkSessionComplete();
+  return await checkSessionComplete();
 }
 
 /**
  * This method makes a full session check by calling the Clapy webservice to check the auth token, refresh if required, then fetch the user metadata.
  * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
  */
-async function checkSessionComplete() {
-  await apiGet('check-session');
+export async function checkSessionComplete() {
+  const { data } = await apiGet('check-session');
   await fetchUserMetadata();
+  return data;
 }
 
 export const signup = toConcurrencySafeAsyncFn(async () => {
@@ -138,7 +139,6 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    // await findUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }
@@ -179,6 +179,7 @@ export interface AccessTokenDecoded {
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
   'https://clapy.co/roles'?: string[];
+  'https://clapy.co/licence-expiration-date'?: number;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"

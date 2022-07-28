@@ -55,9 +55,9 @@ export function clearLocalUserMetadata() {
 
 // Ensure this method is synced with the backend equivalent: backend-clapy/src/features/user/user.service.ts
 export function hasMissingMetaProfile(
-  { firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata,
+  { firstName, lastName, companyName, jobRole, phone, techTeamSize } = {} as UserMetadata,
 ) {
-  return !firstName || !lastName || !companyName || !jobRole || !techTeamSize;
+  return !firstName || !lastName || (!phone && !companyName) || !jobRole || !techTeamSize;
 }
 
 // Ensure this method is synced with the backend equivalent: backend-clapy/src/features/user/user.service.ts
