@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
-import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas.js';
+import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import { Badge2 } from './Badge2/Badge2';
 import { Badge } from './Badge/Badge';

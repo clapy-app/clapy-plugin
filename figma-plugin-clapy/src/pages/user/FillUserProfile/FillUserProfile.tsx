@@ -1,6 +1,7 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import { MuiTelInput } from 'mui-tel-input';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -74,6 +75,8 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
 });
 
 export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInner(props = {}) {
+  const [value, setValue] = useState('');
+
   const dispatch = useDispatch();
   const userMetadata = useSelector(selectUserMetadata);
   const modelRef = useRef<UserMetadata>();
@@ -112,6 +115,12 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     }
   }, [allFilled, userMetadata]);
 
+  const handleChangePhoneInput = useCallback((value: string) => {
+    setValue(value);
+    const name = 'phone';
+    handleChange({ target: { name, value } } as any);
+  }, []);
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (!modelRef.current) {
@@ -126,19 +135,18 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
         // No change in value, ignore.
         return;
       }
-      const foo = modelRef.current[name2];
       modelRef.current[name2] = value as any;
       updateAllFilled(modelRef.current, allFilled, setAllFilled);
     },
     [allFilled],
   );
 
-  const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
+  const { firstName, lastName, phone, jobRole, techTeamSize } = userMetadata;
 
   // Fill default values
   if (defaultValuesRef.current.firstName == undefined) defaultValuesRef.current.firstName = firstName || '';
   if (defaultValuesRef.current.lastName == undefined) defaultValuesRef.current.lastName = lastName || '';
-  if (defaultValuesRef.current.companyName == undefined) defaultValuesRef.current.companyName = companyName || '';
+  if (defaultValuesRef.current.phone == undefined) defaultValuesRef.current.phone = phone || '';
   if (defaultValuesRef.current.jobRole == undefined) defaultValuesRef.current.jobRole = jobRole || '';
   if (defaultValuesRef.current.techTeamSize == undefined) defaultValuesRef.current.techTeamSize = techTeamSize || '';
 
@@ -176,20 +184,12 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
                 onChange={handleChange}
               />
             </div>
-            <TextField
-              className={classes.textField}
-              name='companyName'
-              label='Company name'
-              variant='outlined'
-              size='small'
-              defaultValue={defaultValuesRef.current.companyName}
-              onChange={handleChange}
-            />
+
             <TextField
               select
               className={classes.textField}
               name='jobRole'
-              label='What best describes your role?'
+              label='Select your Job Title'
               variant='outlined'
               size='small'
               defaultValue={defaultValuesRef.current.jobRole}
@@ -201,7 +201,7 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
               select
               className={classes.textField}
               name='techTeamSize'
-              label='Tech team size'
+              label='Select your Tech team size'
               variant='outlined'
               size='small'
               defaultValue={defaultValuesRef.current.techTeamSize}
@@ -209,6 +209,18 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
             >
               {teamSizesTsx}
             </TextField>
+            {
+              <MuiTelInput
+                className={classes.textField}
+                name='phone'
+                label='Phone number'
+                defaultCountry='FR'
+                variant='outlined'
+                size='small'
+                value={value}
+                onChange={handleChangePhoneInput}
+              />
+            }
           </div>
           <LoadingButton
             size='large'

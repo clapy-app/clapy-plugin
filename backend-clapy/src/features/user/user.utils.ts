@@ -35,6 +35,7 @@ export interface UserMetadata {
   firstName?: string;
   lastName?: string;
   companyName?: string;
+  phone?: string;
   jobRole?: string;
   techTeamSize?: string;
   email?: string;
@@ -120,9 +121,9 @@ function removeSuffix(name: string | undefined) {
 
 // Ensure this method is synced with the plugin equivalent: figma-plugin-clapy/src/pages/user/user-service.ts
 export function hasMissingMetaProfile(
-  { firstName, lastName, companyName, jobRole, techTeamSize } = {} as UserMetadata,
+  { firstName, lastName, companyName, jobRole, techTeamSize, phone } = {} as UserMetadata,
 ) {
-  return !firstName || !lastName || !companyName || !jobRole || !techTeamSize;
+  return (!companyName && !phone) || !firstName || !lastName || !jobRole || !techTeamSize;
 }
 
 // Ensure this method is synced with the plugin equivalent: figma-plugin-clapy/src/pages/user/user-service.ts

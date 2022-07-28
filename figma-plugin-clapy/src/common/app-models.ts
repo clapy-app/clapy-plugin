@@ -78,6 +78,7 @@ export interface UserMetadata {
   firstName?: string;
   lastName?: string;
   companyName?: string;
+  phone?: string;
   jobRole?: string;
   techTeamSize?: string;
   email?: string;

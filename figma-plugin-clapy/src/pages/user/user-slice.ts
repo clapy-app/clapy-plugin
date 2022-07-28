@@ -17,12 +17,16 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setMetadata: (state, { payload }: PayloadAction<UserProfileState>) => {
-      state.userMetadata = payload || {};
+      if (typeof payload === 'object' && typeof state.userMetadata === 'object') {
+        Object.assign(state.userMetadata, payload);
+      } else {
+        state.userMetadata = payload || {};
+      }
     },
     setMetaProfile: (state, { payload }: PayloadAction<UserMetadata>) => {
-      const { firstName, lastName, companyName, jobRole, techTeamSize } = payload;
+      const { firstName, lastName, phone, jobRole, techTeamSize } = payload;
       const meta = !state.userMetadata || state.userMetadata === true ? {} : state.userMetadata;
-      state.userMetadata = { ...meta, firstName, lastName, companyName, jobRole, techTeamSize };
+      state.userMetadata = { ...meta, firstName, lastName, phone, jobRole, techTeamSize };
     },
     setMetaUsage: (state, { payload }: PayloadAction<UserMetaUsage>) => {
       if (!state.userMetadata || state.userMetadata === true) state.userMetadata = {};
@@ -42,9 +46,6 @@ export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStri
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
 export const selectIsFreeUser = (state: RootState) => {
   const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
-  if (isLicenceExpired == null) {
-    return true;
-  }
   return isLicenceExpired!;
 };
 

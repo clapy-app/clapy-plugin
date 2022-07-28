@@ -52,7 +52,7 @@ export async function checkSessionLight() {
  * This method makes a full session check by calling the Clapy webservice to check the auth token, refresh if required, then fetch the user metadata.
  * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
  */
-async function checkSessionComplete() {
+export async function checkSessionComplete() {
   const { data } = await apiGet('check-session');
   await fetchUserMetadata();
   return data;

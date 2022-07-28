@@ -89,7 +89,7 @@ export const App: FC = memo(function App() {
       try {
         const res = (await checkSessionLight()) as ApiResponse;
         track('open-plugin');
-        if (res.quotas != null) {
+        if (res.quotas != null || !res.isLicenceExpired) {
           dispatchOther(setStripeData(res));
         }
       } catch (e) {
