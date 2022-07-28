@@ -1,7 +1,6 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import type { MuiTelInputInfo } from 'mui-tel-input';
 import { MuiTelInput } from 'mui-tel-input';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -76,8 +75,7 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
 });
 
 export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInner(props = {}) {
-  const [value, setValue] = useState('555 000-000');
-  const [info, setInfo] = useState({});
+  const [value, setValue] = useState('');
 
   const dispatch = useDispatch();
   const userMetadata = useSelector(selectUserMetadata);
@@ -117,28 +115,11 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     }
   }, [allFilled, userMetadata]);
 
-  const handleChangePhoneInput = useCallback(
-    (newValue: string, info: MuiTelInputInfo) => {
-      setValue(newValue);
-      setInfo(info);
-      if (!modelRef.current) {
-        console.error(
-          'BUG modelRef is not ready yet in FillUserProfile#handleChange, which is not supposed to happen.',
-        );
-        return;
-      }
-      const name = 'phone';
-      const name2 = name as keyof UserMetadata;
-      if (newValue === modelRef.current[name2]) {
-        // No change in value, ignore.
-        return;
-      }
-
-      modelRef.current[name2] = newValue as any;
-      updateAllFilled(modelRef.current, allFilled, setAllFilled);
-    },
-    [allFilled],
-  );
+  const handleChangePhoneInput = useCallback((value: string) => {
+    setValue(value);
+    const name = 'phone';
+    handleChange({ target: { name, value } } as any);
+  }, []);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -154,7 +135,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
         // No change in value, ignore.
         return;
       }
-      const foo = modelRef.current[name2];
       modelRef.current[name2] = value as any;
       updateAllFilled(modelRef.current, allFilled, setAllFilled);
     },
@@ -233,8 +213,8 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
               <MuiTelInput
                 className={classes.textField}
                 name='phone'
-                label='Phone'
-                defaultCountry='US'
+                label='Phone number'
+                defaultCountry='FR'
                 variant='outlined'
                 size='small'
                 value={value}
