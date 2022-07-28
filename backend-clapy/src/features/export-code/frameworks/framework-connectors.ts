@@ -1,11 +1,8 @@
+import type { ClassSelector, Raw } from 'css-tree';
 import type ts from 'typescript';
 
 import type { genAstFromRootNode } from '../3-gen-component.js';
-import type {
-  Dict3,
-  ExtraConfig, // SceneNode2,
-  UserSettings,
-} from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, CompAst, JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../code.model.js';
 import type { BlockNode, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import type { Attribute, ChildNode, Element } from '../html-gen/html-gen.js';
@@ -23,6 +20,7 @@ export interface FrameworkConnector {
   getCompFileName: (compDir: string) => string;
   cssFileNameMiddlePart: string;
   createClassAttribute: (node: SceneNode2, className: string) => ts.JsxAttribute | Attribute;
+  mkSelector(context: NodeContext, className: string): Raw | ClassSelector;
   createNodeTag: (
     context: NodeContext,
     attributes: (ts.JsxAttribute | Attribute)[],

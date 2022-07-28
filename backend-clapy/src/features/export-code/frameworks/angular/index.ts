@@ -3,7 +3,7 @@ import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, ProjectContext } from '../../code.model.js';
 import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
-import { cssAstToString } from '../../css-gen/css-factories-low.js';
+import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import type { Attribute, ChildNode, Node } from '../../html-gen/html-gen.js';
@@ -31,10 +31,12 @@ export const angularConnector: FrameworkConnector = {
   // my-rectangle.component.ts
   getCompFileName: compDir => `${compDir}.component.ts`,
   cssFileNameMiddlePart: 'component',
-  createClassAttribute: (node, className) => {
+  createClassAttribute(node, className) {
     const className2 = className || node.className!;
     return mkHtmlAttribute('class', className2);
   },
+  mkSelector: (context, className) =>
+    !context.hasExtraAttributes && className === 'root' ? mkRawCss(':host') : mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     return mkHtmlElement(context.tagName, attributes as Attribute[], children as ChildNode[]);
   },
@@ -45,7 +47,7 @@ export const angularConnector: FrameworkConnector = {
     const [tsx, css] = ast;
 
     const path = `${compDir}/${baseCompName}.component.html`;
-    const htmlStr = serializeHtml(tsx as Node);
+    const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
     if (isNonEmptyObject(css.children)) {

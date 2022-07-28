@@ -2,7 +2,7 @@ import axios from 'axios';
 import { createWriteStream } from 'fs';
 import { lstat, mkdir, readdir, rmdir, unlink, writeFile } from 'fs/promises';
 import JSZip from 'jszip';
-import { basename, dirname, join, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 import * as stream from 'stream';
 import { promisify } from 'util';
 
@@ -51,7 +51,6 @@ export async function makeZip(files: CsbDict) {
 }
 
 const srcCompPrefix = 'src/components/';
-const allowedEmptyFiles = new Set(['.gitkeep', 'app.component.css', 'app.component.scss']);
 
 export async function writeToDisk(
   files: CsbDict,
@@ -66,18 +65,6 @@ export async function writeToDisk(
   const filesToWrite: CodeDict = {};
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
-      if (!content) {
-        if (!allowedEmptyFiles.has(basename(path))) {
-          if (!path.endsWith('css')) {
-            console.warn('BUG No content at path', path);
-          }
-          if (isBinary) {
-            console.warn('(is binary)');
-          }
-          return;
-        }
-      }
-
       const files = [`${backendDir}/atest-gen/${path}`];
       if (flags.writeClapyFiles && isClapyFile && path.startsWith(srcCompPrefix)) {
         const file = `${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`;

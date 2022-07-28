@@ -14,7 +14,7 @@ import type {
 } from '../../code.model.js';
 import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import { cssAstToString } from '../../css-gen/css-factories-low.js';
+import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import {
   createClassAttrForNode,
@@ -57,6 +57,7 @@ export const reactConnector: FrameworkConnector = {
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
   createClassAttribute: createClassAttrForNode,
+  mkSelector: (context, className) => mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return mkWrapHideAndTextOverrideAst(context, ast2, node);

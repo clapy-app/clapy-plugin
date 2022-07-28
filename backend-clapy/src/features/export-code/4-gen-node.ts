@@ -235,6 +235,7 @@ export function genNodeAst(node: SceneNode2) {
     const { moduleContext, isRootInComponent, parentIsRootInComponent } = context;
     const { projectContext } = moduleContext;
     const { fwConnector } = projectContext;
+    if (extraAttributes?.length) context.hasExtraAttributes = true;
 
     if (node.skip) return;
 
@@ -303,6 +304,9 @@ export function genNodeAst(node: SceneNode2) {
         removeCssRule(context, cssRule, node);
       }
 
+      if (!context.hasExtraAttributes) {
+        return children;
+      }
       return fwConnector.createNodeTag(context, [...attributes, ...(extraAttributes || [])], children || [], node);
     }
     throw new Error(`[genNodeAst] Unsupported type for node ${node.name}`);

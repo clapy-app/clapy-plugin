@@ -116,6 +116,7 @@ export interface NodeContext {
   notOverridingAnotherClass?: boolean;
   firstChildIsPlaceholder?: boolean;
   selector?: string;
+  hasExtraAttributes?: boolean;
 }
 
 export type TextOValue = JsxOneOrMore | string | false;
