@@ -133,7 +133,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
         // No change in value, ignore.
         return;
       }
-      console.log(allFilled);
 
       modelRef.current[name2] = newValue as any;
       updateAllFilled(modelRef.current, allFilled, setAllFilled);
@@ -230,16 +229,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
             >
               {teamSizesTsx}
             </TextField>
-            {/* <TextField
-              className={classes.textField}
-              name='companyName'
-              label='+1 (555) 000-000'
-              variant='outlined'
-              type={'tel'}
-              size='small'
-              defaultValue={defaultValuesRef.current.companyName}
-              onChange={handleChange}
-            /> */}
             {
               <MuiTelInput
                 className={classes.textField}
