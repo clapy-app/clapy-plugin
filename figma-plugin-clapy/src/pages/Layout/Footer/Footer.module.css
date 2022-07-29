@@ -1,7 +1,7 @@
 .root {
   width: 100%;
   font-family: sans-serif;
-  background-color: #e5e5e5;
+  background-color: white;
   overflow-y: auto;
   align-items: flex-end;
 }

@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Button } from '../../../components-used/Button/Button';
 import { login, signup } from '../../../core/auth/auth-service';
 import { selectAuthLoading } from '../../../core/auth/auth-slice';
-import { ClapyLogo2Icon } from './ClapyLogo2Icon';
+import { ClapyLogo2Icon } from './ClapyLogo2Icon/ClapyLogo2Icon';
 import { Decoration } from './Decoration/Decoration';
 import classes from './LoginHome.module.css';
 

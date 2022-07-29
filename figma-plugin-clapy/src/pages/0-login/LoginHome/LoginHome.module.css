@@ -7,6 +7,7 @@
   background-color: #fff;
   overflow: hidden;
 }
+
 .content {
   flex-direction: column;
   flex: 1;
@@ -16,11 +17,13 @@
   gap: 32px;
   padding: 32px 32px;
 }
+
 .logoBeta {
   flex-direction: row;
   align-items: flex-start;
   gap: 6.1867px;
 }
+
 .clapyLogo2 {
   width: 161.1643px;
   height: 51.065px;
@@ -34,14 +37,17 @@
   align-items: stretch;
   gap: 24px;
 }
+
 .buttonsWrapper {
   gap: 12px;
   flex-direction: column;
 }
+
 .paragraph {
   flex-direction: column;
   gap: 8px;
 }
+
 .signInToClapy {
   color: #000;
   font-size: 32px;
@@ -54,6 +60,7 @@
   text-align: center;
   justify-content: end;
 }
+
 .generateCleanCodeFromFigmaInst {
   color: #000;
   font-size: 16px;
@@ -63,13 +70,14 @@
   text-align: center;
   flex-direction: column;
 }
+
 .docLink {
-  color:#004EEB;
+  color: #004EEB;
   font-family: 'Inter';
-font-style: normal;
-font-weight: 500;
-font-size: 14px;
-line-height: 20px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .signInRow {

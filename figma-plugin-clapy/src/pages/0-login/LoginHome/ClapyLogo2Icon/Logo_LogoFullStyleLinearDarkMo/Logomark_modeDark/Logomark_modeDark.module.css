@@ -1,0 +1,25 @@
+.root {
+  position: absolute;
+  left: calc(50% - 42.69925880432129px);
+  top: calc(50% - 0.2770376205444336px);
+  padding: 7px 9px;
+  border-radius: 7px;
+  background-image: linear-gradient(180deg, #1e51b2ff 0%, #0d347cff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  overflow: hidden;
+  box-shadow: 0px 1px 2px 0px #1018280f, 0px 1px 3px 0px #1018281a;
+  transform: translate(-50%, -50%);
+}
+
+.clapy {
+  width: 14.6014px;
+  height: 17.4459px;
+  overflow: visible;
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+}
