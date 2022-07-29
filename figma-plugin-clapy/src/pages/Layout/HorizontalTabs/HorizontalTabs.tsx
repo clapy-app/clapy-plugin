@@ -41,7 +41,7 @@ export const HorizontalTabs: FC<Props> = memo(function HorizontalTabs(props) {
           </span>
         </_TabButtonBase>
         <_TabButtonBase active={activeTab === 1} data-index={1} onClick={_selectTab}>
-          {typeof picture === 'undefined' && <Loading height={24} width={24} />}
+          <div className={classes.loader}>{typeof picture === 'undefined' && <Loading height={24} width={24} />}</div>
           Settings
           <span style={{ marginLeft: 8, marginTop: 3 }}>
             <SettingsIcon />

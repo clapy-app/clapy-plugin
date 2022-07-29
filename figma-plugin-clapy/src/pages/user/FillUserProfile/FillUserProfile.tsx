@@ -1,9 +1,9 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import { MuiTelInput } from 'mui-tel-input';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import ReactPhoneInput from 'react-phone-input-material-ui';
 import { useDispatch, useSelector } from 'react-redux';
 
 import type { UserMetadata } from '../../../common/app-models.js';
@@ -115,12 +115,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     }
   }, [allFilled, userMetadata]);
 
-  const handleChangePhoneInput = useCallback((value: string) => {
-    setValue(value);
-    const name = 'phone';
-    handleChange({ target: { name, value } } as any);
-  }, []);
-
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (!modelRef.current) {
@@ -140,7 +134,14 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     },
     [allFilled],
   );
-
+  const handleChangePhoneInput = useCallback(
+    (value: string) => {
+      setValue(value);
+      const name = 'phone';
+      handleChange({ target: { name, value } } as any);
+    },
+    [handleChange, setValue],
+  );
   const { firstName, lastName, phone, jobRole, techTeamSize } = userMetadata;
 
   // Fill default values
@@ -184,7 +185,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
                 onChange={handleChange}
               />
             </div>
-
             <TextField
               select
               className={classes.textField}
@@ -209,18 +209,13 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
             >
               {teamSizesTsx}
             </TextField>
-            {
-              <MuiTelInput
-                className={classes.textField}
-                name='phone'
-                label='Phone number'
-                defaultCountry='FR'
-                variant='outlined'
-                size='small'
-                value={value}
-                onChange={handleChangePhoneInput}
-              />
-            }
+            <ReactPhoneInput
+              value={value}
+              country={'fr'}
+              onChange={handleChangePhoneInput}
+              className={classes.textField}
+              component={TextField}
+            />
           </div>
           <LoadingButton
             size='large'

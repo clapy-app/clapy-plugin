@@ -1,0 +1,19 @@
+.root {
+  padding: 7px 9px;
+  border-radius: 7px;
+  background-image: linear-gradient(180deg, #f5f8ffff 0%, #d2e1ffff 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  overflow: hidden;
+  box-shadow: 0px 1px 2px 0px #1018280f, 0px 1px 3px 0px #1018281a;
+}
+.clapy {
+  width: 14.6014px;
+  height: 17.4459px;
+  overflow: visible;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}

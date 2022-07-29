@@ -1,0 +1,29 @@
+.logomark.logomark {
+  left: -0.2548%;
+  right: 72.6264%;
+  top: 0.8657%;
+  bottom: 0.8657%;
+  transform: initial;
+}
+
+.root {
+  position: relative;
+  width: 118px;
+  height: 32px;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.logotype {
+  position: absolute;
+  left: 42px;
+  top: 50%;
+  width: 76px;
+  height: 32px;
+  transform: translateY(-50%);
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+}
