@@ -195,7 +195,6 @@ export async function exportCode(
   }
   if (!env.isDev || uploadToCsb) {
     const isNoCodesandboxUser = user?.['https://clapy.co/roles']?.includes('noCodesandbox');
-    extraConfig.output = 'csb';
     if (extraConfig.output === 'zip') {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
