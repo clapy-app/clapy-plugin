@@ -1,3 +1,6 @@
+import type { Attribute } from 'parse5/dist/common/token.js';
+import type { ChildNode, Node } from 'parse5/dist/tree-adapters/default.js';
+
 import { dashCaseToPascalCase, isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
@@ -6,8 +9,7 @@ import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
-import type { Attribute, ChildNode, Node } from '../../html-gen/html-gen.js';
-import { mkHtmlAttribute, mkHtmlElement, serializeHtml } from '../../html-gen/html-gen.js';
+import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
@@ -35,6 +37,7 @@ export const angularConnector: FrameworkConnector = {
     const className2 = className || node.className!;
     return mkHtmlAttribute('class', className2);
   },
+  createClassAttrForClassNoOverride: className => mkHtmlAttribute('class', className),
   mkSelector: (context, className) =>
     !context.hasExtraAttributes && className === 'root' ? mkRawCss(':host') : mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
@@ -44,6 +47,7 @@ export const angularConnector: FrameworkConnector = {
     }
     return mkHtmlElement(context.tagName, attributes as Attribute[], children as ChildNode[]);
   },
+  createText: mkHtmlText,
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
     const { cssFiles } = projectContext;

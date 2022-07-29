@@ -1,4 +1,5 @@
-import type { Statement } from 'typescript';
+import type { ChildNode } from 'parse5/dist/tree-adapters/default.js';
+import type { JsxChild, Statement } from 'typescript';
 import ts from 'typescript';
 
 import { isNonEmptyObject } from '../../../../common/general-utils.js';
@@ -17,6 +18,7 @@ import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import {
+  createClassAttrForClassNoOverride,
   createClassAttrForNode,
   createComponentUsageWithAttributes,
   getOrCreateCompContext,
@@ -31,7 +33,6 @@ import {
   mkWrapHideAndTextOverrideAst,
 } from '../../gen-node-utils/ts-ast-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
-import type { Element } from '../../html-gen/html-gen.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector } from '../framework-connectors.js';
@@ -57,18 +58,20 @@ export const reactConnector: FrameworkConnector = {
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
   createClassAttribute: createClassAttrForNode,
+  createClassAttrForClassNoOverride,
   mkSelector: (context, className) => mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return mkWrapHideAndTextOverrideAst(context, ast2, node);
   },
+  createText: text => factory.createJsxText(text, false),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, compName, imports } = moduleContext;
     const { cssFiles } = projectContext;
 
     const [tsx, css] = ast;
 
-    createModuleCode(moduleContext, tsx as Exclude<typeof tsx, Element>);
+    createModuleCode(moduleContext, tsx as Exclude<typeof tsx, ChildNode | ChildNode[] | (JsxChild | ChildNode)[]>);
 
     if (isNonEmptyObject(css.children)) {
       const cssExt = getCSSExtension(projectContext.extraConfig);

@@ -1,4 +1,6 @@
 import type { DeclarationPlain } from 'css-tree';
+import type { Attribute } from 'parse5/dist/common/token.js';
+import type { TextNode } from 'parse5/dist/tree-adapters/default.js';
 import ts from 'typescript';
 
 import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map.js';
@@ -14,8 +16,6 @@ import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
 import {
   addCssRule,
-  createClassAttrForClassNoOverride,
-  createClassAttrForNode,
   mkHrefAttr,
   mkHtmlFullClass,
   mkIdAttribute,
@@ -94,6 +94,7 @@ export function genTextAst(node: TextNode2) {
   if (!context) throw new Error(`[genTextAst] node ${node.name} has no nodeContext`);
   if (!styles) throw new Error(`[genTextAst] node ${node.name} has no styles`);
   const { moduleContext } = context;
+  const { fwConnector } = moduleContext.projectContext;
   const textSegments: TextSegment2[] | undefined = node._textSegments;
   const segmentsStyles = node._segmentsStyles;
   if (!textSegments?.length) return;
@@ -103,8 +104,8 @@ export function genTextAst(node: TextNode2) {
 
   const singleChild = textSegments.length === 1;
 
-  let textBlockStyleAttributes: ts.JsxAttribute[] | undefined = undefined;
-  let textSpanWrapperAttributes: ts.JsxAttribute[] | undefined = undefined;
+  let textBlockStyleAttributes: (ts.JsxAttribute | Attribute)[] | undefined = undefined;
+  let textSpanWrapperAttributes: (ts.JsxAttribute | Attribute)[] | undefined = undefined;
 
   // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
   // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
@@ -114,13 +115,13 @@ export function genTextAst(node: TextNode2) {
   // If node has styles to render, surround with a styled div
   if (!node.textSkipStyles) {
     const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
+    let attributes: (ts.JsxAttribute | Attribute)[] = [];
     if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
     if (styleDeclarations.length) {
       const className = getOrGenClassName(moduleContext, node);
       htmlClass = mkHtmlFullClass(context, className, htmlClass);
       addCssRule(context, className, styleDeclarations, node);
-      attributes.push(createClassAttrForNode(node, htmlClass));
+      attributes.push(fwConnector.createClassAttribute(node, htmlClass));
     }
     textBlockStyleAttributes = attributes;
   }
@@ -128,14 +129,14 @@ export function genTextAst(node: TextNode2) {
   // Text span wrapper
   // If multiple segments, surround with span to maintain the inline style
   if (!singleChild) {
-    const attributes: ts.JsxAttribute[] = [];
+    const attributes: (ts.JsxAttribute | Attribute)[] = [];
     if (node.textInlineWrapperStyles) {
       const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
         htmlClass = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node);
-        attributes.push(createClassAttrForClassNoOverride(htmlClass));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass));
       }
     }
     if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
@@ -148,16 +149,16 @@ export function genTextAst(node: TextNode2) {
   for (let i = 0; i < textSegments.length; i++) {
     const segment = textSegments[i];
     const segmentStyles = segmentsStyles[i];
-    let segAst: ts.JsxChild = factory.createJsxText(escapeHTML(segment.characters), false);
+    let segAst: ts.JsxChild | TextNode = fwConnector.createText(escapeHTML(segment.characters));
 
     if (!singleChild) {
       const styleDeclarations = stylesToList(segmentStyles);
-      const attributes: ts.JsxAttribute[] = [];
+      const attributes: (ts.JsxAttribute | Attribute)[] = [];
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext);
         let htmlClass2 = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node, true);
-        attributes.push(createClassAttrForClassNoOverride(htmlClass2));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2));
       }
       let useAnchor = false;
       if (segment.hyperlink) {

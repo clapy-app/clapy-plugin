@@ -1,11 +1,20 @@
 import { serialize } from 'parse5';
-import type { Attribute as Attribute0 } from 'parse5/dist/common/token';
-import type { ChildNode as ChildNode0, Element as Element0, Node as Node0 } from 'parse5/dist/tree-adapters/default';
+import type { Attribute } from 'parse5/dist/common/token';
+// import type { Attribute as Attribute0 } from 'parse5/dist/common/token';
+import type { ChildNode, Element, Node, TextNode } from 'parse5/dist/tree-adapters/default';
 
-export type ChildNode = ChildNode0;
-export type Element = Element0;
-export type Node = Node0;
-export type Attribute = Attribute0;
+// import {
+//   // ChildNode as ChildNode0,
+//   // Element as Element0,
+//   // Node as Node0,
+//   // NodeType, // TextNode as TextNode0,
+// } from 'parse5/dist/tree-adapters/default';
+
+// export type ChildNode = ChildNode0;
+// export type Element = Element0;
+// export type TextNode = TextNode0;
+// export type Node = Node0;
+// export type Attribute = Attribute0;
 
 // Documentation: https://parse5.js.org/modules/parse5.html
 // Online playground (AST explorer): http://astexplorer.net/#/1CHlCXc4n4
@@ -18,6 +27,14 @@ enum NS {
   XLINK = 'http://www.w3.org/1999/xlink',
   XML = 'http://www.w3.org/XML/1998/namespace',
   XMLNS = 'http://www.w3.org/2000/xmlns/',
+}
+
+enum NodeType {
+  Document = '#document',
+  DocumentFragment = '#document-fragment',
+  Comment = '#comment',
+  Text = '#text',
+  DocumentType = '#documentType',
 }
 
 export function mkHtmlElement(
@@ -34,6 +51,15 @@ export function mkHtmlElement(
     namespaceURI: NS.HTML,
     parentNode: null,
     childNodes: children,
+  };
+  return el;
+}
+
+export function mkHtmlText(text: string) {
+  const el: TextNode = {
+    nodeName: NodeType.Text,
+    parentNode: null,
+    value: text,
   };
   return el;
 }

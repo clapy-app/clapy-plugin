@@ -1,4 +1,6 @@
 import type { DeclarationPlain } from 'css-tree';
+import type { Attribute } from 'parse5/dist/common/token.js';
+import type { ChildNode } from 'parse5/dist/tree-adapters/default.js';
 import type ts from 'typescript';
 
 import { flags } from '../../env-and-config/app-config.js';
@@ -47,7 +49,6 @@ import {
   updateCssRule,
 } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
-import type { Attribute, ChildNode } from './html-gen/html-gen.js';
 import { guessTagNameAndUpdateNode } from './smart-guesses/guessTagName.js';
 import { addMuiImport, checkAndProcessMuiComponent, mkMuiComponentAst } from './tech-integration/mui/mui-utils.js';
 
