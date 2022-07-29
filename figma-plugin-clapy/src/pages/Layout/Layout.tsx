@@ -12,7 +12,7 @@ import { selectStripeState } from '../3-Account/stripe-slice.js';
 import { Generator } from '../4-Generator/Generator.js';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading';
-import { selectAuthError, selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
+import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
@@ -39,11 +39,10 @@ export const Layout: FC = memo(function Layout() {
 });
 export const LayoutInner: FC = memo(function LayoutInner() {
   const [activeTab, setActiveTab] = useState(0);
-  const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
   const stripeLoading = useSelector(selectStripeState);
   const isSignedIn = useSelector(selectSignedIn);
-
+  const stateChecking = useSelector(selectSessionChecking);
   let hasMissingMetaProfile = useSelector(selectHasMissingMetaProfile);
   // hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
@@ -66,11 +65,11 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     );
   }
 
-  if (authLoading || stripeLoading)
+  if (stripeLoading && stateChecking)
     return (
       <div className={loginHomeClasses.content}>
         <Loading />
-        {authLoading && <p>Checking your session...</p>}
+        {stateChecking && <p>Checking your session...</p>}
         {stripeLoading && (
           <p>
             The payment page has been opened in your browser. Please complete the payment there, then come back here 🙏
@@ -79,7 +78,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
       </div>
     );
 
-  if (!isSignedIn) return <LoginHome />;
+  if (!isSignedIn && !stateChecking) return <LoginHome />;
 
   if (hasMissingMetaProfile) return <FillUserProfile />;
 

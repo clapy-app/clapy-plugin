@@ -6,6 +6,7 @@ import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
 import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
+import backGroundImage from './backgroundImage.jpeg';
 import { Badge2 } from './Badge2/Badge2';
 import { Badge } from './Badge/Badge';
 import { ButtonContact } from './ButtonContact/ButtonContact.js';
@@ -49,7 +50,10 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
     <div className={`${classes.root} ${props.className || ''}`}>
       <div className={`${classes.imageWrapOuter} ${props.classes?.imageWrapOuter || ''}`}>
         <div className={`${classes.imageWrapInner} ${props.classes?.imageWrapInner || ''}`}>
-          <div className={`${classes.image} ${props.classes?.image || ''}`}></div>
+          <div
+            style={{ backgroundImage: `url(${backGroundImage})` }}
+            className={`${classes.image} ${props.classes?.image || ''}`}
+          ></div>
         </div>
       </div>
       <div className={`${classes.settingsContainer} ${props.classes?.settingsContainer || ''}`}>

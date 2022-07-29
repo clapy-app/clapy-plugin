@@ -5,6 +5,7 @@
   align-items: center;
   position: relative;
 }
+
 .divider {
   height: 1px;
   align-self: stretch;
@@ -14,6 +15,7 @@
   bottom: 0;
   background-color: #eaecf0;
 }
+
 .tabs {
   flex-direction: row;
   align-items: center;
@@ -21,4 +23,9 @@
   left: 0;
   right: 0;
   top: 0;
+}
+
+.loader {
+  position: absolute;
+  left: 18px
 }

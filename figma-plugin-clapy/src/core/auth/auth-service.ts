@@ -10,7 +10,14 @@ import { env, isFigmaPlugin } from '../../environment/env';
 import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
-import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
+import {
+  authSuccess,
+  setAuthError,
+  setCheckingSessionState,
+  setSignedInState,
+  setTokenDecoded,
+  startLoadingAuth,
+} from './auth-slice';
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
@@ -31,6 +38,8 @@ export let _tokenType: string | null = null;
  * It ends by calling the method for a full check with the server, in case something is wrong. The result will then re-render the UI if something changed.
  */
 export async function checkSessionLight() {
+  dispatchOther(setCheckingSessionState(true));
+
   if (!_accessToken) {
     const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
     setAccessToken(accessToken);
@@ -45,6 +54,8 @@ export async function checkSessionLight() {
     dispatchOther(setSignedInState(signedInState));
   }
   await dispatchLocalUserMetadata(signedInState);
+  dispatchOther(setCheckingSessionState(false));
+
   return await checkSessionComplete();
 }
 

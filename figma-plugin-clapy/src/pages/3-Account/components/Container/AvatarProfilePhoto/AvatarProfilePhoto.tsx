@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { memo } from 'react';
 
+import avatarProfilePhoto from './avatarProfilePhoto.jpeg';
 import classes from './AvatarProfilePhoto.module.css';
 
 interface Props {
@@ -11,7 +12,7 @@ export const AvatarProfilePhoto: FC<Props> = memo(function AvatarProfilePhoto(pr
   return (
     <img
       className={`${classes.root} ${props.className || ''}`}
-      src={props.picture ? props.picture : '../../../../../public/avatarProfilePhoto.jpeg'}
+      src={props.picture ? props.picture : avatarProfilePhoto}
       referrerPolicy='no-referrer'
     />
   );

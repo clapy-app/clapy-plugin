@@ -29,9 +29,6 @@
   left: 0;
   right: 0;
   top: 0;
-  background-image:
-    /* webpackIgnore: true */
-    url('../../../../public/image.jpeg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

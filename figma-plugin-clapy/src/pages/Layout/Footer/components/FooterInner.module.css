@@ -1,0 +1,219 @@
+.logo.logo {
+  width: 157.4555px;
+  height: 42.6997px;
+  gap: 13.3436px;
+}
+.logomark.logomark.logomark {
+  right: 72.6265%;
+  top: 0.8651%;
+  bottom: 0.8663%;
+  padding: 9.3405px 12.0093px;
+  border-radius: 9.3405px;
+  box-shadow: 0px 1.3343687057495117px 2.6687374114990234px 0px #1018280f,
+    0px 1.3343687057495117px 4.003106117248535px 0px #1018281a;
+}
+.clapy.clapy.clapy {
+  width: 19.4837px;
+  height: 23.2792px;
+}
+.clapy {
+  width: 19.4837px;
+  height: 23.2792px;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.logotype.logotype {
+  left: 56.0434px;
+  top: calc(50% - 0.3498808443546295px);
+  width: 101.412px;
+  height: 42.6997px;
+}
+.logotype {
+  left: 56.0434px;
+  top: calc(50% - 0.3498808443546295px);
+  width: 101.412px;
+  height: 42.6997px;
+}
+.icon2 {
+  width: 100%;
+  height: 100%;
+}
+.decoration.decoration {
+  align-items: center;
+}
+.frame631.frame631 {
+  width: 249.0223px;
+  height: 144.2662px;
+  background-image:/* webpackIgnore: true */ url('assets/frame6312.jpeg');
+}
+.text {
+  color: #004eeb;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  z-index: 0;
+  white-space: nowrap;
+}
+.button.button {
+  flex: 1;
+  align-self: flex-start;
+}
+._ButtonBase._ButtonBase._ButtonBase {
+  flex: 1;
+  place-content: center;
+}
+.text2 {
+  color: #fff;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+}
+.button2.button2 {
+  flex: 1;
+  align-self: flex-start;
+}
+._ButtonBase2._ButtonBase2._ButtonBase2 {
+  flex: 1;
+  place-content: center;
+}
+.text3 {
+  color: #004eeb;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+}
+.footer.footer {
+  width: initial;
+  align-self: stretch;
+  background-image: linear-gradient(133.8deg, #1e51b2ff 0%, #0d347cff 100%);
+}
+.icon3 {
+  width: 100%;
+  height: 100%;
+}
+.file.file {
+  width: 16.75px;
+  height: 16.75px;
+}
+.icon4 {
+  width: 100%;
+  height: 100%;
+}
+.contactUsLink {
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Spartan, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  letter-spacing: -0.01em;
+  text-align: end;
+  justify-content: flex-end;
+  align-items: center;
+  white-space: nowrap;
+}
+.discordFill.discordFill {
+  width: 16.75px;
+  height: 16.75px;
+}
+.icon5 {
+  width: 100%;
+  height: 100%;
+}
+.contactUsLink2 {
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Spartan, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  letter-spacing: -0.01em;
+  text-align: end;
+  justify-content: flex-end;
+  align-items: center;
+  white-space: nowrap;
+}
+.root {
+  width: 404px;
+  flex-direction: column;
+  background-color: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.content {
+  height: 552px;
+  align-self: stretch;
+  width: initial;
+  flex-direction: column;
+  place-content: center;
+  align-items: center;
+  gap: 46px;
+  padding: 48px 32px;
+}
+.content2 {
+  align-self: stretch;
+  width: initial;
+  flex-direction: column;
+  gap: 24px;
+}
+.paragraph {
+  align-self: stretch;
+  width: initial;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.readyToCode {
+  color: #000;
+  font-size: 32px;
+  line-height: 126.4999%;
+  font-weight: 600;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  width: initial;
+  text-align: center;
+  justify-content: center;
+  align-items: flex-end;
+}
+.frame169 {
+  flex-direction: column;
+  align-items: center;
+}
+.generateCleanCodeFromFigmaInst {
+  color: #000;
+  font-size: 16px;
+  font-family: Nunito Sans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  width: 340px;
+  text-align: center;
+  justify-content: center;
+}
+.frame85 {
+  position: relative;
+  height: 80px;
+  align-self: stretch;
+  width: initial;
+}
+.signUpRow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 340px;
+  align-self: flex-start;
+}
+.signInRow {
+  position: absolute;
+  left: 0;
+  top: 56px;
+  width: 340px;
+  align-self: flex-start;
+}

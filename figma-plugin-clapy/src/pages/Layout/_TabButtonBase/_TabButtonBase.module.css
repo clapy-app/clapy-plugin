@@ -4,6 +4,7 @@
   overflow: hidden;
   transition: background-color 150ms ease-in-out;
   flex-direction: column;
+  position:relative
 }
 .root.active, .root:hover {
   background-color: #eff4ff;
