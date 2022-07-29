@@ -99,13 +99,7 @@ export class StripeController {
   @IsBrowserGet()
   @Post('webhook')
   async webhook(@Body() body: any, @Req() request: Request) {
-    const stripe = new Stripe(env.stripeSecretKey, {
-      apiVersion: '2020-08-27',
-      appInfo: {
-        name: 'clapy-dev/checkout',
-        version: '0.0.1',
-      },
-    });
+    const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     let event: Stripe.Event;
 
     const sig = request.headers['stripe-signature'];

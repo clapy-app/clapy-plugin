@@ -3,5 +3,10 @@
   font-family: sans-serif;
   background-color: white;
   overflow-y: auto;
+
   align-items: flex-end;
+}
+
+.root a {
+  padding: 15px 10px 15px 10px;
 }

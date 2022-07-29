@@ -12,26 +12,32 @@
   height: 12px;
   align-items: center;
 }
+
 .icon {
   width: 100%;
   height: 100%;
 }
+
 .lifeBuoy.lifeBuoy {
   width: 16.75px;
   height: 16.75px;
 }
+
 .icon2 {
   width: 100%;
   height: 100%;
 }
+
 .zap.zap {
   width: 16.75px;
   height: 16.75px;
 }
+
 .icon3 {
   width: 100%;
   height: 100%;
 }
+
 .root {
   width: 537px;
   height: 48px;
@@ -44,10 +50,24 @@
   background-size: auto;
   overflow: hidden;
 }
+
+.styled:focus > div {
+  opacity: 0.9;
+}
+
+.styled:hover > div {
+  opacity: 0.8;
+}
+
+.styled:active > div {
+  opacity: 1;
+}
+
 .frame69 {
   align-items: center;
   gap: 6px;
 }
+
 .contactUsLink {
   color: #fff;
   font-size: 12px;
@@ -60,10 +80,12 @@
   align-items: center;
   white-space: nowrap;
 }
+
 .frame70 {
   align-items: center;
   gap: 6px;
 }
+
 .contactUsLink2 {
   color: #fff;
   font-size: 12px;

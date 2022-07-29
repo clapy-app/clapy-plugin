@@ -16,7 +16,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
-import type { ExtractionProgress } from '../../../common/app-models.js';
+import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
@@ -199,7 +199,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
           if (!data.quotas) {
-            const { data } = await apiGet('stripe/get-user-quota');
+            const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
             dispatchOther(setStripeData(data));
           } else {
             dispatchOther(setStripeData(data));
