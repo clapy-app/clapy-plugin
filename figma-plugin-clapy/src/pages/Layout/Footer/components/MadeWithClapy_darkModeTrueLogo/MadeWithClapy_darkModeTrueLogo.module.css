@@ -2,21 +2,30 @@
   box-shadow: 0px 0.4632352888584137px 0.9264705777168274px 0px #1018280f,
     0px 0.4632352888584137px 1.3897058963775635px 0px #1018281a;
 }
+
 .clapy.clapy {
   width: 6.7639px;
   height: 8.0815px;
 }
+
 .clapy {
   width: 6.7639px;
   height: 8.0815px;
 }
+
 .icon {
   width: 100%;
   height: 100%;
 }
+
 .root {
   border-radius: 6.5882px;
 }
+
+.root:hover {
+  background-color: #ffffff22;
+}
+
 ._ButtonBase {
   align-self: flex-start;
   place-content: center;
@@ -29,12 +38,14 @@
   overflow: hidden;
   box-shadow: 0px 0.8235294222831726px 1.6470588445663452px 0px #1018280d;
 }
+
 .frame66 {
   position: relative;
   width: 68px;
   height: 10px;
   align-items: flex-start;
 }
+
 .text {
   color: #fff;
   font-size: 10.7058px;

@@ -42,7 +42,7 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
           }}
         />
       </a>
-      <a href='https://bit.ly/docs-footer' target={'_blank'} rel='noreferrer'>
+      <a href='https://bit.ly/docs-footer' className={classes.styled} target={'_blank'} rel='noreferrer'>
         <div className={classes.frame69}>
           {props.swap?.lifeBuoy || (
             <LifeBuoy
@@ -59,7 +59,7 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
           )}
         </div>
       </a>
-      <a href='https://bit.ly/clapy-ds-plugin'>
+      <a href='https://bit.ly/clapy-ds-plugin' className={classes.styled}>
         <div className={classes.frame70}>
           {props.swap?.zap || (
             <Zap
