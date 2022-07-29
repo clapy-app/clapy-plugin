@@ -13,11 +13,11 @@ const defaultOptions: Options = {
     preserveAspectRatio: 'xMidYMid slice',
   },
 };
-interface props {
+interface Props {
   height?: number;
   width?: number;
 }
-export const Loading: FC = memo(function Loading(props: props) {
+export const Loading: FC<Props> = memo(function Loading(props) {
   return (
     <Lottie
       options={defaultOptions}
