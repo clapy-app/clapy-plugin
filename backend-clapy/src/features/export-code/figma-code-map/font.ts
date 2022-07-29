@@ -5,7 +5,6 @@ import type { DeclarationPlain } from 'css-tree';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext, ProjectContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
-import { getIndexHtmlPath } from '../create-ts-compiler/load-file-utils-and-paths.js';
 import { addJss, addStyle } from '../css-gen/css-factories-high.js';
 import { parseFontStyle, replaceFontWeightWithLabel } from '../gen-node-utils/fonts-utils.js';
 import { addMUIFonts } from '../tech-integration/mui/mui-add-globals.js';
@@ -166,8 +165,9 @@ export async function addFontsToIndexHtml(projectContext: ProjectContext) {
     fontWeightUsed,
     resources,
     extraConfig: { isFTD },
+    fwConnector,
   } = projectContext;
-  const indexHtmlPath = getIndexHtmlPath(projectContext);
+  const indexHtmlPath = fwConnector.getIndexHtmlPath(projectContext);
   addMUIFonts(projectContext);
   if (fontWeightUsed.size) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())

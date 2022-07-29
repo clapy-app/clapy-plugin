@@ -36,6 +36,7 @@ import {
 import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
+import type { FwNodeOneOrMore } from './frameworks/framework-connectors.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
 import {
   getOrGenClassName,
@@ -532,7 +533,7 @@ function addOverrides(
   intermediateNodes: InstanceContext['intermediateNodes'],
   intermediateComponentContexts: InstanceContext['intermediateComponentContexts'],
   intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'],
-  overrideValue: SwapAst | string | boolean | JsxOneOrMore,
+  overrideValue: SwapAst | string | boolean | FwNodeOneOrMore,
   genAndRegisterPropName: (componentContext: ModuleContext, intermediateNode: SceneNode2) => string,
   compContextField: 'instanceStyleOverrides' | 'instanceSwaps' | 'instanceHidings' | 'instanceTextOverrides',
   nodeFieldForOverrideValue: 'className' | 'swapName' | 'hideProp' | 'textOverrideProp',
@@ -582,7 +583,8 @@ function addOverrides(
           }`,
         );
       }
-      overrideEntry.overrideValue = overrideValue;
+      // TODO to fix once we want to support instance overrides with Angular. The cast should not be required. It assumes we are in React.
+      overrideEntry.overrideValue = overrideValue as string | boolean | JsxOneOrMore | undefined;
     } else {
       let parentOverrideValue = intermediateNodes[i - 1]?.[nodeFieldForOverrideValue];
       if (parentOverrideValue == null) {

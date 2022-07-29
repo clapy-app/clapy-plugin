@@ -1,13 +1,9 @@
 import { exportTemplatesDir } from '../../../root.js';
 import type { ExtraConfig } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { CodeDict, ProjectContext } from '../code.model.js';
+import type { CodeDict } from '../code.model.js';
 import { getCSSExtension } from '../tech-integration/scss/scss-utils.js';
 
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
-
-export function getIndexHtmlPath({ extraConfig: { useZipProjectTemplate: useViteJS } }: ProjectContext) {
-  return useViteJS ? 'index.html' : 'public/index.html';
-}
 
 // Both variables must be consistent.
 export const assetsResourceDir = `public/assets/`;

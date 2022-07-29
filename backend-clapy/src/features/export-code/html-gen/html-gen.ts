@@ -1,20 +1,6 @@
 import { serialize } from 'parse5';
 import type { Attribute } from 'parse5/dist/common/token';
-// import type { Attribute as Attribute0 } from 'parse5/dist/common/token';
 import type { ChildNode, Element, Node, TextNode } from 'parse5/dist/tree-adapters/default';
-
-// import {
-//   // ChildNode as ChildNode0,
-//   // Element as Element0,
-//   // Node as Node0,
-//   // NodeType, // TextNode as TextNode0,
-// } from 'parse5/dist/tree-adapters/default';
-
-// export type ChildNode = ChildNode0;
-// export type Element = Element0;
-// export type TextNode = TextNode0;
-// export type Node = Node0;
-// export type Attribute = Attribute0;
 
 // Documentation: https://parse5.js.org/modules/parse5.html
 // Online playground (AST explorer): http://astexplorer.net/#/1CHlCXc4n4

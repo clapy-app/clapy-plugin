@@ -10,8 +10,13 @@ import type { BlockNode, SceneNode2 } from '../create-ts-compiler/canvas-utils.j
 import { angularConnector } from './angular/index.js';
 import { reactConnector } from './react/index.js';
 
+export type FwNode = ts.JsxChild | ChildNode;
+export type FwNodeOneOrMore = FwNode | FwNode[];
+
 export interface FrameworkConnector {
   templateBaseDirectory: (extraConfig: ExtraConfig) => string;
+  getIndexHtmlPath: (extraConfig: ExtraConfig) => string;
+  enableInstanceOverrides: boolean;
   patchSCSSInFileContents: (resources: CodeDict, extraConfig: ExtraConfig) => void;
   appCompDir: string;
   appBaseCompName: string;
@@ -29,7 +34,14 @@ export interface FrameworkConnector {
     children: (ts.JsxChild | ChildNode)[],
     node: BlockNode,
   ) => JsxOneOrMore | Element | ChildNode[] | undefined;
+  wrapHideAndTextOverride: (
+    context: NodeContext,
+    ast: FwNodeOneOrMore | undefined,
+    node: SceneNode2,
+  ) => FwNodeOneOrMore | undefined;
   createText: (text: string) => ts.JsxText | TextNode;
+  createLinkAttributes: (href: string) => (ts.JsxAttribute | Attribute)[];
+  wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: (ts.JsxAttribute | Attribute)[]) => FwNode;
   writeFileCode: (ast: ReturnType<typeof genAstFromRootNode>, moduleContext: ModuleContext) => void;
   genCompUsage: (projectContext: ProjectContext, node: SceneNode2) => CompAst | Element | undefined;
   writeRootCompFileCode: (appModuleContext: ModuleContext, compAst: CompAst | Element | undefined) => void;

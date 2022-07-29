@@ -21,6 +21,8 @@ const zipDir = `${exportTemplatesDir}/angular-zip`;
 
 export const angularConnector: FrameworkConnector = {
   templateBaseDirectory: extraConfig => (extraConfig.useZipProjectTemplate ? zipDir : csbDir),
+  getIndexHtmlPath: () => 'src/index.html',
+  enableInstanceOverrides: false,
   patchSCSSInFileContents,
   appCompDir: 'src/app',
   appBaseCompName: 'app',
@@ -47,7 +49,15 @@ export const angularConnector: FrameworkConnector = {
     }
     return mkHtmlElement(context.tagName, attributes as Attribute[], children as ChildNode[]);
   },
+  wrapHideAndTextOverride: (context, ast, node) => ast,
   createText: mkHtmlText,
+  createLinkAttributes: href => [
+    mkHtmlAttribute('href', href),
+    mkHtmlAttribute('target', '_blank'),
+    mkHtmlAttribute('rel', 'noreferrer'),
+  ],
+  wrapNode: (node, tagName, attributes) =>
+    mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
     const { cssFiles } = projectContext;

@@ -1,29 +1,20 @@
 import type { DeclarationPlain } from 'css-tree';
 import type { Attribute } from 'parse5/dist/common/token.js';
-import type { TextNode } from 'parse5/dist/tree-adapters/default.js';
 import ts from 'typescript';
 
 import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map.js';
 import { isEmptyObject } from '../../../common/general-utils.js';
 import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { JsxOneOrMore, NodeContext } from '../code.model.js';
+import type { NodeContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import type { FwNode, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
 import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
-import {
-  addCssRule,
-  mkHrefAttr,
-  mkHtmlFullClass,
-  mkIdAttribute,
-  mkNoReferrerAttr,
-  mkTag,
-  mkTargetBlankAttr,
-  mkWrapHideAndTextOverrideAst,
-} from './ts-ast-utils.js';
+import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
@@ -143,13 +134,13 @@ export function genTextAst(node: TextNode2) {
     textSpanWrapperAttributes = attributes;
   }
 
-  let ast: JsxOneOrMore | undefined = [];
+  let ast: FwNodeOneOrMore | undefined = [];
 
   // Prepare AST for each text segment
   for (let i = 0; i < textSegments.length; i++) {
     const segment = textSegments[i];
     const segmentStyles = segmentsStyles[i];
-    let segAst: ts.JsxChild | TextNode = fwConnector.createText(escapeHTML(segment.characters));
+    let segAst: FwNode = fwConnector.createText(escapeHTML(segment.characters));
 
     if (!singleChild) {
       const styleDeclarations = stylesToList(segmentStyles);
@@ -164,27 +155,27 @@ export function genTextAst(node: TextNode2) {
       if (segment.hyperlink) {
         if (segment.hyperlink.type === 'URL') {
           // hyperlink of type NODE not handled for now
-          attributes.push(mkHrefAttr(segment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr());
+          attributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
           useAnchor = true;
         } else {
           warnNode(segment, 'TODO Unsupported hyperlink of type node');
         }
       }
-      segAst = mkTag(useAnchor ? 'a' : 'span', attributes, [segAst]);
+      segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
     }
 
     ast.push(segAst);
   }
 
   if (textSpanWrapperAttributes) {
-    ast = mkTag('span', textSpanWrapperAttributes, ast);
+    ast = fwConnector.wrapNode(ast, 'span', textSpanWrapperAttributes);
   }
 
   if (textBlockStyleAttributes) {
-    ast = mkTag('div', textBlockStyleAttributes, Array.isArray(ast) ? ast : [ast]);
+    ast = fwConnector.wrapNode(ast, 'div', textBlockStyleAttributes);
   }
 
-  ast = mkWrapHideAndTextOverrideAst(context, ast, node);
+  ast = fwConnector.wrapHideAndTextOverride(context, ast, node);
 
   return ast;
 }

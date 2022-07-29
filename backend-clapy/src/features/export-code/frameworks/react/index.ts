@@ -10,6 +10,7 @@ import type {
   CompAst,
   JsxOneOrMore,
   ModuleContext,
+  NodeContext,
   ProjectContext,
   SwapAst,
 } from '../../code.model.js';
@@ -26,16 +27,19 @@ import {
   mkCompFunction,
   mkComponentUsage,
   mkDefaultImportDeclaration,
+  mkHrefAttr,
   mkNamedImportsDeclaration,
+  mkNoReferrerAttr,
   mkPropInterface,
   mkSwapInstanceAndHideWrapper,
   mkTag,
+  mkTargetBlankAttr,
   mkWrapHideAndTextOverrideAst,
 } from '../../gen-node-utils/ts-ast-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
-import type { FrameworkConnector } from '../framework-connectors.js';
+import type { FrameworkConnector, FwNodeOneOrMore } from '../framework-connectors.js';
 import { patchSCSSInFileContents } from './scss.js';
 
 const { factory } = ts;
@@ -45,6 +49,8 @@ const zipDir = `${exportTemplatesDir}/react-vite`;
 
 export const reactConnector: FrameworkConnector = {
   templateBaseDirectory: extraConfig => (extraConfig.useZipProjectTemplate ? zipDir : csbDir),
+  getIndexHtmlPath: ({ useZipProjectTemplate: useViteJS }) => (useViteJS ? 'index.html' : 'public/index.html'),
+  enableInstanceOverrides: true,
   patchSCSSInFileContents,
   appCompDir: 'src',
   appBaseCompName: 'App',
@@ -62,9 +68,13 @@ export const reactConnector: FrameworkConnector = {
   mkSelector: (context, className) => mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
-    return mkWrapHideAndTextOverrideAst(context, ast2, node);
+    return wrapHideAndTextOverride(context, ast2, node);
   },
+  wrapHideAndTextOverride,
   createText: text => factory.createJsxText(text, false),
+  createLinkAttributes: href => [mkHrefAttr(href), mkTargetBlankAttr(), mkNoReferrerAttr()],
+  wrapNode: (node, tagName, attributes) =>
+    mkTag(tagName, attributes as ts.JsxAttribute[], (Array.isArray(node) ? node : [node]) as ts.JsxChild[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, compName, imports } = moduleContext;
     const { cssFiles } = projectContext;
@@ -118,6 +128,10 @@ export const reactConnector: FrameworkConnector = {
     printFileInProject(appModuleContext);
   },
 };
+
+function wrapHideAndTextOverride(context: NodeContext, ast: FwNodeOneOrMore | undefined, node: SceneNode2) {
+  return mkWrapHideAndTextOverrideAst(context, ast as JsxOneOrMore, node);
+}
 
 function createModuleCode(
   moduleContext: ModuleContext,
