@@ -3,7 +3,7 @@ import type { ChildNode, Node } from 'parse5/dist/tree-adapters/default.js';
 
 import { dashCaseToPascalCase, isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
-import type { AngularConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, ProjectContext } from '../../code.model.js';
 import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
@@ -14,16 +14,16 @@ import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
-import { patchSCSSInFileContents } from './scss.js';
 
 const csbDir = `${exportTemplatesDir}/angular-csb`;
 const zipDir = `${exportTemplatesDir}/angular-zip`;
+const indexHtmlPath = 'src/index.html';
 
 export const angularConnector: FrameworkConnector = {
   templateBaseDirectory: extraConfig => (extraConfig.useZipProjectTemplate ? zipDir : csbDir),
-  getIndexHtmlPath: () => 'src/index.html',
+  getIndexHtmlPath: () => indexHtmlPath,
   enableInstanceOverrides: false,
-  patchSCSSInFileContents,
+  patchProjectConfigFiles,
   appCompDir: 'src/app',
   appBaseCompName: 'app',
   // my-rectangle
@@ -86,16 +86,52 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = serializeHtml(compAst as Node);
     projectContext.resources[path] = htmlStr;
 
-    const modulePath = `${compDir}/app.module.ts`;
+    const modulePath = `${compDir}/${baseCompName}.module.ts`;
     projectContext.tsFiles[modulePath] = printTsStatements(getModuleTsAst(appModuleContext));
+
+    const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
+    printFileInProject(appModuleContext, `${prefix}-root`);
   },
 };
 
-function printFileInProject(moduleContext: ModuleContext) {
+export function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: ExtraConfig) {
+  const { resources, cssFiles } = projectContext;
+  const angularJson = JSON.parse(resources['angular.json']);
+  const proj = angularJson.projects[Object.keys(angularJson.projects)[0]];
+  if (extraConfig.scss && extraConfig.useZipProjectTemplate) {
+    proj.schematics = {
+      '@schematics/angular:component': {
+        style: 'scss',
+      },
+    };
+    proj.architect.build.options.inlineStyleLanguage = 'scss';
+    proj.architect.test.options.inlineStyleLanguage = 'scss';
+  }
+
+  const cssExt = getCSSExtension(extraConfig);
+  const resetsCssPath = `src/resets.${cssExt}`;
+  proj.architect.build.options.styles.push(resetsCssPath);
+  proj.architect.test.options.styles.push(resetsCssPath);
+
+  const { prefix } = extraConfig.frameworkConfig as AngularConfig;
+  if (prefix !== 'app') {
+    proj.prefix = prefix;
+    if (!resources[indexHtmlPath]) throw new Error(`index.html not found at ${indexHtmlPath}`);
+    resources[indexHtmlPath] = resources[indexHtmlPath].replace(
+      '<app-root></app-root>',
+      `<${prefix}-root></${prefix}-root>`,
+    );
+    if (!cssFiles[resetsCssPath]) throw new Error(`CSS resets not found at ${resetsCssPath}`);
+    cssFiles[resetsCssPath] = cssFiles[resetsCssPath].replaceAll('app-root', `${prefix}-root`);
+  }
+
+  resources['angular.json'] = JSON.stringify(angularJson, null, 2);
+}
+function printFileInProject(moduleContext: ModuleContext, compNameOverride?: string) {
   const { projectContext, compDir, baseCompName } = moduleContext;
 
   const path = `${compDir}/${baseCompName}.component.ts`;
-  projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext));
+  projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext, compNameOverride));
 }
 
 export function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {

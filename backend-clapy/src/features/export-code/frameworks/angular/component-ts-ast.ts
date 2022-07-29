@@ -6,7 +6,7 @@ import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 
 const { factory } = ts;
 
-export function getComponentTsAst(moduleContext: ModuleContext) {
+export function getComponentTsAst(moduleContext: ModuleContext, compNameOverride?: string) {
   const { projectContext, baseCompName, compName } = moduleContext;
   const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
   const cssExt = getCSSExtension(projectContext.extraConfig);
@@ -46,7 +46,7 @@ export function getComponentTsAst(moduleContext: ModuleContext) {
               [
                 factory.createPropertyAssignment(
                   factory.createIdentifier('selector'),
-                  factory.createStringLiteral(`${prefix}-${baseCompName}`),
+                  factory.createStringLiteral(compNameOverride || `${prefix}-${baseCompName}`),
                 ),
                 factory.createPropertyAssignment(
                   factory.createIdentifier('templateUrl'),

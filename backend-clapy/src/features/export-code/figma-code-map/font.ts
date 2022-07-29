@@ -167,7 +167,7 @@ export async function addFontsToIndexHtml(projectContext: ProjectContext) {
     extraConfig: { isFTD },
     fwConnector,
   } = projectContext;
-  const indexHtmlPath = fwConnector.getIndexHtmlPath(projectContext);
+  const indexHtmlPath = fwConnector.getIndexHtmlPath(projectContext.extraConfig);
   addMUIFonts(projectContext);
   if (fontWeightUsed.size) {
     const familyUrlFragment = Array.from(fontWeightUsed.entries())

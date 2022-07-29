@@ -5,7 +5,7 @@ import type ts from 'typescript';
 
 import type { genAstFromRootNode } from '../3-gen-component.js';
 import type { Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { CodeDict, CompAst, JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../code.model.js';
+import type { CompAst, JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../code.model.js';
 import type { BlockNode, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { angularConnector } from './angular/index.js';
 import { reactConnector } from './react/index.js';
@@ -17,7 +17,7 @@ export interface FrameworkConnector {
   templateBaseDirectory: (extraConfig: ExtraConfig) => string;
   getIndexHtmlPath: (extraConfig: ExtraConfig) => string;
   enableInstanceOverrides: boolean;
-  patchSCSSInFileContents: (resources: CodeDict, extraConfig: ExtraConfig) => void;
+  patchProjectConfigFiles: (projectContext: ProjectContext, extraConfig: ExtraConfig) => void;
   appCompDir: string;
   appBaseCompName: string;
   getBaseCompName: (projectContext: ProjectContext, node: SceneNode2) => string;

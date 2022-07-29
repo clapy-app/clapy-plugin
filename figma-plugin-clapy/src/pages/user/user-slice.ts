@@ -36,8 +36,13 @@ export const userSlice = createSlice({
       state.userMetadata = undefined;
     },
     setStripeData: (state, { payload }: PayloadAction<UserMetadata>) => {
-      (state.userMetadata as UserMetadata).quotas = payload.quotas;
-      (state.userMetadata as UserMetadata).isLicenceExpired = payload.isLicenceExpired;
+      // Tmp to allow the UI to be displayed if userMetadata is true
+      if (state.userMetadata && state.userMetadata !== true) {
+        state.userMetadata.quotas = payload.quotas;
+        state.userMetadata.isLicenceExpired = payload.isLicenceExpired;
+      }
+      // (state.userMetadata as UserMetadata).quotas = payload.quotas;
+      // (state.userMetadata as UserMetadata).isLicenceExpired = payload.isLicenceExpired;
     },
   },
 });

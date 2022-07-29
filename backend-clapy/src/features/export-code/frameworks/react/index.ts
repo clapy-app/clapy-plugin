@@ -40,7 +40,6 @@ import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwNodeOneOrMore } from '../framework-connectors.js';
-import { patchSCSSInFileContents } from './scss.js';
 
 const { factory } = ts;
 
@@ -49,9 +48,9 @@ const zipDir = `${exportTemplatesDir}/react-vite`;
 
 export const reactConnector: FrameworkConnector = {
   templateBaseDirectory: extraConfig => (extraConfig.useZipProjectTemplate ? zipDir : csbDir),
-  getIndexHtmlPath: ({ useZipProjectTemplate: useViteJS }) => (useViteJS ? 'index.html' : 'public/index.html'),
+  getIndexHtmlPath: ({ useZipProjectTemplate }) => (useZipProjectTemplate ? 'index.html' : 'public/index.html'),
   enableInstanceOverrides: true,
-  patchSCSSInFileContents,
+  patchProjectConfigFiles: () => {},
   appCompDir: 'src',
   appBaseCompName: 'App',
   // MyRectangle

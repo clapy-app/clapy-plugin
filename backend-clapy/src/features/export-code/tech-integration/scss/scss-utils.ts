@@ -2,7 +2,6 @@ import { basename } from 'path';
 
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, ProjectContext } from '../../code.model.js';
-import type { FrameworkConnector } from '../../frameworks/framework-connectors.js';
 
 const scssDevDependencies = {
   sass: '^1.53.0',
@@ -19,18 +18,12 @@ export function getCSSExtension(extraConfig: ExtraConfig) {
   return extraConfig.scss ? 'scss' : 'css';
 }
 
-export function updateFilesAndContentForScss(
-  fwConnector: FrameworkConnector,
-  extraConfig: ExtraConfig,
-  tsFiles: CodeDict,
-  cssFiles: CodeDict,
-  resources: CodeDict,
-) {
+export function updateFilesAndContentForScss(extraConfig: ExtraConfig, projectContext: ProjectContext) {
+  const { tsFiles, cssFiles, resources } = projectContext;
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);
   }
-  fwConnector.patchSCSSInFileContents(resources, extraConfig);
 }
 
 function renameTemplateSCSSFiles(cssFiles: CodeDict) {

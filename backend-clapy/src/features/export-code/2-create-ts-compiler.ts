@@ -57,7 +57,7 @@ export async function exportCode(
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   if (!extraConfig.frameworkConfig) extraConfig.frameworkConfig = {};
   if (extraConfig.framework === 'angular' && !(extraConfig.frameworkConfig as AngularConfig).prefix) {
-    (extraConfig.frameworkConfig as AngularConfig).prefix = 'app';
+    (extraConfig.frameworkConfig as AngularConfig).prefix = 'cl';
   }
 
   const parent = p as ParentNode | Nil;
@@ -82,15 +82,12 @@ export async function exportCode(
   }
   perfMeasure('a');
 
+  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
+  perfMeasure('b1');
+
   // Initialize the project template with base files
   let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
   let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
-  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
-  updateFilesAndContentForScss(fwConnector, extraConfig, tsFiles, cssFiles, resources);
-  perfMeasure('b');
-
-  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
-  perfMeasure('b2');
 
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -117,6 +114,11 @@ export async function exportCode(
     newDevDependencies: {},
     fwConnector,
   };
+
+  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
+  updateFilesAndContentForScss(extraConfig, projectContext);
+  fwConnector.patchProjectConfigFiles(projectContext, extraConfig);
+  perfMeasure('b2');
 
   const { appCompDir, appBaseCompName } = fwConnector;
 
