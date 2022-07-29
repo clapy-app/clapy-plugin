@@ -93,7 +93,6 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
     setAccessToken(accessToken);
     _tokenType = tokenType;
     await fetchUserMetadata();
-
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
   } catch (err) {

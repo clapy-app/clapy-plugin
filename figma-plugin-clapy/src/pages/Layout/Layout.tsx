@@ -65,7 +65,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     );
   }
 
-  if (stripeLoading && stateChecking)
+  if (stripeLoading || stateChecking)
     return (
       <div className={loginHomeClasses.content}>
         <Loading />

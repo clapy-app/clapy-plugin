@@ -7,6 +7,7 @@ import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
+import { StripeService } from '../stripe/stripe.service.js';
 import { UserService } from './user.service.js';
 import type { UserMetadata, UserMetaUsage } from './user.utils.js';
 import {
@@ -19,7 +20,10 @@ import {
 
 @Controller('user')
 export class UserController {
-  constructor(@Inject(UserService) private userService: UserService) {}
+  constructor(
+    @Inject(UserService) private userService: UserService,
+    @Inject(StripeService) private stripeService: StripeService,
+  ) {}
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
@@ -28,6 +32,8 @@ export class UserController {
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);
     }
+    const user = (request as any).user;
+
     const userId = (request as any).user.sub;
     const auth0User = await getAuth0User(userId);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
@@ -40,7 +46,10 @@ export class UserController {
       userMetadata.firstName = firstName;
       userMetadata.lastName = lastName;
     }
-
+    userMetadata.quotas = await this.userService.getQuotaCount(userId);
+    userMetadata.isLicenceExpired = await this.stripeService.isLicenceExpired(
+      user['https://clapy.co/licence-expiration-date'],
+    );
     perfMeasure();
     return userMetadata;
   }

@@ -129,11 +129,13 @@ export class StripeController {
           const session = event.data.object as any;
           const { current_period_start, current_period_end } = session;
           const customer = await stripe.customers.retrieve(session.customer);
-          const { auth0Id } = customer!.metadata;
-          await updateAuth0UserMetadata(auth0Id, {
-            licenceStartDate: current_period_start,
-            licenceExpirationDate: current_period_end,
-          });
+          if (!customer.deleted) {
+            const { auth0Id } = customer!.metadata;
+            await updateAuth0UserMetadata(auth0Id, {
+              licenceStartDate: current_period_start,
+              licenceExpirationDate: current_period_end,
+            });
+          }
         }
         break;
       case 'customer.deleted': {
@@ -149,7 +151,7 @@ export class StripeController {
         const session = event.data.object as any;
         const { current_period_start, current_period_end, canceled_at } = session;
         const customer = await stripe.customers.retrieve(session.customer);
-        if (customer!.metadata?.auth0Id) {
+        if (!customer.deleted && customer!.metadata?.auth0Id) {
           const { auth0Id } = customer!.metadata;
           await updateAuth0UserMetadata(auth0Id, {
             licenceStartDate: current_period_start,

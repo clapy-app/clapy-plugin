@@ -5,7 +5,7 @@ import type { Repository } from 'typeorm';
 
 import { appConfig } from '../../env-and-config/app-config.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
-import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import type { AccessTokenDecoded } from './user.utils.js';
 
@@ -17,6 +17,15 @@ export class UserService {
     @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
   ) {}
 
+  checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed = async (
+    figmaNode: ExportCodePayload,
+    user: AccessTokenDecoded,
+  ) => {
+    const isNoCodesandboxUser = user?.['https://clapy.co/roles']?.includes('noCodesandbox');
+    if (isNoCodesandboxUser && (figmaNode.extraConfig.output === 'csb' || !figmaNode.extraConfig.zip)) {
+      throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
+    }
+  };
   getQuotaCount = async (userId: string) => {
     let result = 0;
     const csbNumber = await this.generationHistoryRepository
