@@ -44,6 +44,8 @@ export interface UserMetadata {
   licenceStartDate?: number | null;
   licenceExpirationDate?: number | null;
   quotas?: number;
+  quotasMax?: number;
+  isLicenceExpired?: boolean;
 }
 
 export interface UserMetaUsage {
@@ -131,3 +133,8 @@ export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
   const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage || {};
   return !components && !designSystem && !landingPages && !(other && otherDetail);
 }
+
+export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
+  user?.['https://clapy.co/roles']?.includes('noCodesandbox');
+export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
+  user?.['https://clapy.co/roles']?.includes('increasedQuota');
