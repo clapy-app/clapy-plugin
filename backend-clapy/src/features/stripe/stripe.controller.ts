@@ -70,9 +70,7 @@ export class StripeController {
 
     const quotas = await this.userService.getQuotaCount(userId);
     const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-    const isLicenceExpired = await this.stripeService.isLicenceExpired(
-      user['https://clapy.co/licence-expiration-date'],
-    );
+    const isLicenceExpired = this.stripeService.isLicenceExpired(user);
     return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
   }
   @Get('/customer-portal')

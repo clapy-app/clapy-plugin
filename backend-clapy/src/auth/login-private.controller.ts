@@ -23,7 +23,7 @@ export class LoginPrivateController {
     const userId = (request as any).user.sub;
 
     const user = (request as any).user as AccessTokenDecoded;
-    const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licence-expiration-date']);
+    const isLicenceExpired = this.stripeService.isLicenceExpired(user);
     const isUserQualified = hasRoleIncreasedQuota(user);
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);

@@ -50,7 +50,7 @@ export class UserService {
 
   checkUserOrThrow = async (user: AccessTokenDecoded) => {
     const userId = user.sub;
-    const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licence-expiration-date']);
+    const isLicenceExpired = this.stripeService.isLicenceExpired(user);
     const isUserQualified = hasRoleIncreasedQuota(user);
     const userQuotaCount = await this.getQuotaCount(userId);
     const checkUserQuota = isUserQualified
@@ -77,7 +77,7 @@ export class UserService {
       await this.generationHistoryRepository.save(generationHistory);
       res.quotas = await this.getQuotaCount(userId);
       res.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-      res.isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licence-expiration-date']);
+      res.isLicenceExpired = this.stripeService.isLicenceExpired(user);
       // TODO: si une erreur survient, ne pas bloquer l'exécution du code et envoyer la réponse à l'utilisateur dans ce cas.
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
