@@ -303,7 +303,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             <Tooltip
               title={
                 isNoCodeSandboxUser
-                  ? '"noCodesandbox" role attributed, zip is enabled by default with security to not be able to upload to codesandbox for preview.'
+                  ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
                   : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
               }
               disableInteractive
