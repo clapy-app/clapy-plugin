@@ -23,6 +23,7 @@ export class StripeController {
   @Get('/checkout')
   async stripeCheckout(@Req() request: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${from}`;
+    const user = (request as any).user;
     const userId = (request as any).user.sub;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
@@ -42,6 +43,10 @@ export class StripeController {
       });
     } else {
       customer = customerExist.data[0];
+    }
+
+    if (!this.stripeService.isLicenceInactive(user)) {
+      throw new Error('You are already a paid user.');
     }
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -70,7 +75,7 @@ export class StripeController {
 
     const quotas = await this.userService.getQuotaCount(userId);
     const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-    const isLicenceExpired = this.stripeService.isLicenceExpired(user);
+    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
     return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
   }
   @Get('/customer-portal')

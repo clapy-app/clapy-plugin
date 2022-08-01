@@ -8,7 +8,7 @@ import { checkSessionComplete } from '../../../../../core/auth/auth-service.js';
 import { dispatchOther } from '../../../../../core/redux/redux.utils.js';
 import { env } from '../../../../../environment/env.js';
 import { setStripeData } from '../../../../user/user-slice.js';
-import { startLoadingStripe, stopLoadingStripe } from '../../../stripe-slice.js';
+import { showPaymentConfirmation, startLoadingStripe, stopLoadingStripe } from '../../../stripe-slice.js';
 import { _ButtonBase } from '../_ButtonBase/_ButtonBase';
 import classes from './ButtonUpgrade.module.css';
 
@@ -37,6 +37,7 @@ export const ButtonUpgrade: FC<Props> = memo(function ButtonUpgrade(props = {}) 
         } catch (e) {
           handleError(e);
         } finally {
+          dispatchOther(showPaymentConfirmation());
           dispatchOther(stopLoadingStripe());
         }
         eventSource.close();

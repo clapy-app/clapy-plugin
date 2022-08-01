@@ -1,0 +1,4 @@
+-- Could not auto-generate a down migration.
+-- Please write an appropriate down migration for the SQL below:
+-- alter table "clapy"."generation_history" add column "is_free_user" boolean
+--  not null default 'true';

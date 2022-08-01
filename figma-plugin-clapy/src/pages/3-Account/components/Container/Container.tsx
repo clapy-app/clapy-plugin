@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
+import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
+import { selectPaymentConfirmation } from '../../stripe-slice.js';
 import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import backGroundImage from './backgroundImage.jpeg';
@@ -35,9 +37,15 @@ interface Props {
     loader?: string;
   };
 }
+
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
+  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
   const isFreeUser = useSelector(selectIsFreeUser);
+  const isPaymentDone = useSelector(selectPaymentConfirmation);
+
+  if (isPaymentDone) {
+    return <PaymentConfirmation />;
+  }
   if (typeof picture === 'undefined') {
     return (
       <div className={`${classes.loader} ${props.classes?.loader || ''}`}>
