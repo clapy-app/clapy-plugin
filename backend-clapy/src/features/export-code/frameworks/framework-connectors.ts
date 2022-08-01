@@ -26,6 +26,11 @@ export interface FrameworkConnector {
   getCompDirName: (baseCompName: string) => string;
   getCompFileName: (compDir: string) => string;
   cssFileNameMiddlePart: string;
+  // Both variables must be consistent.
+  assetsResourceDir: string;
+  // Here, '', '/' or '.' points to the public directory.
+  assetsCssBaseUrl: string;
+  webpackIgnoreInCSS: boolean;
   addScssPackages: (newDevDependencies: Dict<string>) => void;
   registerSvgForWrite: (context: NodeContext, svgContent: string) => string;
   createClassAttribute: (node: SceneNode2, className: string) => FwAttr;

@@ -5,11 +5,6 @@ import { getCSSExtension } from '../tech-integration/scss/scss-utils.js';
 
 export const frameworksTemplateDir = `${exportTemplatesDir}/frameworks`;
 
-// Both variables must be consistent.
-export const assetsResourceDir = `public/assets/`;
-// Here, '', '/' or '.' points to the public directory.
-export const assetsCssBaseUrl = 'assets/';
-
 export const reactRootInMemory = '';
 
 export function separateTsCssAndResources(files: CodeDict, extraConfig: ExtraConfig) {

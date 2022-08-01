@@ -1,7 +1,6 @@
 import type { NodeContext } from '../code.model.js';
 import { genUniqueName } from '../gen-node-utils/gen-unique-name-utils.js';
 import type { BaseNode2 } from './canvas-utils.js';
-import { assetsCssBaseUrl, assetsResourceDir } from './load-file-utils-and-paths.js';
 
 export function writeAsset(context: NodeContext, node: BaseNode2, extension: string, content: string) {
   const {
@@ -15,8 +14,8 @@ export function writeAsset(context: NodeContext, node: BaseNode2, extension: str
   // bgImages.push(`url("../../${assetsDirName}/${imageFileName}")`);
 
   // Write image in public directory - the codesandbox workaround
-  projectContext.resources[`${assetsResourceDir}${imageFileName}`] = content;
+  projectContext.resources[`${projectContext.fwConnector.assetsResourceDir}${imageFileName}`] = content;
 
-  const assetCssUrl = `${assetsCssBaseUrl}${imageFileName}`;
+  const assetCssUrl = `${projectContext.fwConnector.assetsCssBaseUrl}${imageFileName}`;
   return assetCssUrl;
 }

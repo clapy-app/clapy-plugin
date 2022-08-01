@@ -70,6 +70,9 @@ export const reactConnector: FrameworkConnector = {
   // MyRectangle.tsx
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
+  assetsResourceDir: 'public/assets/',
+  assetsCssBaseUrl: 'assets/',
+  webpackIgnoreInCSS: true,
   addScssPackages: (newDevDependencies: Dict<string>) => {
     Object.assign(newDevDependencies, scssDevDependencies);
   },
