@@ -17,7 +17,7 @@ import type {
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
-import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
+import { diagnoseFormatTsFiles, prepareCssFiles, prepareHtmlFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
 import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
 import { readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
@@ -159,6 +159,8 @@ export async function exportCode(
   perfMeasure('g');
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
+  await prepareHtmlFiles(resources);
+  perfMeasure('h2');
 
   await addFontsToIndexHtml(projectContext);
   perfMeasure('i');

@@ -1,5 +1,6 @@
 import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
+import parserHtml from 'prettier/parser-html.js';
 import parserCss from 'prettier/parser-postcss.js';
 import parserTypeScript from 'prettier/parser-typescript.js';
 import prettier from 'prettier/standalone.js';
@@ -101,14 +102,41 @@ export async function prepareCssFiles(cssFiles: CodeDict) {
 }
 
 export async function formatCssFile(path: string, content: string) {
-  if (flags.formatCode) {
-    // Prettier
-    return prettier.format(content, {
-      ...(await getPrettierConfig()),
-      plugins: [parserCss],
-      filepath: path,
-    });
-  } else {
+  if (!flags.formatCode) {
     return content;
   }
+  // Prettier
+  return prettier.format(content, {
+    ...(await getPrettierConfig()),
+    plugins: [parserCss],
+    filepath: path,
+  });
+}
+
+export async function prepareHtmlFiles(htmlFiles: CodeDict) {
+  for (const [path, content] of Object.entries(htmlFiles)) {
+    if (flags.formatCode && path.startsWith('src') && path.endsWith('.html')) {
+      try {
+        if (content == null) {
+          throw new Error(`Undefined content for file in htmlFiles at path ${path}`);
+        }
+        htmlFiles[path] = await formatHtmlFile(path, content);
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    }
+  }
+}
+
+export async function formatHtmlFile(path: string, content: string) {
+  if (!flags.formatCode) {
+    return content;
+  }
+  // Prettier
+  return prettier.format(content, {
+    ...(await getPrettierConfig()),
+    plugins: [parserHtml],
+    filepath: path,
+  });
 }
