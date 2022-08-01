@@ -10,7 +10,7 @@ import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-import { getAuth0User, updateAuth0UserMetadata } from '../user/user.utils.js';
+import { getAuth0User, hasRoleIncreasedQuota, updateAuth0UserMetadata } from '../user/user.utils.js';
 import { StripeService } from './stripe.service.js';
 
 @Controller('stripe')
@@ -66,12 +66,14 @@ export class StripeController {
   async getUserQuotas(@Req() request: Request) {
     const userId = (request as any).user.sub;
     const user = (request as any).user as AccessTokenDecoded;
+    const isUserQualified = hasRoleIncreasedQuota(user);
 
     const quotas = await this.userService.getQuotaCount(userId);
+    const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
     const isLicenceExpired = await this.stripeService.isLicenceExpired(
       user['https://clapy.co/licence-expiration-date'],
     );
-    return { quotas: quotas, isLicenceExpired: isLicenceExpired };
+    return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
   }
   @Get('/customer-portal')
   async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {

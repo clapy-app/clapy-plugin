@@ -41,7 +41,6 @@ export const authSlice = createSlice({
     },
     setCheckingSessionState: (state, { payload }: PayloadAction<boolean>) => {
       state.isSessionChecking = payload;
-      console.log(payload);
     },
     setTokenDecoded: (state, { payload }: PayloadAction<AccessTokenDecoded | Nil>) => {
       state.tokenDecoded = payload;

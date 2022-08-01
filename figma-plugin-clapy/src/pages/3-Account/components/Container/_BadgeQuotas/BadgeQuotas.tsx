@@ -2,9 +2,8 @@ import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { appConfig } from '../../../../../common/app-config.js';
 import { selectIncreasedQuotaUser } from '../../../../../core/auth/auth-slice.js';
-import { selectUserQuota } from '../../../../user/user-slice.js';
+import { selectUserMaxQuota, selectUserQuota } from '../../../../user/user-slice.js';
 import classes from './BadgeQuotas.module.css';
 
 interface Props {
@@ -15,32 +14,30 @@ interface Props {
   };
 }
 
-function calcColor(quota: number | undefined, isQualified: boolean | undefined) {
-  if (quota !== 0 && quota === undefined) {
+function calcColor(quota: number | undefined, quotaMax: number | undefined, isQualified: boolean | undefined) {
+  if ((quota !== 0 && quota === undefined) || (quotaMax !== 0 && quotaMax === undefined)) {
     return '';
   }
+  const threeQuartersOfMax = Math.floor((quotaMax * 3) / 4);
   if (isQualified) {
-    const isCloseToQuota = quota < 25 ? classes.yellow : classes.red;
-    return quota < 15 ? classes.green : isCloseToQuota;
+    const isCloseToQuota = quota < quotaMax ? classes.yellow : classes.red;
+    return quota < threeQuartersOfMax ? classes.green : isCloseToQuota;
   } else {
-    const isCloseToQuota = quota < 3 ? classes.yellow : classes.red;
-    return quota < 2 ? classes.green : isCloseToQuota;
+    const isCloseToQuota = quota < quotaMax ? classes.yellow : classes.red;
+    return quota < threeQuartersOfMax ? classes.green : isCloseToQuota;
   }
 }
 
 export const BadgeQuotas: FC<Props> = memo(function BadgeQuotas(props = {}) {
   const quota = useSelector(selectUserQuota);
+  const quotaMax = useSelector(selectUserMaxQuota);
+
   const isQualifiedUser = useSelector(selectIncreasedQuotaUser);
 
   return (
-    <div className={`${classes.root} ${props.className || ''} ${calcColor(quota, isQualifiedUser)}`}>
+    <div className={`${classes.root} ${props.className || ''} ${calcColor(quota, quotaMax, isQualifiedUser)}`}>
       <div className={`${classes.text} ${props.classes?.text || ''}`}>
-        <p>
-          {' '}
-          {`Code generation quota: ${quota} / ${
-            isQualifiedUser ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota
-          }`}
-        </p>
+        <p> {`Code generation quota: ${quota} / ${quotaMax}`}</p>
       </div>
     </div>
   );

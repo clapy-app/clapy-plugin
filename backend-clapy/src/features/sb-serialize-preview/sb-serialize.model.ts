@@ -415,6 +415,7 @@ export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'ma
 export interface CSBResponse {
   sandbox_id: string;
   quotas: number;
+  quotasMax: number;
   isLicenceExpired?: boolean;
 }
 

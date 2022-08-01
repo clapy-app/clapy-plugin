@@ -15,6 +15,7 @@ import type {
   ExportCodePayload,
 } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
+import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
 import { writeSVGReactComponents } from './7-write-svgr.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
@@ -194,7 +195,7 @@ export async function exportCode(
     );
   }
   if (!env.isDev || uploadToCsb) {
-    const isNoCodesandboxUser = user?.['https://clapy.co/roles']?.includes('noCodesandbox');
+    const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (extraConfig.output === 'zip') {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);

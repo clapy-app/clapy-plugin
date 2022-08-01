@@ -3,7 +3,7 @@ import type { Request } from 'express';
 
 import { wait } from '../../common/general-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
-import { flags } from '../../env-and-config/app-config.js';
+import { appConfig, flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
@@ -15,6 +15,7 @@ import {
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
+  hasRoleIncreasedQuota,
   updateAuth0UserMetadata,
 } from './user.utils.js';
 
@@ -33,10 +34,12 @@ export class UserController {
       await wait(3000);
     }
     const user = (request as any).user;
-
     const userId = (request as any).user.sub;
+
     const auth0User = await getAuth0User(userId);
+    const isUserQualified = hasRoleIncreasedQuota(user);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
+
     userMetadata.picture = auth0User.picture;
     userMetadata.email = auth0User.email;
     userMetadata.quotas = await this.userService.getQuotaCount(userId);
@@ -46,6 +49,8 @@ export class UserController {
       userMetadata.firstName = firstName;
       userMetadata.lastName = lastName;
     }
+    userMetadata.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
+
     userMetadata.quotas = await this.userService.getQuotaCount(userId);
     userMetadata.isLicenceExpired = await this.stripeService.isLicenceExpired(
       user['https://clapy.co/licence-expiration-date'],
