@@ -38,7 +38,6 @@ export const userSlice = createSlice({
     setStripeData: (state, { payload }: PayloadAction<UserMetadata>) => {
       // Tmp to allow the UI to be displayed if userMetadata is true
       if (state.userMetadata && state.userMetadata !== true) {
-        console.log(state.userMetadata);
         state.userMetadata.quotas = payload.quotas;
         state.userMetadata.quotasMax = payload.quotasMax;
 
