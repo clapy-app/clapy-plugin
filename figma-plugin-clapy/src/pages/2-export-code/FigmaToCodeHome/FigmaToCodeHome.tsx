@@ -115,7 +115,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     try {
       setIsLoading(true);
       setSandboxId('loading');
-      track('gen-code', 'start');
+      track('gen-code', 'start', userSettings);
       perfReset();
 
       // Extract the Figma configuration
@@ -143,11 +143,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setProgress({ stepId: 'extractImages', stepNumber: 6 });
       const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
       perfMeasure(`Images extracted in`);
-      let output = 'csb' as 'zip' | 'csb' | undefined;
-      if (isNoCodeSandboxUser) {
-        output = 'zip';
-      } else {
-      }
+
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
         const nodes: ExportCodePayload = {
@@ -202,7 +198,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         if (!env.isDev || sendToApi) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
 
-          //! this if block is necessary for users with role "noCodesandbox" dont modify unless you know what you are doing.
+          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
           if (isNoCodeSandboxUser) {
             nodes.extraConfig.zip = true;
             nodes.extraConfig.output = 'zip';
@@ -251,7 +247,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setIsLoading(false);
       setProgress(undefined);
     }
-  }, [isAlphaDTCUser]);
+  }, [isAlphaDTCUser, isNoCodeSandboxUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
@@ -301,7 +297,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     defaultValue={defaultSettings.framework}
                   >
                     <FormControlLabel value='react' control={<Radio />} label='React' />
-                    <FormControlLabel value='angular' control={<Radio />} label='Angular' />
+                    <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
                   </RadioGroup>
                 </FormControl>
               </Tooltip>
