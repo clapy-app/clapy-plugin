@@ -287,21 +287,19 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         </AccordionSummary>
         <AccordionDetails>
           <FormGroup>
-            {env.isDev && (
-              <Tooltip title='Framework' disableInteractive placement='bottom-start'>
-                <FormControl disabled={isLoading}>
-                  <RadioGroup
-                    row
-                    name='framework'
-                    onChange={updateAdvancedOption as RadioGroupProps['onChange']}
-                    defaultValue={defaultSettings.framework}
-                  >
-                    <FormControlLabel value='react' control={<Radio />} label='React' />
-                    <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
-                  </RadioGroup>
-                </FormControl>
-              </Tooltip>
-            )}
+            <Tooltip title='Framework' disableInteractive placement='bottom-start'>
+              <FormControl disabled={isLoading}>
+                <RadioGroup
+                  row
+                  name='framework'
+                  onChange={updateAdvancedOption as RadioGroupProps['onChange']}
+                  defaultValue={defaultSettings.framework}
+                >
+                  <FormControlLabel value='react' control={<Radio />} label='React' />
+                  <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
+                </RadioGroup>
+              </FormControl>
+            </Tooltip>
             <Tooltip
               title={
                 isNoCodeSandboxUser
