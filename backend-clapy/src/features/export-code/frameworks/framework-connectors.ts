@@ -26,6 +26,7 @@ export interface FrameworkConnector {
   getCompDirName: (baseCompName: string) => string;
   getCompFileName: (compDir: string) => string;
   cssFileNameMiddlePart: string;
+  addScssPackages: (newDevDependencies: Dict<string>) => void;
   registerSvgForWrite: (context: NodeContext, svgContent: string) => string;
   createClassAttribute: (node: SceneNode2, className: string) => FwAttr;
   createClassAttributeSimple: (className: string) => FwAttr;

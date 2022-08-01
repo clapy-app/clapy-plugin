@@ -39,6 +39,7 @@ export const angularConnector: FrameworkConnector = {
   // my-rectangle.component.ts
   getCompFileName: compDir => `${compDir}.component.ts`,
   cssFileNameMiddlePart: 'component',
+  addScssPackages: () => {},
   registerSvgForWrite,
   createClassAttribute(node, className) {
     const className2 = className || node.className!;

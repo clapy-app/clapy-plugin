@@ -3,14 +3,14 @@ import { basename } from 'path';
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, ProjectContext } from '../../code.model.js';
 
-const scssDevDependencies = {
+export const scssDevDependencies = {
   sass: '^1.53.0',
 };
 
 export function addScssPackage(projectContext: ProjectContext) {
-  const { extraConfig, newDevDependencies } = projectContext;
+  const { extraConfig, newDevDependencies, fwConnector } = projectContext;
   if (extraConfig.scss) {
-    Object.assign(newDevDependencies, scssDevDependencies);
+    fwConnector.addScssPackages(newDevDependencies);
   }
 }
 

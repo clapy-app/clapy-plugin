@@ -46,7 +46,7 @@ import {
 } from '../../gen-node-utils/ts-ast-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
-import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
+import { getCSSExtension, scssDevDependencies } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr, FwNodeOneOrMore } from '../framework-connectors.js';
 
 const { factory } = ts;
@@ -70,6 +70,9 @@ export const reactConnector: FrameworkConnector = {
   // MyRectangle.tsx
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
+  addScssPackages: (newDevDependencies: Dict<string>) => {
+    Object.assign(newDevDependencies, scssDevDependencies);
+  },
   registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
