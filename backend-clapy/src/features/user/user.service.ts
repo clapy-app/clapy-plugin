@@ -50,7 +50,12 @@ export class UserService {
   checkUserOrThrow = async (user: AccessTokenDecoded) => {
     const userId = user.sub;
     const isLicenceExpired = this.stripeService.isLicenceExpired(user['https://clapy.co/licence-expiration-date']);
-    if ((await this.getQuotaCount(userId)) >= appConfig.codeGenFreeQuota && isLicenceExpired) {
+    const isUserQualified = user?.['https://clapy.co/roles']?.includes('increasedQuota');
+    const userQuotaCount = await this.getQuotaCount(userId);
+    const checkUserQuota = isUserQualified
+      ? userQuotaCount >= appConfig.codeGenQualifiedQuota
+      : userQuotaCount >= appConfig.codeGenFreeQuota;
+    if (checkUserQuota && isLicenceExpired) {
       throw new Error('Free code generations used up, you can get more by having a call with us or pay a licence');
     }
   };

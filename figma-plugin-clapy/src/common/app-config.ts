@@ -1,6 +1,8 @@
 import { env } from '../environment/env';
 
 export const appConfig = {
+  codeGenFreeQuota: 3,
+  codeGenQualifiedQuota: 25,
   variantsGridGap: 20, // in px
 };
 

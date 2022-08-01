@@ -23,6 +23,7 @@ const dev = {
   auth0BackendClientId: 'gTS80LWjCx2pzwWZ0pLyBVK6XD6fVgF3',
   auth0PaidRole: 'rol_26j83lBEgJ515Zgi',
   noCodesandbox: 'rol_BUidEjZyPG4rSKbo',
+  quotaQualifiedUser: 'rol_OWZ7NDr7y0RaOjxs',
   baseUrl: 'http://localhost:4141',
 };
 
@@ -32,6 +33,7 @@ const staging = {
   auth0BackendClientId: 'todo',
   auth0PaidRole: 'todo',
   noCodesandbox: 'todo',
+  quotaQualifiedUser: 'todo',
   baseUrl: 'todo',
 };
 
@@ -41,6 +43,7 @@ const prod = {
   auth0BackendClientId: 'BSeUsfhXeYXBUSRH1zfsxftkc4e43vj1',
   auth0PaidRole: 'rol_6yESsWlMyCLzY6Lz',
   noCodesandbox: 'rol_ibgW1tUWdfh3QF5K',
+  quotaQualifiedUser: 'rol_295x2dGjK2lyFMmt',
   baseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
 };
 
