@@ -13,7 +13,7 @@ export class CodeController {
   async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true, @Req() request: Request) {
     const user: AccessTokenDecoded = (request as any).user;
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
-    await this.userService.checkUserOrThrow(user);
+    // await this.userService.checkUserOrThrow(user);
     const res = await exportCode(figmaNode, uploadToCsb, user);
     await this.userService.saveInHistoryUserCodeGeneration(figmaNode.extraConfig.output, res, user);
     return res;
