@@ -1,7 +1,7 @@
 import type { Attribute } from 'parse5/dist/common/token.js';
 import type { ChildNode, Node } from 'parse5/dist/tree-adapters/default.js';
 
-import { dashCaseToPascalCase, isNonEmptyObject } from '../../../../common/general-utils.js';
+import { isNonEmptyObject } from '../../../../common/general-utils.js';
 import { env } from '../../../../env-and-config/env.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
@@ -9,7 +9,12 @@ import type { ModuleContext, NodeContext, ProjectContext } from '../../code.mode
 import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
-import { genIconComponentImportName, getComponentName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
+import {
+  dashCaseToPascalCase,
+  genIconComponentImportName,
+  getComponentName,
+  TextCase,
+} from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
@@ -80,7 +85,8 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    if (isNonEmptyObject(css.children)) {
+    const hasCss = isNonEmptyObject(css.children);
+    if (hasCss) {
       const cssExt = getCSSExtension(projectContext.extraConfig);
       const cssFileName = `${baseCompName}.component.${cssExt}`;
       cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
@@ -88,7 +94,7 @@ export const angularConnector: FrameworkConnector = {
       // imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
     }
 
-    printFileInProject(moduleContext);
+    printFileInProject(moduleContext, undefined, hasCss);
   },
   genCompUsage,
   createSvgTag,
@@ -155,7 +161,7 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
   const { moduleContext } = context;
   const { projectContext } = moduleContext;
 
-  const svgPathVarName = genIconComponentImportName(context, TextCase.Dash);
+  const svgPathVarName = genIconComponentImportName(context, TextCase.Dash, true);
 
   // For Angular, the SVG is saved as an asset and will be used in an img tag as href. No need to wrap into a component, as we do in React.
   projectContext.resources[`${assetsDir}/${svgPathVarName}.svg`] = svgContent;
@@ -163,11 +169,11 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
   return svgPathVarName;
 }
 
-function printFileInProject(moduleContext: ModuleContext, compNameOverride?: string) {
+function printFileInProject(moduleContext: ModuleContext, compNameOverride?: string, hasCss?: boolean) {
   const { projectContext, compDir, baseCompName } = moduleContext;
 
   const path = `${compDir}/${baseCompName}.component.ts`;
-  projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext, compNameOverride));
+  projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext, compNameOverride, hasCss));
 }
 
 function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {

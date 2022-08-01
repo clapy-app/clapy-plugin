@@ -66,11 +66,3 @@ export function renameField(object: Dict<any>, oldKey: string, newKey: string) {
   // Change the key of a field. Src: https://stackoverflow.com/a/50101979/4053349
   delete Object.assign(object, { [newKey]: object[oldKey] })[oldKey];
 }
-
-export function dashCaseToPascalCase(text: string) {
-  return text.replace(/(^\w|-\w)/g, clearAndUpper);
-}
-
-function clearAndUpper(text: string) {
-  return text.replace(/-/, '').toUpperCase();
-}

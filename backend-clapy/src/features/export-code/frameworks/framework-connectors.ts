@@ -1,6 +1,6 @@
 import type { ClassSelector, DeclarationPlain, Raw } from 'css-tree';
 import type { Attribute } from 'parse5/dist/common/token.js';
-import type { ChildNode, Element, TextNode } from 'parse5/dist/tree-adapters/default';
+import type { ChildNode, Element } from 'parse5/dist/tree-adapters/default';
 import type ts from 'typescript';
 
 import type { genAstFromRootNode } from '../3-gen-component.js';
@@ -44,7 +44,7 @@ export interface FrameworkConnector {
     ast: FwNodeOneOrMore | undefined,
     node: SceneNode2,
   ) => FwNodeOneOrMore | undefined;
-  createText: (text: string) => ts.JsxText | TextNode;
+  createText: (text: string) => FwNodeOneOrMore;
   createLinkAttributes: (href: string) => FwAttr[];
   wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: FwAttr[]) => FwNode;
   writeFileCode: (ast: ReturnType<typeof genAstFromRootNode>, moduleContext: ModuleContext) => void;

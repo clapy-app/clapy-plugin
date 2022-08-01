@@ -6,7 +6,11 @@ import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 
 const { factory } = ts;
 
-export function getComponentTsAst(moduleContext: ModuleContext, compNameOverride?: string) {
+export function getComponentTsAst(
+  moduleContext: ModuleContext,
+  compNameOverride: string | undefined,
+  hasCss: boolean | undefined,
+) {
   const { projectContext, baseCompName, compName } = moduleContext;
   const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
   const cssExt = getCSSExtension(projectContext.extraConfig);
@@ -52,13 +56,17 @@ export function getComponentTsAst(moduleContext: ModuleContext, compNameOverride
                   factory.createIdentifier('templateUrl'),
                   factory.createStringLiteral(`./${baseCompName}.component.html`),
                 ),
-                factory.createPropertyAssignment(
-                  factory.createIdentifier('styleUrls'),
-                  factory.createArrayLiteralExpression(
-                    [factory.createStringLiteral(`./${baseCompName}.component.${cssExt}`)],
-                    false,
-                  ),
-                ),
+                ...(hasCss
+                  ? [
+                      factory.createPropertyAssignment(
+                        factory.createIdentifier('styleUrls'),
+                        factory.createArrayLiteralExpression(
+                          [factory.createStringLiteral(`./${baseCompName}.component.${cssExt}`)],
+                          false,
+                        ),
+                      ),
+                    ]
+                  : []),
               ],
               true,
             ),

@@ -10,7 +10,7 @@ import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
-import type { FwAttr, FwNode, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
+import type { FwAttr, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
 import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
@@ -139,7 +139,7 @@ export function genTextAst(node: TextNode2) {
   for (let i = 0; i < textSegments.length; i++) {
     const segment = textSegments[i];
     const segmentStyles = segmentsStyles[i];
-    let segAst: FwNode = fwConnector.createText(escapeHTML(segment.characters));
+    let segAst: FwNodeOneOrMore = fwConnector.createText(escapeHTML(segment.characters));
 
     if (!singleChild) {
       const styleDeclarations = stylesToList(segmentStyles);
@@ -163,7 +163,11 @@ export function genTextAst(node: TextNode2) {
       segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
     }
 
-    ast.push(segAst);
+    if (Array.isArray(segAst)) {
+      ast.push(...segAst);
+    } else {
+      ast.push(segAst);
+    }
   }
 
   if (textSpanWrapperAttributes) {

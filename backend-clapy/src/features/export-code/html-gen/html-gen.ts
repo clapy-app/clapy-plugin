@@ -42,6 +42,20 @@ export function mkHtmlElement(
 }
 
 export function mkHtmlText(text: string) {
+  const nodes: (Element | TextNode)[] = [];
+  let first = true;
+  for (const textFragment of text.split('<br />')) {
+    if (first) {
+      first = false;
+    } else {
+      nodes.push(mkHtmlElement('br'));
+    }
+    nodes.push(mkHtmlTextEscaped(textFragment));
+  }
+  return nodes;
+}
+
+function mkHtmlTextEscaped(text: string) {
   const el: TextNode = {
     nodeName: NodeType.Text,
     parentNode: null,
