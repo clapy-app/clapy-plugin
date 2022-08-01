@@ -245,12 +245,18 @@ export type OmitMethods<T> = {
   -readonly [P in keyof T as T[P] extends Function ? never : P]: T[P];
 };
 
+export interface ReactConfig {}
+export interface AngularConfig {
+  prefix: string;
+}
+
 export interface UserSettings {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
   framework?: 'angular' | 'react';
+  frameworkConfig?: ReactConfig | AngularConfig;
 }
 
 export type ExtraConfig = {
@@ -273,6 +279,7 @@ export interface ExportCodePayload {
   styles: FigmaStyles;
   extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
+  codeGenerationCount: number;
 }
 
 export interface FigmaStyles {
@@ -407,6 +414,9 @@ export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'ma
 
 export interface CSBResponse {
   sandbox_id: string;
+  quotas: number;
+  quotasMax: number;
+  isLicenceExpired?: boolean;
 }
 
 // From magic-bytes.js, for portability with the backend that doesn't have the lib

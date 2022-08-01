@@ -10,7 +10,14 @@ import { env, isFigmaPlugin } from '../../environment/env';
 import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
-import { authSuccess, setAuthError, setSignedInState, setTokenDecoded, startLoadingAuth } from './auth-slice';
+import {
+  authSuccess,
+  setAuthError,
+  setCheckingSessionState,
+  setSignedInState,
+  setTokenDecoded,
+  startLoadingAuth,
+} from './auth-slice';
 
 const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
@@ -31,6 +38,8 @@ export let _tokenType: string | null = null;
  * It ends by calling the method for a full check with the server, in case something is wrong. The result will then re-render the UI if something changed.
  */
 export async function checkSessionLight() {
+  dispatchOther(setCheckingSessionState(true));
+
   if (!_accessToken) {
     const { accessToken, tokenType } = await fetchPlugin('getCachedToken');
     setAccessToken(accessToken);
@@ -45,16 +54,19 @@ export async function checkSessionLight() {
     dispatchOther(setSignedInState(signedInState));
   }
   await dispatchLocalUserMetadata(signedInState);
-  await checkSessionComplete();
+  dispatchOther(setCheckingSessionState(false));
+
+  return await checkSessionComplete();
 }
 
 /**
  * This method makes a full session check by calling the Clapy webservice to check the auth token, refresh if required, then fetch the user metadata.
  * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
  */
-async function checkSessionComplete() {
-  await apiGet('check-session');
+export async function checkSessionComplete() {
+  const { data } = await apiGet('check-session');
   await fetchUserMetadata();
+  return data;
 }
 
 export const signup = toConcurrencySafeAsyncFn(async () => {
@@ -81,7 +93,6 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
     setAccessToken(accessToken);
     _tokenType = tokenType;
     await fetchUserMetadata();
-
     await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
     dispatchOther(authSuccess());
   } catch (err) {
@@ -138,7 +149,6 @@ export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
     const { accessToken, tokenType, newRefreshToken } = await fetchRefreshedTokens(refreshToken);
     setAccessToken(accessToken);
     _tokenType = tokenType;
-    // await findUserMetadata();
     await fetchPlugin('setCachedToken', accessToken, tokenType, newRefreshToken);
     return;
   }
@@ -179,6 +189,7 @@ export interface AccessTokenDecoded {
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
   'https://clapy.co/roles'?: string[];
+  'https://clapy.co/licence-expiration-date'?: number;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"

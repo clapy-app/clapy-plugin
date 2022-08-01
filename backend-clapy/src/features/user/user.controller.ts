@@ -1,23 +1,30 @@
-import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { wait } from '../../common/general-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
-import { flags } from '../../env-and-config/app-config.js';
+import { appConfig, flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
-import type { UserMetadata, UserMetaUsage } from './user.service.js';
+import { StripeService } from '../stripe/stripe.service.js';
+import { UserService } from './user.service.js';
+import type { UserMetadata, UserMetaUsage } from './user.utils.js';
 import {
   getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
+  hasRoleIncreasedQuota,
   updateAuth0UserMetadata,
-} from './user.service.js';
+} from './user.utils.js';
 
 @Controller('user')
 export class UserController {
+  constructor(
+    @Inject(UserService) private userService: UserService,
+    @Inject(StripeService) private stripeService: StripeService,
+  ) {}
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
@@ -26,25 +33,33 @@ export class UserController {
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);
     }
+    const user = (request as any).user;
     const userId = (request as any).user.sub;
+
     const auth0User = await getAuth0User(userId);
+    const isUserQualified = hasRoleIncreasedQuota(user);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
+
     userMetadata.picture = auth0User.picture;
     userMetadata.email = auth0User.email;
+    userMetadata.quotas = await this.userService.getQuotaCount(userId);
     // If missing name, pre-fill with other profile info available.
     if (!userMetadata.firstName || !userMetadata.lastName) {
       const [firstName, lastName] = getAuth0FirstLastName(auth0User);
       userMetadata.firstName = firstName;
       userMetadata.lastName = lastName;
     }
+    userMetadata.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
 
+    userMetadata.quotas = await this.userService.getQuotaCount(userId);
+    userMetadata.isLicenceExpired = this.stripeService.isLicenceExpired(user);
     perfMeasure();
     return userMetadata;
   }
   @Post('update-profile')
   async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
     perfReset('Starting...');
-    const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
+    const { firstName, lastName, companyName, jobRole, techTeamSize, phone } = userMetadata;
     if (hasMissingMetaProfile(userMetadata)) {
       throw new BadRequestException(
         `Cannot update user profile, missing fields: ${Object.entries({
@@ -53,6 +68,7 @@ export class UserController {
           companyName,
           jobRole,
           techTeamSize,
+          phone,
         })
           .filter(([_, value]) => !value)
           .map(([name, _]) => name)
@@ -66,6 +82,7 @@ export class UserController {
       companyName,
       jobRole,
       techTeamSize,
+      phone,
     });
 
     // Insert data in Pipedrive asynchronously (non-blocking operation).

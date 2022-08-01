@@ -131,43 +131,6 @@ export function getOrCreateCompContext(node: SceneNode2) {
   return node._context;
 }
 
-export function createComponentUsageWithAttributes(compContext: CompContext, componentModuleContext: ModuleContext) {
-  const { instanceSwaps, instanceHidings, instanceStyleOverrides, instanceTextOverrides } = compContext;
-
-  const attrs = [];
-
-  const classOverridesArr = Object.values(instanceStyleOverrides);
-  let rootClassOverride: StyleOverride | undefined;
-  let otherClassOverrides: StyleOverride[] = [];
-  for (const ov of classOverridesArr) {
-    if (ov.propName === 'root') {
-      rootClassOverride = ov;
-    } else {
-      otherClassOverrides.push(ov);
-    }
-  }
-  // if (!rootClassOverride) {
-  //   warnNode(node, 'No root class found in instanceClasses.');
-  // }
-
-  const classAttr = mkClassAttr2(rootClassOverride);
-  if (classAttr) attrs.push(classAttr);
-
-  const classesAttr = mkClassesAttribute2(componentModuleContext, otherClassOverrides);
-  if (classesAttr) attrs.push(classesAttr);
-
-  const swapAttr = mkSwapsAttribute(instanceSwaps);
-  if (swapAttr) attrs.push(swapAttr);
-
-  const hideAttr = mkHidingsAttribute(instanceHidings);
-  if (hideAttr) attrs.push(hideAttr);
-
-  const textOverrideAttr = mkTextOverridesAttribute(instanceTextOverrides);
-  if (textOverrideAttr) attrs.push(textOverrideAttr);
-
-  return mkComponentUsage(componentModuleContext.compName, attrs);
-}
-
 export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 | undefined) {
   if (!node) {
     throw new Error(`BUG [checkIsOriginalInstance] node is undefined.`);
@@ -558,14 +521,6 @@ export function mkSrcStaticAttribute(src: string) {
 
 export function mkIdAttribute(id: string) {
   return factory.createJsxAttribute(factory.createIdentifier('id'), factory.createStringLiteral(id));
-}
-
-export function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttribute[]) {
-  return factory.createJsxSelfClosingElement(
-    factory.createIdentifier(compName),
-    undefined,
-    factory.createJsxAttributes(extraAttributes || []),
-  );
 }
 
 export function mkSwapInstanceAlone(context: NodeContext, compAst: ts.JsxSelfClosingElement, node: SceneNode2) {

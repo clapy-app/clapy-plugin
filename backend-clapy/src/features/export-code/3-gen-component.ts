@@ -1,26 +1,18 @@
 import type { RulePlain } from 'css-tree';
 import { relative } from 'path';
-import type { Statement } from 'typescript';
 import ts from 'typescript';
 
 import type { Nil } from '../../common/general-utils.js';
-import { isNonEmptyObject } from '../../common/general-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { warnOrThrow } from '../../utils.js';
 import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
 import { genNodeAst, prepareNode } from './4-gen-node.js';
-import type { JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
+import type { ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
 import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
-import {
-  mkCompFunction,
-  mkDefaultImportDeclaration,
-  mkNamedImportsDeclaration,
-  mkPropInterface,
-} from './gen-node-utils/ts-ast-utils.js';
+import { mkNamedImportsDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
-import { getCSSExtension } from './tech-integration/scss/scss-utils.js';
 
 const { factory } = ts;
 
@@ -104,6 +96,7 @@ export function mkModuleContext(
   pageName: string | undefined,
   compDir: string,
   compName: string,
+  baseCompName: string,
   parentModuleContext: ModuleContext | undefined,
   isRootComponent: boolean,
   isComp: boolean,
@@ -117,6 +110,7 @@ export function mkModuleContext(
     pageDir: pageName,
     compDir,
     compName,
+    baseCompName,
     classNamesAlreadyUsed: new Set(['root']),
     classOverrides: new Set(),
     swaps: new Set(),
@@ -158,6 +152,7 @@ function createModuleContextForNode(
     pageDir || compDirName,
     compDir,
     compName,
+    baseCompName,
     parentModuleContext,
     isRootComponent,
     isComp,
@@ -169,70 +164,11 @@ function createModuleContextForNode(
 }
 
 export function generateAllComponents(projectContext: ProjectContext) {
-  const { components } = projectContext;
+  const { components, fwConnector } = projectContext;
   for (const [_, moduleContext] of components) {
-    const [tsx, css] = genAstFromRootNode(moduleContext);
-
-    const { compDir, compName, imports } = moduleContext;
-    const { cssFiles } = projectContext;
-
-    createModuleCode(moduleContext, tsx);
-
-    if (isNonEmptyObject(css.children)) {
-      const cssExt = getCSSExtension(projectContext.extraConfig);
-      const cssFileName = `${compName}.module.${cssExt}`;
-      cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
-      const cssModuleModuleSpecifier = `./${cssFileName}`;
-      imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
-    }
-
-    printFileInProject(moduleContext);
+    const ast = genAstFromRootNode(moduleContext);
+    fwConnector.writeFileCode(ast, moduleContext);
   }
-}
-
-export function createModuleCode(
-  moduleContext: ModuleContext,
-  tsx: JsxOneOrMore | undefined,
-  prefixStatements: Statement[] = [],
-  skipAnnotation?: boolean,
-) {
-  const { imports, statements, compName } = moduleContext;
-
-  // Add React imports: import { FC, memo } from 'react';
-  imports['react'] = mkNamedImportsDeclaration(
-    ['memo', ...(moduleContext.projectContext.extraConfig.isFTD && compName === 'App' ? ['useCallback'] : [])],
-    'react',
-  );
-  imports['react#types'] = mkNamedImportsDeclaration(
-    ['FC', ...(moduleContext.swaps.size > 0 || moduleContext.textOverrideProps.size > 0 ? ['ReactNode'] : [])],
-    'react',
-    true,
-  );
-
-  // Add component Prop interface
-  statements.push(mkPropInterface(moduleContext));
-
-  // Add the component
-  statements.push(mkCompFunction(moduleContext, compName, tsx, prefixStatements, skipAnnotation));
-}
-
-export function printFileInProject(moduleContext: ModuleContext) {
-  const { projectContext, compDir, compName } = moduleContext;
-
-  const path = `${compDir}/${compName}.tsx`;
-  const resultFile = factory.createSourceFile(
-    [...Object.values(moduleContext.imports), ...moduleContext.statements],
-    factory.createToken(ts.SyntaxKind.EndOfFileToken),
-    ts.NodeFlags.None,
-  );
-  const printer = ts.createPrinter({
-    newLine: ts.NewLineKind.LineFeed,
-    removeComments: false,
-    omitTrailingSemicolon: false,
-  });
-
-  const result = printer.printFile(resultFile);
-  projectContext.tsFiles[path] = result;
 }
 
 function prepareRootNode(moduleContext: ModuleContext, root: SceneNode2, parent: ParentNode | Nil) {
@@ -243,7 +179,7 @@ function prepareRootNode(moduleContext: ModuleContext, root: SceneNode2, parent:
   prepareNode(nodeContext, root);
 }
 
-function genAstFromRootNode(moduleContext: ModuleContext) {
+export function genAstFromRootNode(moduleContext: ModuleContext) {
   const { node } = moduleContext;
   const { nodeContext: context } = node;
   if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);

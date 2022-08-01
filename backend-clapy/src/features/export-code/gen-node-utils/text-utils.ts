@@ -5,25 +5,15 @@ import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to
 import { isEmptyObject } from '../../../common/general-utils.js';
 import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { JsxOneOrMore, NodeContext } from '../code.model.js';
+import type { NodeContext } from '../code.model.js';
 import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
+import type { FwAttr, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
 import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
-import {
-  addCssRule,
-  createClassAttrForClassNoOverride,
-  createClassAttrForNode,
-  mkHrefAttr,
-  mkHtmlFullClass,
-  mkIdAttribute,
-  mkNoReferrerAttr,
-  mkTag,
-  mkTargetBlankAttr,
-  mkWrapHideAndTextOverrideAst,
-} from './ts-ast-utils.js';
+import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
 
 const { factory } = ts;
@@ -94,6 +84,7 @@ export function genTextAst(node: TextNode2) {
   if (!context) throw new Error(`[genTextAst] node ${node.name} has no nodeContext`);
   if (!styles) throw new Error(`[genTextAst] node ${node.name} has no styles`);
   const { moduleContext } = context;
+  const { fwConnector } = moduleContext.projectContext;
   const textSegments: TextSegment2[] | undefined = node._textSegments;
   const segmentsStyles = node._segmentsStyles;
   if (!textSegments?.length) return;
@@ -103,8 +94,8 @@ export function genTextAst(node: TextNode2) {
 
   const singleChild = textSegments.length === 1;
 
-  let textBlockStyleAttributes: ts.JsxAttribute[] | undefined = undefined;
-  let textSpanWrapperAttributes: ts.JsxAttribute[] | undefined = undefined;
+  let textBlockStyleAttributes: FwAttr[] | undefined = undefined;
+  let textSpanWrapperAttributes: FwAttr[] | undefined = undefined;
 
   // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
   // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
@@ -114,13 +105,13 @@ export function genTextAst(node: TextNode2) {
   // If node has styles to render, surround with a styled div
   if (!node.textSkipStyles) {
     const styleDeclarations = stylesToList(styles);
-    let attributes: ts.JsxAttribute[] = [];
+    let attributes: FwAttr[] = [];
     if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
     if (styleDeclarations.length) {
       const className = getOrGenClassName(moduleContext, node);
       htmlClass = mkHtmlFullClass(context, className, htmlClass);
       addCssRule(context, className, styleDeclarations, node);
-      attributes.push(createClassAttrForNode(node, htmlClass));
+      attributes.push(fwConnector.createClassAttribute(node, htmlClass));
     }
     textBlockStyleAttributes = attributes;
   }
@@ -128,62 +119,66 @@ export function genTextAst(node: TextNode2) {
   // Text span wrapper
   // If multiple segments, surround with span to maintain the inline style
   if (!singleChild) {
-    const attributes: ts.JsxAttribute[] = [];
+    const attributes: FwAttr[] = [];
     if (node.textInlineWrapperStyles) {
       const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
         htmlClass = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node);
-        attributes.push(createClassAttrForClassNoOverride(htmlClass));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass));
       }
     }
     if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
     textSpanWrapperAttributes = attributes;
   }
 
-  let ast: JsxOneOrMore | undefined = [];
+  let ast: FwNodeOneOrMore | undefined = [];
 
   // Prepare AST for each text segment
   for (let i = 0; i < textSegments.length; i++) {
     const segment = textSegments[i];
     const segmentStyles = segmentsStyles[i];
-    let segAst: ts.JsxChild = factory.createJsxText(escapeHTML(segment.characters), false);
+    let segAst: FwNodeOneOrMore = fwConnector.createText(escapeHTML(segment.characters));
 
     if (!singleChild) {
       const styleDeclarations = stylesToList(segmentStyles);
-      const attributes: ts.JsxAttribute[] = [];
+      const attributes: FwAttr[] = [];
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext);
         let htmlClass2 = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node, true);
-        attributes.push(createClassAttrForClassNoOverride(htmlClass2));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2));
       }
       let useAnchor = false;
       if (segment.hyperlink) {
         if (segment.hyperlink.type === 'URL') {
           // hyperlink of type NODE not handled for now
-          attributes.push(mkHrefAttr(segment.hyperlink.value), mkTargetBlankAttr(), mkNoReferrerAttr());
+          attributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
           useAnchor = true;
         } else {
           warnNode(segment, 'TODO Unsupported hyperlink of type node');
         }
       }
-      segAst = mkTag(useAnchor ? 'a' : 'span', attributes, [segAst]);
+      segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
     }
 
-    ast.push(segAst);
+    if (Array.isArray(segAst)) {
+      ast.push(...segAst);
+    } else {
+      ast.push(segAst);
+    }
   }
 
   if (textSpanWrapperAttributes) {
-    ast = mkTag('span', textSpanWrapperAttributes, ast);
+    ast = fwConnector.wrapNode(ast, 'span', textSpanWrapperAttributes);
   }
 
   if (textBlockStyleAttributes) {
-    ast = mkTag('div', textBlockStyleAttributes, Array.isArray(ast) ? ast : [ast]);
+    ast = fwConnector.wrapNode(ast, 'div', textBlockStyleAttributes);
   }
 
-  ast = mkWrapHideAndTextOverrideAst(context, ast, node);
+  ast = fwConnector.wrapHideAndTextOverride(context, ast, node);
 
   return ast;
 }

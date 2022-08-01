@@ -78,6 +78,7 @@ export interface UserMetadata {
   firstName?: string;
   lastName?: string;
   companyName?: string;
+  phone?: string;
   jobRole?: string;
   techTeamSize?: string;
   email?: string;
@@ -85,6 +86,9 @@ export interface UserMetadata {
   usage?: UserMetaUsage;
   licenceStartDate?: number;
   licenceExpirationDate?: number;
+  quotas?: number;
+  quotasMax?: number;
+  isLicenceExpired?: boolean;
 }
 
 export interface UserMetaUsage {

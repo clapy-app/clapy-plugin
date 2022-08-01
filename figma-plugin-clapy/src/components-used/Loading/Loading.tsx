@@ -13,7 +13,17 @@ const defaultOptions: Options = {
     preserveAspectRatio: 'xMidYMid slice',
   },
 };
-
-export const Loading: FC = memo(function Loading() {
-  return <Lottie options={defaultOptions} height={56} width={28} isClickToPauseDisabled={true} />;
+interface Props {
+  height?: number;
+  width?: number;
+}
+export const Loading: FC<Props> = memo(function Loading(props) {
+  return (
+    <Lottie
+      options={defaultOptions}
+      height={props.height || 56}
+      width={props.width || 28}
+      isClickToPauseDisabled={true}
+    />
+  );
 });

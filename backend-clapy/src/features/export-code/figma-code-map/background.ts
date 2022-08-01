@@ -38,7 +38,7 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
 
   if (visibleFills.length) {
     const { width, height } = node;
-    const { images } = context.moduleContext.projectContext;
+    const { images, fwConnector } = context.moduleContext.projectContext;
     const bgColors: string[] = [];
     const bgImages: string[] = [];
     const bgSizes: PropertiesHyphen['background-size'][] = [];
@@ -77,7 +77,8 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         // webpackIgnore is a workaround for webpack to ignore those public paths (to work with CRA CLI)
         // - codesandbox: put assets in public folder instead of source (csb bundling doesn't process CSS url() :( )
         // - CRA CLI with the above comment to leave the public URL instead of having webpack processing it.
-        bgImages.push(`/* webpackIgnore: true */ url("${assetCssUrl}")`);
+        const webpackIgnorePrefix = fwConnector.webpackIgnoreInCSS ? `/* webpackIgnore: true */ ` : '';
+        bgImages.push(`${webpackIgnorePrefix}url("${assetCssUrl}")`);
         bgSizes.push(scaleModeToBgSize[scaleMode]);
 
         // Apply the first opacity I find.

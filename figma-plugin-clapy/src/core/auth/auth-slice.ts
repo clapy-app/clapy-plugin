@@ -9,6 +9,7 @@ export interface AuthState {
   loading: boolean;
   error?: any;
   isSignedIn?: boolean;
+  isSessionChecking?: boolean;
   tokenDecoded?: AccessTokenDecoded | Nil;
 }
 
@@ -38,19 +39,35 @@ export const authSlice = createSlice({
       state.isSignedIn = payload;
       state.loading = false;
     },
+    setCheckingSessionState: (state, { payload }: PayloadAction<boolean>) => {
+      state.isSessionChecking = payload;
+    },
     setTokenDecoded: (state, { payload }: PayloadAction<AccessTokenDecoded | Nil>) => {
       state.tokenDecoded = payload;
     },
   },
 });
 
-export const { startLoadingAuth, authSuccess, setAuthError, setSignedInState, setTokenDecoded } = authSlice.actions;
+export const {
+  startLoadingAuth,
+  authSuccess,
+  setAuthError,
+  setSignedInState,
+  setTokenDecoded,
+  setCheckingSessionState,
+} = authSlice.actions;
 
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
+export const selectSessionChecking = (state: RootState) => state.auth.isSessionChecking;
+
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
-export const selectIsPaidUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('paid_user');
+export const selectNoCodesandboxUser = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('noCodesandbox');
+export const selectIncreasedQuotaUser = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('increasedQuota');
+export const selectUserLicenceExpirationDate = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];

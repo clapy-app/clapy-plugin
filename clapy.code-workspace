@@ -1,0 +1,43 @@
+{
+  "folders": [
+	{
+		"name": "ROOT",
+		"path": "."
+	},
+	{
+		"name": "backend-clapy",
+		"path": "backend-clapy"
+	},
+	{
+		"name": "figma-plugin-clapy",
+		"path": "figma-plugin-clapy"
+	}
+],
+  "settings": {
+    "files.exclude": {
+      "backend-clapy/": true,
+      "figma-plugin-clapy/": true
+    },
+    "liveServer.settings.multiRootWorkspaceName": "backend-clapy",
+    "code-runner.executorMap": {
+      "typescript": "ts-node --transpile-only",
+    },
+    "references.preferredLocation": "view",
+    "search.exclude": {
+      "**/build*": true,
+      "**/dist*": true,
+      "**/old": true
+    },
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+    "cSpell.words": [
+      "clapy",
+      "metabase",
+      "pipedrive"
+    ],
+    "javascript.preferences.importModuleSpecifierEnding": "js",
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    "git.mergeEditor": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+  }
+}

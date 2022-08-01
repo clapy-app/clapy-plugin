@@ -78,16 +78,26 @@ export function getOrGenTextOverrideProp(
   return textOverrideProp;
 }
 
-export function genComponentImportName(context: NodeContext) {
+export function genIconComponentImportName(
+  context: NodeContext,
+  textCase: TextCase = TextCase.Pascal,
+  globalName?: boolean,
+) {
+  const { moduleContext } = context;
+  const { projectContext } = moduleContext;
   // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
   let baseName =
     context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower
       ? context.parentContext?.nodeNameLower
       : context.nodeNameLower;
   if (baseName !== 'icon') {
-    baseName = `${baseName}Icon`;
+    baseName = textCase === TextCase.Dash ? `${baseName}-icon` : `${baseName}Icon`;
   }
-  return genUniqueName(context.moduleContext.subComponentNamesAlreadyUsed, baseName, TextCase.Pascal);
+  return genUniqueName(
+    globalName ? projectContext.assetsAlreadyUsed : moduleContext.subComponentNamesAlreadyUsed,
+    baseName,
+    textCase,
+  );
 }
 
 export function getComponentName(
@@ -138,16 +148,27 @@ function camelize(str: string) {
 }
 
 function dashize(str: string) {
-  return prefixIfNumber(
-    removeAccents(str)
-      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
-        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-        match = match.toLowerCase();
-        return index === 0 ? match : `-${match}`;
-      })
-      // Truncate if variable name is too long
-      .substring(0, 30),
-  );
+  str = removeAccents(str)
+    .replaceAll('_', '')
+    .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
+      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+      match = match.toLowerCase();
+      return index === 0 ? match : `-${match}`;
+    })
+    // Truncate if variable name is too long
+    .substring(0, 30);
+  if (str.endsWith('-')) {
+    str = str.slice(0, -1);
+  }
+  return str;
+}
+
+export function dashCaseToPascalCase(text: string) {
+  return prefixIfNumber(text.replace(/(^\w|-\w|-$)/g, clearAndUpper));
+}
+
+function clearAndUpper(text: string) {
+  return text.replace(/-/, '').toUpperCase();
 }
 
 function removeAccents(value: string) {

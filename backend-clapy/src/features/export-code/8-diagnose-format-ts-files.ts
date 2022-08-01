@@ -1,5 +1,6 @@
 import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
+import parserHtml from 'prettier/parser-html.js';
 import parserCss from 'prettier/parser-postcss.js';
 import parserTypeScript from 'prettier/parser-typescript.js';
 import prettier from 'prettier/standalone.js';
@@ -12,10 +13,12 @@ let _prettierConfig: any;
 
 export async function getPrettierConfig() {
   if (!_prettierConfig) {
-    const { importOrderParserPlugins, ...conf } = JSON.parse(
-      await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }),
-    );
-    // importOrderParserPlugins is not supported here (I don't know why), and anyway it's useless, it's to support annotations. Useful for the webservice source code.
+    let conf = JSON.parse(await readFile(`${backendDir}/.prettierrc`, { encoding: 'utf8' }));
+    // // Remove importOrderParserPlugins if any issue with below code.
+    // // But it is required to format Angular code, which contains annotations.
+    // // It should also be left in the original .prettierrc because our webservice uses it.
+    // let importOrderParserPlugins: any;
+    // ({ importOrderParserPlugins, ...conf } = conf);
     _prettierConfig = conf;
   }
   return _prettierConfig;
@@ -99,14 +102,41 @@ export async function prepareCssFiles(cssFiles: CodeDict) {
 }
 
 export async function formatCssFile(path: string, content: string) {
-  if (flags.formatCode) {
-    // Prettier
-    return prettier.format(content, {
-      ...(await getPrettierConfig()),
-      plugins: [parserCss],
-      filepath: path,
-    });
-  } else {
+  if (!flags.formatCode) {
     return content;
   }
+  // Prettier
+  return prettier.format(content, {
+    ...(await getPrettierConfig()),
+    plugins: [parserCss],
+    filepath: path,
+  });
+}
+
+export async function prepareHtmlFiles(htmlFiles: CodeDict) {
+  for (const [path, content] of Object.entries(htmlFiles)) {
+    if (flags.formatCode && path.startsWith('src') && path.endsWith('.html')) {
+      try {
+        if (content == null) {
+          throw new Error(`Undefined content for file in htmlFiles at path ${path}`);
+        }
+        htmlFiles[path] = await formatHtmlFile(path, content);
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    }
+  }
+}
+
+export async function formatHtmlFile(path: string, content: string) {
+  if (!flags.formatCode) {
+    return content;
+  }
+  // Prettier
+  return prettier.format(content, {
+    ...(await getPrettierConfig()),
+    plugins: [parserHtml],
+    filepath: path,
+  });
 }

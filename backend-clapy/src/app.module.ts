@@ -16,6 +16,7 @@ import { SbSerializeController } from './features/sb-serialize-preview/sb-serial
 import { StripeController } from './features/stripe/stripe.controller.js';
 import { StripeService } from './features/stripe/stripe.service.js';
 import { UserController } from './features/user/user.controller.js';
+import { UserService } from './features/user/user.service.js';
 
 @Module({
   imports: [
@@ -45,6 +46,6 @@ import { UserController } from './features/user/user.controller.js';
     SbSerializeController,
     CodeController,
   ],
-  providers: [AppService, StripeService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [AppService, StripeService, UserService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

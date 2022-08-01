@@ -16,11 +16,11 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { track } from '../../../common/analytics';
-import type { ExtractionProgress } from '../../../common/app-models.js';
+import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
 import { useCallbackAsync2 } from '../../../common/front-utils';
 import { getDuration } from '../../../common/general-utils';
-import { apiPost } from '../../../common/http.utils.js';
+import { apiGet, apiPost } from '../../../common/http.utils.js';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
@@ -31,8 +31,10 @@ import type {
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
+import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
+import { setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -71,7 +73,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const [scssSelected, setScssSelected] = useState<boolean>(!!defaultSettings.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
-
+  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   useEffect(
     () => () => {
       defaultSettings = { ...userSettings };
@@ -113,7 +115,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     try {
       setIsLoading(true);
       setSandboxId('loading');
-      track('gen-code', 'start');
+      track('gen-code', 'start', userSettings);
       perfReset();
 
       // Extract the Figma configuration
@@ -155,7 +157,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
             // output: to remove later. It's defined in the webservice.
-            output: userSettings.zip ? 'zip' : 'csb',
+            output: userSettings.zip || isNoCodeSandboxUser ? 'zip' : 'csb',
             ...userSettings,
           },
           tokens,
@@ -195,9 +197,24 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         }
         if (!env.isDev || sendToApi) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
+
+          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
+          if (isNoCodeSandboxUser) {
+            nodes.extraConfig.zip = true;
+            nodes.extraConfig.output = 'zip';
+          }
+
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          if (!data.quotas) {
+            const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
+            dispatchOther(setStripeData(data));
+          } else {
+            dispatchOther(setStripeData(data));
+          }
+
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
+
           if (data?.sandbox_id) {
             if (env.isDev) {
               console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`, `(in ${durationInS} seconds)`);
@@ -230,7 +247,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setIsLoading(false);
       setProgress(undefined);
     }
-  }, [isAlphaDTCUser]);
+  }, [isAlphaDTCUser, isNoCodeSandboxUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
@@ -280,20 +297,30 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     defaultValue={defaultSettings.framework}
                   >
                     <FormControlLabel value='react' control={<Radio />} label='React' />
-                    <FormControlLabel value='angular' control={<Radio />} label='Angular' />
+                    <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
                   </RadioGroup>
                 </FormControl>
               </Tooltip>
             )}
             <Tooltip
-              title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+              title={
+                isNoCodeSandboxUser
+                  ? '"noCodesandbox" role attributed, zip is enabled by default with security to not be able to upload to codesandbox for preview.'
+                  : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+              }
               disableInteractive
               placement='bottom-start'
             >
               <FormControlLabel
-                control={<Switch name='zip' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.zip} />}
+                control={
+                  <Switch
+                    name='zip'
+                    onChange={updateAdvancedOption}
+                    defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
+                  />
+                }
                 label='Download as zip'
-                disabled={isLoading}
+                disabled={isLoading || isNoCodeSandboxUser}
               />
             </Tooltip>
             <Tooltip

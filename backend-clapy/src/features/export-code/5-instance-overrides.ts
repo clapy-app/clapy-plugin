@@ -36,6 +36,8 @@ import {
 import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
+import type { FwNodeOneOrMore } from './frameworks/framework-connectors.js';
+import { createComponentUsageWithAttributes } from './frameworks/react/index.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
 import {
   getOrGenClassName,
@@ -48,7 +50,6 @@ import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-u
 import {
   addCssRule,
   checkIsOriginalInstance,
-  createComponentUsageWithAttributes,
   fillIsRootInComponent,
   getOrCreateCompContext,
   removeCssRule,
@@ -184,7 +185,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
               intermediateInstanceNodeOfComps: [],
               intermediateComponentContexts: [],
             };
-            addSwapInstance(context, node, ast);
+            addSwapInstance(context, node, ast as JsxOneOrMore);
           }
         }
       }
@@ -431,7 +432,7 @@ function addStyleOverride(context: InstanceContext, node: SceneNode2) {
 }
 
 // TODO texte pas tjrs bien caché
-function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
+function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: JsxOneOrMore) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
   if (!swapContext) {
     throw new Error(`BUG [addSwapInstance] swapContext is undefined. But it should be defined in recurseOnChildren.`);
@@ -532,7 +533,7 @@ function addOverrides(
   intermediateNodes: InstanceContext['intermediateNodes'],
   intermediateComponentContexts: InstanceContext['intermediateComponentContexts'],
   intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'],
-  overrideValue: SwapAst | string | boolean | JsxOneOrMore,
+  overrideValue: SwapAst | string | boolean | FwNodeOneOrMore,
   genAndRegisterPropName: (componentContext: ModuleContext, intermediateNode: SceneNode2) => string,
   compContextField: 'instanceStyleOverrides' | 'instanceSwaps' | 'instanceHidings' | 'instanceTextOverrides',
   nodeFieldForOverrideValue: 'className' | 'swapName' | 'hideProp' | 'textOverrideProp',
@@ -582,7 +583,8 @@ function addOverrides(
           }`,
         );
       }
-      overrideEntry.overrideValue = overrideValue;
+      // TODO to fix once we want to support instance overrides with Angular. The cast should not be required. It assumes we are in React.
+      overrideEntry.overrideValue = overrideValue as string | boolean | JsxOneOrMore | undefined;
     } else {
       let parentOverrideValue = intermediateNodes[i - 1]?.[nodeFieldForOverrideValue];
       if (parentOverrideValue == null) {

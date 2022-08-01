@@ -1,10 +1,18 @@
 import { waitInfinite } from './common/general-utils.js';
 import { perfReset, perfTotal } from './common/perf-utils.js';
-
-// To work on features outside the webservice, and keep live reload.
+import { mkHtmlAttribute, mkHtmlElement, serializeHtml } from './features/export-code/html-gen/html-gen.js';
 
 async function main() {
   perfReset('Starting...');
+
+  // To work on features outside the webservice, and keep live reload.
+
+  // const document = parse('<!DOCTYPE html><html><head></head><body><div></div><p></p></body></html>');
+  // console.log(serialize(document));
+  // const tag = ((document.childNodes[1] as Element).childNodes[1] as Element).childNodes[1];
+  // console.log(serializeHtml(tag));
+
+  console.log(serializeHtml(mkHtmlElement('div', mkHtmlAttribute('class', 'bar'))));
 
   // Send to codesandbox
   // TODO restore. Find the syntax to instantiate the controller with the right dependencies

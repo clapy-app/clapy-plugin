@@ -1,12 +1,13 @@
 import type { FC } from 'react';
 import { memo } from 'react';
 
+import { handleError } from '../../../../../common/error-utils.js';
 import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { upgradeUser } from '../../../../../common/stripeLicense';
-import { refreshTokens } from '../../../../../core/auth/auth-service.js';
+import { checkSessionComplete } from '../../../../../core/auth/auth-service.js';
 import { dispatchOther } from '../../../../../core/redux/redux.utils.js';
 import { env } from '../../../../../environment/env.js';
-import { fetchUserMetadata } from '../../../../user/user-service.js';
+import { setStripeData } from '../../../../user/user-slice.js';
 import { startLoadingStripe, stopLoadingStripe } from '../../../stripe-slice.js';
 import { _ButtonBase } from '../_ButtonBase/_ButtonBase';
 import classes from './ButtonUpgrade.module.css';
@@ -14,6 +15,13 @@ import classes from './ButtonUpgrade.module.css';
 interface Props {
   className?: string;
 }
+
+interface ApiResponse {
+  ok: boolean;
+  quotas?: number;
+  isLicenceExpired?: boolean;
+}
+
 export const ButtonUpgrade: FC<Props> = memo(function ButtonUpgrade(props = {}) {
   const userUpgrade = useCallbackAsync2(async () => {
     dispatchOther(startLoadingStripe());
@@ -21,9 +29,16 @@ export const ButtonUpgrade: FC<Props> = memo(function ButtonUpgrade(props = {}) 
     eventSource.onmessage = async e => {
       let data = JSON.parse(e.data);
       if (data.status) {
-        dispatchOther(stopLoadingStripe());
-        await refreshTokens();
-        await fetchUserMetadata();
+        try {
+          const res = (await checkSessionComplete()) as ApiResponse;
+          if (res.quotas != null || !res.isLicenceExpired) {
+            dispatchOther(setStripeData(res));
+          }
+        } catch (e) {
+          handleError(e);
+        } finally {
+          dispatchOther(stopLoadingStripe());
+        }
         eventSource.close();
       }
       eventSource.close();

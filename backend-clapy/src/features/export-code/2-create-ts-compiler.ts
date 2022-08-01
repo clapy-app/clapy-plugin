@@ -1,6 +1,5 @@
 import { HttpException, StreamableFile } from '@nestjs/common';
 import type { Readable } from 'stream';
-import type { Statement } from 'typescript';
 import ts from 'typescript';
 
 import type { Nil } from '../../common/general-utils.js';
@@ -8,29 +7,30 @@ import { isNonEmptyObject } from '../../common/general-utils.js';
 import { perfMeasure } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
-import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
-import {
-  createModuleCode,
-  createNodeContext,
-  generateAllComponents,
-  mkModuleContext,
-  printFileInProject,
-} from './3-gen-component.js';
-import { writeSVGReactComponents } from './7-write-svgr.js';
-import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
+import { warnOrThrow } from '../../utils.js';
+import type {
+  AngularConfig,
+  CSBResponse,
+  Dict,
+  ExportCodePayload,
+} from '../sb-serialize-preview/sb-serialize.model.js';
+import type { AccessTokenDecoded } from '../user/user.utils.js';
+import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
+import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
+import { diagnoseFormatTsFiles, prepareCssFiles, prepareHtmlFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
-import type { BaseStyleOverride, CompAst, ModuleContext, ParentNode, ProjectContext } from './code.model.js';
+import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
 import { readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { separateTsCssAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
+import type { FrameworkConnector } from './frameworks/framework-connectors.js';
 import { frameworkConnectors } from './frameworks/framework-connectors.js';
-import { genCompUsage, prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
-import { mkClassAttr2, mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
-import { addMUIProviders, addMUIProvidersImports } from './tech-integration/mui/mui-add-globals.js';
+import { mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
 import { addScssPackage, getCSSExtension, updateFilesAndContentForScss } from './tech-integration/scss/scss-utils.js';
 import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
@@ -47,6 +47,7 @@ const enableMUIInDev = false;
 export async function exportCode(
   { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
+  user: AccessTokenDecoded,
 ) {
   if (env.isDev) {
     uploadToCsb = false;
@@ -56,6 +57,10 @@ export async function exportCode(
   }
   extraConfig.useZipProjectTemplate = env.isDev || extraConfig.output === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
+  if (!extraConfig.frameworkConfig) extraConfig.frameworkConfig = {};
+  if (extraConfig.framework === 'angular' && !(extraConfig.frameworkConfig as AngularConfig).prefix) {
+    (extraConfig.frameworkConfig as AngularConfig).prefix = 'cl';
+  }
 
   const parent = p as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
@@ -79,15 +84,12 @@ export async function exportCode(
   }
   perfMeasure('a');
 
+  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
+  perfMeasure('b1');
+
   // Initialize the project template with base files
   let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
   let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
-  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
-  updateFilesAndContentForScss(fwConnector, extraConfig, tsFiles, cssFiles, resources);
-  perfMeasure('b');
-
-  const { varNamesMap, cssVarsDeclaration, tokensRawMap } = genStyles(tokens as TokenStore | undefined);
-  perfMeasure('b2');
 
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -115,14 +117,20 @@ export async function exportCode(
     fwConnector,
   };
 
-  const { appCompDir, appCompName } = fwConnector;
+  // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
+  updateFilesAndContentForScss(extraConfig, projectContext);
+  fwConnector.patchProjectConfigFiles(projectContext, extraConfig);
+  perfMeasure('b2');
+
+  const { appCompDir, appBaseCompName } = fwConnector;
 
   const lightAppModuleContext = mkModuleContext(
     projectContext,
     {} as unknown as SceneNode2,
     undefined,
     appCompDir,
-    appCompName,
+    fwConnector.getCompName(projectContext, root, appBaseCompName),
+    appBaseCompName,
     undefined,
     true,
     false,
@@ -138,19 +146,21 @@ export async function exportCode(
   if (!(root as SceneNode2).componentContext) {
     (root as SceneNode2).componentContext = componentContext;
   }
-  const compAst = genCompUsage(root);
+  const compAst = fwConnector.genCompUsage(projectContext, root);
   perfMeasure('d2');
 
   addCompToAppRoot(lightAppModuleContext, parent, cssVarsDeclaration, compAst);
   perfMeasure('e');
 
-  await writeSVGReactComponents(projectContext);
+  await fwConnector.writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
   tsFiles = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
   perfMeasure('g');
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
+  await prepareHtmlFiles(resources);
+  perfMeasure('h2');
 
   await addFontsToIndexHtml(projectContext);
   perfMeasure('i');
@@ -186,35 +196,36 @@ export async function exportCode(
     );
   }
   if (!env.isDev || uploadToCsb) {
+    const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (extraConfig.output === 'zip') {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
     } else {
+      if (isNoCodesandboxUser) {
+        throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
+      }
       const csbResponse = await uploadToCSB(csbFiles);
       return csbResponse;
     }
   }
-  return { sandbox_id: 'false' };
+  return { sandbox_id: 'false' } as CSBResponse;
 }
 
 function addCompToAppRoot(
   appModuleContext: ModuleContext,
   parentNode: ParentNode | Nil,
   cssVarsDeclaration: string | Nil,
-  compAst: CompAst | undefined,
+  compAst: ReturnType<FrameworkConnector['genCompUsage']>,
 ) {
   const {
     compDir,
-    compName,
-    projectContext: { cssFiles, extraConfig },
+    baseCompName,
+    projectContext: { cssFiles, extraConfig, fwConnector },
     imports,
     statements,
   } = appModuleContext;
   const { isFTD } = extraConfig;
   const cssExt = getCSSExtension(extraConfig);
-
-  const cssFileName = `${compName}.module.${cssExt}`;
-  const appCssPath = `${compDir}/${cssFileName}`;
 
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration && !isFTD) {
@@ -225,60 +236,25 @@ function addCompToAppRoot(
     cssFiles[cssVariablesPath] = cssVarsDeclaration;
   }
 
+  const cssFileName = `${baseCompName}.${fwConnector.cssFileNameMiddlePart}.${cssExt}`;
+  const appCssPath = `${compDir}/${cssFileName}`;
+
   // Add CSS classes import in TSX file
   const cssModuleModuleSpecifier = `./${cssFileName}`;
   imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
 
   // Specific to the root node. Don't apply on other components.
   // If the node is not at the root level in Figma, we add some CSS rules from the parent in App.module.css to ensure it renders well.
-  let updatedAppCss = addRulesToAppCss(appModuleContext, cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
-
-  cssFiles[appCssPath] = updatedAppCss;
-
-  addMUIProvidersImports(appModuleContext);
-
-  // The component import is added inside genComponent itself (with a TODO to refactor)
-
-  let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(compAst);
-  appTsx = addMUIProviders(appModuleContext, appTsx);
-
-  let prefixStatements: Statement[] | undefined = undefined;
-  if (appModuleContext.projectContext.extraConfig.isFTD) {
-    // Add demo patch
-    const themeDefaultValue = 'Brand-A-Lightmode';
-    const themeValues = {
-      'Brand-A-Lightmode': 'Brand A light mode',
-      'Brand-A-Darkmode': 'Brand A dark mode',
-      'Brand-B-Lightmode': 'Brand B light mode',
-      'Brand-B-Darkmode': 'Brand B dark mode',
-      'Brand-C-Lightmode': 'Brand C light mode',
-      'Brand-C-Darkmode': 'Brand C dark mode',
-      'Brand-I-Lightmode': 'Brand I light mode',
-      'Brand-I-Darkmode': 'Brand I dark mode',
-    };
-    appTsx = addDemoThemeSwitcher(appModuleContext, appTsx, themeValues, themeDefaultValue);
-    statements.push(mkInitBodyClassName(themeDefaultValue));
-    prefixStatements = [mkSwitchThemeHandler()];
+  if (cssFiles[appCssPath] == null) {
+    warnOrThrow(
+      `CSS file does not exist in template or has undefined content. Path: ${appCssPath}, framework: ${extraConfig.framework}`,
+    );
+  } else {
+    let updatedAppCss = addRulesToAppCss(appModuleContext, cssFiles[appCssPath], parentNode) || cssFiles[appCssPath];
+    cssFiles[appCssPath] = updatedAppCss;
   }
 
-  createModuleCode(appModuleContext, appTsx, prefixStatements, true);
-
-  printFileInProject(appModuleContext);
-}
-
-function mkAppCompTsx(compAst: CompAst | undefined) {
-  const overrideNode: BaseStyleOverride = {
-    overrideValue: 'root',
-  };
-  return factory.createJsxElement(
-    factory.createJsxOpeningElement(
-      factory.createIdentifier('div'),
-      undefined,
-      factory.createJsxAttributes([mkClassAttr2(overrideNode)]),
-    ),
-    compAst ? [compAst] : [],
-    factory.createJsxClosingElement(factory.createIdentifier('div')),
-  );
+  fwConnector.writeRootCompFileCode(appModuleContext, compAst);
 }
 
 function addPackages(projectContext: ProjectContext) {
@@ -307,134 +283,4 @@ function writePackages(projectContext: ProjectContext) {
       }
     }
   }
-}
-
-function addDemoThemeSwitcher(
-  context: ModuleContext,
-  appTsx: ts.JsxElement | ts.JsxFragment,
-  themeValues: Dict<string>,
-  themeDefaultValue: string,
-) {
-  if (!context.projectContext.extraConfig.isFTD) return appTsx;
-
-  return factory.createJsxFragment(
-    factory.createJsxOpeningFragment(),
-    [
-      factory.createJsxElement(
-        factory.createJsxOpeningElement(
-          factory.createIdentifier('select'),
-          undefined,
-          factory.createJsxAttributes([
-            factory.createJsxAttribute(
-              factory.createIdentifier('className'),
-              factory.createJsxExpression(
-                undefined,
-                factory.createPropertyAccessExpression(
-                  factory.createIdentifier('classes'),
-                  factory.createIdentifier('themeSwitcher'),
-                ),
-              ),
-            ),
-            factory.createJsxAttribute(
-              factory.createIdentifier('onChange'),
-              factory.createJsxExpression(undefined, factory.createIdentifier('switchTheme')),
-            ),
-            factory.createJsxAttribute(
-              factory.createIdentifier('defaultValue'),
-              factory.createStringLiteral(themeDefaultValue),
-            ),
-          ]),
-        ),
-        Object.entries(themeValues).map(([key, label]) =>
-          factory.createJsxElement(
-            factory.createJsxOpeningElement(
-              factory.createIdentifier('option'),
-              undefined,
-              factory.createJsxAttributes([
-                factory.createJsxAttribute(factory.createIdentifier('value'), factory.createStringLiteral(key)),
-              ]),
-            ),
-            [factory.createJsxText(label, false)],
-            factory.createJsxClosingElement(factory.createIdentifier('option')),
-          ),
-        ),
-        factory.createJsxClosingElement(factory.createIdentifier('select')),
-      ),
-      appTsx,
-    ],
-    factory.createJsxJsxClosingFragment(),
-  );
-}
-
-function mkInitBodyClassName(themeDefaultValue: string) {
-  return factory.createExpressionStatement(
-    factory.createBinaryExpression(
-      factory.createPropertyAccessExpression(
-        factory.createPropertyAccessExpression(factory.createIdentifier('document'), factory.createIdentifier('body')),
-        factory.createIdentifier('className'),
-      ),
-      factory.createToken(ts.SyntaxKind.EqualsToken),
-      factory.createStringLiteral(themeDefaultValue),
-    ),
-  );
-}
-
-function mkSwitchThemeHandler() {
-  return factory.createVariableStatement(
-    undefined,
-    factory.createVariableDeclarationList(
-      [
-        factory.createVariableDeclaration(
-          factory.createIdentifier('switchTheme'),
-          undefined,
-          undefined,
-          factory.createCallExpression(factory.createIdentifier('useCallback'), undefined, [
-            factory.createArrowFunction(
-              undefined,
-              undefined,
-              [
-                factory.createParameterDeclaration(
-                  undefined,
-                  undefined,
-                  undefined,
-                  factory.createIdentifier('e'),
-                  undefined,
-                  undefined,
-                  undefined,
-                ),
-              ],
-              undefined,
-              factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              factory.createBlock(
-                [
-                  factory.createExpressionStatement(
-                    factory.createBinaryExpression(
-                      factory.createPropertyAccessExpression(
-                        factory.createPropertyAccessExpression(
-                          factory.createIdentifier('document'),
-                          factory.createIdentifier('body'),
-                        ),
-                        factory.createIdentifier('className'),
-                      ),
-                      factory.createToken(ts.SyntaxKind.EqualsToken),
-                      factory.createPropertyAccessExpression(
-                        factory.createPropertyAccessExpression(
-                          factory.createIdentifier('e'),
-                          factory.createIdentifier('target'),
-                        ),
-                        factory.createIdentifier('value'),
-                      ),
-                    ),
-                  ),
-                ],
-                true,
-              ),
-            ),
-            factory.createArrayLiteralExpression([], false),
-          ]),
-        ),
-      ],
-      ts.NodeFlags.Const,
-    ),
-  );
 }

@@ -17,6 +17,16 @@ export async function getConfigFront(context: BuildContext) {
     define: defineEnvVar,
     inject: ['src/scripts/esbuild/react-shim.js'],
     format: 'esm',
+    loader: {
+      '.jpg': 'dataurl',
+      '.jpeg': 'dataurl',
+      '.png': 'dataurl',
+      '.gif': 'dataurl',
+      '.svg': 'dataurl',
+      '.ico': 'dataurl',
+      '.webp': 'dataurl',
+      '.avif': 'dataurl',
+    },
     plugins: [
       cssModulesPlugin({
         inject: true,
