@@ -31,7 +31,7 @@ import type {
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
 import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
 import { setStripeData } from '../../user/user-slice.js';
@@ -73,7 +73,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const [scssSelected, setScssSelected] = useState<boolean>(!!defaultSettings.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
-
+  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   useEffect(
     () => () => {
       defaultSettings = { ...userSettings };
@@ -143,7 +143,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setProgress({ stepId: 'extractImages', stepNumber: 6 });
       const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
       perfMeasure(`Images extracted in`);
-
+      let output = 'csb' as 'zip' | 'csb' | undefined;
+      if (isNoCodeSandboxUser) {
+        output = 'zip';
+      } else {
+      }
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
         const nodes: ExportCodePayload = {
@@ -157,7 +161,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
             // output: to remove later. It's defined in the webservice.
-            output: userSettings.zip ? 'zip' : 'csb',
+            output: userSettings.zip || isNoCodeSandboxUser ? 'zip' : 'csb',
             ...userSettings,
           },
           tokens,
@@ -197,6 +201,13 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         }
         if (!env.isDev || sendToApi) {
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
+
+          //! this if block is necessary for users with role "noCodesandbox" dont modify unless you know what you are doing.
+          if (isNoCodeSandboxUser) {
+            nodes.extraConfig.zip = true;
+            nodes.extraConfig.output = 'zip';
+          }
+
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
           if (!data.quotas) {
             const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
@@ -207,6 +218,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
           const durationInS = getDuration(timer, performance.now());
+
           if (data?.sandbox_id) {
             if (env.isDev) {
               console.log('sandbox preview:', `https://${data.sandbox_id}.csb.app/`, `(in ${durationInS} seconds)`);
@@ -295,14 +307,24 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               </Tooltip>
             )}
             <Tooltip
-              title='If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+              title={
+                isNoCodeSandboxUser
+                  ? '"noCodesandbox" role attributed, zip is enabled by default with security to not be able to upload to codesandbox for preview.'
+                  : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+              }
               disableInteractive
               placement='bottom-start'
             >
               <FormControlLabel
-                control={<Switch name='zip' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.zip} />}
+                control={
+                  <Switch
+                    name='zip'
+                    onChange={updateAdvancedOption}
+                    defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
+                  />
+                }
                 label='Download as zip'
-                disabled={isLoading}
+                disabled={isLoading || isNoCodeSandboxUser}
               />
             </Tooltip>
             <Tooltip

@@ -14,6 +14,8 @@ import type {
   Dict,
   ExportCodePayload,
 } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { AccessTokenDecoded } from '../user/user.utils.js';
+import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
@@ -45,6 +47,7 @@ const enableMUIInDev = false;
 export async function exportCode(
   { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
+  user: AccessTokenDecoded,
 ) {
   if (env.isDev) {
     uploadToCsb = false;
@@ -191,10 +194,14 @@ export async function exportCode(
     );
   }
   if (!env.isDev || uploadToCsb) {
+    const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (extraConfig.output === 'zip') {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
     } else {
+      if (isNoCodesandboxUser) {
+        throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
+      }
       const csbResponse = await uploadToCSB(csbFiles);
       return csbResponse;
     }

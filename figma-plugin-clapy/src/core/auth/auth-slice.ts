@@ -41,7 +41,6 @@ export const authSlice = createSlice({
     },
     setCheckingSessionState: (state, { payload }: PayloadAction<boolean>) => {
       state.isSessionChecking = payload;
-      console.log(payload);
     },
     setTokenDecoded: (state, { payload }: PayloadAction<AccessTokenDecoded | Nil>) => {
       state.tokenDecoded = payload;
@@ -66,5 +65,9 @@ export const selectSignedIn = (state: RootState) => state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
+export const selectNoCodesandboxUser = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('noCodesandbox');
+export const selectIncreasedQuotaUser = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('increasedQuota');
 export const selectUserLicenceExpirationDate = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];
