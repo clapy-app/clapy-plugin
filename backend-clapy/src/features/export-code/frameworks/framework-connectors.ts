@@ -1,17 +1,18 @@
-import type { ClassSelector, Raw } from 'css-tree';
+import type { ClassSelector, DeclarationPlain, Raw } from 'css-tree';
 import type { Attribute } from 'parse5/dist/common/token.js';
 import type { ChildNode, Element, TextNode } from 'parse5/dist/tree-adapters/default';
 import type ts from 'typescript';
 
 import type { genAstFromRootNode } from '../3-gen-component.js';
-import type { Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { Dict, Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompAst, JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../code.model.js';
-import type { BlockNode, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
+import type { BlockNode, SceneNode2, ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { angularConnector } from './angular/index.js';
 import { reactConnector } from './react/index.js';
 
 export type FwNode = ts.JsxChild | ChildNode;
 export type FwNodeOneOrMore = FwNode | FwNode[];
+export type FwAttr = ts.JsxAttribute | Attribute;
 
 export interface FrameworkConnector {
   templateBaseDirectory: (extraConfig: ExtraConfig) => string;
@@ -25,26 +26,36 @@ export interface FrameworkConnector {
   getCompDirName: (baseCompName: string) => string;
   getCompFileName: (compDir: string) => string;
   cssFileNameMiddlePart: string;
-  createClassAttribute: (node: SceneNode2, className: string) => ts.JsxAttribute | Attribute;
-  createClassAttrForClassNoOverride: (className: string) => ts.JsxAttribute | Attribute;
+  registerSvgForWrite: (context: NodeContext, svgContent: string) => string;
+  createClassAttribute: (node: SceneNode2, className: string) => FwAttr;
+  createClassAttributeSimple: (className: string) => FwAttr;
+  createClassAttrForClassNoOverride: (className: string) => FwAttr;
   mkSelector(context: NodeContext, className: string): Raw | ClassSelector;
   createNodeTag: (
     context: NodeContext,
-    attributes: (ts.JsxAttribute | Attribute)[],
+    attributes: FwAttr[],
     children: (ts.JsxChild | ChildNode)[],
     node: BlockNode,
   ) => JsxOneOrMore | Element | ChildNode[] | undefined;
+  mkSwapInstanceAlone: (context: NodeContext, ast: FwNodeOneOrMore | undefined, node: SceneNode2) => FwNode;
   wrapHideAndTextOverride: (
     context: NodeContext,
     ast: FwNodeOneOrMore | undefined,
     node: SceneNode2,
   ) => FwNodeOneOrMore | undefined;
   createText: (text: string) => ts.JsxText | TextNode;
-  createLinkAttributes: (href: string) => (ts.JsxAttribute | Attribute)[];
-  wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: (ts.JsxAttribute | Attribute)[]) => FwNode;
+  createLinkAttributes: (href: string) => FwAttr[];
+  wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: FwAttr[]) => FwNode;
   writeFileCode: (ast: ReturnType<typeof genAstFromRootNode>, moduleContext: ModuleContext) => void;
-  genCompUsage: (projectContext: ProjectContext, node: SceneNode2) => CompAst | Element | undefined;
+  genCompUsage: (
+    projectContext: ProjectContext,
+    node: SceneNode2,
+    extraAttributes?: FwAttr[],
+  ) => CompAst | Element | undefined;
+  createSvgTag: (svgPathVarName: string, svgAttributes: FwAttr[]) => FwNode;
+  addExtraSvgAttributes: (context: NodeContext, node: ValidNode, svgStyles: Dict<DeclarationPlain>) => void;
   writeRootCompFileCode: (appModuleContext: ModuleContext, compAst: CompAst | Element | undefined) => void;
+  writeSVGReactComponents: (projectContext: ProjectContext) => Promise<void>;
 }
 
 export const frameworkConnectors = makeConnectors({

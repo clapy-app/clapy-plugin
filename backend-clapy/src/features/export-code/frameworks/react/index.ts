@@ -2,44 +2,52 @@ import type { ChildNode } from 'parse5/dist/tree-adapters/default.js';
 import type { JsxChild, Statement } from 'typescript';
 import ts from 'typescript';
 
+import { writeSVGReactComponents } from '../../7-write-svgr.js';
 import { isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
   CompAst,
+  CompContext,
   JsxOneOrMore,
   ModuleContext,
   NodeContext,
   ProjectContext,
+  StyleOverride,
   SwapAst,
 } from '../../code.model.js';
 import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
+import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
 import {
   createClassAttrForClassNoOverride,
   createClassAttrForNode,
-  createComponentUsageWithAttributes,
   getOrCreateCompContext,
   mkClassAttr2,
+  mkClassAttr3,
+  mkClassesAttribute2,
   mkCompFunction,
-  mkComponentUsage,
   mkDefaultImportDeclaration,
+  mkHidingsAttribute,
   mkHrefAttr,
   mkNamedImportsDeclaration,
   mkNoReferrerAttr,
   mkPropInterface,
+  mkSwapInstanceAlone,
   mkSwapInstanceAndHideWrapper,
+  mkSwapsAttribute,
   mkTag,
   mkTargetBlankAttr,
+  mkTextOverridesAttribute,
   mkWrapHideAndTextOverrideAst,
 } from '../../gen-node-utils/ts-ast-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
-import type { FrameworkConnector, FwNodeOneOrMore } from '../framework-connectors.js';
+import type { FrameworkConnector, FwAttr, FwNodeOneOrMore } from '../framework-connectors.js';
 
 const { factory } = ts;
 
@@ -62,13 +70,16 @@ export const reactConnector: FrameworkConnector = {
   // MyRectangle.tsx
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
+  registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,
+  createClassAttributeSimple: mkClassAttr3,
   createClassAttrForClassNoOverride,
   mkSelector: (context, className) => mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return wrapHideAndTextOverride(context, ast2, node);
   },
+  mkSwapInstanceAlone: (context, ast, node) => mkSwapInstanceAlone(context, ast as ts.JsxSelfClosingElement, node),
   wrapHideAndTextOverride,
   createText: text => factory.createJsxText(text, false),
   createLinkAttributes: href => [mkHrefAttr(href), mkTargetBlankAttr(), mkNoReferrerAttr()],
@@ -93,6 +104,9 @@ export const reactConnector: FrameworkConnector = {
     printFileInProject(moduleContext);
   },
   genCompUsage,
+  createSvgTag: (svgPathVarName, svgAttributes) =>
+    mkComponentUsage(svgPathVarName, svgAttributes as ts.JsxAttribute[] | undefined),
+  addExtraSvgAttributes: () => {},
   writeRootCompFileCode(appModuleContext, compAst) {
     const { statements } = appModuleContext;
 
@@ -126,6 +140,7 @@ export const reactConnector: FrameworkConnector = {
 
     printFileInProject(appModuleContext);
   },
+  writeSVGReactComponents,
 };
 
 function wrapHideAndTextOverride(context: NodeContext, ast: FwNodeOneOrMore | undefined, node: SceneNode2) {
@@ -169,11 +184,11 @@ function printFileInProject(moduleContext: ModuleContext) {
   ]);
 }
 
-export function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {
+export function genCompUsage(projectContext: ProjectContext, node: SceneNode2, extraAttributes?: FwAttr[]) {
   if (isInstance(node)) {
     return genInstanceAst(node);
   } else {
-    return genInstanceLikeAst(node);
+    return genInstanceLikeAst(node, extraAttributes as ts.JsxAttribute[]);
   }
 }
 
@@ -195,12 +210,57 @@ function genInstanceAst(node: InstanceNode2) {
   return compAst2;
 }
 
-function genInstanceLikeAst(node: SceneNode2) {
+function genInstanceLikeAst(node: SceneNode2, extraAttributes: ts.JsxAttribute[] | undefined) {
   const { componentContext } = node;
   if (!componentContext) {
     throw new Error(`[genInstanceLikeAst] node ${node.name} has no componentContext.`);
   }
-  return mkComponentUsage(componentContext.compName);
+  return mkComponentUsage(componentContext.compName, extraAttributes);
+}
+
+export function createComponentUsageWithAttributes(compContext: CompContext, componentModuleContext: ModuleContext) {
+  const { instanceSwaps, instanceHidings, instanceStyleOverrides, instanceTextOverrides } = compContext;
+
+  const attrs = [];
+
+  const classOverridesArr = Object.values(instanceStyleOverrides);
+  let rootClassOverride: StyleOverride | undefined;
+  let otherClassOverrides: StyleOverride[] = [];
+  for (const ov of classOverridesArr) {
+    if (ov.propName === 'root') {
+      rootClassOverride = ov;
+    } else {
+      otherClassOverrides.push(ov);
+    }
+  }
+  // if (!rootClassOverride) {
+  //   warnNode(node, 'No root class found in instanceClasses.');
+  // }
+
+  const classAttr = mkClassAttr2(rootClassOverride);
+  if (classAttr) attrs.push(classAttr);
+
+  const classesAttr = mkClassesAttribute2(componentModuleContext, otherClassOverrides);
+  if (classesAttr) attrs.push(classesAttr);
+
+  const swapAttr = mkSwapsAttribute(instanceSwaps);
+  if (swapAttr) attrs.push(swapAttr);
+
+  const hideAttr = mkHidingsAttribute(instanceHidings);
+  if (hideAttr) attrs.push(hideAttr);
+
+  const textOverrideAttr = mkTextOverridesAttribute(instanceTextOverrides);
+  if (textOverrideAttr) attrs.push(textOverrideAttr);
+
+  return mkComponentUsage(componentModuleContext.compName, attrs);
+}
+
+function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttribute[]) {
+  return factory.createJsxSelfClosingElement(
+    factory.createIdentifier(compName),
+    undefined,
+    factory.createJsxAttributes(extraAttributes || []),
+  );
 }
 
 function mkAppCompTsx(compAst: CompAst | undefined) {

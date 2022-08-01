@@ -1,5 +1,4 @@
 import type { DeclarationPlain } from 'css-tree';
-import type ts from 'typescript';
 
 import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
@@ -7,25 +6,15 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
-import { genComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
-import {
-  addCssRule,
-  createClassAttrForNode,
-  mkClassAttr3,
-  mkComponentUsage,
-  mkHtmlFullClass,
-  mkIdAttribute,
-  mkNamedImportsDeclaration,
-  mkSwapInstanceAlone,
-  mkTag,
-  mkWrapHideAndTextOverrideAst,
-} from './ts-ast-utils.js';
+import type { FwAttr } from '../frameworks/framework-connectors.js';
+import { genIconComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
+import { addCssRule, mkHtmlFullClass, mkIdAttribute, mkNamedImportsDeclaration } from './ts-ast-utils.js';
 
 export function registerSvgForWrite(context: NodeContext, svgContent: string) {
   const { moduleContext } = context;
   const { projectContext } = moduleContext;
 
-  const svgPathVarName = genComponentImportName(context);
+  const svgPathVarName = genIconComponentImportName(context);
 
   // Save SVG to convert to React component later, so that we isolate the execution time, which is significant (second most expensive after Prettier formatting).
   projectContext.svgToWrite[`${moduleContext.compDir}/${svgPathVarName}.tsx`] = {
@@ -50,47 +39,64 @@ export function createSvgAst(
 ) {
   const attributes = addNodeStyles(context, node, styles);
   if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
+  const {
+    moduleContext: { projectContext },
+  } = context;
+  const { fwConnector } = projectContext;
   const svgAttributes = createSvgClassAttribute(context, node);
-  let ast: ts.JsxSelfClosingElement | ts.JsxExpression | ts.JsxFragment = mkComponentUsage(
-    svgPathVarName,
-    svgAttributes,
-  );
+  let ast = fwConnector.createSvgTag(svgPathVarName, svgAttributes);
   if (wrapWithSwap) {
-    ast = mkSwapInstanceAlone(context, ast, node)!;
+    ast = fwConnector.mkSwapInstanceAlone(context, ast, node)!;
   }
-  const ast2 = ast && attributes.length ? mkTag('div', attributes, Array.isArray(ast) ? ast : [ast]) : ast;
-  return mkWrapHideAndTextOverrideAst(context, ast2, node);
+  const ast2 = ast && attributes.length ? fwConnector.wrapNode(ast, 'div', attributes) : ast;
+  return fwConnector.wrapHideAndTextOverride(context, ast2, node);
 }
 
 export function createSvgClassAttribute(context: NodeContext, node: ValidNode) {
+  const { fwConnector } = context.moduleContext.projectContext;
   const svgStyles: Dict<DeclarationPlain> = {};
   addStyle(context, node, svgStyles, 'width', '100%');
   addStyle(context, node, svgStyles, 'height', '100%');
-  return addNodeStyles(context, node, svgStyles, 'icon');
+  fwConnector.addExtraSvgAttributes(context, node, svgStyles);
+  return addNodeStyles2(context, node, svgStyles, 'icon');
 }
 
 // If classBaseName is provided, it is used instead of node to generate the attribute.
 // Useful for the SVG class attribute, not found to a Figma node.
-export function addNodeStyles(
+export function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  const { moduleContext } = context;
+  const {
+    projectContext: { fwConnector },
+  } = moduleContext;
+  const styleDeclarations = stylesToList(styles);
+  let attributes: FwAttr[] = [];
+  if (styleDeclarations.length) {
+    const className = getOrGenClassName(moduleContext, node);
+    addCssRule(context, className, styleDeclarations, node);
+    const htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
+    node.htmlClass = htmlClass;
+    attributes.push(fwConnector.createClassAttribute(node, htmlClass));
+  }
+  return attributes;
+}
+
+export function addNodeStyles2(
   context: NodeContext,
   node: ValidNode,
   styles: Dict<DeclarationPlain>,
-  classBaseName?: string,
+  classBaseName: string,
 ) {
   const { moduleContext } = context;
+  const {
+    projectContext: { fwConnector },
+  } = moduleContext;
   const styleDeclarations = stylesToList(styles);
-  const isSubWrapperNotNode = !!classBaseName;
-  let attributes: ts.JsxAttribute[] = [];
+  let attributes: FwAttr[] = [];
   if (styleDeclarations.length) {
-    const className = isSubWrapperNotNode
-      ? getOrGenClassName(moduleContext, undefined, classBaseName)
-      : getOrGenClassName(moduleContext, node);
+    const className = getOrGenClassName(moduleContext, undefined, classBaseName);
     addCssRule(context, className, styleDeclarations, node);
     const htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
-    if (!isSubWrapperNotNode) {
-      node.htmlClass = htmlClass;
-    }
-    attributes.push(isSubWrapperNotNode ? mkClassAttr3(htmlClass) : createClassAttrForNode(node, htmlClass));
+    attributes.push(fwConnector.createClassAttributeSimple(htmlClass));
   }
   return attributes;
 }

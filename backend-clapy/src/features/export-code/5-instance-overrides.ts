@@ -37,6 +37,7 @@ import { printStandalone } from './create-ts-compiler/parsing.utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import type { FwNodeOneOrMore } from './frameworks/framework-connectors.js';
+import { createComponentUsageWithAttributes } from './frameworks/react/index.js';
 import { addHiddenNodeToInstance } from './gen-node-utils/default-node.js';
 import {
   getOrGenClassName,
@@ -49,7 +50,6 @@ import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-u
 import {
   addCssRule,
   checkIsOriginalInstance,
-  createComponentUsageWithAttributes,
   fillIsRootInComponent,
   getOrCreateCompContext,
   removeCssRule,
@@ -185,7 +185,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
               intermediateInstanceNodeOfComps: [],
               intermediateComponentContexts: [],
             };
-            addSwapInstance(context, node, ast);
+            addSwapInstance(context, node, ast as JsxOneOrMore);
           }
         }
       }
@@ -432,7 +432,7 @@ function addStyleOverride(context: InstanceContext, node: SceneNode2) {
 }
 
 // TODO texte pas tjrs bien caché
-function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: SwapAst) {
+function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: JsxOneOrMore) {
   let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
   if (!swapContext) {
     throw new Error(`BUG [addSwapInstance] swapContext is undefined. But it should be defined in recurseOnChildren.`);

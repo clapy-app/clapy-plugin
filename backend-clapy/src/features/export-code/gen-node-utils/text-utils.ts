@@ -1,5 +1,4 @@
 import type { DeclarationPlain } from 'css-tree';
-import type { Attribute } from 'parse5/dist/common/token.js';
 import ts from 'typescript';
 
 import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map.js';
@@ -11,7 +10,7 @@ import type { TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
-import type { FwNode, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
+import type { FwAttr, FwNode, FwNodeOneOrMore } from '../frameworks/framework-connectors.js';
 import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTML } from './process-nodes-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
@@ -95,8 +94,8 @@ export function genTextAst(node: TextNode2) {
 
   const singleChild = textSegments.length === 1;
 
-  let textBlockStyleAttributes: (ts.JsxAttribute | Attribute)[] | undefined = undefined;
-  let textSpanWrapperAttributes: (ts.JsxAttribute | Attribute)[] | undefined = undefined;
+  let textBlockStyleAttributes: FwAttr[] | undefined = undefined;
+  let textSpanWrapperAttributes: FwAttr[] | undefined = undefined;
 
   // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
   // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
@@ -106,7 +105,7 @@ export function genTextAst(node: TextNode2) {
   // If node has styles to render, surround with a styled div
   if (!node.textSkipStyles) {
     const styleDeclarations = stylesToList(styles);
-    let attributes: (ts.JsxAttribute | Attribute)[] = [];
+    let attributes: FwAttr[] = [];
     if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
     if (styleDeclarations.length) {
       const className = getOrGenClassName(moduleContext, node);
@@ -120,7 +119,7 @@ export function genTextAst(node: TextNode2) {
   // Text span wrapper
   // If multiple segments, surround with span to maintain the inline style
   if (!singleChild) {
-    const attributes: (ts.JsxAttribute | Attribute)[] = [];
+    const attributes: FwAttr[] = [];
     if (node.textInlineWrapperStyles) {
       const styleDeclarations = stylesToList(node.textInlineWrapperStyles);
       if (styleDeclarations.length) {
@@ -144,7 +143,7 @@ export function genTextAst(node: TextNode2) {
 
     if (!singleChild) {
       const styleDeclarations = stylesToList(segmentStyles);
-      const attributes: (ts.JsxAttribute | Attribute)[] = [];
+      const attributes: FwAttr[] = [];
       if (styleDeclarations.length) {
         const className = getOrGenClassName(moduleContext);
         let htmlClass2 = mkHtmlFullClass(context, className, htmlClass);

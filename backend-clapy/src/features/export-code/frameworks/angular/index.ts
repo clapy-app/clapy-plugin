@@ -2,21 +2,25 @@ import type { Attribute } from 'parse5/dist/common/token.js';
 import type { ChildNode, Node } from 'parse5/dist/tree-adapters/default.js';
 
 import { dashCaseToPascalCase, isNonEmptyObject } from '../../../../common/general-utils.js';
+import { env } from '../../../../env-and-config/env.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
-import type { ModuleContext, ProjectContext } from '../../code.model.js';
+import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
-import { getComponentName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
+import { genIconComponentImportName, getComponentName, TextCase } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
-import type { FrameworkConnector } from '../framework-connectors.js';
+import type { FrameworkConnector, FwAttr } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
 
 const csbDir = `${exportTemplatesDir}/angular-csb`;
 const zipDir = `${exportTemplatesDir}/angular-zip`;
+const appCompDir = 'src/app';
+const assetsDir = 'src/assets';
 const indexHtmlPath = 'src/index.html';
 
 export const angularConnector: FrameworkConnector = {
@@ -24,7 +28,7 @@ export const angularConnector: FrameworkConnector = {
   getIndexHtmlPath: () => indexHtmlPath,
   enableInstanceOverrides: false,
   patchProjectConfigFiles,
-  appCompDir: 'src/app',
+  appCompDir,
   appBaseCompName: 'app',
   // my-rectangle
   getBaseCompName: (projectContext, node) => getComponentName(projectContext, node, TextCase.Dash),
@@ -35,10 +39,12 @@ export const angularConnector: FrameworkConnector = {
   // my-rectangle.component.ts
   getCompFileName: compDir => `${compDir}.component.ts`,
   cssFileNameMiddlePart: 'component',
+  registerSvgForWrite,
   createClassAttribute(node, className) {
     const className2 = className || node.className!;
     return mkHtmlAttribute('class', className2);
   },
+  createClassAttributeSimple: className => mkHtmlAttribute('class', className),
   createClassAttrForClassNoOverride: className => mkHtmlAttribute('class', className),
   mkSelector: (context, className) =>
     !context.hasExtraAttributes && className === 'root' ? mkRawCss(':host') : mkClassSelectorCss(className),
@@ -48,6 +54,11 @@ export const angularConnector: FrameworkConnector = {
       return children as ChildNode[];
     }
     return mkHtmlElement(context.tagName, attributes as Attribute[], children as ChildNode[]);
+  },
+  mkSwapInstanceAlone: (context, ast, node) => {
+    if (!ast) throw new Error('BUG AST is undefined');
+    if (Array.isArray(ast)) throw new Error('BUG AST is an array');
+    return ast;
   },
   wrapHideAndTextOverride: (context, ast, node) => ast,
   createText: mkHtmlText,
@@ -79,6 +90,8 @@ export const angularConnector: FrameworkConnector = {
     printFileInProject(moduleContext);
   },
   genCompUsage,
+  createSvgTag,
+  addExtraSvgAttributes: (context, node, svgStyles) => addStyle(context, node, svgStyles, 'object-fit', 'cover'),
   writeRootCompFileCode(appModuleContext, compAst) {
     const { projectContext, compDir, baseCompName } = appModuleContext;
 
@@ -92,6 +105,7 @@ export const angularConnector: FrameworkConnector = {
     const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
     printFileInProject(appModuleContext, `${prefix}-root`);
   },
+  writeSVGReactComponents: async () => {},
 };
 
 export function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: ExtraConfig) {
@@ -110,6 +124,7 @@ export function patchProjectConfigFiles(projectContext: ProjectContext, extraCon
 
   const cssExt = getCSSExtension(extraConfig);
   const resetsCssPath = `src/resets.${cssExt}`;
+  const stylesCssPath = `src/styles.${cssExt}`;
   proj.architect.build.options.styles.push(resetsCssPath);
   proj.architect.test.options.styles.push(resetsCssPath);
 
@@ -123,10 +138,30 @@ export function patchProjectConfigFiles(projectContext: ProjectContext, extraCon
     );
     if (!cssFiles[resetsCssPath]) throw new Error(`CSS resets not found at ${resetsCssPath}`);
     cssFiles[resetsCssPath] = cssFiles[resetsCssPath].replaceAll('app-root', `${prefix}-root`);
+    if (!cssFiles[stylesCssPath]) throw new Error(`CSS resets not found at ${stylesCssPath}`);
+    cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${prefix}-root`);
+  }
+
+  if (env.isDev) {
+    // Disable the analytics prompt locally, to avoid blocking the preview task.
+    angularJson.cli.analytics = false;
   }
 
   resources['angular.json'] = JSON.stringify(angularJson, null, 2);
 }
+
+export function registerSvgForWrite(context: NodeContext, svgContent: string) {
+  const { moduleContext } = context;
+  const { projectContext } = moduleContext;
+
+  const svgPathVarName = genIconComponentImportName(context, TextCase.Dash);
+
+  // For Angular, the SVG is saved as an asset and will be used in an img tag as href. No need to wrap into a component, as we do in React.
+  projectContext.resources[`${assetsDir}/${svgPathVarName}.svg`] = svgContent;
+
+  return svgPathVarName;
+}
+
 function printFileInProject(moduleContext: ModuleContext, compNameOverride?: string) {
   const { projectContext, compDir, baseCompName } = moduleContext;
 
@@ -134,7 +169,7 @@ function printFileInProject(moduleContext: ModuleContext, compNameOverride?: str
   projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext, compNameOverride));
 }
 
-export function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {
+function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {
   const { componentContext } = node;
   if (!componentContext) {
     throw new Error(
@@ -144,4 +179,10 @@ export function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {
   const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
   if (!prefix) throw new Error(`Angular prefix undefined, cannot generate component usage.`);
   return mkHtmlElement(`${prefix}-${componentContext.baseCompName}`);
+}
+
+function createSvgTag(svgPathVarName: string, svgAttributes?: FwAttr[]) {
+  const imgSrcAttr = mkHtmlAttribute('src', `assets/${svgPathVarName}.svg`);
+  const imgAltAttr = mkHtmlAttribute('alt', ``);
+  return mkHtmlElement(`img`, [imgSrcAttr, imgAltAttr, ...(svgAttributes as Attribute[])]);
 }

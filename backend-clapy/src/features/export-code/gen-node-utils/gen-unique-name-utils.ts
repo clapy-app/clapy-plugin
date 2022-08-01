@@ -78,16 +78,16 @@ export function getOrGenTextOverrideProp(
   return textOverrideProp;
 }
 
-export function genComponentImportName(context: NodeContext) {
+export function genIconComponentImportName(context: NodeContext, textCase: TextCase = TextCase.Pascal) {
   // The variable is generated from the node name. But 'icon' is a bad variable name. If that's the node name, let's use the parent instead.
   let baseName =
     context.nodeNameLower === 'icon' && context.parentContext?.nodeNameLower
       ? context.parentContext?.nodeNameLower
       : context.nodeNameLower;
   if (baseName !== 'icon') {
-    baseName = `${baseName}Icon`;
+    baseName = textCase === TextCase.Dash ? `${baseName}-icon` : `${baseName}Icon`;
   }
-  return genUniqueName(context.moduleContext.subComponentNamesAlreadyUsed, baseName, TextCase.Pascal);
+  return genUniqueName(context.moduleContext.subComponentNamesAlreadyUsed, baseName, textCase);
 }
 
 export function getComponentName(

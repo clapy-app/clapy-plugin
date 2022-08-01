@@ -1,5 +1,4 @@
 import type { DeclarationPlain } from 'css-tree';
-import type { Attribute } from 'parse5/dist/common/token.js';
 import type { ChildNode } from 'parse5/dist/tree-adapters/default.js';
 import type ts from 'typescript';
 
@@ -35,9 +34,10 @@ import {
 } from './create-ts-compiler/canvas-utils.js';
 import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
+import type { FwAttr } from './frameworks/framework-connectors.js';
 import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { getOrGenClassName, getOrGenHideProp } from './gen-node-utils/gen-unique-name-utils.js';
-import { addNodeStyles, createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
+import { addNodeStyles, createSvgAst, readSvg } from './gen-node-utils/process-nodes-utils.js';
 import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -62,6 +62,8 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
     }
 
     const { parentNode, moduleContext, isRootInComponent } = context;
+    const { projectContext } = moduleContext;
+    const { fwConnector } = projectContext;
     fillIsRootInComponent(moduleContext, node);
     if (isRootInComponent) {
       // Always generate the className prop for root nodes
@@ -124,7 +126,6 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
       prepareStylesOnTextSegments(context, node, styles);
       return;
     } else if (isVector(node)) {
-      const { projectContext } = moduleContext;
       let svgContent = readSvg(context, node);
       if (!svgContent) {
         if (node.visible) {
@@ -133,7 +134,7 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
         return;
       }
 
-      const svgPathVarName = registerSvgForWrite(context, svgContent);
+      const svgPathVarName = fwConnector.registerSvgForWrite(context, svgContent);
 
       addNodeStyles1(context, node, styles);
 
@@ -259,7 +260,7 @@ export function genNodeAst(node: SceneNode2) {
     if (muiConfig) {
       const node2 = node as InstanceNode2;
       const attributes = addNodeStyles(context, node2, styles);
-      return mkMuiComponentAst(context, muiConfig, node2, attributes);
+      return mkMuiComponentAst(context, muiConfig, node2, attributes as ts.JsxAttribute[]);
     }
 
     if (node.noLayoutWithChildren) {
@@ -292,7 +293,7 @@ export function genNodeAst(node: SceneNode2) {
       }
 
       const children = context.firstChildIsPlaceholder ? undefined : genNodeAstLoopChildren(node);
-      let attributes: (ts.JsxAttribute | Attribute)[] = [];
+      let attributes: FwAttr[] = [];
       if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
 
       if (hasStyles) {

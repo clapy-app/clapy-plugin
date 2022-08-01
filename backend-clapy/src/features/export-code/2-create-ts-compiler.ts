@@ -15,7 +15,6 @@ import type {
   ExportCodePayload,
 } from '../sb-serialize-preview/sb-serialize.model.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
-import { writeSVGReactComponents } from './7-write-svgr.js';
 import { diagnoseFormatTsFiles, prepareCssFiles } from './8-diagnose-format-ts-files.js';
 import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
 import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
@@ -150,7 +149,7 @@ export async function exportCode(
   addCompToAppRoot(lightAppModuleContext, parent, cssVarsDeclaration, compAst);
   perfMeasure('e');
 
-  await writeSVGReactComponents(projectContext);
+  await fwConnector.writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
   tsFiles = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
