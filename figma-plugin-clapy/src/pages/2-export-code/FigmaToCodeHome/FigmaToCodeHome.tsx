@@ -304,7 +304,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               title={
                 isNoCodeSandboxUser
                   ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
-                  : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview.'
+                  : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
               }
               disableInteractive
               placement='bottom-start'
