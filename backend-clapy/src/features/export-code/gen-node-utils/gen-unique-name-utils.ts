@@ -148,17 +148,15 @@ function camelize(str: string) {
 }
 
 function dashize(str: string) {
-  str = prefixIfNumber(
-    removeAccents(str)
-      .replaceAll('_', '')
-      .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
-        if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
-        match = match.toLowerCase();
-        return index === 0 ? match : `-${match}`;
-      })
-      // Truncate if variable name is too long
-      .substring(0, 30),
-  );
+  str = removeAccents(str)
+    .replaceAll('_', '')
+    .replace(/(?:^\w|[A-Z]|\b\w|\s+|[^\w])/g, (match, index) => {
+      if (+match === 0 || !/\w/.test(match)) return ''; // or if (/\s+/.test(match)) for white spaces
+      match = match.toLowerCase();
+      return index === 0 ? match : `-${match}`;
+    })
+    // Truncate if variable name is too long
+    .substring(0, 30);
   if (str.endsWith('-')) {
     str = str.slice(0, -1);
   }
@@ -166,7 +164,7 @@ function dashize(str: string) {
 }
 
 export function dashCaseToPascalCase(text: string) {
-  return text.replace(/(^\w|-\w|-$)/g, clearAndUpper);
+  return prefixIfNumber(text.replace(/(^\w|-\w|-$)/g, clearAndUpper));
 }
 
 function clearAndUpper(text: string) {
