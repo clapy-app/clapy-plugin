@@ -8,7 +8,7 @@ import { getFigmaSelection } from '../../common/selection-utils';
 import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
 import { optimizeConfig } from './4-optimize-config.js';
 import { extractFigmaTokens } from './9-extract-tokens.js';
-import type { AnyNode3, ExtractBatchContext } from './read-figma-config-utils.js';
+import type { AnyNode3, AnyNodeOriginal, ExtractBatchContext } from './read-figma-config-utils.js';
 
 let _notifyProgress: ((progress: ExtractionProgress) => void) | undefined;
 
@@ -45,6 +45,7 @@ export async function serializeSelectedNode() {
   const parentConfig = nodeParent ? readParentNodeConfig(nodeParent) : undefined;
 
   const extractBatchContext: ExtractBatchContext = {
+    isRootNodeInComponent: true,
     images: {},
     components: {},
     componentsToProcess: [node],
@@ -68,7 +69,9 @@ export async function serializeSelectedNode() {
   const nodes: AnyNode3[] = [];
   for (const compToProcess of extractBatchContext.componentsToProcess) {
     await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2 }, compToProcess);
-    nodes.push(readFigmaNodesConfig(compToProcess, extractBatchContext));
+    const { parent } = compToProcess;
+    const parentConfig = parent ? readParentNodeConfig(parent as AnyNodeOriginal) : undefined;
+    nodes.push(readFigmaNodesConfig(extractBatchContext, compToProcess, parentConfig));
     perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
   }
 

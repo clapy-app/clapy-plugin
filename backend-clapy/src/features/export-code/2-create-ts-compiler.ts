@@ -45,7 +45,7 @@ function getCSSVariablesFileName(cssExt: string) {
 const enableMUIInDev = false;
 
 export async function exportCode(
-  { root, parent: p, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
+  { root, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
   uploadToCsb = true,
   user: AccessTokenDecoded,
 ) {
@@ -62,16 +62,17 @@ export async function exportCode(
     (extraConfig.frameworkConfig as AngularConfig).prefix = 'cl';
   }
 
-  const parent = p as ParentNode | Nil;
+  const parent = (root as any)?.parent as ParentNode | Nil;
   const instancesInComp: InstanceNode2[] = [];
   for (const comp of components) {
-    fillWithDefaults(comp, instancesInComp, true);
+    fillWithDefaults((comp as any)?.parent, instancesInComp, true);
+    fillWithDefaults(comp, instancesInComp);
   }
   const compNodes = components.reduce((prev, cur) => {
     prev[cur.id] = cur;
     return prev;
   }, {} as Dict<ComponentNode2>) as unknown as Dict<ComponentNode2>;
-  fillWithDefaults(p, instancesInComp, false, true);
+  fillWithDefaults((root as any)?.parent, instancesInComp, true);
   for (const instance of instancesInComp) {
     fillWithComponent(instance, compNodes);
   }
@@ -135,6 +136,7 @@ export async function exportCode(
     true,
     false,
     true,
+    false,
   );
   perfMeasure('c');
   const lightAppNodeContext = createNodeContext(lightAppModuleContext, root, parent);
@@ -254,7 +256,7 @@ function addCompToAppRoot(
     cssFiles[appCssPath] = updatedAppCss;
   }
 
-  fwConnector.writeRootCompFileCode(appModuleContext, compAst);
+  fwConnector.writeRootCompFileCode(appModuleContext, compAst, appCssPath, parentNode);
 }
 
 function addPackages(projectContext: ProjectContext) {

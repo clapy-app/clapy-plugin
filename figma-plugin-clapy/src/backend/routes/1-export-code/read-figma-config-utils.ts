@@ -6,10 +6,13 @@ import type {
   ComponentNodeNoMethod,
   Dict,
   ExportImagesFigma,
+  FrameNode2,
+  InstanceNode2,
   LayoutNode,
   LayoutTypes,
   NodeLight,
   NodeWithDefaults,
+  PageNode2,
   SceneNode2,
 } from '../../../common/sb-serialize.model.js';
 import { nodeDefaults } from '../../../common/sb-serialize.model.js';
@@ -26,15 +29,17 @@ import {
 
 export type AnyNodeOriginal = SceneNode;
 export type AnyNode3 = /* SceneNode2 */ Omit<SceneNode2, 'type'> & {
-  parent?: NodeLight; // Should be required, but we will need to fix a few typing issues.
+  parent?: NodeLight | AnyNode3; // Should be required, but we will need to fix a few typing issues.
   exportAsSvg?: boolean;
   type: Exclude<LayoutTypes, 'PAGE'>;
 };
+export type AnyParent = FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2;
 
 // const propsNeverOmitted = new Set<keyof SceneNodeNoMethod>(['type']);
 // const componentPropsNotInherited = new Set<keyof SceneNodeNoMethod>(['type', 'visible', 'name']);
 
 export interface ExtractBatchContext {
+  isRootNodeInComponent: boolean;
   images: ExportImagesFigma;
   /** @deprecated */
   components: Dict<ComponentNodeNoMethod>;

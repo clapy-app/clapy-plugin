@@ -1,11 +1,5 @@
 import { warnNode } from '../../../common/error-utils';
-import type {
-  ComponentNode2,
-  FrameNode2,
-  InstanceNode2,
-  LayoutTypes,
-  PageNode2,
-} from '../../../common/sb-serialize.model';
+import type { ComponentNode2, LayoutTypes } from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
 import {
   isBlendMixin,
@@ -20,11 +14,13 @@ import {
 } from '../../common/node-type-utils';
 import { exportNodeTokens2 } from './9-extract-tokens.js';
 import { nodeAttributes, rangeProps } from './node-attributes';
-import type { AnyNode3, AnyNodeOriginal, ExtractBatchContext } from './read-figma-config-utils.js';
+import type { AnyNode3, AnyNodeOriginal, AnyParent, ExtractBatchContext } from './read-figma-config-utils.js';
 import { isProcessableInstance2, shouldGroupAsSVG } from './read-figma-config-utils.js';
 
 export function readParentNodeConfig<T extends AnyNodeOriginal>(nodeOriginal: T) {
-  return commonFigmaConfigExtraction(nodeOriginal) as FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2;
+  // Possible optimization: only extract the fields that are useful for the parent. Some of the fields I've listed from the webservice:
+  // name, type, layoutMode, x, y, width, height, clipsContent, styles, children
+  return commonFigmaConfigExtraction(nodeOriginal) as AnyParent;
 }
 
 function commonFigmaConfigExtraction<T extends AnyNodeOriginal>(nodeOriginal: T) {
@@ -64,8 +60,9 @@ function commonFigmaConfigExtraction<T extends AnyNodeOriginal>(nodeOriginal: T)
 }
 
 export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
-  nodeOriginal: T,
   context: ExtractBatchContext,
+  nodeOriginal: T,
+  parent: AnyParent | undefined,
 ): AnyNode3 {
   // It seems reading attributes of Figma nodes have very bad performance impact.
   // Probably because it's not a simple JS object, but a wrapper around something more complex.
@@ -76,10 +73,11 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
   const { id } = node;
 
   // Copy the reference to the parent
-  const { parent } = nodeOriginal;
   const { id: parentId, name: parentName, type: parentType } = parent || {};
   if (parentId) {
-    node.parent = { id: parentId, name: parentName!, type: parentType as LayoutTypes };
+    node.parent = context.isRootNodeInComponent
+      ? parent
+      : { id: parentId, name: parentName!, type: parentType as LayoutTypes };
   }
 
   const nodeIsComp = isComponent2(node);
@@ -129,7 +127,13 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
     if (children) {
       // Another way to iterate to try, using generators, that might be a bit faster (to compare):
       // https://forum.figma.com/t/figma-layers-tree-traversal-estimating-size/551/4
-      (node as any).children = children.map(child => readFigmaNodesConfig(child, context));
+      const contextForChildren: ExtractBatchContext = {
+        ...context,
+        isRootNodeInComponent: false,
+      };
+      (node as any).children = children.map(child =>
+        readFigmaNodesConfig(contextForChildren, child, node as AnyParent),
+      );
     }
   }
 
@@ -150,6 +154,7 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
       context.componentsToProcess.push(mainComponent);
     }
 
+    // Linking is delayed in callbacks because the instance component may not have been processed yet (missing in componentsCache).
     componentsCallbacks[id].push(comp => {
       const { name, type } = comp;
       node.mainComponent = { id, name, type: type as any } as ComponentNode2;

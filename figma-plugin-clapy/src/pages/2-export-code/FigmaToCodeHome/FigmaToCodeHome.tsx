@@ -131,7 +131,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       });
 
       setProgress({ stepId: 'init', stepNumber: 1 });
-      const { extraConfig, parent, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
+      const { extraConfig, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
         await fetchPlugin('serializeSelectedNode');
       unsubscribe?.();
       perfMeasure(`Figma configuration extracted in`);
@@ -147,7 +147,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       if (components && styles && imagesExtracted) {
         const images: ExportImageMap2 = {};
         const nodes: ExportCodePayload = {
-          parent,
           root,
           components,
           svgs,
