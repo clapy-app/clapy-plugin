@@ -271,7 +271,6 @@ export type ExtraConfig = {
 export type SVGsExtracted = Dict<{ svg: string; name: string }>;
 
 export interface ExportCodePayload {
-  parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;
   root: SceneNode2 | null | undefined;
   components: ComponentNode2[];
   svgs: SVGsExtracted;
@@ -414,6 +413,7 @@ export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'ma
 export interface CSBResponse {
   sandbox_id: string;
   quotas: number;
+  quotasMax: number;
   isLicenceExpired?: boolean;
 }
 

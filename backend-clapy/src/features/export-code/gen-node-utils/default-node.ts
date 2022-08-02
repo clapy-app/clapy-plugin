@@ -28,7 +28,6 @@ export function addHugContents(): Partial<FrameNodeNoMethod> {
 export function fillWithDefaults(
   node: SceneNode2 | PageNode2 | Nil,
   instancesInComp: InstanceNode2[],
-  inComp?: boolean,
   isPage?: boolean,
 ) {
   if (!node) return;
@@ -39,7 +38,7 @@ export function fillWithDefaults(
     fillNodeWithDefaults(node, defaultsForNode(node));
     if (isChildrenMixin(node)) {
       for (const child of node.children) {
-        fillWithDefaults(child, instancesInComp, inComp);
+        fillWithDefaults(child, instancesInComp);
       }
     }
   }
