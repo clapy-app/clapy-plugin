@@ -213,7 +213,7 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
               value={value}
               country={'fr'}
               onChange={handleChangePhoneInput}
-              className={classes.textField}
+              containerClass={classes.textField}
               component={TextField}
             />
           </div>

@@ -23,7 +23,7 @@ export class LoginPrivateController {
     const userId = (request as any).user.sub;
 
     const user = (request as any).user as AccessTokenDecoded;
-    const isLicenceExpired = this.stripeService.isLicenceExpired(user);
+    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
     const isUserQualified = hasRoleIncreasedQuota(user);
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);

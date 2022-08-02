@@ -1,0 +1,21 @@
+._ButtonBase._ButtonBase {
+  align-self: flex-start;
+  padding: initial;
+  outline: initial;
+  outline-offset: initial;
+  background-color: initial;
+  box-shadow: initial;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.text {
+  color: #667085;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+}
