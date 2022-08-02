@@ -51,7 +51,6 @@ export class UserController {
     }
     userMetadata.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
 
-    userMetadata.quotas = await this.userService.getQuotaCount(userId);
     userMetadata.isLicenceExpired = this.stripeService.isLicenceInactive(user);
     perfMeasure();
     return userMetadata;
