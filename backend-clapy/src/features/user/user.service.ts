@@ -2,6 +2,7 @@ import type { StreamableFile } from '@nestjs/common';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
+import { DataSource, Not } from 'typeorm';
 
 import { appConfig } from '../../env-and-config/app-config.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
@@ -14,7 +15,7 @@ import { hasRoleIncreasedQuota, hasRoleNoCodeSandbox } from './user.utils.js';
 export class UserService {
   constructor(
     @Inject(StripeService) private stripeService: StripeService,
-
+    @Inject(DataSource) private dataSource: DataSource,
     @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
   ) {}
 
@@ -27,43 +28,42 @@ export class UserService {
       throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
     }
   };
-
-  getQuotaCount = async (userId: string) => {
-    let result = 0;
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-    const csbNumber = await this.generationHistoryRepository
+  async getUserSubscriptionData(user: AccessTokenDecoded) {
+    const userId = user.sub;
+    const isUserQualified = hasRoleIncreasedQuota(user);
+    const quotas = await this.getQuotaCount(userId);
+    const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
+    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
+    return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
+  }
+  async getQuotaCount(userId: string) {
+    const csbSubQuery = this.generationHistoryRepository
       .createQueryBuilder('generationHistory')
-      .select('generationHistory.generated_link')
+      .select('generated_link')
       .distinctOn(['generationHistory.generated_link'])
-      .where({ auth0id: userId, isFreeUser: true })
-      .andWhere('generationHistory.created_at > :startDate', { startDate: new Date(currentYear, currentMonth, 1) })
-      .andWhere('generationHistory.created_at < :endDate', { endDate: new Date(currentYear, nextMonth + 1, 1) })
-      .execute();
-    const zipNumber = await this.generationHistoryRepository
-      .createQueryBuilder('generationHistory')
-      .where({ auth0id: userId, generatedLink: '_zip', isFreeUser: true })
-      .andWhere('generationHistory.created_at > :startDate', { startDate: new Date(currentYear, currentMonth, 1) })
-      .andWhere('generationHistory.created_at < :endDate', { endDate: new Date(currentYear, nextMonth + 1, 1) })
-      .execute();
+      .where({ auth0id: userId, generatedLink: Not('_zip') });
 
-    result = csbNumber.length + zipNumber.length;
-    if (zipNumber.length >= 1) {
-      result--;
-    }
-    return result;
-  };
+    const zipSubQuery = this.generationHistoryRepository
+      .createQueryBuilder('generationHistory')
+      .select('generated_link')
+      .where({ auth0id: userId, generatedLink: '_zip' });
+
+    const genCountQuery = `select count(*) as count from (${csbSubQuery.getSql()} union all ${zipSubQuery.getSql()}) tmp`;
+    const [{ count }] = await this.dataSource.query(genCountQuery, [userId, '_zip']);
+
+    return +count;
+  }
 
   checkUserOrThrow = async (user: AccessTokenDecoded) => {
     const userId = user.sub;
-    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
+
+    const isLicenceInactive = this.stripeService.isLicenceInactive(user);
     const isUserQualified = hasRoleIncreasedQuota(user);
     const userQuotaCount = await this.getQuotaCount(userId);
     const checkUserQuota = isUserQualified
       ? userQuotaCount >= appConfig.codeGenQualifiedQuota
       : userQuotaCount >= appConfig.codeGenFreeQuota;
-    if (checkUserQuota && isLicenceExpired) {
+    if (checkUserQuota && isLicenceInactive) {
       throw new Error('Free code generations used up, you can get more by having a call with us or pay a licence');
     }
   };

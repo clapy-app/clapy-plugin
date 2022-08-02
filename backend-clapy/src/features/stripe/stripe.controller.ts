@@ -73,10 +73,9 @@ export class StripeController {
     const user = (request as any).user as AccessTokenDecoded;
     const isUserQualified = hasRoleIncreasedQuota(user);
 
-    const quotas = await this.userService.getQuotaCount(userId);
-    const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
-    return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
+    const subscriptionData = await this.userService.getUserSubscriptionData(user);
+
+    return subscriptionData;
   }
   @Get('/customer-portal')
   async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {

@@ -46,6 +46,7 @@ export interface UserMetadata {
   quotas?: number;
   quotasMax?: number;
   isLicenceExpired?: boolean;
+  limitedUser?: boolean;
 }
 
 export interface UserMetaUsage {
@@ -74,6 +75,7 @@ export interface AccessTokenDecoded {
   };
   'https://clapy.co/roles'?: string[];
   'https://clapy.co/licence-expiration-date'?: number;
+  'https://clapy.co/limited-user'?: boolean;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
@@ -138,3 +140,4 @@ export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('noCodesandbox');
 export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
+export const isLimitedUser = (user: AccessTokenDecoded) => user?.['https://clapy.co/limited-user'];
