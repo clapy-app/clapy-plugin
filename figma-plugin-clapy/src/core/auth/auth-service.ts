@@ -190,6 +190,7 @@ export interface AccessTokenDecoded {
   };
   'https://clapy.co/roles'?: string[];
   'https://clapy.co/licence-expiration-date'?: number;
+  'https://clapy.co/limited-user'?: boolean;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"

@@ -3,7 +3,7 @@ import type { Request } from 'express';
 
 import { wait } from '../../common/general-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
-import { appConfig, flags } from '../../env-and-config/app-config.js';
+import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
@@ -15,7 +15,6 @@ import {
   getAuth0User,
   hasMissingMetaProfile,
   hasMissingMetaUsage,
-  hasRoleIncreasedQuota,
   updateAuth0UserMetadata,
 } from './user.utils.js';
 
@@ -37,21 +36,20 @@ export class UserController {
     const userId = (request as any).user.sub;
 
     const auth0User = await getAuth0User(userId);
-    const isUserQualified = hasRoleIncreasedQuota(user);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
 
     userMetadata.picture = auth0User.picture;
     userMetadata.email = auth0User.email;
-    userMetadata.quotas = await this.userService.getQuotaCount(userId);
     // If missing name, pre-fill with other profile info available.
     if (!userMetadata.firstName || !userMetadata.lastName) {
       const [firstName, lastName] = getAuth0FirstLastName(auth0User);
       userMetadata.firstName = firstName;
       userMetadata.lastName = lastName;
     }
-    userMetadata.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
 
-    userMetadata.isLicenceExpired = this.stripeService.isLicenceInactive(user);
+    const subscriptionData = await this.userService.getUserSubscriptionData(user);
+    Object.assign(userMetadata, subscriptionData);
+
     perfMeasure();
     return userMetadata;
   }
