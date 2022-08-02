@@ -56,8 +56,7 @@ export const PaymentConfirmation: FC<Props> = memo(function PaymentConfirmation(
               <p className={classes.text2}>
                 <span className={classes.labelWrapper}>
                   You now have <span className={classes.label2}>full access</span> <br />
-                  Clapy’s features and future updates and <span className={classes.label4}>premium support</span> with
-                  our team!
+                  Clapy’s features, <span className={classes.label4}>priority support,</span> with and future updates!
                 </span>
               </p>
             </div>

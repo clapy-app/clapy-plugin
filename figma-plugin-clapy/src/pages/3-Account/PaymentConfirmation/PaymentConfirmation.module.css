@@ -10,7 +10,7 @@
 
 .text {
   color: #667085;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 20px;
   font-weight: 500;
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
@@ -19,7 +19,7 @@
 }
 
 .text2 {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .selectionPreview.selectionPreview {

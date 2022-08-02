@@ -16,7 +16,7 @@ import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../co
 import { env } from '../../environment/env.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
-import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
+import { selectHasMissingMetaProfile, selectHasMissingMetaUsage, selectIsUserLimited } from '../user/user-slice';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header.js';
 import { HeaderGenerator } from './Header/Header_Generator.js';
@@ -49,7 +49,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // hasMissingMetaUsage = false;
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   // Show selection
-
+  const isUserLimited = useSelector(selectIsUserLimited);
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
@@ -83,7 +83,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   if (hasMissingMetaProfile) return <FillUserProfile />;
 
   if (hasMissingMetaUsage) return <FillUserProfileStep2 />;
-  return env.isDev ? (
+  return env.isDev || isUserLimited ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}
