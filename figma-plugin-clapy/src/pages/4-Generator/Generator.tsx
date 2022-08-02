@@ -5,6 +5,7 @@ import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHom
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import { env } from '../../environment/env';
 import classes from './Generator.module.css';
+import { PluginComponentCounter_License } from './quotaBar/PluginComponentCounter_License/PluginComponentCounter_License';
 
 export const Generator: FC = () => {
   return <LayoutInner />;
@@ -27,6 +28,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   return (
     <>
       <div className={classes.content}>
+        <PluginComponentCounter_License />
         <FigmaToCodeHome selectionPreview={selectionPreview} />
       </div>
     </>
