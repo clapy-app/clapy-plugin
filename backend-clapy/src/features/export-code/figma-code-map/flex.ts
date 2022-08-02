@@ -125,7 +125,11 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
     if ((parentStyles || applySettingHugContents) && (!parentAlignItems || parentAlignItems === 'stretch')) {
       addStyle(context, node, styles, 'align-self', 'flex-start');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'align-self');
     }
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'align-self');
   }
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
