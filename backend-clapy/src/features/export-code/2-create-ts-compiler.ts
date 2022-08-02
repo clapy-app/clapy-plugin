@@ -256,7 +256,7 @@ function addCompToAppRoot(
     cssFiles[appCssPath] = updatedAppCss;
   }
 
-  fwConnector.writeRootCompFileCode(appModuleContext, compAst);
+  fwConnector.writeRootCompFileCode(appModuleContext, compAst, appCssPath, parentNode);
 }
 
 function addPackages(projectContext: ProjectContext) {

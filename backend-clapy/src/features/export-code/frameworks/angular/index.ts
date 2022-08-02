@@ -6,7 +6,7 @@ import { env } from '../../../../env-and-config/env.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
-import type { SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
 import {
@@ -102,7 +102,7 @@ export const angularConnector: FrameworkConnector = {
   genCompUsage,
   createSvgTag,
   addExtraSvgAttributes: (context, node, svgStyles) => addStyle(context, node, svgStyles, 'object-fit', 'cover'),
-  writeRootCompFileCode(appModuleContext, compAst) {
+  writeRootCompFileCode(appModuleContext, compAst, appCssPath, parent) {
     const { projectContext, compDir, baseCompName } = appModuleContext;
 
     const path = `${compDir}/${baseCompName}.component.html`;
@@ -114,11 +114,22 @@ export const angularConnector: FrameworkConnector = {
 
     const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
     printFileInProject(appModuleContext, `${prefix}-root`);
+
+    // If the parent node is vertical, add a flex-direction: column to the root.
+    if ((parent as FlexNode | undefined)?.layoutMode === 'VERTICAL') {
+      const { cssFiles } = projectContext;
+      const stylesCssPath = getStylesCssPath(projectContext);
+
+      cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replace(
+        new RegExp(`(${prefix}-root\\s*\\{[^\\}]*)\\}`),
+        '$1;flex-direction:column}',
+      );
+    }
   },
   writeSVGReactComponents: async () => {},
 };
 
-export function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: ExtraConfig) {
+function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: ExtraConfig) {
   const { resources, cssFiles } = projectContext;
   const angularJson = JSON.parse(resources['angular.json']);
   const proj = angularJson.projects[Object.keys(angularJson.projects)[0]];
@@ -134,7 +145,7 @@ export function patchProjectConfigFiles(projectContext: ProjectContext, extraCon
 
   const cssExt = getCSSExtension(extraConfig);
   const resetsCssPath = `src/resets.${cssExt}`;
-  const stylesCssPath = `src/styles.${cssExt}`;
+  const stylesCssPath = getStylesCssPath(projectContext);
   proj.architect.build.options.styles.push(resetsCssPath);
   proj.architect.test.options.styles.push(resetsCssPath);
 
@@ -195,4 +206,10 @@ function createSvgTag(svgPathVarName: string, svgAttributes?: FwAttr[]) {
   const imgSrcAttr = mkHtmlAttribute('src', `assets/${svgPathVarName}.svg`);
   const imgAltAttr = mkHtmlAttribute('alt', ``);
   return mkHtmlElement(`img`, [imgSrcAttr, imgAltAttr, ...(svgAttributes as Attribute[])]);
+}
+
+function getStylesCssPath(projectContext: ProjectContext) {
+  const { extraConfig } = projectContext;
+  const cssExt = getCSSExtension(extraConfig);
+  return `src/styles.${cssExt}`;
 }

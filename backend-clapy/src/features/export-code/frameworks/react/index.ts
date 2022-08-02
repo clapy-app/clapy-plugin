@@ -17,7 +17,7 @@ import type {
   StyleOverride,
   SwapAst,
 } from '../../code.model.js';
-import type { InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
@@ -113,8 +113,8 @@ export const reactConnector: FrameworkConnector = {
   createSvgTag: (svgPathVarName, svgAttributes) =>
     mkComponentUsage(svgPathVarName, svgAttributes as ts.JsxAttribute[] | undefined),
   addExtraSvgAttributes: () => {},
-  writeRootCompFileCode(appModuleContext, compAst) {
-    const { statements } = appModuleContext;
+  writeRootCompFileCode(appModuleContext, compAst, appCssPath, parent) {
+    const { statements, projectContext } = appModuleContext;
 
     addMUIProvidersImports(appModuleContext);
 
@@ -145,6 +145,12 @@ export const reactConnector: FrameworkConnector = {
     createModuleCode(appModuleContext, appTsx, prefixStatements, true);
 
     printFileInProject(appModuleContext);
+
+    // If the parent node is vertical, add a flex-direction: column to the root.
+    if ((parent as FlexNode | undefined)?.layoutMode === 'VERTICAL') {
+      const { cssFiles } = projectContext;
+      cssFiles[appCssPath] = cssFiles[appCssPath].replace(/(\.root\s*\{[^\}]*)\}/, '$1;flex-direction:column}');
+    }
   },
   writeSVGReactComponents,
 };
