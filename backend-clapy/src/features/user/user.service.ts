@@ -37,16 +37,23 @@ export class UserService {
     return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
   }
   async getQuotaCount(userId: string) {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const csbSubQuery = this.generationHistoryRepository
       .createQueryBuilder('generationHistory')
       .select('generated_link')
       .distinctOn(['generationHistory.generated_link'])
-      .where({ auth0id: userId, generatedLink: Not('_zip') });
+      .where({ auth0id: userId, generatedLink: Not('_zip') })
+      .andWhere('generationHistory.created_at > :startDate', { startDate: new Date(currentYear, currentMonth, 1) })
+      .andWhere('generationHistory.created_at < :endDate', { endDate: new Date(currentYear, nextMonth + 1, 1) });
 
     const zipSubQuery = this.generationHistoryRepository
       .createQueryBuilder('generationHistory')
       .select('generated_link')
-      .where({ auth0id: userId, generatedLink: '_zip' });
+      .where({ auth0id: userId, generatedLink: '_zip' })
+      .andWhere('generationHistory.created_at > :startDate', { startDate: new Date(currentYear, currentMonth, 1) })
+      .andWhere('generationHistory.created_at < :endDate', { endDate: new Date(currentYear, nextMonth + 1, 1) });
 
     const genCountQuery = `select count(*) as count from (${csbSubQuery.getSql()} union all ${zipSubQuery.getSql()}) tmp`;
     const [{ count }] = await this.dataSource.query(genCountQuery, [userId, '_zip']);
