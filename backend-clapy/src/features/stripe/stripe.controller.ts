@@ -46,7 +46,7 @@ export class StripeController {
     }
 
     if (!this.stripeService.isLicenceInactive(user)) {
-      throw new Error('You are already a paid user.');
+      throw new Error('You already have an active subscription.');
     }
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
