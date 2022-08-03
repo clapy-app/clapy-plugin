@@ -1,0 +1,29 @@
+.root {
+  align-self: stretch;
+  width: initial;
+}
+.progressBar {
+  position: relative;
+  height: 8px;
+  flex: 1;
+  align-items: flex-start;
+  border-radius: 8px;
+}
+.background {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #eff4ff;
+}
+.progress {
+  position: absolute;
+  left: 0;
+  right: 86.25%;
+  top: 0;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #155eef;
+}

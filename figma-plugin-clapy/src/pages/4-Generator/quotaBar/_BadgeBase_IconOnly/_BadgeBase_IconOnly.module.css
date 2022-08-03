@@ -1,0 +1,13 @@
+.plus.plus {
+  width: 12px;
+  height: 12px;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.root {
+  padding: 4px;
+  border-radius: 16px;
+  background-color: #eff4ff;
+}

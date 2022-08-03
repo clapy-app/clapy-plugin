@@ -77,7 +77,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
         )}
       </div>
     );
-
   if (!isSignedIn && !stateChecking) return <LoginHome />;
 
   if (hasMissingMetaProfile) return <FillUserProfile />;
