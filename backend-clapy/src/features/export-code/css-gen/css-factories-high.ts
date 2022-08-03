@@ -56,6 +56,8 @@ const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
   boxShadow: ['boxShadow'],
 };
 
+const toRound: Set<keyof PropertiesHyphen> = new Set(['outline-offset']);
+
 type StyleValue<T extends keyof PropertiesHyphen> =
   | NonNullable<PropertiesHyphen[T]>
   | [number, CssUnit]
@@ -87,6 +89,8 @@ export function addStyle<T extends keyof PropertiesHyphen>(
     }
   }
 
+  const intRound = toRound.has(name);
+
   const newStyle = mkDeclarationCss(
     name,
     mkValueCss(
@@ -107,9 +111,9 @@ export function addStyle<T extends keyof PropertiesHyphen>(
             : Array.isArray(val)
             ? val[0] === 0
               ? 0
-              : `${round(val[0] * (val[2] || 1))}${val[1]}`
+              : `${round(val[0] * (val[2] || 1), intRound ? 0 : undefined)}${val[1]}`
             : typeof val === 'number'
-            ? round(val).toString()
+            ? round(val, intRound ? 0 : undefined).toString()
             : typeof val === 'string'
             ? val
             : val.toString();

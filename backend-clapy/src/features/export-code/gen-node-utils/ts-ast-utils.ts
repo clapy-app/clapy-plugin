@@ -597,9 +597,10 @@ function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression | undefin
   if (!node.hideProp) {
     return ast;
   }
-  if (node.hideDefaultValue == null) {
+  let hideDefaultValue = !node.visible;
+  if (hideDefaultValue == null) {
     warnOrThrow(`Node ${node.name} is missing hideOverrideValue although it has a hideProp.`);
-    node.hideDefaultValue = true;
+    hideDefaultValue = true;
   }
   const hidePropVar = factory.createPropertyAccessChain(
     factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('hide')),
@@ -607,7 +608,7 @@ function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression | undefin
     factory.createIdentifier(node.hideProp),
   );
   const checkHideExpr =
-    node.hideDefaultValue === true
+    hideDefaultValue === true
       ? factory.createBinaryExpression(
           hidePropVar,
           factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),

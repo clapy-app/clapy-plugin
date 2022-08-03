@@ -459,11 +459,18 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Js
   );
 
   // Special case: when a swap is added on a node that is initially hidden, it is automatically marked as visible.
+  // TODO is it really applicable, now we added the "swapContext" in addHideOverride?
   addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
 }
 
 function addHideOverride(context: InstanceContext, node: SceneNode2) {
-  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
+  let {
+    intermediateNodes,
+    intermediateComponentContexts,
+    intermediateInstanceNodeOfComps,
+    swapContext,
+    moduleContext,
+  } = context;
 
   // If there is a swap and a hide simultaneously, the hide ignores the fact there is a swap to apply the hide overrides.
   if (swapContext) {
@@ -484,6 +491,11 @@ function addHideOverride(context: InstanceContext, node: SceneNode2) {
   if (lastIntermediateNode?.isRootInComponent) {
     intermediateNodes = intermediateNodes.slice(0, -1);
   }
+
+  if (node.visible !== lastIntermediateNode.visible) {
+    getOrGenHideProp(moduleContext, node);
+  }
+
   addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
 }
 
