@@ -37,7 +37,7 @@ import { stylesToList } from './css-gen/css-type-utils.js';
 import type { FwAttr } from './frameworks/framework-connectors.js';
 import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
 import { getOrGenClassName } from './gen-node-utils/gen-unique-name-utils.js';
-import { addNodeStyles, createSvgAst, readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { addNodeStyles, createSvgAst, patchInstanceAsSVG, readSvg } from './gen-node-utils/process-nodes-utils.js';
 import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -132,6 +132,8 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
 
       node.svgPathVarName = svgPathVarName;
     } else if (isBlockNode(node)) {
+      patchInstanceAsSVG(context, node);
+
       // Add tag styles
       mapTagStyles(context, node, styles);
 

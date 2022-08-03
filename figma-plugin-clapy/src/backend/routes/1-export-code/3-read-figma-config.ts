@@ -98,19 +98,23 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
 
   const isBlend = isBlendMixin(node);
   const isMask = isBlend && node.isMask;
+  const isInst = isInstance2(node);
 
-  const vectorRequirement =
-    // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
-    // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
-    !isInstance2(node) && !nodeIsComp && !isPage2(node);
+  const vectorRequirement = /* !isInst && !nodeIsComp && */ !isPage2(node);
 
-  const changeToVector = vectorRequirement && (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(nodeOriginal));
+  const svgExportCandidate =
+    vectorRequirement && (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(nodeOriginal));
+
+  // Instance and component nodes should not be directly exported as SVGs to avoid conflicts with components processing when generating code + avoid the risk of working directly with SVG as root when dealing with component swaps and CSS overrides.
+  // It could be changed if we want a component's root node to be the SVG directly, but it would require a bit refactoring.
+  const changeToVector = svgExportCandidate && !isInst && !nodeIsComp;
 
   if (changeToVector) {
     node.type = 'VECTOR';
   }
 
-  let exportAsSvg = (node as AnyNode3).visible && changeToVector;
+  // Let's skip the export of hidden SVGs.
+  let exportAsSvg = (node as AnyNode3).visible && svgExportCandidate;
 
   if (exportAsSvg) {
     (node as AnyNode3).exportAsSvg = exportAsSvg;
@@ -122,7 +126,7 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
       }
     }
     context.nodeIdsToExtractAsSVG.add(node.id);
-  } else {
+  } else if (!svgExportCandidate) {
     const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
     if (children) {
       // Another way to iterate to try, using generators, that might be a bit faster (to compare):

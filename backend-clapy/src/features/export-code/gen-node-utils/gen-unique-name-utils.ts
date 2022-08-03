@@ -91,7 +91,7 @@ export function genIconComponentImportName(
       ? context.parentContext?.nodeNameLower
       : context.nodeNameLower;
   if (baseName !== 'icon') {
-    baseName = textCase === TextCase.Dash ? `${baseName}-icon` : `${baseName}Icon`;
+    baseName = !baseName ? 'icon' : textCase === TextCase.Dash ? `${baseName}-icon` : `${baseName}Icon`;
   }
   return genUniqueName(
     globalName ? projectContext.assetsAlreadyUsed : moduleContext.subComponentNamesAlreadyUsed,

@@ -31,6 +31,7 @@ export type AnyNodeOriginal = SceneNode;
 export type AnyNode3 = /* SceneNode2 */ Omit<SceneNode2, 'type'> & {
   parent?: NodeLight | AnyNode3; // Should be required, but we will need to fix a few typing issues.
   exportAsSvg?: boolean;
+  groupChildrenAsSvg?: boolean;
   type: Exclude<LayoutTypes, 'PAGE'>;
 };
 export type AnyParent = FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2;
@@ -72,7 +73,7 @@ export interface ExtractNodeContext {
   isComp?: boolean;
 }
 
-export function shouldGroupAsSVG(nodeOriginal: SceneNode) {
+export function shouldGroupAsSVG(nodeOriginal: SceneNode): boolean {
   const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
   if (!children) return false;
   // If only one child, don't group as SVG

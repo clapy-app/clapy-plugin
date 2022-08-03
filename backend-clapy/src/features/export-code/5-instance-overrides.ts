@@ -45,7 +45,12 @@ import {
   getOrGenSwapName,
   getOrGenTextOverrideProp,
 } from './gen-node-utils/gen-unique-name-utils.js';
-import { createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
+import {
+  createSvgAst,
+  patchInstanceAsSVG,
+  readSvg,
+  registerSvgForWrite,
+} from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -190,6 +195,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         }
       }
     } else if (isBlockNode(node)) {
+      patchInstanceAsSVG(context, node);
+
       // Add tag styles
       mapTagStyles(context, node, styles);
 

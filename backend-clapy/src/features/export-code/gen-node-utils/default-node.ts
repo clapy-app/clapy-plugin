@@ -3,6 +3,7 @@ import { warnOrThrow } from '../../../utils.js';
 import type {
   Dict,
   FrameNodeNoMethod,
+  LayoutTypes,
   PageNode2,
   SceneNode2,
   SceneNodeNoMethod,
@@ -87,6 +88,12 @@ export function fillWithComponent(
       }
     }
   }
+}
+
+export function createNodeWithDefaults(node: { id: string; name: string; type: LayoutTypes }) {
+  const node2 = node as SceneNode2;
+  fillNodeWithDefaults(node2, defaultsForNode(node2));
+  return node2;
 }
 
 function fillNodeWithDefaults(node: SceneNode2 | PageNode2, defaultValues: any) {
