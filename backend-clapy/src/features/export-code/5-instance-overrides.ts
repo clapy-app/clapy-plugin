@@ -463,7 +463,19 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Js
 }
 
 function addHideOverride(context: InstanceContext, node: SceneNode2) {
-  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
+  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, swapContext } = context;
+
+  // If there is a swap and a hide simultaneously, the hide ignores the fact there is a swap to apply the hide overrides.
+  if (swapContext) {
+    // Same extension of intermediate nodes as in `addSwapInstance`
+    intermediateNodes = [...intermediateNodes, ...swapContext.intermediateNodes];
+    intermediateComponentContexts = [...intermediateComponentContexts, ...swapContext.intermediateComponentContexts];
+    intermediateInstanceNodeOfComps = [
+      ...intermediateInstanceNodeOfComps,
+      ...swapContext.intermediateInstanceNodeOfComps,
+    ];
+  }
+
   const lastIntermediateNode = intermediateNodes[intermediateNodes.length - 1];
   if (!lastIntermediateNode) {
     throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
