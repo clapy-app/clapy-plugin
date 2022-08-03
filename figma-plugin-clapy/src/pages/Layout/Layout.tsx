@@ -82,7 +82,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   if (hasMissingMetaProfile) return <FillUserProfile />;
 
   if (hasMissingMetaUsage) return <FillUserProfileStep2 />;
-
   return env.isDev || isUserLimited ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
