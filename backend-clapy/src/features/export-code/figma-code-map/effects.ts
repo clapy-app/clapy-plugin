@@ -6,13 +6,28 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
-import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
+import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset.js';
 
-export function addBoxShadow(context: NodeContext, boxShadow: string) {
+export function addBoxShadow(
+  context: NodeContext,
+  inset: boolean | undefined,
+  offsetX: number | undefined,
+  offsetY: number | undefined,
+  blurRadius: number | undefined,
+  spreadRadius: number | undefined,
+  color: string,
+) {
   if (!context.boxShadows) {
     context.boxShadows = [];
   }
-  context.boxShadows.push(boxShadow);
+  const bsValues: string[] = [];
+  if (inset) bsValues.push('inset');
+  if (offsetX != null) bsValues.push(`${round(offsetX)}px`);
+  if (offsetY != null) bsValues.push(`${round(offsetY)}px`);
+  if (blurRadius != null) bsValues.push(`${round(blurRadius)}px`);
+  if (spreadRadius != null) bsValues.push(`${round(spreadRadius)}px`);
+  if (color != null) bsValues.push(color);
+  context.boxShadows.push(bsValues.join(' '));
 }
 
 export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -84,7 +99,7 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
           textShadowStyles.push(`${x}px ${y}px ${blurRadius}px ${hex}`);
         } else if (insetPrefix || spread || !flags.useFilterDropShadow || !isVector(node)) {
           if (!noBackgroundNoBorder) {
-            addBoxShadow(context, `${insetPrefix}${x}px ${y}px ${blurRadius}px ${spread}px ${hex}`);
+            addBoxShadow(context, isInset, x, y, blurRadius, spread, hex);
           }
         } else {
           filters.push(`drop-shadow(${x}px ${y}px ${blurRadius}px ${hex})`);
