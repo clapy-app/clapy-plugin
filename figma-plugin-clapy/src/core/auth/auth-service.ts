@@ -73,7 +73,24 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
 });
 
-export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
+export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
+  let readToken: string | undefined = undefined,
+    writeToken: string | undefined = undefined;
+  try {
+    const verifier = createVerifier();
+    const challenge = createChallenge(verifier);
+    ({ readToken, writeToken } = await fetchReadWriteKeys());
+    deleteReadToken(readToken);
+  } catch (err) {
+    if (readToken) {
+      deleteReadToken(readToken);
+    }
+    handleError(err);
+    toastError(err);
+  }
+});
+
+export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
   let readToken: string | undefined = undefined,
     writeToken: string | undefined = undefined;
   try {
@@ -83,7 +100,7 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean) => {
     const challenge = createChallenge(verifier);
 
     ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp);
+    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp, extraScopes);
     openNewTab(authUrl);
     const authoCode = await waitForAuthorizationCode(readToken);
     const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
@@ -206,7 +223,12 @@ interface ExchangeTokenResponse {
   token_type: string; // "Bearer"
 }
 
-function getAuthenticationURL(state: string, challenge: string, isSignUp: boolean | undefined) {
+function getAuthenticationURL(
+  state: string,
+  challenge: string,
+  isSignUp: boolean | undefined,
+  extraScopes: string[] | undefined,
+) {
   const data: any = {
     audience: env.auth0Audience,
     // Add openid to get an ID token along with the access token
@@ -222,6 +244,9 @@ function getAuthenticationURL(state: string, challenge: string, isSignUp: boolea
   if (isSignUp) {
     data.prompt = 'login';
     data.screen_hint = 'signup';
+  }
+  if (extraScopes) {
+    data.connection_scope = extraScopes.join(',');
   }
   return mkUrl(`https://${auth0Domain}/authorize`, data);
 }

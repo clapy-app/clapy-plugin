@@ -22,9 +22,65 @@
 //     console.error(error);
 //   }
 // }
+import type { AxiosResponse } from 'axios';
+import axios from 'axios';
+
 import { getAuth0User } from '../user/user.utils.js';
 
-export async function getGithubAccessToken(authUserId: string) {
+export async function fetchGHTest() {
+  try {
+    // const path = 'users/codertocat';
+    const path = 'users/antoineol';
+    let { data, accessToken } = await fetchGithub(path, 'google-oauth2|105573232794317486965', undefined);
+    ({ data, accessToken } = await fetchGithub(path, 'google-oauth2|105573232794317486965', accessToken));
+    console.log('response:', data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('code:', error.code);
+      console.error(error.response?.data || error.stack || error);
+    }
+  }
+}
+
+export async function fetchGithub(path: string, authUserId: string, accessToken: string | undefined) {
+  if (path == null) path = '';
+  if (!path.startsWith('/')) path = `/${path}`;
+  if (!accessToken) {
+    accessToken = await fetchGithubAccessToken(authUserId);
+  }
+  if (!accessToken) {
+    throw new Error(`[BUG] Couldn't fetch github token from Auth0. Please contact us to fix it.`);
+  }
+  let response: AxiosResponse<any, any>;
+  try {
+    response = await axios.get(`https://api.github.com${path}`, {
+      headers: {
+        Authorization: `token ${accessToken}`,
+      },
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.warn('Retry with new token');
+      accessToken = await fetchGithubAccessToken(authUserId);
+      response = await axios.get(`https://api.github.com${path}`, {
+        headers: {
+          Authorization: `token ${accessToken}`,
+        },
+      });
+    } else {
+      throw error;
+    }
+  }
+  return { ...response, accessToken };
+}
+
+let firstTokenFetch = true;
+
+export async function fetchGithubAccessToken(authUserId: string) {
+  if (firstTokenFetch) {
+    firstTokenFetch = false;
+    return 'faketoken';
+  }
   const auth0User = await getAuth0User(authUserId);
   return auth0User.identities?.find(idp => idp.provider === 'github')?.access_token;
 }

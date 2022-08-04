@@ -1,6 +1,6 @@
 import { waitInfinite } from './common/general-utils.js';
 import { perfReset, perfTotal } from './common/perf-utils.js';
-import { mkHtmlAttribute, mkHtmlElement, serializeHtml } from './features/export-code/html-gen/html-gen.js';
+import { fetchGHTest } from './features/github/github-auth.js';
 
 async function main() {
   perfReset('Starting...');
@@ -12,7 +12,8 @@ async function main() {
   // const tag = ((document.childNodes[1] as Element).childNodes[1] as Element).childNodes[1];
   // console.log(serializeHtml(tag));
 
-  console.log(serializeHtml(mkHtmlElement('div', mkHtmlAttribute('class', 'bar'))));
+  // console.log(serializeHtml(mkHtmlElement('div', mkHtmlAttribute('class', 'bar'))));
+  await fetchGHTest();
 
   // Send to codesandbox
   // TODO restore. Find the syntax to instantiate the controller with the right dependencies

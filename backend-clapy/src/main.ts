@@ -49,6 +49,8 @@ async function bootstrap() {
 
       // WIP: github integration - code to test it, will be removed later.
       // printToken();
+      // await fetchGHTest();
+      //
       // const githubAccessToken = await getGithubAccessToken('google-oauth2|105573232794317486965');
       // console.log(githubAccessToken);
     } catch (err) {
