@@ -30,8 +30,9 @@ import type {
   ExportImageMap2,
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
+import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
-import { selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
+import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
 import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
 import { setStripeData } from '../../user/user-slice.js';
@@ -39,7 +40,9 @@ import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
+import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
 import classes from './FigmaToCodeHome.module.css';
+import { GithubOption } from './GithubOption.js';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 
@@ -57,12 +60,10 @@ interface Props {
 let defaultSettings: UserSettings = {
   // framework: 'angular',
   framework: 'react',
+  target: UserSettingsTarget.csb,
   // scss: env.isDev,
   // bem: env.isDev,
 };
-
-type UserSettingsKeys = keyof UserSettings;
-type UserSettingsValues = NonNullable<UserSettings[UserSettingsKeys]>;
 
 const userSettings = { ...defaultSettings };
 
@@ -74,8 +75,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [scssSelected, setScssSelected] = useState<boolean>(!!defaultSettings.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
+  const isGithubEnabled = useSelector(selectGithubEnabled);
   useEffect(
     () => () => {
+      // When the component is unloaded (e.g. navigate to another view), the user settings are backed up in the defaultSettings object.
+      // When the component will be re-mounted, those default settings will be used to pre-fill the form inputs (using the default value attributes).
       defaultSettings = { ...userSettings };
     },
     [],
@@ -275,6 +279,12 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           />
         </FormControl>
       </Tooltip>
+      <GithubOption
+        className={state === 'generated' ? classes.hide : undefined}
+        isLoading={isLoading}
+        defaultSettings={defaultSettings}
+        updateAdvancedOption={updateAdvancedOption}
+      />
       <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' ? classes.hide : undefined}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -299,27 +309,29 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 </RadioGroup>
               </FormControl>
             </Tooltip>
-            <Tooltip
-              title={
-                isNoCodeSandboxUser
-                  ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
-                  : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
-              }
-              disableInteractive
-              placement='bottom-start'
-            >
-              <FormControlLabel
-                control={
-                  <Switch
-                    name='zip'
-                    onChange={updateAdvancedOption}
-                    defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
-                  />
+            {!isGithubEnabled && (
+              <Tooltip
+                title={
+                  isNoCodeSandboxUser
+                    ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
+                    : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
                 }
-                label='Download as zip'
-                disabled={isLoading || isNoCodeSandboxUser}
-              />
-            </Tooltip>
+                disableInteractive
+                placement='bottom-start'
+              >
+                <FormControlLabel
+                  control={
+                    <Switch
+                      name='zip'
+                      onChange={updateAdvancedOption}
+                      defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
+                    />
+                  }
+                  label='Download as zip'
+                  disabled={isLoading || isNoCodeSandboxUser}
+                />
+              </Tooltip>
+            )}
             <Tooltip
               title='If enabled, styles will be written in .scss files instead of .css.'
               disableInteractive

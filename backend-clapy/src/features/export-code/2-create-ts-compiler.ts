@@ -197,9 +197,10 @@ export async function exportCode(
       400,
     );
   }
-  if (!env.isDev || uploadToCsb) {
+  const isZip = extraConfig.output === 'zip';
+  if (!env.isDev || uploadToCsb || isZip) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
-    if (extraConfig.output === 'zip') {
+    if (isZip) {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
     } else {

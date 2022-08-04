@@ -5,6 +5,7 @@ import type { Repository } from 'typeorm';
 import { DataSource, Not } from 'typeorm';
 
 import { appConfig } from '../../env-and-config/app-config.js';
+import { env } from '../../env-and-config/env.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
 import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import { StripeService } from '../stripe/stripe.service.js';
@@ -72,8 +73,10 @@ export class UserService {
     const checkUserQuota = isUserQualified
       ? userQuotaCount >= appConfig.codeGenQualifiedQuota
       : userQuotaCount >= appConfig.codeGenFreeQuota;
-    if (checkUserQuota && isLicenceInactive) {
-      throw new Error('Free code generations used up, you can get more by having a call with us or pay a licence');
+    if (!env.isDev && checkUserQuota && isLicenceInactive) {
+      throw new Error(
+        'Your free code generation quota is used. Please contact us for an increased quota or to go Pro.',
+      );
     }
   };
 

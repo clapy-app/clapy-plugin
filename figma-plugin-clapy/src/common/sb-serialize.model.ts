@@ -250,13 +250,20 @@ export interface AngularConfig {
   prefix: string;
 }
 
+export enum UserSettingsTarget {
+  csb = 'csb',
+  zip = 'zip',
+  github = 'github',
+}
+
 export interface UserSettings {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
-  framework?: 'angular' | 'react';
+  framework: 'angular' | 'react';
   frameworkConfig?: ReactConfig | AngularConfig;
+  target: UserSettingsTarget;
 }
 
 export type ExtraConfig = {

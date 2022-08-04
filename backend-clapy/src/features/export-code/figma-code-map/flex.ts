@@ -34,12 +34,15 @@ import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.
 
 // primary axis
 const primaryAlignToJustifyContent: {
-  [K in Exclude<BaseFrameMixin['primaryAxisAlignItems'], 'MIN'>]: NonNullable<PropertiesHyphen['justify-content']>;
+  [K in Exclude<BaseFrameMixin['primaryAxisAlignItems'] | 'SPACE_BETWEEN_SINGLE', 'MIN'>]: NonNullable<
+    PropertiesHyphen['justify-content']
+  >;
 } = {
   // MIN: 'flex-start', // default
   MAX: 'flex-end',
   CENTER: 'center',
   SPACE_BETWEEN: 'space-between',
+  SPACE_BETWEEN_SINGLE: 'space-around',
 };
 // counter axis
 type AlignItems = NonNullable<PropertiesHyphen['align-items']>;
@@ -193,7 +196,9 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       !atLeastOneChildHasLayoutGrow1
     ) {
       // use place-content instead of justify-content (+ align-content)
-      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
+      // If there is a single child, SPACE_BETWEEN centers children. Let's translate to space-around instead.
+      const primaryAxisAlignItems = node.children?.length !== 1 ? node.primaryAxisAlignItems : 'SPACE_BETWEEN_SINGLE';
+      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[primaryAxisAlignItems]);
     } else {
       resetStyleIfOverriding(context, node, styles, 'place-content');
     }
