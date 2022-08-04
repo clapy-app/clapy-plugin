@@ -14,9 +14,5 @@ interface Props {
 }
 /* @figmaId 10:7381 */
 export const _ButtonBase_SizeXlIconFalse: FC<Props> = memo(function _ButtonBase_SizeXlIconFalse(props = {}) {
-  return (
-    <div className={`${classes.root} ${props.classes?.root || ''} ${props.className || ''}`}>
-      {props.text?.text != null ? props.text?.text : <div className={classes.text}>Button CTA</div>}
-    </div>
-  );
+  return <div>{props.text?.text != null ? props.text?.text : <div className={classes.text}>Button CTA</div>}</div>;
 });

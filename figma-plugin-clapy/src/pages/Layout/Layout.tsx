@@ -8,10 +8,12 @@ import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma.js';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
 import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome.js';
 import { Account } from '../3-Account/Account.js';
-import { selectStripeState } from '../3-Account/stripe-slice.js';
+import { Pricing } from '../3-Account/Pricing/Pricing.js';
+import { selectFeedbackPageState, selectPricingPageState, selectStripeState } from '../3-Account/stripe-slice.js';
 import { Generator } from '../4-Generator/Generator.js';
+import { Feedback } from '../5-Feedback/Feedback';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
-import { Loading } from '../../components-used/Loading/Loading';
+import { Loading } from '../../components-used/Loading/Loading.js';
 import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
 import { env } from '../../environment/env.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
@@ -50,6 +52,9 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   // Show selection
   const isUserLimited = useSelector(selectIsUserLimited);
+  const isFeedbackPageActive = useSelector(selectFeedbackPageState);
+  const isPricingPageActive = useSelector(selectPricingPageState);
+
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
@@ -64,7 +69,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
       </div>
     );
   }
-
   if (stripeLoading || stateChecking)
     return (
       <div className={loginHomeClasses.content}>
@@ -77,6 +81,23 @@ export const LayoutInner: FC = memo(function LayoutInner() {
         )}
       </div>
     );
+  if (isFeedbackPageActive) {
+    return (
+      <>
+        <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
+        <Feedback />
+      </>
+    );
+  }
+  if (isPricingPageActive) {
+    return (
+      <>
+        <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
+        <Pricing />
+      </>
+    );
+  }
+
   if (!isSignedIn && !stateChecking) return <LoginHome />;
 
   if (hasMissingMetaProfile) return <FillUserProfile />;

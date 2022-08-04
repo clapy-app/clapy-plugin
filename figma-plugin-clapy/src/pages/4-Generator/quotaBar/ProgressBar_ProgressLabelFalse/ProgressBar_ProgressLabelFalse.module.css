@@ -20,10 +20,8 @@
 }
 .progress {
   position: absolute;
-  left: 0;
-  right: 86.25%;
+  left: 0%;
   top: 0;
   height: 8px;
-  border-radius: 4px;
   background-color: #155eef;
 }

@@ -1,10 +1,16 @@
 .root {
   padding: 2px 8px;
   border-radius: 16px;
+  -webkit-user-select: none; /* Safari */        
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+.free {
+  color: #344054;
   background-color: #f2f4f7;
 }
 .text {
-  color: #344054;
   font-size: 12px;
   line-height: 18px;
   font-weight: 500;
@@ -14,8 +20,7 @@
   justify-content: center;
   white-space: nowrap;
 }
-.green {
-  padding: 2px 8px;
-  border-radius: 16px;
-  background-color: #6cfca6;
+.pro {
+  color: #004EEB;
+  background-color: #EFF4FF;
 }

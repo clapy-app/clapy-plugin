@@ -2,8 +2,7 @@ import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectIncreasedQuotaUser } from '../../../../../core/auth/auth-slice.js';
-import { selectUserMaxQuota, selectUserQuota } from '../../../../user/user-slice.js';
+import { selectIsFreeUser, selectUserMaxQuota, selectUserQuota } from '../../../../user/user-slice.js';
 import classes from './BadgeQuotas.module.css';
 
 interface Props {
@@ -14,7 +13,13 @@ interface Props {
   };
 }
 
-function calcColor(quota: number | undefined, quotaMax: number | undefined, isQualified: boolean | undefined) {
+function calcColor(
+  quota: number | undefined,
+  quotaMax: number | undefined,
+  isQualified: boolean | undefined,
+  isFreeUser: boolean,
+) {
+  if (!isFreeUser) return classes.green;
   if ((quota !== 0 && quota === undefined) || (quotaMax !== 0 && quotaMax === undefined)) {
     return '';
   }
@@ -31,13 +36,13 @@ function calcColor(quota: number | undefined, quotaMax: number | undefined, isQu
 export const BadgeQuotas: FC<Props> = memo(function BadgeQuotas(props = {}) {
   const quota = useSelector(selectUserQuota);
   const quotaMax = useSelector(selectUserMaxQuota);
-
-  const isQualifiedUser = useSelector(selectIncreasedQuotaUser);
+  const isFreeUser = useSelector(selectIsFreeUser);
 
   return (
-    <div className={`${classes.root} ${props.className || ''} ${calcColor(quota, quotaMax, isQualifiedUser)}`}>
+    <div className={``}>
       <div className={`${classes.text} ${props.classes?.text || ''}`}>
-        <p> {`Code generation quota: ${quota} / ${quotaMax}`}</p>
+        {isFreeUser && <p> {`${quota} / ${quotaMax} exports`}</p>}
+        {!isFreeUser && <p> {`${quota} components in library`}</p>}
       </div>
     </div>
   );

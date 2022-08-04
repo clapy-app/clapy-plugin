@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
+import { showPricing } from '../../../3-Account/stripe-slice.js';
+import { useCallbackAsync2 } from '../../../../common/front-utils.js';
+import { dispatchOther } from '../../../../core/redux/redux.utils.js';
 import { _ButtonBase_SizeSmIconTrailing } from '../_ButtonBase_SizeSmIconTrailing/_ButtonBase_SizeSmIconTrailing';
 import classes from './Button_SizeSmHierarchyLinkColo2.module.css';
-import { CircleIcon } from './CircleIcon';
 
 interface Props {
   className?: string;
@@ -16,13 +18,15 @@ interface Props {
 }
 /* @figmaId 1899:114529 */
 export const Button_SizeSmHierarchyLinkColo2: FC<Props> = memo(function Button_SizeSmHierarchyLinkColo2(props = {}) {
+  const showPricingPage = useCallbackAsync2(async () => {
+    dispatchOther(showPricing());
+  }, []);
   return (
-    <button>
+    <button onClick={showPricingPage}>
       <_ButtonBase_SizeSmIconTrailing
         className={classes._ButtonBase}
         classes={{ circle: classes.circle }}
         swap={{
-          icon: <CircleIcon className={classes.icon} />,
           circle: props.swap?.circle,
         }}
         text={{

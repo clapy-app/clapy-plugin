@@ -1,6 +1,7 @@
 ._ButtonBase._ButtonBase {
-  align-self: flex-start;
+  place-content: center;
 }
 .root {
   border-radius: 8px;
+  height: 48px;
 }

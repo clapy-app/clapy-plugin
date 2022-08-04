@@ -1,3 +1,4 @@
+import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { memo } from 'react';
 
@@ -18,9 +19,14 @@ export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <button className={`${classes.text} ${props.classes?.text || ''}`} onClick={customerPortal}>
-        Billing
-      </button>
+      <Button
+        variant='contained'
+        size='medium'
+        className={`${classes.text} ${props.classes?.text || ''}`}
+        onClick={customerPortal}
+      >
+        See plan details
+      </Button>
     </div>
   );
 });

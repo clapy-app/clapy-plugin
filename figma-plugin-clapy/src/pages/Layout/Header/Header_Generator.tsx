@@ -2,7 +2,6 @@ import type { FC, MouseEvent } from 'react';
 import { memo } from 'react';
 
 import { HorizontalTabs } from '../HorizontalTabs/HorizontalTabs';
-import { LogoutButton } from '../LogoutButton/LogoutButton.js';
 import classes from './Header.module.css';
 
 interface Props {
@@ -16,7 +15,6 @@ export const HeaderGenerator: FC<Props> = memo(function Header(props) {
   return (
     <div className={classes.root}>
       <HorizontalTabs activeTab={activeTab} selectTab={selectTab} />
-      <LogoutButton />
     </div>
   );
 });
