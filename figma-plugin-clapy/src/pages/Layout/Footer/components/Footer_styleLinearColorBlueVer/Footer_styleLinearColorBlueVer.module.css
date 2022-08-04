@@ -98,3 +98,10 @@
   align-items: center;
   white-space: nowrap;
 }
+
+.clapyMadeWithLogo:hover .clapyIcon{
+background-color: #ffffff22;
+}
+.clapyIcon{
+
+}

@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { openCustomerPortal } from '../../../../../common/stripeLicense.js';
 import classes from './ButtonViewPlan.module.css';
+import { CheckCircleIcon } from './checkCircleIcon';
 
 interface Props {
   className?: string;
@@ -25,7 +26,8 @@ export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}
         className={`${classes.text} ${props.classes?.text || ''}`}
         onClick={customerPortal}
       >
-        See plan details
+        <CheckCircleIcon />
+        &nbsp; See plan details
       </Button>
     </div>
   );
