@@ -19,8 +19,8 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
   const isFlex = isFlexNode(node);
   const nodeFlex = node as FlexNode;
   const hasFills = isFlex && Array.isArray(nodeFlex.fills) && nodeFlex.fills.length >= 1;
-  const hasStrokes = isFlex && nodeFlex.strokes.length >= 1;
-  const hasEffects = isFlex && nodeFlex.effects.length >= 1;
+  const hasStrokes = isFlex && nodeFlex.strokes?.length >= 1;
+  const hasEffects = isFlex && nodeFlex.effects?.length >= 1;
   // If I want to use an img, the below code is the way to go. But the generic and simple way to handle multiple fills will be to use backgrounds, which is closer to how figma does it anyway.
   // const { images } = context.moduleContext.projectContext;
   /* if (images[node.id]) {

@@ -87,7 +87,7 @@ export const reactConnector: FrameworkConnector = {
   mkSelector: (context, className) => mkClassSelectorCss(className),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
-    return wrapHideAndTextOverride(context, ast2, node);
+    return wrapHideAndTextOverride(context, ast2, node, false);
   },
   mkSwapInstanceAlone: (context, ast, node) => mkSwapInstanceAlone(context, ast as ts.JsxSelfClosingElement, node),
   wrapHideAndTextOverride,
@@ -101,7 +101,13 @@ export const reactConnector: FrameworkConnector = {
 
     const [tsx, css] = ast;
 
-    createModuleCode(moduleContext, tsx as Exclude<typeof tsx, ChildNode | ChildNode[] | (JsxChild | ChildNode)[]>);
+    createModuleCode(
+      moduleContext,
+      tsx as Exclude<
+        typeof tsx,
+        ChildNode | ChildNode[] | (JsxChild | ChildNode)[] | ts.BinaryExpression | ts.ConditionalExpression
+      >,
+    );
 
     if (isNonEmptyObject(css.children)) {
       const cssExt = getCSSExtension(projectContext.extraConfig);
@@ -159,8 +165,13 @@ export const reactConnector: FrameworkConnector = {
   writeSVGReactComponents,
 };
 
-function wrapHideAndTextOverride(context: NodeContext, ast: FwNodeOneOrMore | undefined, node: SceneNode2) {
-  return mkWrapHideAndTextOverrideAst(context, ast as JsxOneOrMore, node);
+function wrapHideAndTextOverride<T extends boolean>(
+  context: NodeContext,
+  ast: FwNodeOneOrMore | undefined,
+  node: SceneNode2,
+  isJsExprAllowed: T,
+) {
+  return mkWrapHideAndTextOverrideAst(context, ast as JsxOneOrMore, node, isJsExprAllowed);
 }
 
 function createModuleCode(

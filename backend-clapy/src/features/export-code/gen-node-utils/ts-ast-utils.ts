@@ -623,11 +623,18 @@ function mkWrapHideExprFragment<T extends JsxOneOrMore | ts.Expression | undefin
   return ast2;
 }
 
-export function mkWrapHideAndTextOverrideAst(context: NodeContext, ast: JsxOneOrMore | undefined, node: SceneNode2) {
+export function mkWrapHideAndTextOverrideAst<T extends boolean>(
+  context: NodeContext,
+  ast: JsxOneOrMore | undefined,
+  node: SceneNode2,
+  isJsExprAllowed: T,
+): T extends true
+  ? JsxOneOrMore | ts.BinaryExpression | ts.ConditionalExpression | undefined
+  : JsxOneOrMore | undefined {
   const astTmp = mkWrapTextOverrideExprFragment(ast, node);
   const ast2 = mkWrapHideExprFragment(astTmp, node);
   if (!ast2) return;
-  if (ast === ast2) return ast;
+  if (ast === ast2 || isJsExprAllowed) return ast2 as JsxOneOrMore;
   const ast3: JsxOneOrMore = mkWrapExpressionFragment(ast2);
   return context.isRootInComponent ? mkFragment(ast3) : ast3;
 }

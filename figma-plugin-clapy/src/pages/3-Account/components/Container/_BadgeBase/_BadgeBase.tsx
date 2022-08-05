@@ -18,7 +18,7 @@ export const _BadgeBase: FC<Props> = memo(function _BadgeBase(props: Props) {
 
   return (
     <div className={`${classes.root} ${bgColor} ${props.className || ''}`}>
-      <div className={`${classes.text} ${props.classes?.text || ''}`}>{isFreeUser ? 'Free' : 'Premium'}</div>
+      <div className={`${classes.text} ${props.classes?.text || ''}`}>{isFreeUser ? 'Free' : 'Pro'}</div>
     </div>
   );
 });

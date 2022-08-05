@@ -193,7 +193,7 @@ export function genTextAst(node: TextNode2) {
     ast = fwConnector.wrapNode(ast, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
   }
 
-  ast = fwConnector.wrapHideAndTextOverride(context, ast, node);
+  ast = fwConnector.wrapHideAndTextOverride(context, ast, node, false);
 
   return ast;
 }

@@ -39,12 +39,12 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
   return svgPathVarName;
 }
 
-export function createSvgAst(
+export function createSvgAst<T extends boolean>(
   context: NodeContext,
   node: VectorNodeDerived,
   styles: Dict<DeclarationPlain>,
   svgPathVarName: string,
-  wrapWithSwap?: boolean,
+  isJsxContext?: T,
 ) {
   const attributes = addNodeStyles(context, node, styles);
   if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
@@ -54,11 +54,12 @@ export function createSvgAst(
   const { fwConnector } = projectContext;
   const svgAttributes = createSvgClassAttribute(context, node);
   let ast = fwConnector.createSvgTag(svgPathVarName, svgAttributes);
-  if (wrapWithSwap) {
+  // Do we really want to skip wrap with swap in instances? There could be another swap from a parent comp, right?
+  if (isJsxContext) {
     ast = fwConnector.mkSwapInstanceAlone(context, ast, node)!;
   }
   const ast2 = ast && attributes.length ? fwConnector.wrapNode(ast, 'div', attributes) : ast;
-  return fwConnector.wrapHideAndTextOverride(context, ast2, node);
+  return fwConnector.wrapHideAndTextOverride(context, ast2, node, !isJsxContext);
 }
 
 export function createSvgClassAttribute(context: NodeContext, node: ValidNode) {

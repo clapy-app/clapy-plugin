@@ -1,6 +1,7 @@
 ## Usage
 
 - `yarn install:all` to install dependencies in root and subprojects
+- Install Stripe CLI: https://stripe.com/docs/stripe-cli and ...
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice

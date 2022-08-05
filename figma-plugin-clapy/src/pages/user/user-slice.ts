@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import type { RootState } from '../../core/redux/store';
+import { env } from '../../environment/env.js';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
 export interface UserState {
@@ -60,6 +61,7 @@ export const selectIsUserMaxQuotaReached = (state: RootState) => {
   return isMaxQuotaReached && isLicenceExpired;
 };
 export const selectIsFreeUser = (state: RootState) => {
+  if (env.isDev) return false;
   const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
   return isLicenceExpired!;
 };
