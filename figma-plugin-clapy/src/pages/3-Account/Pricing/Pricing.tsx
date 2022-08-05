@@ -69,7 +69,6 @@ export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
           dispatchOther(showPaymentConfirmation());
           dispatchOther(stopLoadingStripe());
         }
-        eventSource.close();
       }
       eventSource.close();
     };
