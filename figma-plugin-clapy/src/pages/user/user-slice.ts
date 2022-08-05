@@ -1,9 +1,9 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
+import { selectStripeDevTeam } from '../../core/auth/auth-slice.js';
 import type { RootState } from '../../core/redux/store';
-import { env } from '../../environment/env.js';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
 export interface UserState {
@@ -55,13 +55,7 @@ export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStri
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
-export const selectIsUserMaxQuotaReached = (state: RootState) => {
-  const { isLicenceExpired, quotas, quotasMax } = state.user.userMetadata as UserMetadata;
-  const isMaxQuotaReached = quotas! >= quotasMax!;
-  return isMaxQuotaReached && isLicenceExpired;
-};
 export const selectIsFreeUser = (state: RootState) => {
-  if (env.isDev) return false;
   const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
   return isLicenceExpired!;
 };
@@ -78,3 +72,14 @@ export const selectHasMissingMetaUsage = (state: RootState) =>
  */
 export const selectUserMetadata = (state: RootState) => state.user.userMetadata as UserMetadata;
 export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadata as UserMetadata)?.usage;
+
+export const selectIsUserMaxQuotaReached = createSelector(
+  selectStripeDevTeam,
+  selectUserMetadata,
+  (isStripeDevTeam, userMetadata) => {
+    if (!isStripeDevTeam) return false;
+    const { isLicenceExpired, quotas, quotasMax } = userMetadata;
+    const isMaxQuotaReached = quotas! >= quotasMax!;
+    return isMaxQuotaReached && isLicenceExpired;
+  },
+);
