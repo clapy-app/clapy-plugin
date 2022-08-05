@@ -48,6 +48,7 @@ export const angularConnector: FrameworkConnector = {
   assetsCssBaseUrl: '/assets/',
   webpackIgnoreInCSS: false,
   addScssPackages: () => {},
+  patchCssResets: () => {},
   registerSvgForWrite,
   createClassAttribute(node, className) {
     const className2 = className || node.className!;

@@ -261,6 +261,7 @@ export interface UserSettings {
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
+  globalResets?: boolean;
   framework: 'angular' | 'react';
   frameworkConfig?: ReactConfig | AngularConfig;
   target: UserSettingsTarget;

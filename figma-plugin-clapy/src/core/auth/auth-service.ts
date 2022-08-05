@@ -73,6 +73,10 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
 });
 
+// Github scopes: https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
+// Then Github API:
+// - https://github.com/octokit/rest.js
+// - https://octokit.github.io/rest.js/v18
 export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
   let readToken: string | undefined = undefined,
     writeToken: string | undefined = undefined;
@@ -80,6 +84,8 @@ export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (isSignUp?
     const verifier = createVerifier();
     const challenge = createChallenge(verifier);
     ({ readToken, writeToken } = await fetchReadWriteKeys());
+    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp, extraScopes);
+    // ... TODO
     deleteReadToken(readToken);
   } catch (err) {
     if (readToken) {
@@ -246,6 +252,7 @@ function getAuthenticationURL(
     data.screen_hint = 'signup';
   }
   if (extraScopes) {
+    // https://auth0.com/docs/authenticate/identity-providers/adding-scopes-for-an-external-idp#pass-scopes-to-authorize-endpoint
     data.connection_scope = extraScopes.join(',');
   }
   return mkUrl(`https://${auth0Domain}/authorize`, data);

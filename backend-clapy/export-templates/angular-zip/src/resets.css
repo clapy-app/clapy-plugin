@@ -28,12 +28,14 @@ body > app-root * {
 
 body button:not(:disabled) {
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 
 body label {
-  user-select: none;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body span,
