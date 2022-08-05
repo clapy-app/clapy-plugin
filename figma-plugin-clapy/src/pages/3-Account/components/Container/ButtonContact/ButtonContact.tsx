@@ -1,3 +1,4 @@
+import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { memo } from 'react';
 
@@ -13,9 +14,14 @@ interface Props {
 }
 export const ButtonContact: FC<Props> = memo(function ButtonContact(props = {}) {
   return (
-    <div className={`${classes.root} ${props.className || ''}`}>
+    <Button
+      className={`${classes.root} ${props.className || ''}`}
+      href={'mailto:subscriptions@clapy.co?subject=update%20plan'}
+      target='_blank'
+      rel='noreferrer'
+    >
       <MailIcon className={`${classes.mail} ${props.classes?.mail || ''}`} />
       <div className={`${classes.text} ${props.classes?.text || ''}`}>Contact us to update your plan</div>
-    </div>
+    </Button>
   );
 });

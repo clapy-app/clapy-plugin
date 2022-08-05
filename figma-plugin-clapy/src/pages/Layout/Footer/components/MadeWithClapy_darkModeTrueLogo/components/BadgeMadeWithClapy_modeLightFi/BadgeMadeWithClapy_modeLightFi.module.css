@@ -1,0 +1,38 @@
+.logomark.logomark.logomark {
+  width: 17.1702px;
+  height: 16.5616px;
+  padding: 3.6866px 4.74px;
+  border-radius: 3.6866px;
+  box-shadow: 0px 0.5266706347465515px 1.053341269493103px 0px #1018280f,
+    0px 0.5266706347465515px 1.5800118446350098px 0px #1018281a;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.root {
+  align-self: flex-start;
+  border-radius: 7.4383px;
+  overflow-y: auto;
+}
+._ButtonBase {
+  align-self: flex-start;
+  place-content: center;
+  align-items: center;
+  gap: 5.6451px;
+  padding: 7.4383px 13.017px;
+  outline: solid 0.9297px #fff;
+  outline-offset: -0.9297px;
+  border-radius: 7.4383px;
+  overflow: hidden;
+  box-shadow: 0px 0.9297913312911987px 1.8595826625823975px 0px #1018280d;
+}
+.text {
+  color: #fff;
+  font-size: 12.0872px;
+  font-weight: bold;
+  font-family: Spartan, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-items: center;
+  white-space: nowrap;
+}

@@ -39,6 +39,8 @@ interface Props {
     text?: ReactNode;
     text2?: ReactNode;
   };
+  href?: string;
+  callback?: () => Promise<void>;
 }
 /* @figmaId 666:98815 */
 export const _PricingTierCard_TypeIconBreak: FC<Props> = memo(function _PricingTierCard_TypeIconBreak(props = {}) {
@@ -108,6 +110,8 @@ export const _PricingTierCard_TypeIconBreak: FC<Props> = memo(function _PricingT
           <Button_SizeXlHierarchyPrimaryI
             className={classes.button}
             classes={{ _ButtonBase: classes._ButtonBase }}
+            href={props.href || undefined}
+            callback={props.callback || undefined}
             text={{
               text: props.text?.text2 || <div className={classes.text6}>Get started</div>,
             }}

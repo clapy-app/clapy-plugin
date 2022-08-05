@@ -20,7 +20,7 @@ interface Props {
 /* @figmaId 1899:113933 */
 export const Button_SizeXlHierarchyPrimaryI: FC<Props> = memo(function Button_SizeXlHierarchyPrimaryI(props = {}) {
   return (
-    <button className={`${classes.root} ${props.classes?.root || ''} ${props.className || ''}`}>
+    <div className={`${classes.root} ${props.classes?.root || ''} ${props.className || ''}`}>
       <_ButtonBase_SizeXlIconLeading
         className={`${classes._ButtonBase} ${props.classes?._ButtonBase || ''}`}
         swap={{
@@ -30,6 +30,6 @@ export const Button_SizeXlHierarchyPrimaryI: FC<Props> = memo(function Button_Si
           text: props.text?.text,
         }}
       />
-    </button>
+    </div>
   );
 });

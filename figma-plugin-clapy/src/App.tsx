@@ -88,17 +88,15 @@ export const App: FC = memo(function App() {
     let checkSession = async () => {
       try {
         const res = (await checkSessionLight()) as ApiResponse;
+
         track('open-plugin');
-        if (res.quotas != null || !res.isLicenceExpired) {
-          dispatchOther(setStripeData(res));
-        }
+        dispatchOther(setStripeData(res));
       } catch (e) {
         handleError(e);
       }
     };
     checkSession();
   }, []);
-
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'
   // instead, but we would need to re-add animations & co to make it work.
   return (

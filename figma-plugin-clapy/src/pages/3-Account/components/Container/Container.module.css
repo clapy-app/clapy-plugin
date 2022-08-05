@@ -115,3 +115,7 @@
   padding: 0 32px;
   align-items: center;
 }
+.btnContainer {
+  flex-direction: column;
+  gap:8px
+}

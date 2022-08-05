@@ -6,14 +6,14 @@ import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
 import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
 import { selectPaymentConfirmation } from '../../stripe-slice.js';
-import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import backGroundImage from './backgroundImage.jpeg';
-import { Badge2 } from './Badge2/Badge2';
-import { Badge } from './Badge/Badge';
+import { BadgeBilling } from './BadgeBilling/BadgeBilling.js';
+import { BadgePlan } from './BadgePlan/BadgePlan.js';
+import { BtnHistoryExportDisabled } from './BtnHistoryExportDisabled/BtnHistoryExportDisabled.js';
+import { BtnUpgrade } from './BtnUpgrade/BtnUpgrade.js';
 import { ButtonContact } from './ButtonContact/ButtonContact.js';
 import { ButtonUpgrade2 } from './ButtonUpgrade2/ButtonUpgrade2';
-import { ButtonUpgrade } from './ButtonUpgrade/ButtonUpgrade';
 import { ButtonViewPlan } from './buttonViewPlan/ButtonViewPlan.js';
 import classes from './Container.module.css';
 import { Dropdown } from './Dropdown/Dropdown';
@@ -79,14 +79,14 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
                 {isFreeUser && (
                   <>
-                    <Badge />
-                    <BadgeQuotas />
+                    <BadgePlan />
+                    <BadgeBilling />
                   </>
                 )}
                 {!isFreeUser && (
                   <>
-                    <Badge />
-                    <Badge2 />
+                    <BadgePlan />
+                    <BadgeBilling />
                   </>
                 )}
               </div>
@@ -96,14 +96,21 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
         <div className={`${classes.actions} ${props.classes?.actions || ''}`}>
           {isFreeUser && (
             <>
-              <ButtonUpgrade />
-              <ButtonUpgrade2 />
+              <div className={`${classes.btnContainer}`}>
+                <BtnUpgrade />
+                {/* <ButtonUpgrade /> */}
+                <ButtonUpgrade2 />
+              </div>
+              <BtnHistoryExportDisabled />
             </>
           )}
           {!isFreeUser && (
             <>
-              <ButtonViewPlan />
-              <ButtonContact />
+              <div className={`${classes.btnContainer}`}>
+                <ButtonViewPlan />
+                <ButtonContact />
+              </div>
+              <BtnHistoryExportDisabled />
             </>
           )}
         </div>

@@ -1,9 +1,11 @@
+import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { memo } from 'react';
 
 import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { openCustomerPortal } from '../../../../../common/stripeLicense.js';
 import classes from './ButtonViewPlan.module.css';
+import { CheckCircleIcon } from './CheckCircleIcon';
 
 interface Props {
   className?: string;
@@ -18,9 +20,15 @@ export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <button className={`${classes.text} ${props.classes?.text || ''}`} onClick={customerPortal}>
-        Billing
-      </button>
+      <Button
+        variant='contained'
+        size='medium'
+        className={`${classes.text} ${props.classes?.text || ''}`}
+        onClick={customerPortal}
+      >
+        <CheckCircleIcon />
+        &nbsp; See plan details
+      </Button>
     </div>
   );
 });
