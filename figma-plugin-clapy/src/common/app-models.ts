@@ -89,6 +89,7 @@ export interface UserMetadata {
   quotas?: number;
   quotasMax?: number;
   isLicenceExpired?: boolean;
+  limitedUser?: boolean;
 }
 
 export interface UserMetaUsage {

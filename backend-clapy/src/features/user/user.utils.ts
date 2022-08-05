@@ -10,27 +10,9 @@ var auth0Management = new ManagementClient({
   domain: auth0Domain,
   clientId: auth0BackendClientId,
   clientSecret: auth0BackendClientSecret,
-  scope: 'read:users update:users',
+  scope: 'read:users update:users read:user_idp_tokens',
 });
 
-export async function getAuth0User(userId: string | undefined) {
-  if (!userId) throw new UnauthorizedException();
-  return await auth0Management.getUser({ id: userId });
-}
-
-export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
-}
-
-export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.assignRolestoUser({ id: userId }, { roles });
-}
-export async function removeAuth0UserRoles(userId: string | undefined, roles: string[]) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.removeRolesFromUser({ id: userId }, { roles });
-}
 export interface UserMetadata {
   firstName?: string;
   lastName?: string;
@@ -46,6 +28,7 @@ export interface UserMetadata {
   quotas?: number;
   quotasMax?: number;
   isLicenceExpired?: boolean;
+  limitedUser?: boolean;
 }
 
 export interface UserMetaUsage {
@@ -54,6 +37,26 @@ export interface UserMetaUsage {
   landingPages?: boolean;
   other?: boolean;
   otherDetail?: string;
+}
+
+export async function getAuth0User(userId: string | undefined) {
+  if (!userId) throw new UnauthorizedException();
+  return await auth0Management.getUser({ id: userId });
+}
+
+export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
+  if (!userId) throw new UnauthorizedException();
+  return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
+}
+
+export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
+  if (!userId) throw new UnauthorizedException();
+  return auth0Management.assignRolestoUser({ id: userId }, { roles });
+}
+
+export async function removeAuth0UserRoles(userId: string | undefined, roles: string[]) {
+  if (!userId) throw new UnauthorizedException();
+  return auth0Management.removeRolesFromUser({ id: userId }, { roles });
 }
 
 /**
@@ -74,6 +77,7 @@ export interface AccessTokenDecoded {
   };
   'https://clapy.co/roles'?: string[];
   'https://clapy.co/licence-expiration-date'?: number;
+  'https://clapy.co/limited-user'?: boolean;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
@@ -138,3 +142,6 @@ export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('noCodesandbox');
 export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
+export const hasRoleIsStripeDevTeam = (user: AccessTokenDecoded) =>
+  user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
+export const isLimitedUser = (user: AccessTokenDecoded) => user?.['https://clapy.co/limited-user'];

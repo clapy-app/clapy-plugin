@@ -36,8 +36,8 @@ import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import type { FwAttr } from './frameworks/framework-connectors.js';
 import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
-import { getOrGenClassName, getOrGenHideProp } from './gen-node-utils/gen-unique-name-utils.js';
-import { addNodeStyles, createSvgAst, readSvg } from './gen-node-utils/process-nodes-utils.js';
+import { getOrGenClassName } from './gen-node-utils/gen-unique-name-utils.js';
+import { addNodeStyles, createSvgAst, patchInstanceAsSVG, readSvg } from './gen-node-utils/process-nodes-utils.js';
 import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -56,10 +56,6 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
   try {
     node.nodeContext = context;
     node.styles = {};
-    if (!node.visible && context.moduleContext.isRootComponent) {
-      node.skip = true;
-      return;
-    }
 
     const { parentNode, moduleContext, isRootInComponent } = context;
     const { projectContext } = moduleContext;
@@ -68,10 +64,6 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
     if (isRootInComponent) {
       // Always generate the className prop for root nodes
       getOrGenClassName(moduleContext, node);
-    }
-    node.hideDefaultValue = !node.visible;
-    if (!node.visible) {
-      getOrGenHideProp(moduleContext, node);
     }
 
     let styles: Dict<DeclarationPlain> = {};
@@ -140,6 +132,8 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
 
       node.svgPathVarName = svgPathVarName;
     } else if (isBlockNode(node)) {
+      patchInstanceAsSVG(context, node);
+
       // Add tag styles
       mapTagStyles(context, node, styles);
 
@@ -239,7 +233,10 @@ export function genNodeAst(node: SceneNode2) {
     const { fwConnector } = projectContext;
     if (extraAttributes?.length) context.hasExtraAttributes = true;
 
+    // Skip code gen for node in special cases like groups and masks
     if (node.skip) return;
+    // Skip code gen for node if the node is hidden in Figma and no instance reveals it.
+    if (!node.visible && !node.hideProp) return;
 
     node.htmlClass = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.htmlClass;
     const parentRule = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.rule;

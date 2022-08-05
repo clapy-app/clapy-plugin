@@ -7,9 +7,5 @@ interface Props {
   className?: string;
 }
 export const Badge: FC<Props> = memo(function Badge(props = {}) {
-  return (
-    <div>
-      <_BadgeBase />
-    </div>
-  );
+  return <_BadgeBase />;
 });

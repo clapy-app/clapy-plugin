@@ -71,3 +71,7 @@ export const selectIncreasedQuotaUser = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('increasedQuota');
 export const selectUserLicenceExpirationDate = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];
+export const selectGithubEnabled = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
+export const selectStripeDevTeam = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('stripeDevTeam');

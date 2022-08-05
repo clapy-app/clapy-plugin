@@ -53,7 +53,12 @@ export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStri
 
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
-
+export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
+export const selectIsUserMaxQuotaReached = (state: RootState) => {
+  const { isLicenceExpired, quotas, quotasMax } = state.user.userMetadata as UserMetadata;
+  const isMaxQuotaReached = quotas! >= quotasMax!;
+  return isMaxQuotaReached && isLicenceExpired;
+};
 export const selectIsFreeUser = (state: RootState) => {
   const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
   return isLicenceExpired!;

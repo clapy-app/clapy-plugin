@@ -250,13 +250,20 @@ export interface AngularConfig {
   prefix: string;
 }
 
+export enum UserSettingsTarget {
+  csb = 'csb',
+  zip = 'zip',
+  github = 'github',
+}
+
 export interface UserSettings {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
-  framework?: 'angular' | 'react';
+  framework: 'angular' | 'react';
   frameworkConfig?: ReactConfig | AngularConfig;
+  target: UserSettingsTarget;
 }
 
 export type ExtraConfig = {
@@ -271,7 +278,6 @@ export type ExtraConfig = {
 export type SVGsExtracted = Dict<{ svg: string; name: string }>;
 
 export interface ExportCodePayload {
-  parent: FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2 | null | undefined;
   root: SceneNode2 | null | undefined;
   components: ComponentNode2[];
   svgs: SVGsExtracted;
@@ -279,7 +285,6 @@ export interface ExportCodePayload {
   styles: FigmaStyles;
   extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
-  codeGenerationCount: number;
 }
 
 export interface FigmaStyles {

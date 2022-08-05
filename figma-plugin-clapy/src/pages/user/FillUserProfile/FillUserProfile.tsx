@@ -1,6 +1,7 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import { parsePhoneNumber } from 'libphonenumber-js';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import ReactPhoneInput from 'react-phone-input-material-ui';
@@ -83,6 +84,7 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
   const defaultValuesRef = useRef<Partial<UserMetadata>>({});
   const [allFilled, setAllFilled] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isValidNumber, setIsValidNumber] = useState(false);
 
   const submitMetadata = useCallbackAsync2(
     async (e: MouseEvent<HTMLButtonElement>) => {
@@ -213,15 +215,28 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
               value={value}
               country={'fr'}
               onChange={handleChangePhoneInput}
-              className={classes.textField}
+              containerClass={classes.textField}
               component={TextField}
+              isValid={(value, country: any) => {
+                try {
+                  const phoneNumber = parsePhoneNumber(value, country.iso2.toUpperCase());
+                  if (phoneNumber && phoneNumber.isValid()) {
+                    setIsValidNumber(true);
+                    return true;
+                  }
+                  return false;
+                } catch (e) {
+                  setIsValidNumber(false);
+                  return false;
+                }
+              }}
             />
           </div>
           <LoadingButton
             size='large'
             variant='contained'
             className={classes.submitButton}
-            disabled={!allFilled || isLoading}
+            disabled={!allFilled || isLoading || !isValidNumber}
             loading={isLoading}
             onClick={submitMetadata}
           >

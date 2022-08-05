@@ -5,9 +5,28 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "editor.formatOnSaveMode": "modificationsIfAvailable",
   "eslint.packageManager": "yarn",
   "eslint.format.enable": true,
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[handlebars]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": true
+  },
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
@@ -25,12 +44,6 @@
   },
   "[markdown]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[handlebars]": {
-    "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "css.format.spaceAroundSelectorSeparator": true,
   "less.format.spaceAroundSelectorSeparator": true,

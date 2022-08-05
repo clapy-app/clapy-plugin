@@ -1,0 +1,144 @@
+.pluginPageHeadline.pluginPageHeadline {
+  padding: initial;
+}
+.pageTitle {
+  color: #000;
+  font-size: 32px;
+  line-height: 126.4999%;
+  font-weight: 600;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  width: initial;
+  text-align: center;
+  justify-content: center;
+  align-items: flex-end;
+}
+.loremIpsumDolorSitAmetConsecte {
+  color: #475467;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  width: initial;
+  text-align: center;
+  justify-content: center;
+}
+.button.button {
+  flex: 1;
+  align-self: flex-start;
+}
+._ButtonBase._ButtonBase._ButtonBase {
+  flex: 1;
+}
+.messageCircle.messageCircle {
+  
+  width: 20px;
+  height: 20px;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.text {
+  color: #fff;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  white-space: nowrap;
+}
+.footer.footer {
+  width: initial;
+  align-self: stretch;
+  background-image: linear-gradient(133.8deg, #1e51b2ff 0%, #0d347cff 100%);
+}
+.text2 {
+  color: #fff;
+  font-size: 12.0872px;
+  font-weight: bold;
+  font-family: Spartan, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-items: center;
+  white-space: nowrap;
+}
+.icon2 {
+  width: 100%;
+  height: 100%;
+}
+.root {
+  flex: 1;
+  align-self: stretch;
+  width: initial;
+  flex-direction: column;
+  place-content: space-between;
+  align-items: center;
+  /* padding: 32px 32px 48px; */
+  overflow-y: auto;
+}
+.frame127 {
+  align-self: flex-start;
+  flex-direction: column;
+  flex:1;
+}
+.loggingIn {
+  flex-direction: column;
+  background-color: #fff;
+  overflow: hidden;
+  flex: 1;
+}
+.container {
+  flex: 1;
+  align-self: stretch;
+  width: initial;
+  flex-direction: column;
+  place-content: space-between;
+  align-items: center;
+  padding: 32px 32px 48px;
+}
+.player {
+  width: 312px;
+  height: 173px;
+  padding: 0 15px;
+}
+.wIN_20220629_10_35_10_Pro1 {
+  flex: 1;
+  align-self: stretch;
+  width: initial;
+  border-radius: 5px;
+  background-image:/* webpackIgnore: true */ url('https://res.cloudinary.com/clapy/image/upload/v1659515662/public/Give_feedback_-_Light_-_width__421px_height__281px_-_60_frames_fxqkvf.gif');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.frame220 {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.weRewardUsersWhoHelpUsBuildABe {
+  color: #1d2939;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif;
+  align-self: stretch;
+  width: initial;
+  text-align: center;
+  justify-content: center;
+}
+.frame187 {
+  flex: 1;
+  flex-direction: column;
+}
+.frame98 {
+  width: 340px;
+  align-self: flex-start;
+}
+.submitButton {
+  flex: 1;
+  align-self: flex-start;
+}

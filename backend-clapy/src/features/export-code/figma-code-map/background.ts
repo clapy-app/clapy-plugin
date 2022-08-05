@@ -17,14 +17,14 @@ import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.
 import { figmaColorToCssHex, round, warnNode } from '../gen-node-utils/utils-and-reset.js';
 
 export function prepareBackgrounds(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
-  if (doesNotHaveBorders(node)) {
+  if (doesNotHaveBackgrounds(node)) {
     // Ignore borders for Vectors. They are already included in the SVG.
     return;
   }
   node.visibleFills = (Array.isArray(node.fills) ? (node.fills as Paint[]) : []).filter(({ visible }) => visible);
 }
 
-function doesNotHaveBorders(
+function doesNotHaveBackgrounds(
   node: ValidNode,
 ): node is TextNode2 | VectorNodeDerived | GroupNode2 | BooleanOperationNode2 {
   return isText(node) || isVector(node) || isGroup(node);
@@ -32,7 +32,7 @@ function doesNotHaveBorders(
 
 export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // Text color is handled separately (color.ts)
-  if (doesNotHaveBorders(node)) return;
+  if (doesNotHaveBackgrounds(node)) return;
 
   const visibleFills = node.visibleFills!;
 

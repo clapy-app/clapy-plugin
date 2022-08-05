@@ -4,8 +4,9 @@ import type { ChildNode, Element } from 'parse5/dist/tree-adapters/default';
 import type ts from 'typescript';
 
 import type { genAstFromRootNode } from '../3-gen-component.js';
+import type { Nil } from '../../../common/general-utils.js';
 import type { Dict, Dict3, ExtraConfig, UserSettings } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { CompAst, JsxOneOrMore, ModuleContext, NodeContext, ProjectContext } from '../code.model.js';
+import type { CompAst, JsxOneOrMore, ModuleContext, NodeContext, ParentNode, ProjectContext } from '../code.model.js';
 import type { BlockNode, SceneNode2, ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { angularConnector } from './angular/index.js';
 import { reactConnector } from './react/index.js';
@@ -60,7 +61,12 @@ export interface FrameworkConnector {
   ) => CompAst | Element | undefined;
   createSvgTag: (svgPathVarName: string, svgAttributes: FwAttr[]) => FwNode;
   addExtraSvgAttributes: (context: NodeContext, node: ValidNode, svgStyles: Dict<DeclarationPlain>) => void;
-  writeRootCompFileCode: (appModuleContext: ModuleContext, compAst: CompAst | Element | undefined) => void;
+  writeRootCompFileCode: (
+    appModuleContext: ModuleContext,
+    compAst: CompAst | Element | undefined,
+    appCssPath: string,
+    parent: ParentNode | Nil,
+  ) => void;
   writeSVGReactComponents: (projectContext: ProjectContext) => Promise<void>;
 }
 

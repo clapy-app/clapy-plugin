@@ -1,0 +1,16 @@
+.helpCircle.helpCircle {
+  right: 0;
+  bottom: 0;
+  width: initial;
+  height: initial;
+}
+.icon {
+  width: 100%;
+  height: 100%;
+}
+.root {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  align-items: flex-start;
+}

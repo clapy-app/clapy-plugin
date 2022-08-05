@@ -3,6 +3,7 @@ import { warnOrThrow } from '../../../utils.js';
 import type {
   Dict,
   FrameNodeNoMethod,
+  LayoutTypes,
   PageNode2,
   SceneNode2,
   SceneNodeNoMethod,
@@ -28,7 +29,6 @@ export function addHugContents(): Partial<FrameNodeNoMethod> {
 export function fillWithDefaults(
   node: SceneNode2 | PageNode2 | Nil,
   instancesInComp: InstanceNode2[],
-  inComp?: boolean,
   isPage?: boolean,
 ) {
   if (!node) return;
@@ -39,7 +39,7 @@ export function fillWithDefaults(
     fillNodeWithDefaults(node, defaultsForNode(node));
     if (isChildrenMixin(node)) {
       for (const child of node.children) {
-        fillWithDefaults(child, instancesInComp, inComp);
+        fillWithDefaults(child, instancesInComp);
       }
     }
   }
@@ -88,6 +88,12 @@ export function fillWithComponent(
       }
     }
   }
+}
+
+export function createNodeWithDefaults(node: { id: string; name: string; type: LayoutTypes }) {
+  const node2 = node as SceneNode2;
+  fillNodeWithDefaults(node2, defaultsForNode(node2));
+  return node2;
 }
 
 function fillNodeWithDefaults(node: SceneNode2 | PageNode2, defaultValues: any) {

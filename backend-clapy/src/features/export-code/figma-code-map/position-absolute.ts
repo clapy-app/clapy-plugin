@@ -3,14 +3,7 @@ import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
-import {
-  isComponent,
-  isConstraintMixin,
-  isFlexNode,
-  isGroup,
-  isLine,
-  isPage,
-} from '../create-ts-compiler/canvas-utils.js';
+import { isComponent, isConstraintMixin, isFlexNode, isGroup, isLine } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
@@ -38,9 +31,19 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
 
   const { parentNode, isRootNode, isRootInComponent } = context;
   const parentIsGroup = isGroup(parentNode);
+  const { isEmbeddedComponent } = context.moduleContext;
+  // Previously, we only removed the position absolute if the parent was a page or a component set.
+  // We changed it to never use position absolute on the root node of a component.
+  // It may be reviewed in the future, e.g. by introducing an option to precise if the element should be absolutely positioned.
   const parentIsAbsolute =
     !isRootNode &&
-    !(isRootInComponent && isComponent(node) && isPage(node.parent)) &&
+    !(
+      (
+        isRootInComponent &&
+        isComponent(node) &&
+        !isEmbeddedComponent
+      ) /* && (isPage(node.parent) || isComponentSet(node.parent)) */
+    ) &&
     (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
   if (parentIsAbsolute) {
     addStyle(context, node, styles, 'position', 'absolute');

@@ -13,4 +13,7 @@ export class GenerationHistoryEntity {
 
   @Column({ name: 'generated_link' })
   generatedLink?: string;
+
+  @Column({ name: 'is_free_user' })
+  isFreeUser?: boolean;
 }

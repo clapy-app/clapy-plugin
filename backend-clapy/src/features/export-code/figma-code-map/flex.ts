@@ -34,12 +34,15 @@ import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.
 
 // primary axis
 const primaryAlignToJustifyContent: {
-  [K in Exclude<BaseFrameMixin['primaryAxisAlignItems'], 'MIN'>]: NonNullable<PropertiesHyphen['justify-content']>;
+  [K in Exclude<BaseFrameMixin['primaryAxisAlignItems'] | 'SPACE_BETWEEN_SINGLE', 'MIN'>]: NonNullable<
+    PropertiesHyphen['justify-content']
+  >;
 } = {
   // MIN: 'flex-start', // default
   MAX: 'flex-end',
   CENTER: 'center',
   SPACE_BETWEEN: 'space-between',
+  SPACE_BETWEEN_SINGLE: 'space-around',
 };
 // counter axis
 type AlignItems = NonNullable<PropertiesHyphen['align-items']>;
@@ -109,6 +112,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // Flex: 1 if it's a figma rule or it's a top-level component
   if (!outerLayoutOnly && !isLine(node) && (node.layoutGrow === 1 || applySettingFullWidthHeight)) {
     addStyle(context, node, styles, 'flex', 1);
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'flex');
   }
 
   const parentCounterAxisHugContents = parentAndNodeHaveSameDirection
@@ -119,13 +124,17 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // If no parent rule, it means it's already stretch (the default one).
   if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || applySettingFullWidthHeight) {
     addStyle(context, node, styles, 'align-self', 'stretch');
-    addStyle(context, node, styles, isParentVertical ? 'width' : 'height', 'initial');
+    resetStyleIfOverriding(context, node, styles, isParentVertical ? 'width' : 'height');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
     if ((parentStyles || applySettingHugContents) && (!parentAlignItems || parentAlignItems === 'stretch')) {
       addStyle(context, node, styles, 'align-self', 'flex-start');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'align-self');
     }
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'align-self');
   }
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
@@ -146,12 +155,25 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
           );
         }
       }
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'text-align');
+      if (defaultIsVertical) {
+        resetStyleIfOverriding(context, node, styles, 'align-items');
+      } else {
+        resetStyleIfOverriding(context, node, styles, 'justify-content');
+      }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
       if (defaultIsVertical) {
         addStyle(context, node, styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
       } else {
         addStyle(context, node, styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
+      }
+    } else {
+      if (defaultIsVertical) {
+        resetStyleIfOverriding(context, node, styles, 'justify-content');
+      } else {
+        resetStyleIfOverriding(context, node, styles, 'align-items');
       }
     }
   }
@@ -162,6 +184,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     if (node.layoutMode === (defaultIsVertical ? 'HORIZONTAL' : 'VERTICAL')) {
       // row is used as default in index.css reset. We can omit it.
       addStyle(context, node, styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'flex-direction');
     }
 
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
@@ -172,17 +196,25 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       !atLeastOneChildHasLayoutGrow1
     ) {
       // use place-content instead of justify-content (+ align-content)
-      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[node.primaryAxisAlignItems]);
+      // If there is a single child, SPACE_BETWEEN centers children. Let's translate to space-around instead.
+      const primaryAxisAlignItems = node.children?.length !== 1 ? node.primaryAxisAlignItems : 'SPACE_BETWEEN_SINGLE';
+      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[primaryAxisAlignItems]);
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'place-content');
     }
 
     if ((!nodeCounterAxisHugContents || node.children.length > 1) && atLeastOneChildHasLayoutAlignNotStretch) {
       addStyle(context, node, styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'align-items');
     }
 
     // May also cover paragraph-spacing, paragraphSpacing, paragraph spacing
     // (using multiple typo for future global text researches)
     if (node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
       addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'gap');
     }
 
     // Padding is embedded here because, on Figma, it only applies to auto-layout elements.

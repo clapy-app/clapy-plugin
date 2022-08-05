@@ -30,8 +30,15 @@ export function getOrGenComponent(
   if (!isRootComponent && !comp) {
     warnOrThrow(`Node ${node.name} is not the root node, but it isn't a component or an instance.`);
   }
+  const isEmbeddedComponent = isComponent(node);
   if (!flags.enableInstanceOverrides || !comp) {
-    const moduleContext = createModuleContextForNode(parentModuleContext, node, parent, isRootComponent);
+    const moduleContext = createModuleContextForNode(
+      parentModuleContext,
+      node,
+      parent,
+      isRootComponent,
+      isEmbeddedComponent,
+    );
     components.set(comp?.id || '_root', moduleContext);
     if (!skipAddImport) {
       ensureComponentIsImported(parentModuleContext, moduleContext);
@@ -41,7 +48,7 @@ export function getOrGenComponent(
   assertDefined(comp);
   let moduleContext = components.get(comp.id);
   if (!moduleContext) {
-    moduleContext = createModuleContextForNode(parentModuleContext, comp, parent, isRootComponent);
+    moduleContext = createModuleContextForNode(parentModuleContext, comp, parent, isRootComponent, isEmbeddedComponent);
     components.set(comp.id, moduleContext);
   }
   if (!skipAddImport) {
@@ -100,7 +107,8 @@ export function mkModuleContext(
   parentModuleContext: ModuleContext | undefined,
   isRootComponent: boolean,
   isComp: boolean,
-  skipNodeRendering = false,
+  skipNodeRendering: boolean,
+  isEmbeddedComponent: boolean,
 ) {
   const moduleContext: ModuleContext = {
     projectContext,
@@ -120,6 +128,7 @@ export function mkModuleContext(
     inInteractiveElement: parentModuleContext?.inInteractiveElement || false,
     isRootComponent,
     isComponent: isComp,
+    isEmbeddedComponent,
     hideProps: new Set(),
     textOverrideProps: new Set(),
   };
@@ -131,6 +140,7 @@ function createModuleContextForNode(
   node: SceneNode2,
   parent: ParentNode | Nil,
   isRootComponent = false,
+  isEmbeddedComponent = false,
 ) {
   const { projectContext } = parentModuleContext;
   const { fwConnector } = projectContext;
@@ -156,6 +166,8 @@ function createModuleContextForNode(
     parentModuleContext,
     isRootComponent,
     isComp,
+    false,
+    isEmbeddedComponent,
   );
   node.isRootInComponent = true;
   prepareRootNode(moduleContext, node, parent);
@@ -214,7 +226,7 @@ export function createNodeContext(moduleContext: ModuleContext, root: SceneNode2
     moduleContext,
     tagName: 'div', // Default value
     nodeNameLower: root.name.toLowerCase(),
-    parentNode: parent,
+    parentNode: (moduleContext.isEmbeddedComponent ? parent : root.parent) as ParentNode | Nil,
     parentStyles: null,
     parentContext: null,
     isRootNode: moduleContext.isRootComponent,

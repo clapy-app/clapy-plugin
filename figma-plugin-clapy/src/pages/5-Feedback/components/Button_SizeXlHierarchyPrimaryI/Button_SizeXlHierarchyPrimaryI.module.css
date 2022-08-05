@@ -1,0 +1,10 @@
+._ButtonBase._ButtonBase {
+  align-self: flex-start;
+  flex-direction: row;
+}
+
+.root {
+  flex: 1;
+  flex-direction: column;
+  border-radius: 8px;
+}

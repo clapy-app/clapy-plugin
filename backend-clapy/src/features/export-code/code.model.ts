@@ -81,6 +81,7 @@ export interface ModuleContext {
   readonly importsAlreadyAdded: Map<string, string>;
   readonly cssRules: CssRootNode[];
   readonly isComponent: boolean;
+  readonly isEmbeddedComponent: boolean;
   // E.g. button, a... https://stackoverflow.com/a/39386695/4053349
   // Cannot really guess at project level, because components can have multiple usages.
   // Let's follow it up at component level, and review with future use cases.

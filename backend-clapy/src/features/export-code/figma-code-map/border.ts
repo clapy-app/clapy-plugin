@@ -181,33 +181,33 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             const multiplier = isInside ? -1 : 1;
             const insetPrefix = isInside ? 'inset ' : '';
             if (strokeTopWeight) {
-              addBoxShadow(context, `${insetPrefix} 0 ${-multiplier * strokeTopWeight}px 0 ${hex}`);
+              addBoxShadow(context, isInside, 0, -multiplier * strokeTopWeight, 0, undefined, hex);
             }
             if (strokeRightWeight) {
-              addBoxShadow(context, `${insetPrefix} ${multiplier * strokeRightWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, isInside, multiplier * strokeRightWeight, 0, 0, undefined, hex);
             }
             if (strokeBottomWeight) {
-              addBoxShadow(context, `${insetPrefix} 0 ${multiplier * strokeBottomWeight}px 0 ${hex}`);
+              addBoxShadow(context, isInside, 0, multiplier * strokeBottomWeight, 0, undefined, hex);
             }
             if (strokeLeftWeight) {
-              addBoxShadow(context, `${insetPrefix} ${-multiplier * strokeLeftWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, isInside, multiplier * strokeLeftWeight, 0, 0, undefined, hex);
             }
           } else {
             if (strokeTopWeight) {
-              addBoxShadow(context, `0 ${-strokeTopWeight}px 0 ${hex}`);
-              addBoxShadow(context, `inset 0 ${strokeTopWeight}px 0 ${hex}`);
+              addBoxShadow(context, undefined, 0, -strokeTopWeight, 0, undefined, hex);
+              addBoxShadow(context, true, 0, strokeTopWeight, 0, undefined, hex);
             }
             if (strokeRightWeight) {
-              addBoxShadow(context, `${strokeRightWeight}px 0 0 ${hex}`);
-              addBoxShadow(context, `inset ${-strokeRightWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, undefined, strokeRightWeight, 0, 0, undefined, hex);
+              addBoxShadow(context, true, -strokeRightWeight, 0, 0, undefined, hex);
             }
             if (strokeBottomWeight) {
-              addBoxShadow(context, `0 ${strokeBottomWeight}px 0 ${hex}`);
-              addBoxShadow(context, `inset 0 ${-strokeBottomWeight}px 0 ${hex}`);
+              addBoxShadow(context, undefined, 0, strokeBottomWeight, 0, undefined, hex);
+              addBoxShadow(context, true, 0, -strokeBottomWeight, 0, undefined, hex);
             }
             if (strokeLeftWeight) {
-              addBoxShadow(context, `${-strokeLeftWeight}px 0 0 ${hex}`);
-              addBoxShadow(context, `inset ${strokeLeftWeight}px 0 0 ${hex}`);
+              addBoxShadow(context, undefined, -strokeLeftWeight, 0, 0, undefined, hex);
+              addBoxShadow(context, true, strokeLeftWeight, 0, 0, undefined, hex);
             }
           }
         }

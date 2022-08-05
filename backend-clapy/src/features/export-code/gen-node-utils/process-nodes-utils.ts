@@ -3,10 +3,19 @@ import type { DeclarationPlain } from 'css-tree';
 import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
-import type { ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
+import type {
+  BlockNode,
+  ComponentNode2,
+  FrameNode2,
+  InstanceNode2,
+  ValidNode,
+  VectorNodeDerived,
+} from '../create-ts-compiler/canvas-utils.js';
+import { isComponent, isInstance } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { stylesToList } from '../css-gen/css-type-utils.js';
 import type { FwAttr } from '../frameworks/framework-connectors.js';
+import { createNodeWithDefaults } from './default-node.js';
 import { genIconComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute, mkNamedImportsDeclaration } from './ts-ast-utils.js';
 
@@ -104,7 +113,7 @@ export function addNodeStyles2(
 // const svgWidthHeightRegex = /^<svg width="\d+" height="\d+"/;
 const svgBeginningRegex = /^<svg/;
 
-export function readSvg(context: NodeContext, node: VectorNodeDerived) {
+export function readSvg(context: NodeContext, node: VectorNodeDerived | ComponentNode2 | InstanceNode2) {
   const { projectContext } = context.moduleContext;
   // Remove width and height from SVG. Let the CSS define it.
   // Useless when using SVGR to create a React component, but useful for masking since we don't use React SVG for masking.
@@ -131,9 +140,27 @@ export function readSvg(context: NodeContext, node: VectorNodeDerived) {
   }
 }
 
+export function patchInstanceAsSVG(context: NodeContext, node: BlockNode) {
+  const isComp = isComponent(node);
+  const isInst = isInstance(node);
+  if (isComp || isInst) {
+    const node2 = node as ComponentNode2 | InstanceNode2;
+    // Special case: an instance directly contains the SVG split in multiple shapes. The exported SVG was attached to the instance node, but we want to preserve the instance and have the SVG as a child of the instance.
+    let svgContent = readSvg(context, node2);
+    if (svgContent) {
+      const { id, name } = node2;
+      const child = createNodeWithDefaults({ id, name, type: 'VECTOR' }) as FrameNode2;
+      child.width = node2.width;
+      child.height = node2.height;
+      child.constraints = { horizontal: 'SCALE', vertical: 'SCALE' };
+      node2.children = [child];
+    }
+  }
+}
+
 const viewBoxRegex2 = /(<svg [^>]*?viewBox=["'])(-?[\d\.]+)[, ]+(-?[\d\.]+)[, ]([\d\.]+)[, ]([\d\.]+)(["'])/;
 
-function patchSvgViewBox(svg: string, node: VectorNodeDerived) {
+function patchSvgViewBox(svg: string, node: VectorNodeDerived | ComponentNode2 | InstanceNode2) {
   if (!svg) return svg;
   return svg.replace(
     viewBoxRegex2,

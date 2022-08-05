@@ -11,7 +11,7 @@ export class StripeService {
   getPaymentCompletedObservable() {
     return stripeSubject.asObservable();
   }
-  isLicenceExpired(user: AccessTokenDecoded) {
+  isLicenceInactive(user: AccessTokenDecoded) {
     const licenceExpirationDate = user['https://clapy.co/licence-expiration-date'];
     if (typeof licenceExpirationDate === 'undefined') return true;
     const now = new Date();

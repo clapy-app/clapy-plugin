@@ -4,14 +4,16 @@ import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
-import { BadgeQuotas } from './_BadgeQuotas/BadgeQuotas';
+import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
+import { selectPaymentConfirmation } from '../../stripe-slice.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
 import backGroundImage from './backgroundImage.jpeg';
-import { Badge2 } from './Badge2/Badge2';
-import { Badge } from './Badge/Badge';
+import { BadgeBilling } from './BadgeBilling/BadgeBilling.js';
+import { BadgePlan } from './BadgePlan/BadgePlan.js';
+import { BtnHistoryExportDisabled } from './BtnHistoryExportDisabled/BtnHistoryExportDisabled.js';
+import { BtnUpgrade } from './BtnUpgrade/BtnUpgrade.js';
 import { ButtonContact } from './ButtonContact/ButtonContact.js';
 import { ButtonUpgrade2 } from './ButtonUpgrade2/ButtonUpgrade2';
-import { ButtonUpgrade } from './ButtonUpgrade/ButtonUpgrade';
 import { ButtonViewPlan } from './buttonViewPlan/ButtonViewPlan.js';
 import classes from './Container.module.css';
 import { Dropdown } from './Dropdown/Dropdown';
@@ -35,9 +37,15 @@ interface Props {
     loader?: string;
   };
 }
+
 export const Container: FC<Props> = memo(function Container(props = {}) {
-  const { firstName, lastName, email, picture, quotas } = useSelector(selectUserMetadata);
+  const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
   const isFreeUser = useSelector(selectIsFreeUser);
+  const isPaymentDone = useSelector(selectPaymentConfirmation);
+
+  if (isPaymentDone) {
+    return <PaymentConfirmation />;
+  }
   if (typeof picture === 'undefined') {
     return (
       <div className={`${classes.loader} ${props.classes?.loader || ''}`}>
@@ -71,14 +79,14 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
                 {isFreeUser && (
                   <>
-                    <Badge />
-                    <BadgeQuotas />
+                    <BadgePlan />
+                    <BadgeBilling />
                   </>
                 )}
                 {!isFreeUser && (
                   <>
-                    <Badge />
-                    <Badge2 />
+                    <BadgePlan />
+                    <BadgeBilling />
                   </>
                 )}
               </div>
@@ -88,14 +96,21 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
         <div className={`${classes.actions} ${props.classes?.actions || ''}`}>
           {isFreeUser && (
             <>
-              <ButtonUpgrade />
-              <ButtonUpgrade2 />
+              <div className={`${classes.btnContainer}`}>
+                <BtnUpgrade />
+                {/* <ButtonUpgrade /> */}
+                <ButtonUpgrade2 />
+              </div>
+              <BtnHistoryExportDisabled />
             </>
           )}
           {!isFreeUser && (
             <>
-              <ButtonViewPlan />
-              <ButtonContact />
+              <div className={`${classes.btnContainer}`}>
+                <ButtonViewPlan />
+                <ButtonContact />
+              </div>
+              <BtnHistoryExportDisabled />
             </>
           )}
         </div>

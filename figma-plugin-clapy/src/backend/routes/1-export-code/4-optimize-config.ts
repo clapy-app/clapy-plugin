@@ -39,11 +39,13 @@ export function optimizeConfig<T extends AnyNode3>(node: T, extractBatchContext:
     extractBatchContext,
     node,
   };
+  const { parent } = node;
+  if (parent) {
+    node.parent = optimizeNodeConfig(parent as AnyNode3, context);
+  }
 
   return optimizeNodeConfig(node, context);
 }
-
-// let prevNode: AnyNode3 | undefined = undefined;
 
 function optimizeNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeContext) {
   try {

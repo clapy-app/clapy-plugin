@@ -46,6 +46,13 @@ async function bootstrap() {
       // console.log('nodes:');
       // console.log(JSON.stringify(nodes));
       // console.log(nodes.length, `node${nodes.length > 1 ? 's' : ''}`);
+
+      // WIP: github integration - code to test it, will be removed later.
+      // printToken();
+      // await fetchGHTest();
+      //
+      // const githubAccessToken = await getGithubAccessToken('google-oauth2|105573232794317486965');
+      // console.log(githubAccessToken);
     } catch (err) {
       console.error('###### puppeteer');
       console.error(err);

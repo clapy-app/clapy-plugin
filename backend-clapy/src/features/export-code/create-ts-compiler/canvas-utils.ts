@@ -87,7 +87,6 @@ interface GlobalExtender {
   swapOfNode?: InstanceNode2;
   foundIntermediateSwap?: boolean;
   hideProp?: string;
-  hideDefaultValue?: boolean;
   textOverrideProp?: string;
   parent?: (BaseNode & ChildrenMixin) | null;
   autoWidth?: boolean;

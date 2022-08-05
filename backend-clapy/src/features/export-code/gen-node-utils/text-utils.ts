@@ -116,6 +116,21 @@ export function genTextAst(node: TextNode2) {
     textBlockStyleAttributes = attributes;
   }
 
+  let useAnchorSingleChild = false;
+  if (singleChild) {
+    const segment = textSegments[0];
+    if (segment.hyperlink) {
+      if (segment.hyperlink.type === 'URL') {
+        if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
+        // hyperlink of type NODE not handled for now
+        textBlockStyleAttributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
+        useAnchorSingleChild = true;
+      } else {
+        warnNode(segment, 'TODO Unsupported hyperlink of type node');
+      }
+    }
+  }
+
   // Text span wrapper
   // If multiple segments, surround with span to maintain the inline style
   if (!singleChild) {
@@ -175,7 +190,7 @@ export function genTextAst(node: TextNode2) {
   }
 
   if (textBlockStyleAttributes) {
-    ast = fwConnector.wrapNode(ast, 'div', textBlockStyleAttributes);
+    ast = fwConnector.wrapNode(ast, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
   }
 
   ast = fwConnector.wrapHideAndTextOverride(context, ast, node);

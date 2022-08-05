@@ -5,6 +5,7 @@ module.exports = {
     jest: true,
     es2021: true,
   },
+  // 'plugin:prettier/recommended' must be last
   extends: ['plugin:prettier/recommended'],
   parser: '@typescript-eslint/parser',
   parserOptions: {

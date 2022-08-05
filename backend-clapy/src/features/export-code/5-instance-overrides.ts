@@ -45,7 +45,12 @@ import {
   getOrGenSwapName,
   getOrGenTextOverrideProp,
 } from './gen-node-utils/gen-unique-name-utils.js';
-import { createSvgAst, readSvg, registerSvgForWrite } from './gen-node-utils/process-nodes-utils.js';
+import {
+  createSvgAst,
+  patchInstanceAsSVG,
+  readSvg,
+  registerSvgForWrite,
+} from './gen-node-utils/process-nodes-utils.js';
 import { genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
 import {
   addCssRule,
@@ -190,6 +195,8 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
         }
       }
     } else if (isBlockNode(node)) {
+      patchInstanceAsSVG(context, node);
+
       // Add tag styles
       mapTagStyles(context, node, styles);
 
@@ -459,11 +466,30 @@ function addSwapInstance(context: InstanceContext, node: SceneNode2, swapAst: Js
   );
 
   // Special case: when a swap is added on a node that is initially hidden, it is automatically marked as visible.
+  // TODO is it really applicable, now we added the "swapContext" in addHideOverride?
   addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
 }
 
 function addHideOverride(context: InstanceContext, node: SceneNode2) {
-  let { intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps } = context;
+  let {
+    intermediateNodes,
+    intermediateComponentContexts,
+    intermediateInstanceNodeOfComps,
+    swapContext,
+    moduleContext,
+  } = context;
+
+  // If there is a swap and a hide simultaneously, the hide ignores the fact there is a swap to apply the hide overrides.
+  if (swapContext) {
+    // Same extension of intermediate nodes as in `addSwapInstance`
+    intermediateNodes = [...intermediateNodes, ...swapContext.intermediateNodes];
+    intermediateComponentContexts = [...intermediateComponentContexts, ...swapContext.intermediateComponentContexts];
+    intermediateInstanceNodeOfComps = [
+      ...intermediateInstanceNodeOfComps,
+      ...swapContext.intermediateInstanceNodeOfComps,
+    ];
+  }
+
   const lastIntermediateNode = intermediateNodes[intermediateNodes.length - 1];
   if (!lastIntermediateNode) {
     throw new Error(`BUG Last entry of intermediateNodes is undefined.`);
@@ -472,6 +498,11 @@ function addHideOverride(context: InstanceContext, node: SceneNode2) {
   if (lastIntermediateNode?.isRootInComponent) {
     intermediateNodes = intermediateNodes.slice(0, -1);
   }
+
+  if (node.visible !== lastIntermediateNode.visible) {
+    getOrGenHideProp(moduleContext, node);
+  }
+
   addHideOverride2(intermediateNodes, intermediateComponentContexts, intermediateInstanceNodeOfComps, node);
 }
 
