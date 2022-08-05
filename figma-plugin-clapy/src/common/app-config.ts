@@ -11,6 +11,7 @@ export const flags = {
   logWebsocketRequests: true,
   fixSvgStrokePositionBug: true,
   extractInstanceSVG: true,
+  groupSvgInCompInstance: false,
 };
 
 export const extractionStepsLabels = {

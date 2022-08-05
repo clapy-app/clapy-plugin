@@ -1,3 +1,4 @@
+import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils';
 import type { ComponentNode2, LayoutTypes } from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
@@ -100,7 +101,7 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
   const isMask = isBlend && node.isMask;
   const isInst = isInstance2(node);
 
-  const vectorRequirement = /* !isInst && !nodeIsComp && */ !isPage2(node);
+  const vectorRequirement = (flags.groupSvgInCompInstance || (!isInst && !nodeIsComp)) && !isPage2(node);
 
   const svgExportCandidate =
     vectorRequirement && (isShapeExceptDivable2(node) || isMask || shouldGroupAsSVG(nodeOriginal));
