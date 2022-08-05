@@ -78,7 +78,6 @@ export const reactConnector: FrameworkConnector = {
   },
   patchCssResets: projectContext => {
     const { cssFiles } = projectContext;
-    console.log(cssFiles);
   },
   registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,

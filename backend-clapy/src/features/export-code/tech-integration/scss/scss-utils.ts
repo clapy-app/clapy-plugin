@@ -53,7 +53,6 @@ function replaceScssReferences(tsFiles: CodeDict, cssFiles: CodeDict, resources:
   for (const codeDict of [tsFiles, cssFiles, resources]) {
     for (const [filePath, content] of Object.entries(codeDict)) {
       const contentWithScssRefReplaced = content.replace(fileNamesRegex, fileName => {
-        console.log('match fileName:', fileName);
         return cssToScss(fileName);
       });
       codeDict[filePath] = contentWithScssRefReplaced;

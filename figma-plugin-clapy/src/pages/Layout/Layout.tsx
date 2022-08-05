@@ -20,7 +20,6 @@ import {
   selectSignedIn,
   selectStripeDevTeam,
 } from '../../core/auth/auth-slice';
-import { env } from '../../environment/env.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage, selectIsUserLimited } from '../user/user-slice';
@@ -59,7 +58,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   // use this flag after the tests
   const isUserLimited = useSelector(selectIsUserLimited);
-  const isStripeDevTEam = useSelector(selectStripeDevTeam);
+  const isStripeDevTeam = useSelector(selectStripeDevTeam);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
   useEffect(() => {
@@ -97,7 +96,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isPricingPageActive) return <Pricing />;
 
-  return env.isDev || isStripeDevTEam ? (
+  return isStripeDevTeam ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}
