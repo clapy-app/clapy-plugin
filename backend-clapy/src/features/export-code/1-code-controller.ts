@@ -15,8 +15,11 @@ export class CodeController {
   async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true, @Req() request: Request) {
     const user: AccessTokenDecoded = (request as any).user;
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
+    //use limitedUser after the tests
     const limitedUser = isLimitedUser(user);
-    if (env.isDev || limitedUser) {
+    const isStripeDevTeam = isLimitedUser(user);
+
+    if (env.isDev || isStripeDevTeam) {
       await this.userService.checkUserOrThrow(user);
     }
     const res = await exportCode(figmaNode, uploadToCsb, user);

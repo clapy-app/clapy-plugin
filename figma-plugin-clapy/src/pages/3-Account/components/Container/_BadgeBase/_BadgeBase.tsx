@@ -14,11 +14,11 @@ interface Props {
 export const _BadgeBase: FC<Props> = memo(function _BadgeBase(props: Props) {
   const isFreeUser = useSelector(selectIsFreeUser);
 
-  const bgColor = isFreeUser ? classes.root : classes.green;
+  const bgColor = isFreeUser ? classes.free : classes.pro;
 
   return (
-    <div className={`${bgColor} ${props.className || ''}`}>
-      <div className={`${classes.text} ${props.classes?.text || ''}`}>{isFreeUser ? 'Free' : 'Paid'} plan</div>
+    <div className={`${classes.root} ${bgColor} ${props.className || ''}`}>
+      <div className={`${classes.text} ${props.classes?.text || ''}`}>{isFreeUser ? 'Free' : 'Premium'}</div>
     </div>
   );
 });

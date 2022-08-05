@@ -49,9 +49,9 @@ export async function exportCode(
   uploadToCsb = true,
   user: AccessTokenDecoded,
 ) {
-  if (env.isDev) {
-    uploadToCsb = false;
-  }
+  // if (env.isDev) {
+  //   uploadToCsb = false;
+  // }
   if (!extraConfig.output) {
     extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
   }

@@ -15,6 +15,8 @@ import type { FC } from 'react';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
+import { Button_SizeSmHierarchyLinkColo } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo/Button_SizeSmHierarchyLinkColo.js';
 import { track } from '../../../common/analytics';
 import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
 import { handleError } from '../../../common/error-utils';
@@ -32,10 +34,11 @@ import type {
 } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
+import { Loading } from '../../../components-used/Loading/Loading.js';
 import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
 import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
-import { setStripeData } from '../../user/user-slice.js';
+import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -44,6 +47,7 @@ import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.j
 import classes from './FigmaToCodeHome.module.css';
 import { GithubOption } from './GithubOption.js';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
+import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 
 // Flag for development only. Will be ignored in production.
@@ -74,8 +78,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const [scssSelected, setScssSelected] = useState<boolean>(!!defaultSettings.scss);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
+  const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
+  const { picture } = useSelector(selectUserMetadata);
   const isGithubEnabled = useSelector(selectGithubEnabled);
+
   useEffect(
     () => () => {
       // When the component is unloaded (e.g. navigate to another view), the user settings are backed up in the defaultSettings object.
@@ -265,131 +272,176 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      <Tooltip
-        title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
-        disableInteractive
-        placement='bottom-start'
-        className={state === 'generated' ? classes.hide : undefined}
-      >
-        <FormControl disabled={isLoading} className={classes.outerOption}>
-          <FormControlLabel
-            control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
-            label='Full width/height (for pages)'
-            disabled={isLoading}
-          />
-        </FormControl>
-      </Tooltip>
-      <GithubOption
-        className={state === 'generated' ? classes.hide : undefined}
-        isLoading={isLoading}
-        defaultSettings={defaultSettings}
-        updateAdvancedOption={updateAdvancedOption}
-      />
-      <Accordion classes={{ root: classes.accordionRoot }} className={state === 'generated' ? classes.hide : undefined}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls='panel1a-content'
-          id='panel1a-header'
-          disabled={isLoading}
-        >
-          <Typography>Advanced options</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormGroup>
-            <Tooltip title='Framework' disableInteractive placement='bottom-start'>
-              <FormControl disabled={isLoading}>
-                <RadioGroup
-                  row
-                  name='framework'
-                  onChange={updateAdvancedOption as RadioGroupProps['onChange']}
-                  defaultValue={defaultSettings.framework}
-                >
-                  <FormControlLabel value='react' control={<Radio />} label='React' />
-                  <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
-                </RadioGroup>
-              </FormControl>
-            </Tooltip>
-            {!isGithubEnabled && (
-              <Tooltip
-                title={
-                  isNoCodeSandboxUser
-                    ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
-                    : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
-                }
-                disableInteractive
-                placement='bottom-start'
-              >
-                <FormControlLabel
-                  control={
-                    <Switch
-                      name='zip'
-                      onChange={updateAdvancedOption}
-                      defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
-                    />
-                  }
-                  label='Download as zip'
-                  disabled={isLoading || isNoCodeSandboxUser}
-                />
-              </Tooltip>
-            )}
-            <Tooltip
-              title='If enabled, styles will be written in .scss files instead of .css.'
-              disableInteractive
-              placement='bottom-start'
-            >
+      {!isQuotaReached && typeof picture !== 'undefined' && (
+        <>
+          <Tooltip
+            title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
+            disableInteractive
+            placement='bottom-start'
+            className={state === 'generated' ? classes.hide : undefined}
+          >
+            <FormControl disabled={isLoading} className={classes.outerOption}>
               <FormControlLabel
-                control={<Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.scss} />}
-                label='SCSS instead of CSS (beta)'
+                control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
+                label='Full width/height (for pages)'
                 disabled={isLoading}
               />
-            </Tooltip>
-            {scssSelected && (
-              <Tooltip
-                title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
-                disableInteractive
-                placement='bottom-start'
-              >
-                <FormControlLabel
-                  control={<Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.bem} />}
-                  label='Indent classes with BEM convention'
-                  disabled={isLoading}
-                />
-              </Tooltip>
-            )}
-            {env.isDev && (
-              <Tooltip
-                title={`If enabled, style resets like \`display: flex\` are declared once in a global ${
-                  scssSelected ? 'S' : ''
-                }CSS file instead of once per component. Enable to reduce duplicate styles, if you make sure you use the whole project generated by Clapy, or include the ${
-                  scssSelected ? 'S' : ''
-                }CSS resets required by Clapy in your project.`}
-                disableInteractive
-                placement='bottom-start'
-              >
-                <FormControlLabel
-                  control={
-                    <Switch
-                      name='globalResets'
-                      onChange={updateAdvancedOption}
-                      defaultChecked={!!defaultSettings.globalResets}
+            </FormControl>
+          </Tooltip>
+          <GithubOption
+            className={state === 'generated' ? classes.hide : undefined}
+            isLoading={isLoading}
+            defaultSettings={defaultSettings}
+            updateAdvancedOption={updateAdvancedOption}
+          />
+          <Accordion
+            classes={{ root: classes.accordionRoot }}
+            className={state === 'generated' ? classes.hide : undefined}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1a-content'
+              id='panel1a-header'
+              disabled={isLoading}
+            >
+              <Typography>Advanced options</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <FormGroup>
+                <Tooltip title='Framework' disableInteractive placement='bottom-start'>
+                  <FormControl disabled={isLoading}>
+                    <RadioGroup
+                      row
+                      name='framework'
+                      onChange={updateAdvancedOption as RadioGroupProps['onChange']}
+                      defaultValue={defaultSettings.framework}
+                    >
+                      <FormControlLabel value='react' control={<Radio />} label='React' />
+                      <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
+                    </RadioGroup>
+                  </FormControl>
+                </Tooltip>
+                {!isGithubEnabled && (
+                  <Tooltip
+                    title={
+                      isNoCodeSandboxUser
+                        ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
+                        : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
+                    }
+                    disableInteractive
+                    placement='bottom-start'
+                  >
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          name='zip'
+                          onChange={updateAdvancedOption}
+                          defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
+                        />
+                      }
+                      label='Download as zip'
+                      disabled={isLoading || isNoCodeSandboxUser}
                     />
-                  }
-                  label={`Global ${scssSelected ? 'S' : ''}CSS resets`}
-                  disabled={isLoading}
-                />
-              </Tooltip>
-            )}
-          </FormGroup>
-        </AccordionDetails>
-      </Accordion>
-      <Button
-        onClick={generateCode}
-        disabled={state === 'loading' || state === 'noselection'}
-        loading={isLoading}
-        className={state === 'generated' ? classes.hide : undefined}
-      >
-        &lt; Generate code &gt;
-      </Button>
+                  </Tooltip>
+                )}
+                <Tooltip
+                  title='If enabled, styles will be written in .scss files instead of .css.'
+                  disableInteractive
+                  placement='bottom-start'
+                >
+                  <FormControlLabel
+                    control={
+                      <Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.scss} />
+                    }
+                    label='SCSS instead of CSS (beta)'
+                    disabled={isLoading}
+                  />
+                </Tooltip>
+                {scssSelected && (
+                  <Tooltip
+                    title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
+                    disableInteractive
+                    placement='bottom-start'
+                  >
+                    <FormControlLabel
+                      control={
+                        <Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.bem} />
+                      }
+                      label='Indent classes with BEM convention'
+                      disabled={isLoading}
+                    />
+                  </Tooltip>
+                )}
+                {env.isDev && (
+                  <Tooltip
+                    title={`If enabled, style resets like \`display: flex\` are declared once in a global ${
+                      scssSelected ? 'S' : ''
+                    }CSS file instead of once per component. Enable to reduce duplicate styles, if you make sure you use the whole project generated by Clapy, or include the ${
+                      scssSelected ? 'S' : ''
+                    }CSS resets required by Clapy in your project.`}
+                    disableInteractive
+                    placement='bottom-start'
+                  >
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          name='globalResets'
+                          onChange={updateAdvancedOption}
+                          defaultChecked={!!defaultSettings.globalResets}
+                        />
+                      }
+                      label={`Global ${scssSelected ? 'S' : ''}CSS resets`}
+                      disabled={isLoading}
+                    />
+                  </Tooltip>
+                )}
+              </FormGroup>
+            </AccordionDetails>
+          </Accordion>
+        </>
+      )}
+      {typeof picture === 'undefined' ? (
+        <Loading />
+      ) : (
+        <Button
+          onClick={generateCode}
+          disabled={state === 'loading' || state === 'noselection' || isQuotaReached}
+          loading={isLoading}
+          className={state === 'generated' ? classes.hide : undefined}
+        >
+          {isQuotaReached ? (
+            <>
+              <LockIcon />
+              &nbsp;&nbsp; <span> Generate code</span>
+            </>
+          ) : (
+            <>&lt; Generate code &gt;</>
+          )}
+        </Button>
+      )}
+
+      {isQuotaReached && state !== 'generated' ? (
+        <div className={classes.fullQuotaTextContainer}>
+          You have used up all your monthly credits.
+          <span className={classes.links}>
+            <Button_SizeSmHierarchyLinkColo
+              text={{
+                text: <span className={classes.links}>Give us feedback</span>,
+              }}
+            />
+          </span>{' '}
+          to earn more credits
+          <br /> or{' '}
+          <span className={classes.links}>
+            <Button_SizeSmHierarchyLinkColo2
+              text={{
+                text: <span className={classes.links}>upgrade</span>,
+              }}
+            />
+          </span>{' '}
+          for unlimited access.
+        </div>
+      ) : null}
       {state === 'generated' && (
         <>
           <div className={classes.openResult}>

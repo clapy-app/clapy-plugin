@@ -14,7 +14,6 @@ export const Generator: FC = () => {
 export const LayoutInner: FC = memo(function LayoutInner() {
   // const [activeTab, setActiveTab] = useState(0);
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
-
   // Show selection
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
@@ -25,6 +24,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     }
     return dispose;
   }, []);
+
   return (
     <>
       <div className={classes.content}>

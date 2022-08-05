@@ -1,6 +1,14 @@
 import { memo } from 'react';
 import type { FC } from 'react';
 
+import { handleError } from '../../../common/error-utils.js';
+import { useCallbackAsync2 } from '../../../common/front-utils.js';
+import { upgradeUser } from '../../../common/stripeLicense.js';
+import { checkSessionComplete } from '../../../core/auth/auth-service.js';
+import { dispatchOther } from '../../../core/redux/redux.utils.js';
+import { env } from '../../../environment/env.js';
+import { setStripeData } from '../../user/user-slice.js';
+import { showPaymentConfirmation, startLoadingStripe, stopLoadingStripe } from '../stripe-slice.js';
 import { _3Layers } from './components/_3Layers/_3Layers';
 import { _3LayersIcon } from './components/_3LayersIcon';
 import { _PricingTierCard_TypeIconBreak } from './components/_PricingTierCard_TypeIconBreak/_PricingTierCard_TypeIconBreak';
@@ -35,8 +43,37 @@ import classes from './Pricing.module.css';
 interface Props {
   className?: string;
 }
+
+interface ApiResponse {
+  ok: boolean;
+  quotas?: number;
+  isLicenceExpired?: boolean;
+}
+
 /* @figmaId 2089:147603 */
 export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
+  const userUpgrade = useCallbackAsync2(async () => {
+    dispatchOther(startLoadingStripe());
+    const eventSource = new EventSource(`${env.apiBaseUrl}/stripe/sse`);
+    eventSource.onmessage = async e => {
+      let data = JSON.parse(e.data);
+      if (data.status) {
+        try {
+          const res = (await checkSessionComplete()) as ApiResponse;
+          if (res.quotas != null || !res.isLicenceExpired) {
+            dispatchOther(setStripeData(res));
+          }
+        } catch (e) {
+          handleError(e);
+        } finally {
+          dispatchOther(showPaymentConfirmation());
+          dispatchOther(stopLoadingStripe());
+        }
+      }
+      eventSource.close();
+    };
+    await upgradeUser();
+  }, []);
   return (
     <div className={classes.root}>
       <PluginPageHeadline
@@ -226,11 +263,12 @@ export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
           }}
           text={{
             heading: <div className={classes.heading}>Professional</div>,
-            price: <div className={classes.price}>€99/month</div>,
+            price: <div className={classes.price}>$99/month</div>,
             supportingText: <div className={classes.supportingText}>Billed monthly</div>,
             text: <div className={classes.text6}>Everything in Free plan, plus:</div>,
             text2: <div className={classes.text11}>Upgrade now</div>,
           }}
+          callback={userUpgrade}
         />
         <_PricingTierCard_TypeIconBreak
           className={classes._PricingTierCard2}
@@ -325,6 +363,7 @@ export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
             text: <div className={classes.text12}>Everything in Pro plan, plus:</div>,
             text2: <div className={classes.text17}>Schedule a call</div>,
           }}
+          href='https://bit.ly/clapy-product-tour'
         />
       </div>
     </div>

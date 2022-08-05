@@ -9,14 +9,17 @@
   justify-content: center;
   white-space: nowrap;
 }
+
 .list.list {
   width: 16px;
   height: 16px;
 }
+
 .icon {
   width: 100%;
   height: 100%;
 }
+
 .getCredits {
   color: #004eeb;
   font-size: 14px;
@@ -27,6 +30,7 @@
   z-index: 0;
   white-space: nowrap;
 }
+
 .text {
   color: #004eeb;
   font-size: 14px;
@@ -37,37 +41,50 @@
   z-index: 0;
   white-space: nowrap;
 }
+
 .arrowRight.arrowRight {
   z-index: 0;
   width: 20px;
   height: 20px;
 }
+
 .icon2 {
   width: 100%;
   height: 100%;
 }
+
 .progress.progress {
   background-color: #eff4ff;
 }
+
 .root {
   align-self: stretch;
   flex-direction: column;
   gap: 12px;
-  padding-top: -12px;
   margin-left: -24px;
   margin-right: -24px;
+  margin-top: -12px;
 }
+
 .counterActions {
   align-self: stretch;
   width: initial;
   place-content: space-between;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 24px;
 }
+
 .counter {
+  flex: 1;
   align-items: center;
   gap: 8px;
 }
+
+.counterPro {
+  flex-flow: row-reverse;
+  justify-content: space-between;
+}
+
 ._3Exports {
   color: #101828;
   font-size: 14px;
@@ -78,13 +95,20 @@
   align-items: center;
   white-space: nowrap;
 }
+
 .actions {
   align-items: center;
   gap: 12px;
 }
+
 .frame168 {
   color: #004eeb;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
+
 .line21 {
   width: 14px;
   max-width: 100%;
@@ -94,4 +118,23 @@
   border-bottom: solid 1px #004eeb;
   margin-bottom: -1px;
   transform: matrix(0, 1, -1, 0, 0, 0);
+}
+
+.loader {
+  flex: 1;
+}
+
+.tooltipPro {
+  margin-left: 8px;
+}
+
+.gap {
+  gap: 8px;
+}
+
+.alignCenter {
+  text-align: center;
+}
+.lastTooltipSentence {
+  margin-top: 12px;
 }

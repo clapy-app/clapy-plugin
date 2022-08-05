@@ -2,9 +2,8 @@ import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import { LifeBuoy } from '../LifeBuoy/LifeBuoy';
-import { MadeWithClapy_darkModeTrueLogo } from '../MadeWithClapy_darkModeTrueLogo/MadeWithClapy_darkModeTrueLogo';
+import { MadeWithClapyIcon } from '../MadeWithClapy_darkModeTrueLogo/MadeWithClapyIcon.js';
 import { Zap } from '../Zap/Zap';
-import { ClapyIcon } from './ClapyIcon';
 import classes from './Footer_styleLinearColorBlueVer.module.css';
 import { LifeBuoyIcon } from './LifeBuoyIcon';
 import { ZapIcon } from './ZapIcon';
@@ -32,15 +31,9 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
         href={'https://clapy.co?utm_source=plugin&utm_medium=button&utm_campaign=referral'}
         target='_blank'
         rel='noreferrer'
+        className={classes.clapyMadeWithLogo}
       >
-        <MadeWithClapy_darkModeTrueLogo
-          swap={{
-            clapy: props.swap?.clapy || <ClapyIcon className={classes.icon} />,
-          }}
-          text={{
-            text: <div className={classes.text}>Made with</div>,
-          }}
-        />
+        <MadeWithClapyIcon className={classes.clapyIcon} />
       </a>
       <a href='https://bit.ly/docs-footer' className={classes.styled} target={'_blank'} rel='noreferrer'>
         <div className={classes.frame69}>
@@ -59,7 +52,7 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
           )}
         </div>
       </a>
-      <a href='https://bit.ly/clapy-ds-plugin' className={classes.styled}>
+      <a href='https://bit.ly/clapy-ds-plugin' target={'_blank'} rel='noreferrer' className={classes.styled}>
         <div className={classes.frame70}>
           {props.swap?.zap || (
             <Zap
