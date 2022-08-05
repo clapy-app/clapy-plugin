@@ -16,7 +16,9 @@ export function printStandalone(node: ts.Node | ts.Node[] | FwNodeOneOrMore | un
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   if (Array.isArray(node)) {
     for (const child of node) {
-      printer.printNode(ts.EmitHint.Unspecified, child, ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true));
+      console.log(
+        printer.printNode(ts.EmitHint.Unspecified, child, ts.createSourceFile('foo.ts', '', ScriptTarget.ESNext, true)),
+      );
     }
   } else {
     return printer.printNode(

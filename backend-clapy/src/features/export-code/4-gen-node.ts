@@ -7,7 +7,7 @@ import { env } from '../../env-and-config/env.js';
 import { handleError } from '../../utils.js';
 import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
 import { mapCommonStyles, mapTagStyles, postMapStyles } from './6-figma-to-code-map.js';
-import type { NodeContext } from './code.model.js';
+import type { JsxOneOrMore, NodeContext } from './code.model.js';
 import { writeAsset } from './create-ts-compiler/2-write-asset.js';
 import type {
   ChildrenMixin2,
@@ -274,7 +274,7 @@ export function genNodeAst(node: SceneNode2) {
         return mkSwapInstanceAndHideWrapper(context, undefined, node);
       }
 
-      let ast = createSvgAst(context, node, styles, svgPathVarName, true);
+      let ast = createSvgAst(context, node, styles, svgPathVarName, true) as JsxOneOrMore | undefined;
       return ast;
     } else if (isBlockNode(node)) {
       // the CSS rule is created before checking the children so that it appears first in the CSS file.

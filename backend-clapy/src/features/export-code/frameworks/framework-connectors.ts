@@ -45,11 +45,14 @@ export interface FrameworkConnector {
     node: BlockNode,
   ) => JsxOneOrMore | Element | ChildNode[] | undefined;
   mkSwapInstanceAlone: (context: NodeContext, ast: FwNodeOneOrMore | undefined, node: SceneNode2) => FwNode;
-  wrapHideAndTextOverride: (
+  wrapHideAndTextOverride: <T extends boolean>(
     context: NodeContext,
     ast: FwNodeOneOrMore | undefined,
     node: SceneNode2,
-  ) => FwNodeOneOrMore | undefined;
+    isJsExprAllowed: T,
+  ) => T extends true
+    ? FwNodeOneOrMore | ts.BinaryExpression | ts.ConditionalExpression | undefined
+    : FwNodeOneOrMore | undefined;
   createText: (text: string) => FwNodeOneOrMore;
   createLinkAttributes: (href: string) => FwAttr[];
   wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: FwAttr[]) => FwNode;

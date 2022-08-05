@@ -69,7 +69,7 @@ export const angularConnector: FrameworkConnector = {
     if (Array.isArray(ast)) throw new Error('BUG AST is an array');
     return ast;
   },
-  wrapHideAndTextOverride: (context, ast, node) => ast,
+  wrapHideAndTextOverride: (context, ast, node, isJsExprAllowed) => ast,
   createText: mkHtmlText,
   createLinkAttributes: href => [
     mkHtmlAttribute('href', href),
