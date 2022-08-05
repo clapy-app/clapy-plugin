@@ -399,7 +399,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
       {isQuotaReached && state !== 'generated' ? (
         <div className={classes.fullQuotaTextContainer}>
-          You have used up all your monthly credits
+          You have used up all your monthly credits.
           <span className={classes.links}>
             <Button_SizeSmHierarchyLinkColo
               text={{
@@ -416,7 +416,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               }}
             />
           </span>{' '}
-          for unlimited access
+          for unlimited access.
         </div>
       ) : null}
       {state === 'generated' && (

@@ -37,7 +37,7 @@ export const PluginPageHeadline: FC<Props> = memo(function PluginPageHeadline(pr
       <Button
         variant='text'
         sx={{ position: 'absolute', top: '3px', left: '0px', minWidth: '0px' }}
-        onClick={() => hideFeedbackPage()}
+        onClick={hideFeedbackPage}
       >
         <ArrowLeft
           className={classes.arrowLeft}

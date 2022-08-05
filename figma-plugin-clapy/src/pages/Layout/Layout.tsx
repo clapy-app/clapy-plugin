@@ -88,7 +88,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isFeedbackPageActive) return <Feedback />;
 
-  if (!isPricingPageActive) return <Pricing />;
+  if (isPricingPageActive) return <Pricing />;
 
   return env.isDev || isUserLimited ? (
     <>

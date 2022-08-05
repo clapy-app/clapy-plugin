@@ -13,26 +13,6 @@ interface Props {
   };
 }
 
-function calcColor(
-  quota: number | undefined,
-  quotaMax: number | undefined,
-  isQualified: boolean | undefined,
-  isFreeUser: boolean,
-) {
-  if (!isFreeUser) return classes.green;
-  if ((quota !== 0 && quota === undefined) || (quotaMax !== 0 && quotaMax === undefined)) {
-    return '';
-  }
-  const threeQuartersOfMax = Math.floor((quotaMax * 3) / 4);
-  if (isQualified) {
-    const isCloseToQuota = quota < quotaMax ? classes.yellow : classes.red;
-    return quota < threeQuartersOfMax ? classes.green : isCloseToQuota;
-  } else {
-    const isCloseToQuota = quota < quotaMax ? classes.yellow : classes.red;
-    return quota < threeQuartersOfMax ? classes.green : isCloseToQuota;
-  }
-}
-
 export const BadgeBilling: FC<Props> = memo(function BadgeBilling(props = {}) {
   const quota = useSelector(selectUserQuota);
   const quotaMax = useSelector(selectUserMaxQuota);

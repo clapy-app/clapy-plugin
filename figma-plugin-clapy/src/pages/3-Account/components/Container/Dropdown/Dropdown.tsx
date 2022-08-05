@@ -29,8 +29,8 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <Button
-        id='basic-button'
-        aria-controls={open ? 'basic-menu' : undefined}
+        id='more-settings-button'
+        aria-controls={open ? 'more-settings-menu' : undefined}
         aria-haspopup='true'
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
@@ -38,12 +38,12 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
         <MoreHorizontalIcon className={`${classes.moreHorizontal} ${props.classes?.moreHorizontal || ''}`} />
       </Button>
       <Menu
-        id='basic-menu'
+        id='more-settings-menu'
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          'aria-labelledby': 'basic-button',
+          'aria-labelledby': 'more-settings-button',
         }}
       >
         <MenuItem

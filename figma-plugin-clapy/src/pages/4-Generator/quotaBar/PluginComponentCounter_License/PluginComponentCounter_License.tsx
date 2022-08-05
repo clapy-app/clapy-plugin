@@ -20,51 +20,44 @@ interface Props {
   className?: string;
 }
 /* @figmaId 2072:146191 */
-function showTooltipMessage(isFreeUser: boolean, isQualified: boolean | undefined, nextMonth: string) {
-  if (!isFreeUser)
-    return (
-      <div style={{ textAlign: 'center' }}>
-        Your library of custom components
-        <br />
-        <div>managed by Clapy</div>
-      </div>
-    );
+function showTooltipMessage(isQualified: boolean | undefined, nextMonth: string) {
   if (isQualified)
     return (
-      <div style={{ textAlign: 'center' }}>
-        Your quota was increased to 10 monthly exports
-        <br />
-        (next reset on September, 1st).
-        <br />
-        <br />
-        Upgrade now for unlimited access.
+      <div className={classes.alignCenter}>
+        <span>
+          Your quota was increased to 10 monthly exports
+          <br />
+          (next reset on September, 1st).
+        </span>
+        <div className={classes.lastTooltipSentence}>Upgrade now for unlimited access.</div>
       </div>
     );
   return (
-    <div style={{ textAlign: 'center' }}>
-      Free plan includes 3 monthly exports
-      <br />
-      (next reset on {nextMonth}, 1st).
-      <br />
-      <br />
-      Get more credits by giving feedback
-      <br />
-      or upgrade for unlimited access
+    <div className={classes.alignCenter}>
+      <span>
+        Free plan includes 3 monthly exports
+        <br />
+        (next reset on {nextMonth}, 1st).
+      </span>
+      <div className={classes.lastTooltipSentence}>
+        Get more credits by giving feedback
+        <br />
+        or upgrade for unlimited access
+      </div>
     </div>
   );
 }
 
-function isPro(isFreeUser: boolean, currentDiv: string) {
-  switch (currentDiv) {
-    case 'counter':
-      if (!isFreeUser) return classes.counterPro;
-      return null;
-      break;
-    case 'tooltip':
-      if (!isFreeUser) return classes.tooltipPro;
-      return null;
-      break;
+function isPro(isFreeUser: boolean, currentDiv: 'counter' | 'tooltip') {
+  if (!isFreeUser) {
+    if (currentDiv === 'counter') {
+      return classes.counterPro;
+    }
+    if (currentDiv === 'tooltip') {
+      return classes.tooltipPro;
+    }
   }
+  return null;
 }
 export const PluginComponentCounter_License: FC<Props> = memo(function PluginComponentCounter_License(props = {}) {
   const { picture } = useSelector(selectUserMetadata);
@@ -98,7 +91,7 @@ export const PluginComponentCounter_License: FC<Props> = memo(function PluginCom
                 <BadgeQuotas />
                 {isFreeUser && (
                   <Tooltip
-                    title={showTooltipMessage(isFreeUser, isQualifiedUser, mL[month])}
+                    title={showTooltipMessage(isQualifiedUser, mL[month])}
                     disableInteractive
                     placement='bottom-start'
                     className={isPro(isFreeUser, 'tooltip')}
@@ -115,12 +108,6 @@ export const PluginComponentCounter_License: FC<Props> = memo(function PluginCom
               <Loading height={24} width={24} />
             </div>
           )}
-          {/* <List
-            className={classes.list}
-            swap={{
-              icon: <ListIcon className={classes.icon} />,
-            }}
-          /> */}
         </div>
         {isFreeUser && (
           <>

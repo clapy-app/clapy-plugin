@@ -5,7 +5,7 @@ import type { FC, ReactNode } from 'react';
 import { handleError } from '../../../../../../../common/error-utils.js';
 import { useCallbackAsync2 } from '../../../../../../../common/front-utils.js';
 import { upgradeUser } from '../../../../../../../common/stripeLicense.js';
-import { checkSessionComplete } from '../../../../../../../core/auth/auth-service.js';
+import { checkSessionComplete, refreshTokens } from '../../../../../../../core/auth/auth-service.js';
 import { dispatchOther } from '../../../../../../../core/redux/redux.utils.js';
 import { env } from '../../../../../../../environment/env.js';
 import { setStripeData } from '../../../../../../user/user-slice.js';
@@ -40,17 +40,16 @@ export const _ButtonBase_SizeLgIconLeading: FC<Props> = memo(function _ButtonBas
       let data = JSON.parse(e.data);
       if (data.status) {
         try {
+          await refreshTokens();
           const res = (await checkSessionComplete()) as ApiResponse;
-          if (res.quotas != null || !res.isLicenceExpired) {
-            dispatchOther(setStripeData(res));
-          }
+
+          dispatchOther(setStripeData(res));
         } catch (e) {
           handleError(e);
         } finally {
           dispatchOther(showPaymentConfirmation());
           dispatchOther(stopLoadingStripe());
         }
-        eventSource.close();
       }
       eventSource.close();
     };

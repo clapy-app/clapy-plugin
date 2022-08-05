@@ -64,7 +64,6 @@
   margin-left: -24px;
   margin-right: -24px;
   margin-top: -12px;
-
 }
 
 .counterActions {
@@ -105,13 +104,9 @@
 .frame168 {
   color: #004eeb;
   -webkit-user-select: none;
-  /* Safari */
   -moz-user-select: none;
-  /* Firefox */
   -ms-user-select: none;
-  /* IE10+/Edge */
   user-select: none;
-  /* Standard */
 }
 
 .line21 {
@@ -134,5 +129,12 @@
 }
 
 .gap {
-  gap: 8px
+  gap: 8px;
+}
+
+.alignCenter {
+  text-align: center;
+}
+.lastTooltipSentence {
+  margin-top: 12px;
 }
