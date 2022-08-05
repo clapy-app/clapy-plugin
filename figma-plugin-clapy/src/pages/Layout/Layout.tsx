@@ -14,7 +14,12 @@ import { Generator } from '../4-Generator/Generator.js';
 import { Feedback } from '../5-Feedback/Feedback';
 import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading.js';
-import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
+import {
+  selectAuthError,
+  selectSessionChecking,
+  selectSignedIn,
+  selectStripeDevTeam,
+} from '../../core/auth/auth-slice';
 import { env } from '../../environment/env.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
@@ -51,10 +56,12 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // hasMissingMetaUsage = false;
   const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   // Show selection
+
+  // use this flag after the tests
   const isUserLimited = useSelector(selectIsUserLimited);
+  const isStripeDevTEam = useSelector(selectStripeDevTeam);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
-
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
       setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
@@ -90,7 +97,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isPricingPageActive) return <Pricing />;
 
-  return env.isDev || isUserLimited ? (
+  return env.isDev || isStripeDevTEam ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}

@@ -142,4 +142,6 @@ export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('noCodesandbox');
 export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
+export const hasRoleIsStripeDevTeam = (user: AccessTokenDecoded) =>
+  user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
 export const isLimitedUser = (user: AccessTokenDecoded) => user?.['https://clapy.co/limited-user'];
