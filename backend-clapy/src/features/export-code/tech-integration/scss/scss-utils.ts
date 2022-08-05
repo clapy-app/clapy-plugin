@@ -19,7 +19,8 @@ export function getCSSExtension(extraConfig: ExtraConfig) {
 }
 
 export function updateFilesAndContentForScss(extraConfig: ExtraConfig, projectContext: ProjectContext) {
-  const { tsFiles, cssFiles, resources } = projectContext;
+  const { tsFiles, cssFiles, resources, fwConnector } = projectContext;
+  fwConnector.patchCssResets(projectContext);
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);

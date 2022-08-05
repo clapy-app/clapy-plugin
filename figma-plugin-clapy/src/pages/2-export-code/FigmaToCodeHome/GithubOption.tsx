@@ -55,7 +55,7 @@ export const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(prop
       <FormControl disabled={isLoading}>
         <RadioGroup row name='target' onChange={updateTargetState} defaultValue={defaultSettings.target}>
           <Tooltip
-            title='Upload the generated code to CodeSandbox. Useful for a super quick preview and review of its source code.'
+            title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code.'
             disableInteractive
             placement='bottom-start'
           >
