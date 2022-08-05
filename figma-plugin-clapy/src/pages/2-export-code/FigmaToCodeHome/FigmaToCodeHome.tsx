@@ -397,7 +397,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         </Button>
       )}
 
-      {isQuotaReached ? (
+      {isQuotaReached && state !== 'generated' ? (
         <div className={classes.fullQuotaTextContainer}>
           You have used up all your monthly credits
           <span className={classes.links}>

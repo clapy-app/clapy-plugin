@@ -42,7 +42,7 @@ export const BadgeQuotas: FC<Props> = memo(function BadgeQuotas(props = {}) {
     <div className={``}>
       <div className={`${classes.text} ${props.classes?.text || ''}`}>
         {isFreeUser && <p> {`${quota} / ${quotaMax} exports`}</p>}
-        {!isFreeUser && <p> {`${quota} components in library`}</p>}
+        {!isFreeUser && <p> {`${quota} exports`}</p>}
       </div>
     </div>
   );

@@ -264,7 +264,7 @@ export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
           }}
           text={{
             heading: <div className={classes.heading}>Professional</div>,
-            price: <div className={classes.price}>€99/month</div>,
+            price: <div className={classes.price}>$99/month</div>,
             supportingText: <div className={classes.supportingText}>Billed monthly</div>,
             text: <div className={classes.text6}>Everything in Free plan, plus:</div>,
             text2: <div className={classes.text11}>Upgrade now</div>,

@@ -96,16 +96,18 @@ export const PluginComponentCounter_License: FC<Props> = memo(function PluginCom
               <Badge />
               <div className={classes.gap}>
                 <BadgeQuotas />
-                <Tooltip
-                  title={showTooltipMessage(isFreeUser, isQualifiedUser, mL[month])}
-                  disableInteractive
-                  placement='bottom-start'
-                  className={isPro(isFreeUser, 'tooltip')}
-                >
-                  <div>
-                    <HelpIcon_OpenFalseSupportingTe />
-                  </div>
-                </Tooltip>
+                {isFreeUser && (
+                  <Tooltip
+                    title={showTooltipMessage(isFreeUser, isQualifiedUser, mL[month])}
+                    disableInteractive
+                    placement='bottom-start'
+                    className={isPro(isFreeUser, 'tooltip')}
+                  >
+                    <div>
+                      <HelpIcon_OpenFalseSupportingTe />
+                    </div>
+                  </Tooltip>
+                )}
               </div>
             </>
           ) : (

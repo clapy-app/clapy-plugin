@@ -5,7 +5,7 @@ import { memo } from 'react';
 import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { openCustomerPortal } from '../../../../../common/stripeLicense.js';
 import classes from './ButtonViewPlan.module.css';
-import { CheckCircleIcon } from './checkCircleIcon';
+import { CheckCircleIcon } from './CheckCircleIcon';
 
 interface Props {
   className?: string;

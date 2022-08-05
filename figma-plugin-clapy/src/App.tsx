@@ -98,7 +98,6 @@ export const App: FC = memo(function App() {
     };
     checkSession();
   }, []);
-
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'
   // instead, but we would need to re-add animations & co to make it work.
   return (

@@ -52,7 +52,7 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
           )}
         </div>
       </a>
-      <a href='https://bit.ly/clapy-ds-plugin' className={classes.styled}>
+      <a href='https://bit.ly/clapy-ds-plugin' target='_blank' className={classes.styled} rel='noreferrer'>
         <div className={classes.frame70}>
           {props.swap?.zap || (
             <Zap
