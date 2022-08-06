@@ -69,6 +69,11 @@ export async function checkSessionComplete() {
   return data;
 }
 
+export async function refreshUser() {
+  await refreshTokens();
+  await fetchUserMetadata();
+}
+
 export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
 });

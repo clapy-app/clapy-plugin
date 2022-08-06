@@ -1,7 +1,6 @@
 ## Usage
 
 - `yarn install:all` to install dependencies in root and subprojects
-- Install Stripe CLI: https://stripe.com/docs/stripe-cli and ...
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
@@ -12,6 +11,16 @@
 (1) Alternative: `yarn dev` through command-line to start everything
 
 Note: for now, `Hasura console` task is excluded from the default build because it's rarely useful in current developments. To start it, run this task or `yarn console` in the terminal. If you often need it, feel free to uncomment it in the default build task (.vscode/tasks.json, first task).
+
+## Test Stripe workflow
+
+If an event, sent by Stripe CLI, was not caught locally by the API (e.g. while it was restarting), you can re-send the event.
+
+- Copy the event ID on this page: https://dashboard.stripe.com/test/events
+- Open the CLI in the docker container of Stripe CLI (through Docker Desktop UI, "CLI" button)
+- Command: `stripe events resend evt_<event ID>`
+
+In production, the events are re-sent, but Stripe CLI (dev) doesn't support it. Issue: https://github.com/stripe/stripe-cli/issues/313
 
 ## Troubleshooting
 

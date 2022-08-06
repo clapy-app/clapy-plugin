@@ -1,4 +1,4 @@
-import type { MessageEvent } from '@nestjs/common';
+import type { MessageEvent, RawBodyRequest } from '@nestjs/common';
 import { Controller, Get, HttpException, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Observable } from 'rxjs';
@@ -100,10 +100,11 @@ export class StripeController {
   @PublicRoute()
   @IsBrowserGet()
   @Post('webhook')
-  async webhook(@Req() request: Request) {
-    const sig = request.headers['stripe-signature'];
+  async webhook(@Req() req: RawBodyRequest<Request>) {
+    if (!req.rawBody) throw new HttpException('Invalid stripe body, cannot be empty.', 400);
+    const sig = req.headers['stripe-signature'];
     if (typeof sig !== 'string') throw new HttpException('Invalid stripe header type, expected a string.', 400);
-    this.stripeWebhookService.processWebhookEvent(request.body, sig);
+    this.stripeWebhookService.processWebhookEvent(req.rawBody, sig);
 
     // Return a response to acknowledge receipt of the event
     return { received: true };

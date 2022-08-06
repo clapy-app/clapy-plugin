@@ -33,7 +33,7 @@ declare module '@mui/material/Button' {
 interface ApiResponse {
   ok: boolean;
   quotas?: number;
-  isLicenceExpired?: boolean;
+  isLicenseExpired?: boolean;
 }
 const theme = createTheme({
   palette: {

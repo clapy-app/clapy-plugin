@@ -422,7 +422,7 @@ export interface CSBResponse {
   sandbox_id: string;
   quotas: number;
   quotasMax: number;
-  isLicenceExpired?: boolean;
+  isLicenseExpired?: boolean;
 }
 
 // From magic-bytes.js, for portability with the backend that doesn't have the lib

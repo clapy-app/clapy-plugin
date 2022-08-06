@@ -34,8 +34,8 @@ export class UserService {
     const isUserQualified = hasRoleIncreasedQuota(user);
     const quotas = await this.getQuotaCount(userId);
     const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-    const isLicenceExpired = this.stripeService.isLicenceInactive(user);
-    return { quotas: quotas, quotasMax: quotasMax, isLicenceExpired: isLicenceExpired };
+    const isLicenseExpired = this.stripeService.isLicenceInactive(user);
+    return { quotas: quotas, quotasMax: quotasMax, isLicenseExpired };
   }
   async getQuotaCount(userId: string) {
     const currentMonth = new Date().getMonth();
@@ -99,7 +99,7 @@ export class UserService {
       await this.generationHistoryRepository.save(generationHistory);
       res.quotas = await this.getQuotaCount(userId);
       res.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-      res.isLicenceExpired = this.stripeService.isLicenceInactive(user);
+      res.isLicenseExpired = this.stripeService.isLicenceInactive(user);
       // TODO: si une erreur survient, ne pas bloquer l'exécution du code et envoyer la réponse à l'utilisateur dans ce cas.
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
