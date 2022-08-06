@@ -1,7 +1,9 @@
+import type { RawBodyRequest } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
+import { json } from 'express';
 import rateLimit from 'express-rate-limit';
 import expressSanitizer from 'express-sanitizer';
 import helmet from 'helmet';
@@ -90,7 +92,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    rawBody: true,
+    bodyParser: false,
   });
 
   // CORS
@@ -127,7 +129,17 @@ async function bootstrap() {
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 
-  // app.use(json({ limit: '50mb' }));
+  app.use(
+    json({
+      limit: '50mb',
+      // Keep the raw body for use cases like stripe webhooks
+      verify: (req, res, buf, encoding) => {
+        if (buf && buf.length) {
+          (req as RawBodyRequest<Request>).rawBody = buf;
+        }
+      },
+    }),
+  );
 
   // In development, a small lag is added artificially to simulate real-life network constraints.
   if (env.isDev && !env.isJest) {
