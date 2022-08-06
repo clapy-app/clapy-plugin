@@ -39,11 +39,15 @@
     "git.mergeEditor": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
+    "files.associations": {
+      "*.hbs": "html"
+    },
   },
   "extensions": {
     "recommendations": [
       "esbenp.prettier-vscode",
-      "dbaeumer.vscode-eslint"
+      "dbaeumer.vscode-eslint",
+      "rangav.vscode-thunder-client"
     ]
   }
 }

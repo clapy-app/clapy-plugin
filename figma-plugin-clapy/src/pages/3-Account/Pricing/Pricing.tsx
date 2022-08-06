@@ -1,14 +1,7 @@
 import { memo } from 'react';
 import type { FC } from 'react';
 
-import { handleError } from '../../../common/error-utils.js';
-import { useCallbackAsync2 } from '../../../common/front-utils.js';
-import { upgradeUser } from '../../../common/stripeLicense.js';
-import { checkSessionComplete } from '../../../core/auth/auth-service.js';
-import { dispatchOther } from '../../../core/redux/redux.utils.js';
-import { env } from '../../../environment/env.js';
-import { setStripeData } from '../../user/user-slice.js';
-import { showPaymentConfirmation, startLoadingStripe, stopLoadingStripe } from '../stripe-slice.js';
+import { useHandleUserUpgrade } from '../account-service.js';
 import { _3Layers } from './components/_3Layers/_3Layers';
 import { _3LayersIcon } from './components/_3LayersIcon';
 import { _PricingTierCard_TypeIconBreak } from './components/_PricingTierCard_TypeIconBreak/_PricingTierCard_TypeIconBreak';
@@ -44,36 +37,9 @@ interface Props {
   className?: string;
 }
 
-interface ApiResponse {
-  ok: boolean;
-  quotas?: number;
-  isLicenceExpired?: boolean;
-}
-
 /* @figmaId 2089:147603 */
 export const Pricing: FC<Props> = memo(function Pricing(props = {}) {
-  const userUpgrade = useCallbackAsync2(async () => {
-    dispatchOther(startLoadingStripe());
-    const eventSource = new EventSource(`${env.apiBaseUrl}/stripe/sse`);
-    eventSource.onmessage = async e => {
-      let data = JSON.parse(e.data);
-      if (data.status) {
-        try {
-          const res = (await checkSessionComplete()) as ApiResponse;
-          if (res.quotas != null || !res.isLicenceExpired) {
-            dispatchOther(setStripeData(res));
-          }
-        } catch (e) {
-          handleError(e);
-        } finally {
-          dispatchOther(showPaymentConfirmation());
-          dispatchOther(stopLoadingStripe());
-        }
-      }
-      eventSource.close();
-    };
-    await upgradeUser();
-  }, []);
+  const userUpgrade = useHandleUserUpgrade();
   return (
     <div className={classes.root}>
       <PluginPageHeadline

@@ -33,7 +33,7 @@
     if (window.opener) {
       window.opener.focus();
     }
-    setTimeout(() => { window.close(); }, 3000);
+    setTimeout(() => { window.close(); }, "{{ state }}" === "canceled" ? 0 : 3000);
   }
 </script>
 
