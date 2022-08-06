@@ -27,7 +27,7 @@ export interface UserMetadata {
   licenceExpirationDate?: number | null;
   quotas?: number;
   quotasMax?: number;
-  isLicenceExpired?: boolean;
+  isLicenseExpired?: boolean;
   limitedUser?: boolean;
 }
 

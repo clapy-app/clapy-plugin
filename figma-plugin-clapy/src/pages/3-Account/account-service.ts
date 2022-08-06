@@ -1,16 +1,15 @@
 import { handleError } from '../../common/error-utils.js';
 import { useCallbackAsync2 } from '../../common/front-utils.js';
 import { upgradeUser } from '../../common/stripeLicense.js';
-import { checkSessionComplete } from '../../core/auth/auth-service.js';
+import { refreshUser } from '../../core/auth/auth-service.js';
 import { dispatchOther } from '../../core/redux/redux.utils.js';
 import { env } from '../../environment/env.js';
-import { setStripeData } from '../user/user-slice.js';
 import { showPaymentConfirmation, startLoadingStripe, stopLoadingStripe } from './stripe-slice.js';
 
 interface ApiResponse {
   ok: boolean;
   quotas?: number;
-  isLicenceExpired?: boolean;
+  isLicenseExpired?: boolean;
 }
 
 export function useHandleUserUpgrade() {
@@ -18,23 +17,23 @@ export function useHandleUserUpgrade() {
     dispatchOther(startLoadingStripe());
     const eventSource = new EventSource(`${env.apiBaseUrl}/stripe/sse`);
     eventSource.onmessage = async e => {
-      let data = JSON.parse(e.data);
-      console.log('data.status:', data.status);
-      if (data.status) {
-        try {
-          const res = (await checkSessionComplete()) as ApiResponse;
-          if (res.quotas != null || !res.isLicenceExpired) {
-            dispatchOther(setStripeData(res));
+      try {
+        eventSource.close();
+        let data = JSON.parse(e.data);
+        if (data.status) {
+          try {
+            await refreshUser();
+          } catch (e) {
+            handleError(e);
+          } finally {
+            dispatchOther(showPaymentConfirmation());
           }
-        } catch (e) {
-          handleError(e);
-        } finally {
-          dispatchOther(showPaymentConfirmation());
         }
-      } else if (data.status === false) {
+      } catch (error: any) {
+        handleError(error);
+      } finally {
         dispatchOther(stopLoadingStripe());
       }
-      eventSource.close();
     };
     await upgradeUser();
   }, []);

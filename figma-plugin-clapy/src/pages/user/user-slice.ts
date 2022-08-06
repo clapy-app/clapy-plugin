@@ -37,15 +37,15 @@ export const userSlice = createSlice({
       state.userMetadata = undefined;
     },
     setStripeData: (state, { payload }: PayloadAction<UserMetadata>) => {
-      // Tmp to allow the UI to be displayed if userMetadata is true
+      // Tmp to allow the UI to be displayed if userMetadata is true.
+      // Should we prefix with the following instead?
+      // > if (!state.userMetadata || state.userMetadata === true) state.userMetadata = {};
       if (state.userMetadata && state.userMetadata !== true) {
         state.userMetadata.quotas = payload.quotas;
         state.userMetadata.quotasMax = payload.quotasMax;
 
-        state.userMetadata.isLicenceExpired = payload.isLicenceExpired;
+        state.userMetadata.isLicenseExpired = payload.isLicenseExpired;
       }
-      // (state.userMetadata as UserMetadata).quotas = payload.quotas;
-      // (state.userMetadata as UserMetadata).isLicenceExpired = payload.isLicenceExpired;
     },
   },
 });
@@ -56,8 +56,8 @@ export const selectUserQuota = (state: RootState) => (state.user.userMetadata as
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
 export const selectIsFreeUser = (state: RootState) => {
-  const { isLicenceExpired } = state.user.userMetadata as UserMetadata;
-  return isLicenceExpired!;
+  const { isLicenseExpired } = state.user.userMetadata as UserMetadata;
+  return isLicenseExpired!;
 };
 
 export const selectUserProfileState = (state: RootState) => state.user.userMetadata;
@@ -78,8 +78,8 @@ export const selectIsUserMaxQuotaReached = createSelector(
   selectUserMetadata,
   (isStripeDevTeam, userMetadata) => {
     if (!isStripeDevTeam) return false;
-    const { isLicenceExpired, quotas, quotasMax } = userMetadata;
+    const { isLicenseExpired, quotas, quotasMax } = userMetadata;
     const isMaxQuotaReached = quotas! >= quotasMax!;
-    return isMaxQuotaReached && isLicenceExpired;
+    return isMaxQuotaReached && isLicenseExpired;
   },
 );

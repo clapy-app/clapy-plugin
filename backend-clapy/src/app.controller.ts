@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Render } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
@@ -17,9 +17,8 @@ export class AppController {
 
   @Get()
   @IsBrowserGet()
-  @Render('index')
   root() {
-    return { message: 'Hello world!' };
+    return { message: 'Hello from Clapy!' };
   }
 
   @Get('isdbalive')
