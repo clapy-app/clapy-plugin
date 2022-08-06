@@ -12,7 +12,7 @@
     "preview": "cd backend-clapy/atest-gen && yarn && yarn start",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive --latest",
-    "up": "docker compose stop dev && docker compose up -d db hasura",
+    "up": "docker compose stop dev && docker compose up -d db hasura stripe",
     "up2": "docker compose stop backend &&  docker compose up -d dev",
     "upold": "UID=\"$(id -u)\" GID=\"$(id -g)\" docker-compose stop dev && UID=\"$(id -u)\" GID=\"$(id -g)\" docker-compose up -d db hasura backend",
     "stop": "docker compose stop",

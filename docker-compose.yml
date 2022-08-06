@@ -45,6 +45,11 @@ services:
     ports:
       - '${POSTGRES_PORT_CONSUMER}:${POSTGRES_PORT_CONTAINER}'
 
+  stripe:
+    image: stripe/stripe-cli:latest
+    command: "listen --api-key ${STRIPE_SECRET_KEY} --device-name docker-stripe-cli --forward-to host.docker.internal:4141/stripe/webhook/"
+    env_file: .env
+
   hasura:
     # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
     # version) and the package hasura-cli in package.json.

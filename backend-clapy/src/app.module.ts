@@ -13,6 +13,7 @@ import { env } from './env-and-config/env.js';
 import { CodeController } from './features/export-code/1-code-controller.js';
 import { GenerationHistoryEntity } from './features/export-code/generation-history.entity.js';
 import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller.js';
+import { StripeWebhookService } from './features/stripe/stripe-webhook.service.js';
 import { StripeController } from './features/stripe/stripe.controller.js';
 import { StripeService } from './features/stripe/stripe.service.js';
 import { UserController } from './features/user/user.controller.js';
@@ -46,6 +47,12 @@ import { UserService } from './features/user/user.service.js';
     SbSerializeController,
     CodeController,
   ],
-  providers: [AppService, StripeService, UserService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [
+    AppService,
+    StripeService,
+    StripeWebhookService,
+    UserService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+  ],
 })
 export class AppModule {}

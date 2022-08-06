@@ -1,5 +1,5 @@
 import type { MessageEvent } from '@nestjs/common';
-import { Body, Controller, Get, HttpException, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
+import { Controller, Get, HttpException, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Observable } from 'rxjs';
 import { Stripe } from 'stripe';
@@ -10,13 +10,15 @@ import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-import { getAuth0User, updateAuth0UserMetadata } from '../user/user.utils.js';
+import { getAuth0User } from '../user/user.utils.js';
+import { StripeWebhookService } from './stripe-webhook.service.js';
 import { StripeService } from './stripe.service.js';
 
 @Controller('stripe')
 export class StripeController {
   constructor(
     @Inject(StripeService) private stripeService: StripeService,
+    @Inject(StripeWebhookService) private stripeWebhookService: StripeWebhookService,
     @Inject(UserService) private userService: UserService,
   ) {}
 
@@ -94,98 +96,15 @@ export class StripeController {
 
     return session.url;
   }
+
   @PublicRoute()
   @IsBrowserGet()
   @Post('webhook')
-  async webhook(@Body() body: any, @Req() request: Request) {
-    const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
-    let event: Stripe.Event;
-
+  async webhook(@Req() request: Request) {
     const sig = request.headers['stripe-signature'];
-    try {
-      event = stripe.webhooks.constructEvent(request.body, sig as string, env.stripeWebhookSecret);
-    } catch (err) {
-      throw new HttpException(`Webhook Error: ${err}`, 401);
-    }
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any;
-        if (session.payment_status === 'paid') {
-          const { auth0Id } = session.metadata;
-          const subscriptionId = session.subscription;
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          const { current_period_start, current_period_end } = subscription;
-          this.stripeService.emitStripePaymentStatus(true);
-          await updateAuth0UserMetadata(auth0Id, {
-            licenceStartDate: current_period_start,
-            licenceExpirationDate: current_period_end,
-          });
-        }
-        break;
-      }
-      case 'customer.subscription.updated':
-        {
-          const session = event.data.object as any;
-          const { current_period_start, current_period_end } = session;
-          const customer = await stripe.customers.retrieve(session.customer);
-          if (!customer.deleted) {
-            const { auth0Id } = customer!.metadata;
-            await updateAuth0UserMetadata(auth0Id, {
-              licenceStartDate: current_period_start,
-              licenceExpirationDate: current_period_end,
-            });
-          }
-        }
-        break;
-      case 'customer.deleted': {
-        const session = event.data.object as any;
-        const { auth0Id } = session!.metadata;
-        await updateAuth0UserMetadata(auth0Id, {
-          licenceStartDate: null,
-          licenceExpirationDate: null,
-        });
-        break;
-      }
-      case 'customer.subscription.deleted': {
-        const session = event.data.object as any;
-        const { current_period_start, current_period_end, canceled_at } = session;
-        const customer = await stripe.customers.retrieve(session.customer);
-        if (!customer.deleted && customer!.metadata?.auth0Id) {
-          const { auth0Id } = customer!.metadata;
-          await updateAuth0UserMetadata(auth0Id, {
-            licenceStartDate: current_period_start,
-            licenceExpirationDate: canceled_at,
-          });
-        }
-        break;
-      }
-      /**
-       * "If we want to add a logic in the app reacting to isolated payment refunds, here is a sample:"
-       */
+    if (typeof sig !== 'string') throw new HttpException('Invalid stripe header type, expected a string.', 400);
+    this.stripeWebhookService.processWebhookEvent(request.body, sig);
 
-      // case 'charge.refunded': {
-      //   const session = event.data.object as any;
-      //   const customer = await stripe.customers.retrieve(session.customer);
-      //   if (
-      //     session.refunds.data[0].object === 'refund' &&
-      //     session.refunds.data[0].status === 'succeeded' &&
-      //     customer!.metadata?.auth0Id
-      //   ) {
-      //     const { auth0Id } = customer!.metadata;
-      //     await updateAuth0UserMetadata(auth0Id, {
-      //       licenceExpirationDate: session.refunds.data[0].created,
-      //     });
-      //   }
-      //   console.log(session.refunds.data[0]);
-      //   break;
-      // }
-      default:
-        /**
-         * this log will be usefull if we ever come back to this stripe feature in the future
-         */
-        // console.log(event.type);
-        break;
-    }
     // Return a response to acknowledge receipt of the event
     return { received: true };
   }
@@ -194,11 +113,11 @@ export class StripeController {
   @IsBrowserGet()
   @Get('/checkout-callback')
   @Render('checkout-callback')
-  async checkoutCallback(
-    @Query('from') from: string = 'browser' || 'desktop',
-    @Query('state') state: string = 'completed' || 'canceled',
-  ) {
+  async checkoutCallback(@Query('from') from: 'browser' | 'desktop', @Query('state') state: 'completed' | 'canceled') {
     if (!state) throw new Error(`No state in query parameters.`);
+    if (state === 'canceled') {
+      this.stripeService.emitStripePaymentStatus(false);
+    }
     return { from, state };
   }
 
