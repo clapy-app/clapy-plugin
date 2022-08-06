@@ -1,4 +1,4 @@
-import LoadingButton from '@mui/lab/LoadingButton';
+import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { parsePhoneNumber } from 'libphonenumber-js';

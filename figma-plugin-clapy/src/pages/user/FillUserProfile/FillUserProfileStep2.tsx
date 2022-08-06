@@ -1,5 +1,5 @@
 import ArrowForward from '@mui/icons-material/ArrowForward';
-import LoadingButton from '@mui/lab/LoadingButton';
+import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import SvgIcon from '@mui/material/SvgIcon';
