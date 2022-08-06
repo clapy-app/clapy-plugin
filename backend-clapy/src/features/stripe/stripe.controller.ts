@@ -127,8 +127,8 @@ export class StripeController {
   @Get('/customer-portal-callback')
   @Render('customerPortal-callback')
   async customerPortalCallback(
-    @Query('from') from: string = 'browser' || 'desktop',
-    @Query('state') state: string = 'completed' || 'canceled',
+    @Query('from') from: 'browser' | 'desktop',
+    @Query('state') state: 'completed' | 'canceled',
   ) {
     return { from };
   }
