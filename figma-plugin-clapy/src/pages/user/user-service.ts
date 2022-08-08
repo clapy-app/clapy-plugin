@@ -2,9 +2,9 @@ import type { Dispatch } from '@reduxjs/toolkit';
 import equal from 'fast-deep-equal';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
-import { apiGet, apiPost } from '../../common/http.utils';
 import { fetchPlugin } from '../../common/plugin-utils.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
+import { apiGet, apiPost } from '../../front-utils/http.utils.js';
 import { clearMetadata, selectUserProfileState, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
 
 export async function dispatchLocalUserMetadata(signedInState: boolean) {

@@ -2,7 +2,7 @@ import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import type { FC } from 'react';
 import { memo, useState } from 'react';
 
-import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
+import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import { openCustomerPortal } from '../../../stripeLicense.js';
 import classes from './ButtonViewPlan.module.css';
 import { CheckCircleIcon } from './CheckCircleIcon';

@@ -4,9 +4,9 @@ import type { FC } from 'react';
 import { memo, useCallback, useState } from 'react';
 import type React from 'react';
 
-import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { logout, refreshUser } from '../../../../../core/auth/auth-service.js';
 import { env } from '../../../../../environment/env.js';
+import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import classes from './Dropdown.module.css';
 import { MoreHorizontalIcon } from './MoreHorizontalIcon';
 

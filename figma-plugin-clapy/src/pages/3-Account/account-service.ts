@@ -1,8 +1,7 @@
-import { handleError } from '../../common/error-utils.js';
-import { useCallbackAsync2 } from '../../common/front-utils.js';
 import { refreshUser } from '../../core/auth/auth-service.js';
 import { dispatchOther } from '../../core/redux/redux.utils.js';
 import { env } from '../../environment/env.js';
+import { handleError, useCallbackAsync2 } from '../../front-utils/front-utils.js';
 import { showPaymentConfirmation, startLoadingStripe, stopLoadingStripe } from './stripe-slice.js';
 import { upgradeUser } from './stripeLicense.js';
 

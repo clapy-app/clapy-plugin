@@ -2,7 +2,7 @@
 import type { Clapy_Analytics } from '../../generated/schema';
 import { _accessTokenDecoded } from '../core/auth/auth-service';
 import { env } from '../environment/env';
-import { handleError } from './error-utils';
+import { handleError } from '../front-utils/front-utils.js';
 import { fetchPlugin } from './plugin-utils';
 
 // export const PUSH_EVENT = gql`

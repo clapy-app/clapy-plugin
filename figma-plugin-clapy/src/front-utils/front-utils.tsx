@@ -3,7 +3,26 @@ import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { ErrorAlert2, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
-import { handleError } from './error-utils';
+import { apiPost } from './http.utils.js';
+
+// TODO search all usages of handleErrorBack in the front, and replace with handleError
+export function handleError(error: any) {
+  if (error?.message === 'cancelled') {
+    return;
+  }
+  console.error('[handleError]', error);
+
+  // Send the error to the webservice for monitoring.
+  let { message, stack } = error;
+  const errorStr = JSON.stringify(error);
+  const original = JSON.parse(errorStr);
+  if (!message) message = errorStr;
+  if (!stack) stack = new Error(message).stack;
+  const serialized = { message, stack, original };
+  apiPost('front-monitor', serialized).catch(err =>
+    console.error('Failed to send the error to the webservice. The service may be down.'),
+  );
+}
 
 /** Same as useCallback, but accepting async functions. @see useCallback */
 export function useCallbackAsync<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T {

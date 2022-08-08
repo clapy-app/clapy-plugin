@@ -1,6 +1,6 @@
-import { openNewTab, toastError } from '../../common/front-utils.js';
-import { apiGet } from '../../common/http.utils.js';
 import { env } from '../../environment/env.js';
+import { openNewTab, toastError } from '../../front-utils/front-utils.js';
+import { apiGet } from '../../front-utils/http.utils.js';
 
 export const upgradeUser = async () => {
   const { data } = await apiGet('stripe/checkout', { query: { from: env.isFigmaPlugin ? 'desktop' : 'browser' } });

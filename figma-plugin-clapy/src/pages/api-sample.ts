@@ -3,10 +3,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { apiGet } from '../common/http.utils';
 import type { Dispatcher } from '../core/redux/hooks';
 import { useAppDispatch } from '../core/redux/hooks';
 import type { RootState } from '../core/redux/store';
+import { apiGet } from '../front-utils/http.utils.js';
 
 // -- RTK Query version
 // /!\ it seems to add a significant overhead in auto-completion. The extra typings may be too heavy and complex.

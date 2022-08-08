@@ -7,9 +7,7 @@ import type {
   StoriesSamples,
 } from '../../backend/routes/code-to-design/1-import-stories/import-model';
 import { track } from '../../common/analytics';
-import { handleError } from '../../common/error-utils';
 import { getDuration } from '../../common/general-utils';
-import { apiGet } from '../../common/http.utils';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils';
 import type { SbStoriesWrapper } from '../../common/sb-serialize.model';
 import { propArrayToMap, sanitizeSbUrl } from '../../common/storybook-utils';
@@ -18,6 +16,8 @@ import { getTokens, login } from '../../core/auth/auth-service';
 import { selectAuthLoading, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks';
 import { env } from '../../environment/env';
+import { handleError } from '../../front-utils/front-utils.js';
+import { apiGet } from '../../front-utils/http.utils.js';
 import classes from './1-ImportSb.module.scss';
 import { PreviewArea } from './2-PreviewArea';
 import { Banner } from './Banner';
