@@ -12,41 +12,49 @@ export class StripeWebhookService {
 
   async processWebhookEvent(payload: string | Buffer, header: string | Buffer | Array<string>) {
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
-    const event = stripe.webhooks.constructEvent(payload, header, env.stripeWebhookSecret);
+
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(payload, header, env.stripeWebhookSecret);
+    } catch (err: any) {
+      // Rewrite the error, because the original one is too verbose. The integration has been tested, throwing here means the request signature is not recognized, e.g. because the Stripe webhook secret is wrong in the server environment variables.
+      throw new Error(`⚠️  Webhook signature verification failed: ${err?.message}`);
+    }
 
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any;
-        if (session.payment_status === 'paid') {
-          const { auth0Id } = session.metadata;
-          const subscriptionId = session.subscription;
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          const { current_period_start, current_period_end } = subscription;
-          await updateAuth0UserMetadata(auth0Id, {
-            licenceStartDate: current_period_start,
-            licenceExpirationDate: current_period_end,
-          });
-          this.stripeService.emitStripePaymentStatus(true);
-        }
-        break;
-      }
+      // case 'checkout.session.completed': {
+      //   const session = event.data.object as Stripe.Checkout.Session;
+      //   if (session.payment_status === 'paid') {
+      //     const { auth0Id } = session.metadata || {};
+      //     const subscriptionId = session.subscription;
+      //     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      //     const { current_period_start, current_period_end } = subscription;
+      //     await updateAuth0UserMetadata(auth0Id, {
+      //       licenceStartDate: current_period_start,
+      //       licenceExpirationDate: current_period_end,
+      //     });
+      //     this.stripeService.emitStripePaymentStatus(true);
+      //   }
+      //   break;
+      // }
       case 'customer.subscription.updated':
         {
-          const session = event.data.object as any;
+          const session = event.data.object as Stripe.Subscription;
           const { current_period_start, current_period_end } = session;
-          const customer = await stripe.customers.retrieve(session.customer);
+          const customer = await stripe.customers.retrieve(session.customer as string);
           if (!customer.deleted) {
             const { auth0Id } = customer!.metadata;
             await updateAuth0UserMetadata(auth0Id, {
               licenceStartDate: current_period_start,
               licenceExpirationDate: current_period_end,
             });
+            this.stripeService.emitStripePaymentStatus(true);
           }
         }
         break;
       case 'customer.deleted': {
-        const session = event.data.object as any;
-        const { auth0Id } = session!.metadata;
+        const session = event.data.object as Stripe.Customer;
+        const { auth0Id } = session.metadata;
         await updateAuth0UserMetadata(auth0Id, {
           licenceStartDate: null,
           licenceExpirationDate: null,
@@ -54,9 +62,9 @@ export class StripeWebhookService {
         break;
       }
       case 'customer.subscription.deleted': {
-        const session = event.data.object as any;
-        const { current_period_start, current_period_end, canceled_at } = session;
-        const customer = await stripe.customers.retrieve(session.customer);
+        const session = event.data.object as Stripe.Subscription;
+        const { current_period_start, canceled_at } = session;
+        const customer = await stripe.customers.retrieve(session.customer as string);
         if (!customer.deleted && customer!.metadata?.auth0Id) {
           const { auth0Id } = customer!.metadata;
           await updateAuth0UserMetadata(auth0Id, {

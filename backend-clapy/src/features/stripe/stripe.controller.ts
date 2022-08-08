@@ -65,6 +65,12 @@ export class StripeController {
       },
       cancel_url: redirectUri + '&state=canceled',
       success_url: redirectUri + '&state=completed',
+      automatic_tax: { enabled: true },
+      billing_address_collection: 'auto',
+      customer_update: {
+        address: 'auto',
+        shipping: 'auto',
+      },
     });
     return session.url;
   }
@@ -108,7 +114,7 @@ export class StripeController {
     if (!req.rawBody) throw new HttpException('Invalid stripe body, cannot be empty.', 400);
     const sig = req.headers['stripe-signature'];
     if (typeof sig !== 'string') throw new HttpException('Invalid stripe header type, expected a string.', 400);
-    this.stripeWebhookService.processWebhookEvent(req.rawBody, sig);
+    await this.stripeWebhookService.processWebhookEvent(req.rawBody, sig);
 
     // Return a response to acknowledge receipt of the event
     return { received: true };
