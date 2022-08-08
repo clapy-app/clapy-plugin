@@ -4,11 +4,7 @@ export const appConfig = {
   codeGenFreeQuota: 3,
   codeGenQualifiedQuota: 10,
   stripeConfig: {
-    apiVersion: '2020-08-27',
-    appInfo: {
-      name: 'clapy-dev/checkout',
-      version: '0.0.1',
-    },
+    apiVersion: '2022-08-01',
   } as Stripe.StripeConfig,
 };
 

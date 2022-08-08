@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button.js';
 import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 

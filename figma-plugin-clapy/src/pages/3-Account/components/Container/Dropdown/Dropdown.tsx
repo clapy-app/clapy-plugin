@@ -1,5 +1,6 @@
-import { Menu, MenuItem } from '@mui/material';
-import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton/IconButton.js';
+import Menu from '@mui/material/Menu/Menu.js';
+import MenuItem from '@mui/material/MenuItem/MenuItem.js';
 import type { FC } from 'react';
 import { memo, useCallback, useState } from 'react';
 import type React from 'react';
@@ -44,7 +45,8 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   }, []);
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <Button
+      <IconButton
+        aria-label='delete'
         id='more-settings-button'
         aria-controls={open ? 'more-settings-menu' : undefined}
         aria-haspopup='true'
@@ -52,7 +54,7 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
         onClick={handleClick}
       >
         <MoreHorizontalIcon className={`${classes.moreHorizontal} ${props.classes?.moreHorizontal || ''}`} />
-      </Button>
+      </IconButton>
       <Menu
         id='more-settings-menu'
         anchorEl={anchorEl}
