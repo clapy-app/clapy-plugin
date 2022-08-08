@@ -37,19 +37,22 @@ export class StripeWebhookService {
       //   }
       //   break;
       // }
+      case 'customer.subscription.created':
       case 'customer.subscription.updated':
         {
           const session = event.data.object as Stripe.Subscription;
-          const { current_period_start, current_period_end } = session;
-          const customer = await stripe.customers.retrieve(session.customer as string);
-          if (!customer.deleted) {
-            const { auth0Id } = customer!.metadata;
-            await updateAuth0UserMetadata(auth0Id, {
-              licenceStartDate: current_period_start,
-              licenceExpirationDate: current_period_end,
-            });
-            this.stripeService.emitStripePaymentStatus(true);
+          const { current_period_start, current_period_end, status } = session;
+          if (status === 'active') {
+            const customer = await stripe.customers.retrieve(session.customer as string);
+            if (!customer.deleted) {
+              const { auth0Id } = customer!.metadata;
+              await updateAuth0UserMetadata(auth0Id, {
+                licenceStartDate: current_period_start,
+                licenceExpirationDate: current_period_end,
+              });
+            }
           }
+          this.stripeService.emitStripePaymentStatus(true);
         }
         break;
       case 'customer.deleted': {
