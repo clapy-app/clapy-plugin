@@ -1,9 +1,9 @@
-import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import type { FC } from 'react';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
 import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
-import { openCustomerPortal } from '../../../../../common/stripeLicense.js';
+import { openCustomerPortal } from '../../../stripeLicense.js';
 import classes from './ButtonViewPlan.module.css';
 import { CheckCircleIcon } from './CheckCircleIcon';
 
@@ -14,21 +14,28 @@ interface Props {
   };
 }
 export const ButtonViewPlan: FC<Props> = memo(function ButtonViewPlan(props = {}) {
+  const [loading, setLoading] = useState(false);
   const customerPortal = useCallbackAsync2(async () => {
-    await openCustomerPortal();
+    try {
+      setLoading(true);
+      await openCustomerPortal();
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
-      <Button
+      <LoadingButton
         variant='contained'
         size='medium'
         className={`${classes.text} ${props.classes?.text || ''}`}
         onClick={customerPortal}
+        loading={loading}
       >
         <CheckCircleIcon />
         &nbsp; See plan details
-      </Button>
+      </LoadingButton>
     </div>
   );
 });

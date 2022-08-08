@@ -86,11 +86,15 @@ export class StripeController {
         version: '0.0.1',
       },
     });
-    const customerExist = await stripe.customers.search({
+    const { data } = await stripe.customers.search({
       query: `email:'${auth0User.email}'`,
     });
+    if (!data?.length) {
+      // If user not found, e.g. removed in the stripe back-office while the plugin was open
+      return undefined;
+    }
     const session = await stripe.billingPortal.sessions.create({
-      customer: customerExist.data[0].id,
+      customer: data[0].id,
       return_url: redirectUri,
     });
 

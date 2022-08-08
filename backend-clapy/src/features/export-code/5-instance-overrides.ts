@@ -75,6 +75,7 @@ export function genInstanceOverrides(context: InstanceContext, node: SceneNode2)
     fillIsRootInComponent(moduleContext, node);
 
     let styles: Dict<DeclarationPlain> = {};
+    node.styles = styles;
 
     // Not sure the below return is useful. To review with more test cases.
     if (!node.visible && context.isRootInComponent) {
