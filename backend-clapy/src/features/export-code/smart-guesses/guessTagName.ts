@@ -3,10 +3,10 @@ import ts from 'typescript';
 
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
-import type { FlexNode, FrameNode2, SceneNode2, TextNode2 } from '../create-ts-compiler/canvas-utils.js';
+import type { FlexNode, FrameNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isComponentSet, isFlexNode, isText } from '../create-ts-compiler/canvas-utils.js';
 import { addHugContents, makeDefaultNode } from '../gen-node-utils/default-node.js';
-import { mkInputTypeAttr, mkStringAttr } from '../gen-node-utils/ts-ast-utils.js';
+import { mkInputTypeAttr } from '../gen-node-utils/ts-ast-utils.js';
 
 const { factory } = ts;
 
@@ -76,24 +76,25 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
     node.paddingRight = 0;
     node.paddingBottom = 0;
     node.paddingLeft = 0;
-  } else if (
-    !context.moduleContext.inInteractiveElement &&
-    isFlexNode(node) &&
-    (hasFills || hasStrokes || hasEffects) &&
-    (name === 'input' || (name.includes('input') && !isWrapper && !isGroup)) &&
-    (!node.children.length || (node.children.length === 1 && node.children[0].type === 'TEXT'))
-  ) {
-    context.moduleContext = { ...context.moduleContext, inInteractiveElement: true };
-    context.tagName = 'input';
-    const hasTextChild = node.children.length === 1;
-    if (hasTextChild) {
-      const child = node.children[0] as TextNode2;
-      const placeholder = child?._textSegments?.map(segment => segment.characters).join('');
-      if (placeholder) {
-        extraAttributes.push(mkStringAttr('placeholder', placeholder));
-      }
-    }
-    context.firstChildIsPlaceholder = true;
+    // Below code was used for a demo. It doesn't seem very stable, so let's disable it in production for now.
+    // } else if (
+    //   !context.moduleContext.inInteractiveElement &&
+    //   isFlexNode(node) &&
+    //   (hasFills || hasStrokes || hasEffects) &&
+    //   (name === 'input' || (name.includes('input') && !isWrapper && !isGroup)) &&
+    //   (!node.children.length || (node.children.length === 1 && node.children[0].type === 'TEXT'))
+    // ) {
+    //   context.moduleContext = { ...context.moduleContext, inInteractiveElement: true };
+    //   context.tagName = 'input';
+    //   const hasTextChild = node.children.length === 1;
+    //   if (hasTextChild) {
+    //     const child = node.children[0] as TextNode2;
+    //     const placeholder = child?._textSegments?.map(segment => segment.characters).join('');
+    //     if (placeholder) {
+    //       extraAttributes.push(mkStringAttr('placeholder', placeholder));
+    //       context.firstChildIsPlaceholder = true;
+    //     }
+    //   }
   } else {
     // Keep the default tag name
   }
