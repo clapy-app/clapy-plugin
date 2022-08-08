@@ -2,7 +2,7 @@ import type { FC, MouseEventHandler } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { handleError } from '../../common/error-utils';
+import { handleError } from '../../front-utils/front-utils.js';
 import classes from './1-ImportSb.module.scss';
 import { VariantsProps } from './3-VariantsProps';
 import refreshIcon from './detail/refresh-icon.svg';

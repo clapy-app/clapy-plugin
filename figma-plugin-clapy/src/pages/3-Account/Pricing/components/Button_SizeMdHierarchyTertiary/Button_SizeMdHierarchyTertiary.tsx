@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
-import { useCallbackAsync2 } from '../../../../../common/front-utils.js';
 import { dispatchOther } from '../../../../../core/redux/redux.utils.js';
+import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import { hidePricing } from '../../../stripe-slice.js';
 import { _ButtonBase_SizeMdIconOnly } from '../_ButtonBase_SizeMdIconOnly/_ButtonBase_SizeMdIconOnly';
 import classes from './Button_SizeMdHierarchyTertiary.module.css';

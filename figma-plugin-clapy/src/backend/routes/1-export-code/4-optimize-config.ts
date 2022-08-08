@@ -1,5 +1,5 @@
 import { flags } from '../../../common/app-config.js';
-import { handleError, warnNode } from '../../../common/error-utils.js';
+import { handleErrorBack, warnNode } from '../../../common/error-utils.js';
 import { isArrayOf } from '../../../common/general-utils.js';
 import type { Dict } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
@@ -176,7 +176,7 @@ function optimizeNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeCon
       throw error;
     }
     // Production: don't block the process
-    handleError(error);
+    handleErrorBack(error);
     return;
   }
 }

@@ -2,8 +2,8 @@ import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import { showPricing } from '../../../3-Account/stripe-slice.js';
-import { useCallbackAsync2 } from '../../../../common/front-utils.js';
 import { dispatchOther } from '../../../../core/redux/redux.utils.js';
+import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
 import { _ButtonBase_SizeSmIconTrailing } from '../_ButtonBase_SizeSmIconTrailing/_ButtonBase_SizeSmIconTrailing';
 import classes from './Button_SizeSmHierarchyLinkColo2.module.css';
 

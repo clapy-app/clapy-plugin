@@ -1,22 +1,11 @@
 import { isStyledTextSegment } from '../backend/common/node-type-utils';
-import { apiPost } from './http.utils.js';
 
-export function handleError(error: any) {
+// Separate from handleError because it doesn't send HTTP requests. The plugin back is not able to send requests.
+export function handleErrorBack(error: any) {
   if (error?.message === 'cancelled') {
     return;
   }
   console.error('[handleError]', error);
-
-  // Send the error to the webservice for monitoring.
-  let { message, stack } = error;
-  const errorStr = JSON.stringify(error);
-  const original = JSON.parse(errorStr);
-  if (!message) message = errorStr;
-  if (!stack) stack = new Error(message).stack;
-  const serialized = { message, stack, original };
-  apiPost('front-monitor', serialized).catch(err =>
-    console.error('Failed to send the error to the webservice. The service may be down.'),
-  );
 }
 
 // toastError in src/common/front-utils.tsx

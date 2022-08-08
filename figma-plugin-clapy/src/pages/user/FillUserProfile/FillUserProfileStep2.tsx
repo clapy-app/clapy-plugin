@@ -9,8 +9,8 @@ import { memo, useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import type { UserMetaUsage } from '../../../common/app-models.js';
-import { useCallbackAsync2 } from '../../../common/front-utils';
 import type { Dict } from '../../../common/sb-serialize.model';
+import { useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
 import { updateUserMetaUsage } from '../user-service';
 import { selectHasMissingMetaUsage, selectUserMetaUsage } from '../user-slice';

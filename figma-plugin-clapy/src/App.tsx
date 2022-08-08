@@ -7,11 +7,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import classes from './App.module.css';
 import { track } from './common/analytics';
-import { handleError } from './common/error-utils';
 import { getDuration } from './common/general-utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { checkSessionLight } from './core/auth/auth-service.js';
 import { dispatchOther } from './core/redux/redux.utils.js';
+import { handleError } from './front-utils/front-utils.js';
 import { Layout } from './pages/Layout/Layout';
 import { setStripeData } from './pages/user/user-slice.js';
 

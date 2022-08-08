@@ -1,12 +1,11 @@
 import jwtDecode from 'jwt-decode';
 
-import { handleError } from '../../common/error-utils';
-import { openNewTab, toastError } from '../../common/front-utils';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
-import { apiGet } from '../../common/http.utils.js';
 import { fetchPlugin } from '../../common/plugin-utils';
-import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../common/unauthenticated-http.utils';
 import { env, isFigmaPlugin } from '../../environment/env';
+import { handleError, openNewTab, toastError } from '../../front-utils/front-utils';
+import { apiGet } from '../../front-utils/http.utils.js';
+import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../front-utils/unauthenticated-http.utils.js';
 import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';

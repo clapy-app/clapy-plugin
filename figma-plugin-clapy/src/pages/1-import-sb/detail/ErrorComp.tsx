@@ -3,9 +3,9 @@ import type { FC } from 'react';
 import { memo } from 'react';
 
 import classes from '../1-ImportSb.module.css';
-import { parseErrorForDisplay, useCallbackAsync2 } from '../../../common/front-utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import { env } from '../../../environment/env';
+import { parseErrorForDisplay, useCallbackAsync2 } from '../../../front-utils/front-utils';
 
 export interface ErrorCompProps {
   error: any;

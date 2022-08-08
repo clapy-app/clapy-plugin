@@ -4,9 +4,9 @@ import { createRef, memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { ArgTypeObj, ArgTypeUsed } from '../../common/app-models';
-import { handleError } from '../../common/error-utils';
 import { isNonEmptyObject } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
+import { handleError } from '../../front-utils/front-utils.js';
 import classes from './1-ImportSb.module.scss';
 import { buildArgsMatrix } from './detail/buildArgsMatrix';
 import { renderVariant } from './detail/renderComponent';

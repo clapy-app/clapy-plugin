@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { wait } from '../common/general-utils.js';
+import type { Dict } from '../common/sb-serialize.model.js';
 import { logout } from '../core/auth/auth-service';
 import { mkUrl } from '../core/auth/auth-service.utils';
 import { env } from '../environment/env';
-import { wait } from './general-utils';
-import type { Dict } from './sb-serialize.model';
 
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;

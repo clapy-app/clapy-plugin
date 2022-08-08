@@ -3,8 +3,8 @@ import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import { hideFeedback } from '../../../3-Account/stripe-slice.js';
-import { useCallbackAsync2 } from '../../../../common/front-utils.js';
 import { dispatchOther } from '../../../../core/redux/redux.utils.js';
+import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
 import { ArrowLeft } from '../ArrowLeft/ArrowLeft';
 import { ArrowLeftIcon } from './ArrowLeftIcon';
 import classes from './PluginPageHeadline.module.css';

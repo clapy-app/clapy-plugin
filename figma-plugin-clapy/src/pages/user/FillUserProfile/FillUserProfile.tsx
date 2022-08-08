@@ -8,9 +8,9 @@ import ReactPhoneInput from 'react-phone-input-material-ui';
 import { useDispatch, useSelector } from 'react-redux';
 
 import type { UserMetadata } from '../../../common/app-models.js';
-import { useCallbackAsync2 } from '../../../common/front-utils';
 import type { Dict } from '../../../common/sb-serialize.model';
 import { Loading } from '../../../components-used/Loading/Loading.js';
+import { useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
 import { hasMissingMetaProfile, updateUserMetadata } from '../user-service';
 import { selectUserMetadata, selectUserProfileState } from '../user-slice';
