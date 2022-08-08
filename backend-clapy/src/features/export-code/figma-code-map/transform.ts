@@ -1,5 +1,6 @@
 import type { DeclarationPlain } from 'css-tree';
 
+import { warnOrThrow } from '../../../utils.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
@@ -10,6 +11,12 @@ import { round } from '../gen-node-utils/utils-and-reset.js';
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // The rotation is already included in the SVG itself when exporting from Figma
   if (isVector(node)) return;
+  if (!node.relativeTransform) {
+    warnOrThrow(
+      `BUG node.relativeTransform is not defined in node ${node.name} (${node.type}), skipping. But it should have been defined when setting default values.`,
+    );
+    return;
+  }
   const [[a, c, tx0], [b, d, ty0]] = node.relativeTransform;
   const isIdentity = a === 1 && d === 1 && b === 0 && c === 0;
   if (!styles.transform && !isIdentity) {
