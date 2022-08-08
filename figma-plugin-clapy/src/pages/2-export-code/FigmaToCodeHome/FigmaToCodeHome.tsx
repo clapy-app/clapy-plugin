@@ -36,7 +36,7 @@ import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } fr
 import { dispatchOther } from '../../../core/redux/redux.utils.js';
 import { env } from '../../../environment/env.js';
 import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
-import { apiPost } from '../../../front-utils/http.utils.js';
+import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { downloadFile } from '../export-code-utils.js';
