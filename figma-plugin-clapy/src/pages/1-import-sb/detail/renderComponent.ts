@@ -1,11 +1,11 @@
 import type { MutableRefObject } from 'react';
 
 import type { ArgTypeObj } from '../../../common/app-models';
-import { apiGet } from '../../../common/http.utils';
 import { fetchPlugin } from '../../../common/plugin-utils';
 import type { Args, ArgTypes, CNode } from '../../../common/sb-serialize.model';
 import { sbUrlIframe } from '../../../common/storybook-utils';
 import { env } from '../../../environment/env';
+import { apiGet } from '../../../front-utils/http.utils.js';
 import { buildArgsMatrix } from './buildArgsMatrix';
 
 export async function renderComponent(
