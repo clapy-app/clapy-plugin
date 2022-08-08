@@ -70,7 +70,7 @@ export function fillWithComponent(
     addHiddenNodeToInstance(node, nodeOfComp);
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
-      if (child.visible || child.visible == null) {
+      if (child && (child.visible || child.visible == null)) {
         let childNodeOfComp = nodeOfComp;
         if (childNodeOfComp) {
           if (!isChildrenMixin(childNodeOfComp)) {

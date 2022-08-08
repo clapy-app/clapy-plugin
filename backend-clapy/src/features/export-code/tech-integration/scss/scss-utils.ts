@@ -20,7 +20,6 @@ export function getCSSExtension(extraConfig: ExtraConfig) {
 
 export function updateFilesAndContentForScss(extraConfig: ExtraConfig, projectContext: ProjectContext) {
   const { tsFiles, cssFiles, resources, fwConnector } = projectContext;
-  fwConnector.patchCssResets(projectContext);
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);
@@ -52,10 +51,12 @@ function replaceScssReferences(tsFiles: CodeDict, cssFiles: CodeDict, resources:
 
   for (const codeDict of [tsFiles, cssFiles, resources]) {
     for (const [filePath, content] of Object.entries(codeDict)) {
-      const contentWithScssRefReplaced = content.replace(fileNamesRegex, fileName => {
-        return cssToScss(fileName);
-      });
-      codeDict[filePath] = contentWithScssRefReplaced;
+      if (content) {
+        const contentWithScssRefReplaced = content.replace(fileNamesRegex, fileName => {
+          return cssToScss(fileName);
+        });
+        codeDict[filePath] = contentWithScssRefReplaced;
+      }
     }
   }
 }

@@ -76,9 +76,6 @@ export const reactConnector: FrameworkConnector = {
   addScssPackages: (newDevDependencies: Dict<string>) => {
     Object.assign(newDevDependencies, scssDevDependencies);
   },
-  patchCssResets: projectContext => {
-    const { cssFiles } = projectContext;
-  },
   registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
