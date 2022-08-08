@@ -10,7 +10,7 @@ import { track } from './common/analytics';
 import { getDuration } from './common/general-utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { checkSessionLight } from './core/auth/auth-service.js';
-import { dispatchOther } from './core/redux/redux.utils.js';
+import { useAppDispatch } from './core/redux/hooks.js';
 import { handleError } from './front-utils/front-utils.js';
 import { Layout } from './pages/Layout/Layout';
 import { setStripeData } from './pages/user/user-slice.js';
@@ -84,19 +84,20 @@ window.addEventListener('unload', function () {
 });
 
 export const App: FC = memo(function App() {
+  const dispatch = useAppDispatch();
   useEffect(() => {
     let checkSession = async () => {
       try {
         const res = (await checkSessionLight()) as ApiResponse;
 
         track('open-plugin');
-        dispatchOther(setStripeData(res));
+        dispatch(setStripeData(res));
       } catch (e) {
         handleError(e);
       }
     };
     checkSession();
-  }, []);
+  }, [dispatch]);
   // We can import 'react-toastify/dist/ReactToastify.minimal.css'
   // instead, but we would need to re-add animations & co to make it work.
   return (

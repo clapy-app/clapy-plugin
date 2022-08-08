@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
-import { dispatchOther } from '../../../../core/redux/redux.utils.js';
+import { useAppDispatch } from '../../../../core/redux/hooks.js';
 import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
 import { hidePaymentConfirmation } from '../../stripe-slice.js';
 import { _ButtonBase_SizeMdIconLeading } from '../_ButtonBase_SizeMdIconLeading/_ButtonBase_SizeMdIconLeading';
@@ -19,9 +19,10 @@ interface Props {
 }
 /* @figmaId 1899:113187 */
 export const Button_SizeMdHierarchyLinkGray: FC<Props> = memo(function Button_SizeMdHierarchyLinkGray(props = {}) {
+  const dispatch = useAppDispatch();
   const disableConfirmationPage = useCallbackAsync2(async () => {
-    dispatchOther(hidePaymentConfirmation());
-  }, []);
+    dispatch(hidePaymentConfirmation());
+  }, [dispatch]);
   return (
     <button onClick={disableConfirmationPage}>
       <_ButtonBase_SizeMdIconLeading

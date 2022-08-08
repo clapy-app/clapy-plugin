@@ -3,7 +3,7 @@ import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import { hideFeedback } from '../../../3-Account/stripe-slice.js';
-import { dispatchOther } from '../../../../core/redux/redux.utils.js';
+import { useAppDispatch } from '../../../../core/redux/hooks.js';
 import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
 import { ArrowLeft } from '../ArrowLeft/ArrowLeft';
 import { ArrowLeftIcon } from './ArrowLeftIcon';
@@ -21,9 +21,10 @@ interface Props {
 }
 /* @figmaId 1899:158171 */
 export const PluginPageHeadline: FC<Props> = memo(function PluginPageHeadline(props = {}) {
+  const dispatch = useAppDispatch();
   const hideFeedbackPage = useCallbackAsync2(async () => {
-    dispatchOther(hideFeedback());
-  }, []);
+    dispatch(hideFeedback());
+  }, [dispatch]);
   return (
     <div className={`${classes.root} ${props.classes?.root || ''} ${props.className || ''}`}>
       {props.text?.pageTitle != null ? props.text?.pageTitle : <div className={classes.pageTitle}>Page title</div>}

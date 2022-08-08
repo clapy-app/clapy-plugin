@@ -33,12 +33,13 @@ import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { Loading } from '../../../components-used/Loading/Loading.js';
 import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
-import { dispatchOther } from '../../../core/redux/redux.utils.js';
+import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
 import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
+import { selectSelection } from '../export-code-slice.js';
 import { downloadFile } from '../export-code-utils.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
@@ -56,9 +57,7 @@ const sendToApi = true;
 
 export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
 
-interface Props {
-  selectionPreview: string | false | undefined;
-}
+interface Props {}
 
 let defaultSettings: UserSettings = {
   // framework: 'angular',
@@ -71,7 +70,7 @@ let defaultSettings: UserSettings = {
 const userSettings = { ...defaultSettings };
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
-  const { selectionPreview } = props;
+  const selectionPreview = useSelector(selectSelection);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
@@ -81,6 +80,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   const { picture } = useSelector(selectUserMetadata);
   const isGithubEnabled = useSelector(selectGithubEnabled);
+  const dispatch = useAppDispatch();
 
   useEffect(
     () => () => {
@@ -216,9 +216,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           const { data } = await apiPost<CSBResponse>('code/export', nodes);
           if (!data.quotas) {
             const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
-            dispatchOther(setStripeData(data));
+            dispatch(setStripeData(data));
           } else {
-            dispatchOther(setStripeData(data));
+            dispatch(setStripeData(data));
           }
 
           perfMeasure(`Code generated and ${data?.sandbox_id ? 'uploaded to CSB' : 'downloaded'} in`);
@@ -256,7 +256,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       setIsLoading(false);
       setProgress(undefined);
     }
-  }, [isAlphaDTCUser, isNoCodeSandboxUser]);
+  }, [dispatch, isAlphaDTCUser, isNoCodeSandboxUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);

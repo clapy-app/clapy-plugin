@@ -6,6 +6,7 @@ import { LoginHome } from '../0-login/LoginHome/LoginHome';
 import loginHomeClasses from '../0-login/LoginHome/LoginHome.module.css';
 import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma.js';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
+import { setSelection } from '../2-export-code/export-code-slice.js';
 import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome.js';
 import { Account } from '../3-Account/Account.js';
 import { Pricing } from '../3-Account/Pricing/Pricing.js';
@@ -20,6 +21,7 @@ import {
   selectSignedIn,
   selectStripeDevTeam,
 } from '../../core/auth/auth-slice';
+import { useAppDispatch } from '../../core/redux/hooks.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage, selectIsUserLimited } from '../user/user-slice';
@@ -53,7 +55,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // hasMissingMetaProfile = false;
   let hasMissingMetaUsage = useSelector(selectHasMissingMetaUsage);
   // hasMissingMetaUsage = false;
-  const [selectionPreview, setSelectionPreview] = useState<string | false | undefined>();
   // Show selection
 
   // use this flag after the tests
@@ -61,13 +62,16 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   const isStripeDevTeam = useSelector(selectStripeDevTeam);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (_, prev) => {
-      setSelectionPreview(prev ? `data:image/jpeg;base64,${prev}` : prev);
+      const previewUrl = prev ? `data:image/jpeg;base64,${prev}` : prev;
+      dispatch(setSelection(previewUrl));
     });
     fetchPluginNoResponse('getSelectionPreview');
     return dispose;
-  }, []);
+  }, [dispatch]);
   if (authError) {
     return (
       <div className={loginHomeClasses.content}>
@@ -106,7 +110,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     <>
       <Header activeTab={activeTab} selectTab={setActiveTab} />
       <div className={classes.content}>
-        {activeTab === 0 && <FigmaToCodeHome selectionPreview={selectionPreview} />}
+        {activeTab === 0 && <FigmaToCodeHome />}
         {activeTab === 1 && <CodeToFigma />}
       </div>
     </>
