@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
 import { showFeedback } from '../../../3-Account/stripe-slice.js';
-import { dispatchOther } from '../../../../core/redux/redux.utils.js';
+import { useAppDispatch } from '../../../../core/redux/hooks.js';
 import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
 import { _ButtonBase_SizeSmIconFalse } from '../_ButtonBase_SizeSmIconFalse/_ButtonBase_SizeSmIconFalse';
 import classes from './Button_SizeSmHierarchyLinkColo.module.css';
@@ -15,9 +15,10 @@ interface Props {
 }
 /* @figmaId 1899:114353 */
 export const Button_SizeSmHierarchyLinkColo: FC<Props> = memo(function Button_SizeSmHierarchyLinkColo(props = {}) {
+  const dispatch = useAppDispatch();
   const showFeedbackPage = useCallbackAsync2(async () => {
-    dispatchOther(showFeedback());
-  }, []);
+    dispatch(showFeedback());
+  }, [dispatch]);
   return (
     <button onClick={showFeedbackPage}>
       <_ButtonBase_SizeSmIconFalse

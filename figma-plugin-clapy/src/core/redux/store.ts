@@ -5,6 +5,7 @@ import type { AnyAction } from 'redux';
 
 import { env } from '../../environment/env';
 import { importSlice } from '../../pages/1-import-sb/import-slice';
+import { exportCodeSlice } from '../../pages/2-export-code/export-code-slice.js';
 import { stripeSlice } from '../../pages/3-Account/stripe-slice';
 import { sampleApi } from '../../pages/api-sample';
 import { userSlice } from '../../pages/user/user-slice';
@@ -17,6 +18,7 @@ const reducer = {
   [importSlice.name]: importSlice.reducer,
   [userSlice.name]: userSlice.reducer,
   [stripeSlice.name]: stripeSlice.reducer,
+  [exportCodeSlice.name]: exportCodeSlice.reducer,
 };
 
 // TODO bad practice, should refactor and re-enable after it works again.

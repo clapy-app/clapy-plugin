@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { FC, ReactNode } from 'react';
 
-import { dispatchOther } from '../../../../../core/redux/redux.utils.js';
+import { useAppDispatch } from '../../../../../core/redux/hooks.js';
 import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import { hidePricing } from '../../../stripe-slice.js';
 import { _ButtonBase_SizeMdIconOnly } from '../_ButtonBase_SizeMdIconOnly/_ButtonBase_SizeMdIconOnly';
@@ -16,9 +16,10 @@ interface Props {
 }
 /* @figmaId 1899:113261 */
 export const Button_SizeMdHierarchyTertiary: FC<Props> = memo(function Button_SizeMdHierarchyTertiary(props = {}) {
+  const dispatch = useAppDispatch();
   const hidePricingPage = useCallbackAsync2(async () => {
-    dispatchOther(hidePricing());
-  }, []);
+    dispatch(hidePricing());
+  }, [dispatch]);
   return (
     <button className={classes.root} onClick={hidePricingPage}>
       <_ButtonBase_SizeMdIconOnly
