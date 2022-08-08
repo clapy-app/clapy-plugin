@@ -10,8 +10,10 @@ import { track } from './common/analytics';
 import { getDuration } from './common/general-utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
 import { checkSessionLight } from './core/auth/auth-service.js';
+import { setAuthError } from './core/auth/auth-slice.js';
 import { useAppDispatch } from './core/redux/hooks.js';
-import { handleError } from './front-utils/front-utils.js';
+import { env } from './environment/env.js';
+import { handleError, toastError } from './front-utils/front-utils.js';
 import { Layout } from './pages/Layout/Layout';
 import { setStripeData } from './pages/user/user-slice.js';
 
@@ -83,6 +85,8 @@ window.addEventListener('unload', function () {
   track('close-plugin', undefined, { durationInS });
 });
 
+let alreadyToasted = false;
+
 export const App: FC = memo(function App() {
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -94,6 +98,12 @@ export const App: FC = memo(function App() {
         dispatch(setStripeData(res));
       } catch (e) {
         handleError(e);
+        if (!env.isDev || !alreadyToasted) {
+          // In development, because of strict mode, we add a guard to ensure it toasts only once.
+          alreadyToasted = true;
+          toastError(e);
+        }
+        dispatch(setAuthError(e));
       }
     };
     checkSession();
