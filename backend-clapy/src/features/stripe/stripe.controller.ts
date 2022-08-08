@@ -85,13 +85,7 @@ export class StripeController {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
     const userId = (request as any).user.sub;
     let auth0User = await getAuth0User(userId);
-    const stripe = new Stripe(env.stripeSecretKey, {
-      apiVersion: '2020-08-27',
-      appInfo: {
-        name: 'clapy-dev/checkout',
-        version: '0.0.1',
-      },
-    });
+    const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     const { data } = await stripe.customers.search({
       query: `email:'${auth0User.email}'`,
     });
