@@ -7,6 +7,8 @@ export function handleError(error: any) {
   console.error('[handleError]', error);
 }
 
+// toastError in src/common/front-utils.tsx
+
 // AnyNode3 is generating weird typing errors below I don't understand: the guard isStyledTextSegment doesn't work anymore and the type StyledTextSegment is still there in the `else` body, resulting in errors like node.parent KO.
 // To allow using warnNode with AnyNode3, we use any instead (workaround).
 export function warnNode(

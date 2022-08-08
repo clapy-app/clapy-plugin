@@ -1,4 +1,4 @@
-import { openNewTab } from '../../common/front-utils.js';
+import { openNewTab, toastError } from '../../common/front-utils.js';
 import { apiGet } from '../../common/http.utils.js';
 import { env } from '../../environment/env.js';
 
@@ -13,5 +13,7 @@ export const openCustomerPortal = async () => {
   });
   if (data) {
     openNewTab(data);
+  } else {
+    toastError("We couldn't open your customer portal. Please contact us to resolve this issue.");
   }
 };
