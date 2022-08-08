@@ -56,6 +56,10 @@ export function backgroundFigmaToCode(context: NodeContext, node: ValidNode, sty
         }
         const imageEntry = images[fill.imageHash];
 
+        if (!imageEntry) {
+          warnNode(node, 'BUG node image fill, but image not found in extracted images:', JSON.stringify(fill));
+          continue;
+        }
         if (!imageEntry.url) {
           warnNode(node, 'BUG node image fill without URL:', JSON.stringify(fill));
           continue;
