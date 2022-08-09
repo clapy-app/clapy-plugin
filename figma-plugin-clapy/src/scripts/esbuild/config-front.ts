@@ -1,3 +1,4 @@
+import NodeModulesPolyfills from '@esbuild-plugins/node-modules-polyfill';
 import * as cssModulesPlugin from 'esbuild-css-modules-plugin';
 import { readFile, writeFile } from 'fs/promises';
 
@@ -28,9 +29,7 @@ export async function getConfigFront(context: BuildContext) {
       '.avif': 'dataurl',
     },
     plugins: [
-      // Could help for PnP, with the buffer package not found when building:
-      // import NodeModulesPolyfills from '@esbuild-plugins/node-modules-polyfill';
-      // NodeModulesPolyfills(),
+      NodeModulesPolyfills(),
       cssModulesPlugin({
         inject: true,
         localsConvention: 'camelCase',

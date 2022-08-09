@@ -14,7 +14,11 @@
     "*.webp",
     "*.zip"
   ],
+  "_installConfig": {
+    "pnp": true
+  },
   "scripts": {
+    "a": "ts-node src/foo.ts",
     "start": "NODE_ENV=development APP_ENV=development ts-node src/scripts/esbuild/serve.ts",
     "start0": "yarn webpackdev",
     "dev": "npm-run-all --parallel dev-with-browser:plugin dev-with-browser:browser dev-with-browser:server",
@@ -58,8 +62,10 @@
     "fast-deep-equal": "^3.1.3",
     "graphql": "^16.5.0",
     "graphql-ws": "^5.10.0",
+    "immer": "^9.0.15",
     "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.10.12",
+    "lottie-react": "^2.3.1",
     "magic-bytes.js": "^1.0.12",
     "prismjs": "^1.28.0",
     "react": "18.2.0",
@@ -74,6 +80,7 @@
     "wonka": "^6.0.0"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "@figma/plugin-typings": "^1.50.0",
     "@trivago/prettier-plugin-sort-imports": "^3.3.0",
     "@types/node": "^16.11.48",

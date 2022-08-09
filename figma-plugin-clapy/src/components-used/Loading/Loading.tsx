@@ -1,11 +1,10 @@
 import type { FC } from 'react';
 import { memo } from 'react';
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
+import Lottie from 'lottie-react';
 
 import animationData from '../../lotties/loading.json';
 
-const defaultOptions: Options = {
+const defaultOptions: any /* LottieOptions */ = {
   loop: true,
   autoplay: true,
   animationData: animationData,
@@ -20,7 +19,11 @@ interface Props {
 export const Loading: FC<Props> = memo(function Loading(props) {
   return (
     <Lottie
-      options={defaultOptions}
+      // loop={true}
+      // autoplay={true}
+      // animationData={animationData}
+      // rendererSettings={true}
+      {...defaultOptions}
       height={props.height || 56}
       width={props.width || 28}
       isClickToPauseDisabled={true}

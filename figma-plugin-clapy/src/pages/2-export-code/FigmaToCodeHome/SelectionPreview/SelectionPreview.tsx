@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { memo } from 'react';
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
+import Lottie from 'lottie-react';
 
 import { extractionStepsLabels, extractionStepsTotal } from '../../../../common/app-config.js';
 import type { ExtractionProgress } from '../../../../common/app-models.js';
@@ -17,7 +16,7 @@ interface Props {
 }
 
 function lottieOptions(animationData: any) {
-  const defaultOptions: Options = {
+  const defaultOptions: any /* LottieOptions */ = {
     loop: false,
     autoplay: true,
     animationData: animationData,
@@ -36,7 +35,7 @@ export const SelectionPreview: FC<Props> = memo(function SelectionPreview(props)
   if (state === 'loading' || state === 'generated') {
     return (
       <div className={classes.rootLoading}>
-        <Lottie options={state === 'loading' ? loadingOptions : successOptions} height={160} width={160} />
+        <Lottie {...(state === 'loading' ? loadingOptions : successOptions)} height={160} width={160} />
         {progress && (
           <div className={classes.loadingWrapper}>
             <div className={classes.loadingText}>

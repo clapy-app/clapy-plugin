@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import type { FC } from 'react';
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
+import Lottie from 'lottie-react';
 
 import successLottie from '../../../lotties/gen-code-success.json';
 import { ArrowLeft } from './ArrowLeft/ArrowLeft';
@@ -14,7 +13,7 @@ interface Props {
 }
 
 function lottieOptions(animationData: any) {
-  const defaultOptions: Options = {
+  const defaultOptions: any /* LottieOptions */ = {
     loop: false,
     autoplay: true,
     animationData: animationData,
@@ -47,7 +46,7 @@ export const PaymentConfirmation: FC<Props> = memo(function PaymentConfirmation(
           }}
         />
         <div className={classes.content2}>
-          <Lottie options={successOptions} height={160} width={160} />
+          <Lottie {...successOptions} height={160} width={160} />
           <div className={classes.previewTitleBlock}>
             <div className={classes.thankYouForUpgrading}>Thank you for upgrading!</div>
           </div>

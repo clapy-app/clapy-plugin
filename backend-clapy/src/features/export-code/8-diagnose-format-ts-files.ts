@@ -1,8 +1,12 @@
 import prettierFormatPlugin from '@trivago/prettier-plugin-sort-imports';
 import { readFile } from 'fs/promises';
+// @ts-ignore
 import parserHtml from 'prettier/parser-html.js';
+// @ts-ignore
 import parserCss from 'prettier/parser-postcss.js';
+// @ts-ignore
 import parserTypeScript from 'prettier/parser-typescript.js';
+// @ts-ignore
 import prettier from 'prettier/standalone.js';
 
 import { flags } from '../../env-and-config/app-config.js';

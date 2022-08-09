@@ -27,13 +27,11 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     // "strictBindCallApply": false,
-    "outDir": "./dist",
+    "outDir": "./dist"
     // "baseUrl": "./",
   },
   "ts-node": {
     "esm": true
   },
-  "include": [
-    "src",
-  ]
+  "include": ["src"]
 }

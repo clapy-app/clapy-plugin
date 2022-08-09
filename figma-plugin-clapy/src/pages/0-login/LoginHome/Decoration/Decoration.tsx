@@ -1,10 +1,8 @@
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
-
+import Lottie from 'lottie-react';
 import animationData from '../../../../lotties/login-home.json';
 import classes from './Decoration.module.css';
 
-const defaultOptions: Options = {
+const defaultOptions: any /* LottieOptions */ = {
   loop: true,
   autoplay: true,
   animationData: animationData,
@@ -16,7 +14,7 @@ const defaultOptions: Options = {
 export function Decoration() {
   return (
     <div className={classes.frame631}>
-      <Lottie options={defaultOptions} height={144} width={144} />
+      <Lottie {...defaultOptions} height={144} width={144} />
     </div>
   );
 }

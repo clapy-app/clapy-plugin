@@ -30,9 +30,8 @@
 .image2.image2 {
   width: 175.4639px;
   height: 126.334px;
-  background-image:
-    /* webpackIgnore: true */
-    url('assets/image22.jpeg');
+  /* background-image:
+    url('assets/image22.jpeg'); */
 }
 
 .pluginFooter.pluginFooter {
