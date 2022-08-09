@@ -5,7 +5,7 @@ import { env } from '../../env-and-config/env.js';
 import type { ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-import { isLimitedUser } from '../user/user.utils.js';
+import { hasRoleIsStripeDevTeam, isLimitedUser } from '../user/user.utils.js';
 import { exportCode } from './2-create-ts-compiler.js';
 
 @Controller('code')
@@ -17,7 +17,7 @@ export class CodeController {
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
     //use limitedUser after the tests
     const limitedUser = isLimitedUser(user);
-    const isStripeDevTeam = isLimitedUser(user);
+    const isStripeDevTeam = hasRoleIsStripeDevTeam(user);
 
     if (env.isDev || isStripeDevTeam) {
       await this.userService.checkUserOrThrow(user);
