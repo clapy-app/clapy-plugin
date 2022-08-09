@@ -1,4 +1,4 @@
-:where(.clapyResets), :where(.clapyResets) * {
+.clapyResets, .clapyResets * {
   display: flex;
   box-sizing: border-box;
   margin: 0;
