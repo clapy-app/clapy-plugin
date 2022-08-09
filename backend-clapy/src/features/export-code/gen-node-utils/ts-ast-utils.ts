@@ -5,7 +5,7 @@ import ts from 'typescript';
 import { flags } from '../../../env-and-config/app-config.js';
 import { env } from '../../../env-and-config/env.js';
 import { warnOrThrow } from '../../../utils.js';
-import type { SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type { ExtraConfig, SceneNodeNoMethod } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
   CompContext,
@@ -148,18 +148,18 @@ export function checkIsOriginalInstance(node: SceneNode2, nextNode: SceneNode2 |
   return !nodeIsInstance || !nextNodeIsInstance || node.mainComponent!.id === nextNode.mainComponent!.id; // = not swapped in Figma
 }
 
-export function createClassAttrForNode(node: SceneNode2, className?: string) {
+export function createClassAttrForNode(node: SceneNode2, extraConfig: ExtraConfig, className?: string) {
   const className2 = className || node.className;
   const overrideEntry: BaseStyleOverride = {
     overrideValue: className2,
     propValue: node.classOverride ? node.className : undefined,
   };
-  return mkClassAttr2(overrideEntry);
+  return mkClassAttr2(overrideEntry, extraConfig);
 }
 
-export function createClassAttrForClassNoOverride(className: string | undefined) {
+export function createClassAttrForClassNoOverride(className: string | undefined, extraConfig: ExtraConfig) {
   const overrideEntry: BaseStyleOverride = { overrideValue: className };
-  return mkClassAttr2(overrideEntry);
+  return mkClassAttr2(overrideEntry, extraConfig);
 }
 
 // AST generation functions
@@ -641,9 +641,10 @@ export function mkWrapHideAndTextOverrideAst<T extends boolean>(
 
 export function mkClassAttr2<T extends BaseStyleOverride | undefined>(
   overrideEntry: T,
+  extraConfig: ExtraConfig,
 ): T extends BaseStyleOverride ? ts.JsxAttribute : undefined {
   if (!overrideEntry) return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
-  const classExpr = mkClassExpression(overrideEntry);
+  const classExpr = mkClassExpression(overrideEntry, extraConfig);
   if (!classExpr) {
     return undefined as T extends BaseStyleOverride ? ts.JsxAttribute : undefined;
   }
@@ -664,7 +665,7 @@ export function mkClassAttr3(className: string) {
   );
 }
 
-function mkClassExpression(overrideEntry: BaseStyleOverride) {
+function mkClassExpression(overrideEntry: BaseStyleOverride, extraConfig: ExtraConfig) {
   const { overrideValue, propValue } = overrideEntry;
   if (!overrideValue && !propValue) {
     throw new Error(
@@ -674,60 +675,68 @@ function mkClassExpression(overrideEntry: BaseStyleOverride) {
     );
   }
   const isRoot = overrideValue === 'root' || propValue === 'root';
-  const readFromPropTemplateSpans: ts.TemplateSpan[] = [];
-  if (propValue) {
-    readFromPropTemplateSpans.push(
-      factory.createTemplateSpan(
-        factory.createBinaryExpression(
-          factory.createPropertyAccessChain(
-            factory.createPropertyAccessExpression(
-              factory.createIdentifier('props'),
-              factory.createIdentifier('classes'),
-            ),
-            factory.createToken(ts.SyntaxKind.QuestionDotToken),
-            factory.createIdentifier(propValue),
-          ),
-          factory.createToken(ts.SyntaxKind.BarBarToken),
-          factory.createStringLiteral(''),
-        ),
-        isRoot ? factory.createTemplateMiddle(' ', ' ') : factory.createTemplateTail('', ''),
+  const exprFragments: (ts.BinaryExpression | ts.PropertyAccessExpression)[] = [];
+
+  if (isRoot && !extraConfig.globalResets) {
+    exprFragments.push(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('resets'),
+        factory.createIdentifier('clapyResets'),
       ),
     );
+  }
+
+  if (propValue) {
+    const propClassesExpr = factory.createBinaryExpression(
+      factory.createPropertyAccessChain(
+        factory.createPropertyAccessExpression(factory.createIdentifier('props'), factory.createIdentifier('classes')),
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier(propValue),
+      ),
+      factory.createToken(ts.SyntaxKind.BarBarToken),
+      factory.createStringLiteral(''),
+    );
+    exprFragments.push(propClassesExpr);
     if (isRoot) {
-      readFromPropTemplateSpans.push(
-        factory.createTemplateSpan(
-          factory.createBinaryExpression(
-            factory.createPropertyAccessExpression(
-              factory.createIdentifier('props'),
-              factory.createIdentifier('className'),
-            ),
-            factory.createToken(ts.SyntaxKind.BarBarToken),
-            factory.createStringLiteral(''),
-          ),
-          factory.createTemplateTail('', ''),
+      const propClassNameExpr = factory.createBinaryExpression(
+        factory.createPropertyAccessExpression(
+          factory.createIdentifier('props'),
+          factory.createIdentifier('className'),
         ),
+        factory.createToken(ts.SyntaxKind.BarBarToken),
+        factory.createStringLiteral(''),
       );
+      exprFragments.push(propClassNameExpr);
     }
   }
 
-  const readFromClasses = !overrideValue
-    ? undefined
-    : factory.createPropertyAccessExpression(
+  if (overrideValue) {
+    exprFragments.push(
+      factory.createPropertyAccessExpression(
         factory.createIdentifier('classes'),
         factory.createIdentifier(overrideValue),
-      );
+      ),
+    );
+  }
 
-  return !overrideValue
-    ? factory.createTemplateExpression(factory.createTemplateHead('', ''), readFromPropTemplateSpans!)
-    : !propValue
-    ? readFromClasses!
-    : factory.createTemplateExpression(factory.createTemplateHead('', ''), [
-        factory.createTemplateSpan(readFromClasses!, factory.createTemplateMiddle(' ', ' ')),
-        ...(!readFromPropTemplateSpans ? [] : readFromPropTemplateSpans),
-      ]);
+  const nbExpr = exprFragments.length;
+  if (nbExpr === 0) return undefined;
+  if (nbExpr === 1) return exprFragments[0];
+  return factory.createTemplateExpression(
+    factory.createTemplateHead('', ''),
+    exprFragments.map((expr, i) =>
+      factory.createTemplateSpan(
+        expr,
+        i !== nbExpr - 1 ? factory.createTemplateMiddle(' ', ' ') : factory.createTemplateTail('', ''),
+      ),
+    ),
+  );
 }
 
 export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOverrides: StyleOverride[]) {
+  const {
+    projectContext: { extraConfig },
+  } = moduleContext;
   const entries = Object.values(otherClassOverrides);
   if (!entries.length) return undefined;
   try {
@@ -738,7 +747,7 @@ export function mkClassesAttribute2(moduleContext: ModuleContext, otherClassOver
         factory.createObjectLiteralExpression(
           entries.map(styleOverride => {
             const { propName } = styleOverride;
-            const classExpr = mkClassExpression(styleOverride);
+            const classExpr = mkClassExpression(styleOverride, extraConfig);
             if (!classExpr) {
               throw new Error('[mkClassesAttribute] Failed to generate classExpr, see logs.');
             }

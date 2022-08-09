@@ -19,7 +19,7 @@ export function getCSSExtension(extraConfig: ExtraConfig) {
 }
 
 export function updateFilesAndContentForScss(extraConfig: ExtraConfig, projectContext: ProjectContext) {
-  const { tsFiles, cssFiles, resources, fwConnector } = projectContext;
+  const { tsFiles, cssFiles, resources } = projectContext;
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);
@@ -59,4 +59,10 @@ function replaceScssReferences(tsFiles: CodeDict, cssFiles: CodeDict, resources:
       }
     }
   }
+}
+
+export function getCssResetsPath(extraConfig: ExtraConfig, postExtensionChange = true) {
+  if (!postExtensionChange) return `src/resets.css`;
+  const cssExt = getCSSExtension(extraConfig);
+  return `src/resets.${cssExt}`;
 }

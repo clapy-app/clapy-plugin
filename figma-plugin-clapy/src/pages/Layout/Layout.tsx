@@ -17,9 +17,9 @@ import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-util
 import { Loading } from '../../components-used/Loading/Loading.js';
 import {
   selectAuthError,
+  selectIsStripeEnabled,
   selectSessionChecking,
   selectSignedIn,
-  selectStripeDevTeam,
 } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
@@ -59,7 +59,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   // use this flag after the tests
   const isUserLimited = useSelector(selectIsUserLimited);
-  const isStripeDevTeam = useSelector(selectStripeDevTeam);
+  const isStripeDevTeam = useSelector(selectIsStripeEnabled);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
   const dispatch = useAppDispatch();

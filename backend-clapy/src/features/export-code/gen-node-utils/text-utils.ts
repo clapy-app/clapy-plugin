@@ -84,7 +84,7 @@ export function genTextAst(node: TextNode2) {
   if (!context) throw new Error(`[genTextAst] node ${node.name} has no nodeContext`);
   if (!styles) throw new Error(`[genTextAst] node ${node.name} has no styles`);
   const { moduleContext } = context;
-  const { fwConnector } = moduleContext.projectContext;
+  const { fwConnector, extraConfig } = moduleContext.projectContext;
   const textSegments: TextSegment2[] | undefined = node._textSegments;
   const segmentsStyles = node._segmentsStyles;
   if (!textSegments?.length) return;
@@ -111,7 +111,7 @@ export function genTextAst(node: TextNode2) {
       const className = getOrGenClassName(moduleContext, node);
       htmlClass = mkHtmlFullClass(context, className, htmlClass);
       addCssRule(context, className, styleDeclarations, node);
-      attributes.push(fwConnector.createClassAttribute(node, htmlClass));
+      attributes.push(fwConnector.createClassAttribute(node, extraConfig, htmlClass));
     }
     textBlockStyleAttributes = attributes;
   }
@@ -141,7 +141,7 @@ export function genTextAst(node: TextNode2) {
         const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
         htmlClass = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node);
-        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass, extraConfig));
       }
     }
     if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
@@ -163,7 +163,7 @@ export function genTextAst(node: TextNode2) {
         const className = getOrGenClassName(moduleContext);
         let htmlClass2 = mkHtmlFullClass(context, className, htmlClass);
         addCssRule(context, className, styleDeclarations, node, true);
-        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2));
+        attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
       }
       let useAnchor = false;
       if (segment.hyperlink) {

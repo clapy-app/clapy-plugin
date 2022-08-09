@@ -1,3 +1,7 @@
+## Setup
+
+In a terminal, run `git config --global core.editor "code --wait"`. It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
+
 ## Usage
 
 - `yarn install:all` to install dependencies in root and subprojects

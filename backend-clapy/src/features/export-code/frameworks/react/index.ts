@@ -3,9 +3,9 @@ import type { JsxChild, Statement } from 'typescript';
 import ts from 'typescript';
 
 import { writeSVGReactComponents } from '../../7-write-svgr.js';
-import { isNonEmptyObject } from '../../../../common/general-utils.js';
+import { countOccurences, isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
-import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { Dict, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
   CompAst,
@@ -19,6 +19,7 @@ import type {
 } from '../../code.model.js';
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
+import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
@@ -76,6 +77,13 @@ export const reactConnector: FrameworkConnector = {
   addScssPackages: (newDevDependencies: Dict<string>) => {
     Object.assign(newDevDependencies, scssDevDependencies);
   },
+  patchCssResets: projectContext => {
+    const { cssFiles, extraConfig } = projectContext;
+    // In React, keep the CSS module file for component-level resets, delete if global resets
+    if (extraConfig.globalResets) {
+      delete cssFiles[resetsCssModulePath];
+    }
+  },
   registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
@@ -93,7 +101,7 @@ export const reactConnector: FrameworkConnector = {
     mkTag(tagName, attributes as ts.JsxAttribute[], (Array.isArray(node) ? node : [node]) as ts.JsxChild[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, compName, imports } = moduleContext;
-    const { cssFiles } = projectContext;
+    const { cssFiles, extraConfig } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -105,13 +113,15 @@ export const reactConnector: FrameworkConnector = {
       >,
     );
 
+    const cssExt = getCSSExtension(extraConfig);
     if (isNonEmptyObject(css.children)) {
-      const cssExt = getCSSExtension(projectContext.extraConfig);
       const cssFileName = `${compName}.module.${cssExt}`;
       cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
       const cssModuleModuleSpecifier = `./${cssFileName}`;
       imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
     }
+
+    addCssResetsModuleImport(moduleContext);
 
     printFileInProject(moduleContext);
   },
@@ -121,16 +131,17 @@ export const reactConnector: FrameworkConnector = {
   addExtraSvgAttributes: () => {},
   writeRootCompFileCode(appModuleContext, compAst, appCssPath, parent) {
     const { statements, projectContext } = appModuleContext;
+    const { extraConfig } = projectContext;
 
     addMUIProvidersImports(appModuleContext);
 
     // The component import is added inside genComponent itself (with a TODO to refactor)
 
-    let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(compAst as CompAst | undefined);
+    let appTsx: ts.JsxElement | ts.JsxFragment = mkAppCompTsx(compAst as CompAst | undefined, extraConfig);
     appTsx = addMUIProviders(appModuleContext, appTsx);
 
     let prefixStatements: Statement[] | undefined = undefined;
-    if (appModuleContext.projectContext.extraConfig.isFTD) {
+    if (extraConfig.isFTD) {
       // Add demo patch
       const themeDefaultValue = 'Brand-A-Lightmode';
       const themeValues = {
@@ -149,6 +160,8 @@ export const reactConnector: FrameworkConnector = {
     }
 
     createModuleCode(appModuleContext, appTsx, prefixStatements, true);
+
+    addCssResetsModuleImport(appModuleContext);
 
     printFileInProject(appModuleContext);
 
@@ -243,6 +256,9 @@ function genInstanceLikeAst(node: SceneNode2, extraAttributes: ts.JsxAttribute[]
 
 export function createComponentUsageWithAttributes(compContext: CompContext, componentModuleContext: ModuleContext) {
   const { instanceSwaps, instanceHidings, instanceStyleOverrides, instanceTextOverrides } = compContext;
+  const {
+    projectContext: { extraConfig },
+  } = componentModuleContext;
 
   const attrs = [];
 
@@ -260,7 +276,7 @@ export function createComponentUsageWithAttributes(compContext: CompContext, com
   //   warnNode(node, 'No root class found in instanceClasses.');
   // }
 
-  const classAttr = mkClassAttr2(rootClassOverride);
+  const classAttr = mkClassAttr2(rootClassOverride, extraConfig);
   if (classAttr) attrs.push(classAttr);
 
   const classesAttr = mkClassesAttribute2(componentModuleContext, otherClassOverrides);
@@ -286,7 +302,7 @@ function mkComponentUsage(compName: string, extraAttributes?: ts.JsxAttribute[])
   );
 }
 
-function mkAppCompTsx(compAst: CompAst | undefined) {
+function mkAppCompTsx(compAst: CompAst | undefined, extraConfig: ExtraConfig) {
   const overrideNode: BaseStyleOverride = {
     overrideValue: 'root',
   };
@@ -294,7 +310,7 @@ function mkAppCompTsx(compAst: CompAst | undefined) {
     factory.createJsxOpeningElement(
       factory.createIdentifier('div'),
       undefined,
-      factory.createJsxAttributes([mkClassAttr2(overrideNode)]),
+      factory.createJsxAttributes([mkClassAttr2(overrideNode, extraConfig)]),
     ),
     compAst ? [compAst] : [],
     factory.createJsxClosingElement(factory.createIdentifier('div')),
@@ -429,4 +445,19 @@ function mkSwitchThemeHandler() {
       ts.NodeFlags.Const,
     ),
   );
+}
+
+function addCssResetsModuleImport(moduleContext: ModuleContext) {
+  const { projectContext, compDir, imports } = moduleContext;
+  const { extraConfig } = projectContext;
+  if (!extraConfig.globalResets) {
+    const cssExt = getCSSExtension(extraConfig);
+    const cssResetsFileName = `resets.module.${cssExt}`;
+    // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
+    const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
+    // Generate the '../../'...
+    const moduleSpecPrefix = new Array(nbOfCdToParent).fill('../').join('');
+    const cssResetsModuleSpecifier = `${moduleSpecPrefix || './'}${cssResetsFileName}`;
+    imports[cssResetsModuleSpecifier] = mkDefaultImportDeclaration('resets', cssResetsModuleSpecifier);
+  }
 }

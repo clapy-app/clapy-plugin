@@ -7,6 +7,7 @@ import { exportTemplatesDir } from '../../../../root.js';
 import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
 import {
@@ -17,7 +18,7 @@ import {
 } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
-import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
+import { getCSSExtension, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
@@ -48,8 +49,13 @@ export const angularConnector: FrameworkConnector = {
   assetsCssBaseUrl: '/assets/',
   webpackIgnoreInCSS: false,
   addScssPackages: () => {},
+  patchCssResets: projectContext => {
+    const { cssFiles } = projectContext;
+    // In Angular, always delete the CSS module file.
+    delete cssFiles[resetsCssModulePath];
+  },
   registerSvgForWrite,
-  createClassAttribute(node, className) {
+  createClassAttribute(node, extraConfig, className) {
     const className2 = className || node.className!;
     return mkHtmlAttribute('class', className2);
   },
@@ -143,8 +149,7 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     proj.architect.test.options.inlineStyleLanguage = 'scss';
   }
 
-  const cssExt = getCSSExtension(extraConfig);
-  const resetsCssPath = `src/resets.${cssExt}`;
+  const resetsCssPath = getCssResetsPath(extraConfig);
   const stylesCssPath = getStylesCssPath(projectContext);
   proj.architect.build.options.styles.push(resetsCssPath);
   proj.architect.test.options.styles.push(resetsCssPath);

@@ -230,7 +230,7 @@ export function genNodeAst(node: SceneNode2) {
     if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
     const { moduleContext, isRootInComponent, parentIsRootInComponent } = context;
     const { projectContext } = moduleContext;
-    const { fwConnector } = projectContext;
+    const { fwConnector, extraConfig } = projectContext;
     if (extraAttributes?.length) context.hasExtraAttributes = true;
 
     // Skip code gen for node in special cases like groups and masks
@@ -295,7 +295,7 @@ export function genNodeAst(node: SceneNode2) {
 
       if (hasStyles) {
         updateCssRule(context, cssRule, className!, parentRule, styleDeclarations);
-        attributes.push(fwConnector.createClassAttribute(node, node.htmlClass!));
+        attributes.push(fwConnector.createClassAttribute(node, extraConfig, node.htmlClass!));
         if (context.firstChildIsPlaceholder) {
           genInputPlaceholderStyles(context, (node as ChildrenMixin2).children[0] as TextNode2);
         }

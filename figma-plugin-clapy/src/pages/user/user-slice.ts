@@ -2,7 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
-import { selectStripeDevTeam } from '../../core/auth/auth-slice.js';
+import { selectIsStripeEnabled } from '../../core/auth/auth-slice.js';
 import type { RootState } from '../../core/redux/store';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
@@ -74,7 +74,7 @@ export const selectUserMetadata = (state: RootState) => state.user.userMetadata 
 export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadata as UserMetadata)?.usage;
 
 export const selectIsUserMaxQuotaReached = createSelector(
-  selectStripeDevTeam,
+  selectIsStripeEnabled,
   selectUserMetadata,
   (isStripeDevTeam, userMetadata) => {
     if (!isStripeDevTeam) return false;

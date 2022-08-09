@@ -14,7 +14,7 @@ export async function readTemplateFiles(directory: string, base = '', files: Cod
     if ((await stat(path)).isDirectory()) {
       await readTemplateFiles(path, `${base}${fileOrDir}/`, files);
     } else {
-      let content = await readFile(path, { encoding: 'utf-8' });
+      let content = await readTemplateFile(path);
       // if (fileOrDir.endsWith('.json')) {
       //   content = JSON.parse(content);
       // }
@@ -22,4 +22,8 @@ export async function readTemplateFiles(directory: string, base = '', files: Cod
     }
   }
   return files;
+}
+
+export async function readTemplateFile(path: string) {
+  return readFile(path, { encoding: 'utf-8' });
 }

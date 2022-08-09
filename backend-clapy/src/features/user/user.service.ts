@@ -64,7 +64,7 @@ export class UserService {
     return +count;
   }
 
-  checkUserOrThrow = async (user: AccessTokenDecoded) => {
+  async checkUserOrThrow(user: AccessTokenDecoded) {
     const userId = user.sub;
 
     const isLicenceInactive = this.stripeService.isLicenceInactive(user);
@@ -78,7 +78,7 @@ export class UserService {
         'Your free code generation quota is used. Please contact us for an increased quota or to upgrade.',
       );
     }
-  };
+  }
 
   saveInHistoryUserCodeGeneration = async (
     genType: 'csb' | 'zip' | undefined,
