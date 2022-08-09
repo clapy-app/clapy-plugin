@@ -76,7 +76,7 @@ export function createSvgClassAttribute(context: NodeContext, node: ValidNode) {
 export function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const { moduleContext } = context;
   const {
-    projectContext: { fwConnector },
+    projectContext: { fwConnector, extraConfig },
   } = moduleContext;
   const styleDeclarations = stylesToList(styles);
   let attributes: FwAttr[] = [];
@@ -85,7 +85,7 @@ export function addNodeStyles(context: NodeContext, node: ValidNode, styles: Dic
     addCssRule(context, className, styleDeclarations, node);
     const htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
     node.htmlClass = htmlClass;
-    attributes.push(fwConnector.createClassAttribute(node, htmlClass));
+    attributes.push(fwConnector.createClassAttribute(node, extraConfig, htmlClass));
   }
   return attributes;
 }

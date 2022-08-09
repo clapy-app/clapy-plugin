@@ -15,15 +15,7 @@ body,
 
 /* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
 body > div * {
-  display: flex;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  background: none;
-  border: none;
-  flex-shrink: 0;
-  text-decoration: none;
-  min-width: 0;
+  /* $RESETS */
 }
 
 body button:not(:disabled) {

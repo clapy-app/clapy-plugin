@@ -2,6 +2,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import type { User } from 'auth0';
 import { ManagementClient } from 'auth0';
 
+import type { Nil } from '../../common/general-utils.js';
 import { env } from '../../env-and-config/env.js';
 
 const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
@@ -142,6 +143,15 @@ export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('noCodesandbox');
 export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
-export const hasRoleIsStripeDevTeam = (user: AccessTokenDecoded) =>
-  user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
-export const isLimitedUser = (user: AccessTokenDecoded) => user?.['https://clapy.co/limited-user'];
+
+// TODO edit here and in src/core/auth/auth-slice.ts
+// Next step: substitute isStripeDevTeam with isNewUserTmp
+export const isStripeEnabled = (user: AccessTokenDecoded) => isStripeDevTeam(user);
+
+function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
+}
+
+function isNewUserTmp(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/limited-user'];
+}

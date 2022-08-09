@@ -33,10 +33,11 @@ export interface FrameworkConnector {
   assetsCssBaseUrl: string;
   webpackIgnoreInCSS: boolean;
   addScssPackages: (newDevDependencies: Dict<string>) => void;
+  patchCssResets: (projectContext: ProjectContext) => void;
   registerSvgForWrite: (context: NodeContext, svgContent: string) => string;
-  createClassAttribute: (node: SceneNode2, className: string) => FwAttr;
+  createClassAttribute: (node: SceneNode2, extraConfig: ExtraConfig, className: string) => FwAttr;
   createClassAttributeSimple: (className: string) => FwAttr;
-  createClassAttrForClassNoOverride: (className: string) => FwAttr;
+  createClassAttrForClassNoOverride: (className: string, extraConfig: ExtraConfig) => FwAttr;
   mkSelector(context: NodeContext, className: string): Raw | ClassSelector;
   createNodeTag: (
     context: NodeContext,

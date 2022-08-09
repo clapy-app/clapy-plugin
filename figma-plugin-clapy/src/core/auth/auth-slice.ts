@@ -73,7 +73,17 @@ export const selectUserLicenceExpirationDate = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];
 export const selectGithubEnabled = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
-export const selectStripeDevTeam = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('stripeDevTeam');
 export const selectDevTools = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
+
+// TODO edit here and in src/features/user/user.utils.ts
+// Next step: substitute isStripeDevTeam with isNewUserTmp
+export const selectIsStripeEnabled = (state: RootState) => isStripeDevTeam(state.auth.tokenDecoded);
+
+function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
+}
+
+function isNewUserTmp(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/limited-user'];
+}
