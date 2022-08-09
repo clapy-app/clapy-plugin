@@ -86,7 +86,7 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
-    const { cssFiles } = projectContext;
+    const { cssFiles, cssResetRules } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -94,14 +94,15 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
+    let cssStr = `:host, * { ${cssResetRules} }`;
+
     const hasCss = isNonEmptyObject(css.children);
     if (hasCss) {
-      const cssExt = getCSSExtension(projectContext.extraConfig);
-      const cssFileName = `${baseCompName}.component.${cssExt}`;
-      cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
-      // const cssModuleModuleSpecifier = `./${cssFileName}`;
-      // imports[cssModuleModuleSpecifier] = mkDefaultImportDeclaration('classes', cssModuleModuleSpecifier);
+      cssStr += `\n${cssAstToString(css)}`;
     }
+    const cssExt = getCSSExtension(projectContext.extraConfig);
+    const cssFileName = `${baseCompName}.component.${cssExt}`;
+    cssFiles[`${compDir}/${cssFileName}`] = cssStr;
 
     printFileInProject(moduleContext, undefined, hasCss);
   },
@@ -218,3 +219,37 @@ function getStylesCssPath(projectContext: ProjectContext) {
   const cssExt = getCSSExtension(extraConfig);
   return `src/styles.${cssExt}`;
 }
+
+// function mergeHostWithResetRules(css: StyleSheetPlain, cssResetStr: string) {
+//   let hostRule = css.children.find(child => {
+//     if (child.type !== 'Rule') return false;
+//     const { prelude } = child;
+//     if (prelude.type !== 'SelectorList' || prelude.children.length !== 1) return false;
+//     const sel = prelude.children[0];
+//     if (sel.type !== 'Selector' || sel.children.length !== 1) return false;
+//     const style = sel.children[0];
+//     return style.type === 'Raw' && style.value === ':host';
+//   }) as RulePlain | undefined;
+//   if (!hostRule) {
+//     hostRule = mkRuleCss(mkRawCss(':host'), mkBlockCss([]));
+//     css.children.unshift(hostRule);
+//   }
+//   // After slightly complex navigation in CSS AST, we have extracted the list of style declarations for :host
+//   const hostDeclarations = hostRule.block.children as DeclarationPlain[];
+//   // We index them to check later the rules already defined in the component
+//   const stylesHost = listToStyles(hostDeclarations);
+//
+//   // We read the CSS rules, parsed as AST, to merge.
+//   // Optimization: calculate only once per project, or even globally. The CSS reset rules are always the same.
+//   const cssResetStylesheet = csstree.toPlainObject(csstree.parse(cssResetStr));
+//   const styleDeclReset = ((cssResetStylesheet as StyleSheetPlain).children[0] as RulePlain).block
+//     .children as DeclarationPlain[];
+//
+//   // Then we merge. We preseve only the reset rules that are not already defined in the component :host.
+//   const hostMergedDeclarations: DeclarationPlain[] = [
+//     ...styleDeclReset.filter(decl => !stylesHost[decl.property]),
+//     ...hostDeclarations,
+//   ];
+//
+//   hostRule.block.children = hostMergedDeclarations;
+// }

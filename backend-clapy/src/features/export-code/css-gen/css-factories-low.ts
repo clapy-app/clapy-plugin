@@ -39,7 +39,7 @@ export function mkStylesheetCss(children: CssRootNode[]) {
   return stylesheet;
 }
 
-export function mkRuleCss(selectorList: SelectorListPlain, block: BlockPlain) {
+export function mkRuleCss(selectorList: SelectorListPlain | Raw, block: BlockPlain) {
   const rule: RulePlain = {
     type: 'Rule',
     prelude: selectorList,
