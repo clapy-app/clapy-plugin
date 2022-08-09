@@ -38,11 +38,6 @@
     // "experimentalDecorators": true,
     // "emitDecoratorMetadata": true,
     "sourceMap": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/@figma",
-      "./src/typings",
-    ],
     "strict": true,
     "strictNullChecks": true,
     "noUnusedLocals": false,

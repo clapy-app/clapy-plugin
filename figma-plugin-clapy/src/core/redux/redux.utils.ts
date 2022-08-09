@@ -1,5 +1,4 @@
-import type { AnyAction } from '@reduxjs/toolkit';
-import type { Selector } from 'reselect';
+import type { AnyAction, Selector } from '@reduxjs/toolkit';
 
 import type { RootState } from './store';
 import { getStore } from './storeIsolated';

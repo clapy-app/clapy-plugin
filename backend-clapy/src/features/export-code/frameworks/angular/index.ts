@@ -174,6 +174,11 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     angularJson.cli.analytics = false;
   }
 
+  if (extraConfig.output !== 'csb') {
+    // Legacy config that is required on CodeSandbox.
+    delete angularJson.defaultProject;
+  }
+
   resources['angular.json'] = JSON.stringify(angularJson, null, 2);
 }
 

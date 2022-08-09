@@ -1,7 +1,6 @@
-import type { ThunkAction } from '@reduxjs/toolkit';
+import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { configureStore } from '@reduxjs/toolkit';
 import { enableMapSet, setAutoFreeze } from 'immer';
-import type { AnyAction } from 'redux';
 
 import { env } from '../../environment/env';
 import { importSlice } from '../../pages/1-import-sb/import-slice';

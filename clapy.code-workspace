@@ -1,53 +1,124 @@
 {
   "folders": [
-	{
-		"name": "ROOT",
-		"path": "."
-	},
-	{
-		"name": "backend-clapy",
-		"path": "backend-clapy"
-	},
-	{
-		"name": "figma-plugin-clapy",
-		"path": "figma-plugin-clapy"
-	}
-],
+    {
+      "name": "ROOT",
+      "path": "."
+    },
+    {
+      "name": "backend-clapy",
+      "path": "backend-clapy"
+    },
+    {
+      "name": "figma-plugin-clapy",
+      "path": "figma-plugin-clapy"
+    }
+  ],
   "settings": {
+    // Project-specific settings
+    "search.exclude": {
+      "**/build*": true,
+      "**/dist*": true,
+      "**/old": true,
+      "**/.yarn": true,
+      "**/.pnp.*": true
+    },
     "files.exclude": {
+      "**/.yarn": true,
       "backend-clapy/": true,
       "figma-plugin-clapy/": true
     },
     "liveServer.settings.multiRootWorkspaceName": "backend-clapy",
+    "cSpell.words": ["clapy", "metabase", "pipedrive"],
+    
+    // To enable for Yarn Plug'n'Play:
+    // "eslint.nodePath": ".yarn/sdks",
+    // "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+    // "typescript.tsdk": ".yarn/sdks/typescript/lib",
+    // "typescript.enablePromptUseWorkspaceTsdk": true,
+
+    // Shareable settings between projects
     "code-runner.executorMap": {
-      "typescript": "ts-node --transpile-only",
+      "typescript": "ts-node --transpile-only"
     },
     "references.preferredLocation": "view",
-    "search.exclude": {
-      "**/build*": true,
-      "**/dist*": true,
-      "**/old": true
-    },
     "typescript.tsserver.experimental.enableProjectDiagnostics": true,
-    "cSpell.words": [
-      "clapy",
-      "metabase",
-      "pipedrive"
-    ],
     "javascript.preferences.importModuleSpecifierEnding": "js",
     "typescript.preferences.importModuleSpecifierEnding": "js",
     "git.mergeEditor": true,
-    "typescript.updateImportsOnFileMove.enabled": "always",
-    "javascript.updateImportsOnFileMove.enabled": "always",
     "files.associations": {
       "*.hbs": "html"
     },
+    "git.allowForcePush": true,
+    "editor.formatOnSave": false,
+    // turns on Auto Fix for ESLint provider
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "eslint.packageManager": "yarn",
+    "eslint.format.enable": true,
+    "[css]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[scss]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features",
+      "editor.formatOnSave": true
+    },
+    "[handlebars]": {
+      "editor.defaultFormatter": "vscode.html-language-features",
+      "editor.formatOnSave": true
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[vue]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[markdown]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "css.format.spaceAroundSelectorSeparator": true,
+    "less.format.spaceAroundSelectorSeparator": true,
+    "scss.format.spaceAroundSelectorSeparator": true,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always"
+    // "[html]": {
+    //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    // },
+    // "[json]": {
+    //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    // },
+    // "[jsonc]": {
+    //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    // },
   },
   "extensions": {
     "recommendations": [
       "esbenp.prettier-vscode",
       "dbaeumer.vscode-eslint",
-      "rangav.vscode-thunder-client"
+      "rangav.vscode-thunder-client",
+      "arcanis.vscode-zipfs"
     ]
-  }
+  },
 }

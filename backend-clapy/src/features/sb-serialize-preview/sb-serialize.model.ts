@@ -442,14 +442,6 @@ export type ExportImageEntry = {
 export type ExportImagesFigma = Dict<ExportImageEntry>;
 export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;
 
-const defaultSceneNodeMixin: SceneNodeMixin2 & { id: string; name: string } = {
-  id: null as unknown as '', // Should be overridden
-  name: '',
-  visible: true,
-  stuckNodes: [],
-  componentPropertyReferences: null,
-};
-
 const defaultChildrenMixin: ChildrenMixin2 = {
   children: [],
 };
@@ -464,6 +456,7 @@ const defaultLayoutMixin: LayoutMixin2 = {
   rotation: 0,
   width: 0,
   height: 0,
+  absoluteBoundingBox: null,
   layoutAlign: 'INHERIT',
   layoutGrow: 0,
   layoutPositioning: 'AUTO',
@@ -490,9 +483,10 @@ const defaultBaseNodeMixin: BaseNodeMixin2 = {
   name: '',
 };
 
-const defaultSceneNodeMixin2: SceneNodeMixin2 = {
+const defaultSceneNodeMixin: SceneNodeMixin2 = {
   visible: true,
   stuckNodes: [],
+  attachedConnectors: [],
   componentPropertyReferences: null,
 };
 
@@ -535,7 +529,7 @@ const defaultExportMixin: ExportMixin2 = {
 
 const defaultDefaultShapeMixin: DefaultShapeMixin2 = {
   ...defaultBaseNodeMixin,
-  ...defaultSceneNodeMixin2,
+  ...defaultSceneNodeMixin,
   ...defaultReactionMixin,
   ...defaultBlendMixin,
   ...defaultGeometryMixin,

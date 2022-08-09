@@ -1,9 +1,17 @@
 ## Setup
 
-In a terminal, run `git config --global core.editor "code --wait"`. It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
+- Use nvm to install NodeJS (makes it much easier to switch versions)
+- NodeJS >= 16 required
+
+In a terminal, run:
+
+- `git config --global core.editor "code --wait"` - It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
+- `corepack enable` ([explanation](https://yarnpkg.com/getting-started/install))
 
 ## Usage
 
+- With VSCode, `Open Workspace from File...`, select the file `clapy.code-workspace`. **Don't** open the root directory.
+- Install the suggested plugins and accept to use the TypeScript workspace version when prompted.
 - `yarn install:all` to install dependencies in root and subprojects
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
@@ -15,6 +23,11 @@ In a terminal, run `git config --global core.editor "code --wait"`. It allows to
 (1) Alternative: `yarn dev` through command-line to start everything
 
 Note: for now, `Hasura console` task is excluded from the default build because it's rarely useful in current developments. To start it, run this task or `yarn console` in the terminal. If you often need it, feel free to uncomment it in the default build task (.vscode/tasks.json, first task).
+
+## Update yarn
+
+- `yarn set version stable`
+- `yarn install` in the root, the back and the front directories.
 
 ## Test Stripe workflow
 

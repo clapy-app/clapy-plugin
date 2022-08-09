@@ -18,11 +18,6 @@
     "declaration": true,
     "emitDecoratorMetadata": true,
     "sourceMap": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/@figma",
-      "./src/typings"
-    ],
     "strict": true,
     // "strictNullChecks": false,
     "noUnusedLocals": false,
@@ -39,8 +34,6 @@
     "esm": true
   },
   "include": [
-    "src/**/*.ts",
-    "src/typings/**/*",
-    "node_modules/@types/**/*",
+    "src",
   ]
 }
