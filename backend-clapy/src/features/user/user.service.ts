@@ -75,7 +75,7 @@ export class UserService {
       : userQuotaCount >= appConfig.codeGenFreeQuota;
     if (!env.isDev && checkUserQuota && isLicenceInactive) {
       throw new Error(
-        'Your free code generation quota is used. Please contact us for an increased quota or to go Pro.',
+        'Your free code generation quota is used. Please contact us for an increased quota or to upgrade.',
       );
     }
   };
