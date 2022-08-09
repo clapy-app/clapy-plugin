@@ -60,3 +60,11 @@ function getRuleFirstSelector(node: Rule) {
 export function stylesToList(styles: Dict<DeclarationPlain>): DeclarationPlain[] {
   return Object.values(styles);
 }
+
+export function listToStyles(styleDeclarations: DeclarationPlain[]) {
+  const styles: Dict<DeclarationPlain> = {};
+  for (const decl of styleDeclarations) {
+    styles[decl.property] = decl;
+  }
+  return styles;
+}

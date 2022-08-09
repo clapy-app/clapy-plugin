@@ -56,6 +56,7 @@ export interface ProjectContext {
   readonly newDependencies: Dict<string>;
   readonly newDevDependencies: Dict<string>;
   readonly fwConnector: FrameworkConnector;
+  readonly cssResetRules: string;
 }
 
 interface OverrideFromProp {
