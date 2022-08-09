@@ -46,10 +46,16 @@ export class StripeWebhookService {
             const customer = await stripe.customers.retrieve(session.customer as string);
             if (!customer.deleted) {
               const { auth0Id } = customer!.metadata;
+              // Try/catch to diagnose in prod. To enable when I take the ticket.
+              // try {
               await updateAuth0UserMetadata(auth0Id, {
                 licenceStartDate: current_period_start,
                 licenceExpirationDate: current_period_end,
               });
+              // } catch (error: any) {
+              //   console.error('Cannot update Auth0 user:', error?.message);
+              //   throw error;
+              // }
             }
           }
           this.stripeService.emitStripePaymentStatus(true);
