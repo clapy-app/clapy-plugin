@@ -30,7 +30,7 @@ jobs:
           cache-dependency-path: figma-plugin-clapy/yarn.lock
 
       - name: yarn install
-        run: yarn install --pure-lockfile
+        run: yarn install --immutable
         # uses: borales/actions-yarn@v2.3.0
         # with:
         #   cmd: install
