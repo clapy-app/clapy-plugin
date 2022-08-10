@@ -27,7 +27,7 @@ jobs:
           # The cache is used as long as the lock file doesn't change.
           # It is used to get the key of the cache.
           cache: 'yarn'
-          cache-dependency-path: figma-plugin-clapy/yarn.lock
+          cache-dependency-path: yarn.lock
 
       - name: yarn install
         run: yarn install --immutable
