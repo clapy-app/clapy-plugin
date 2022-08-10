@@ -1,5 +1,5 @@
+import type { AnyAction } from '@reduxjs/toolkit';
 import { configureStore } from '@reduxjs/toolkit';
-import type { AnyAction } from 'redux';
 
 import type { RootState } from './store';
 

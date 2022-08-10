@@ -1,19 +1,8 @@
 import type { ButtonHTMLAttributes, FC } from 'react';
 import { memo } from 'react';
-import type { Options } from 'react-lottie';
 
 import { Loading } from '../../../../components-used/Loading/Loading';
-import animationData from '../../../../lotties/loading.json';
 import classes from './_ButtonBase.module.css';
-
-const defaultOptions: Options = {
-  loop: true,
-  autoplay: true,
-  animationData: animationData,
-  rendererSettings: {
-    preserveAspectRatio: 'xMidYMid slice',
-  },
-};
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   disabled?: boolean;
