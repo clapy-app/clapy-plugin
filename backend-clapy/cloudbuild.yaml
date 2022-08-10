@@ -15,9 +15,9 @@ steps:
       - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
       - '-t'
       - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_GCR_HOSTNAME}/${_SERVICE_NAME}:latest'
-      - '.'
-      # - '-f'
-      # - Dockerfile
+      - '..'
+      - '-f'
+      - Dockerfile
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
