@@ -265,6 +265,8 @@ export interface UserSettings {
   framework: 'angular' | 'react';
   frameworkConfig?: ReactConfig | AngularConfig;
   target: UserSettingsTarget;
+  // Unused for now, only shows/hides the CSS block
+  customCss?: boolean;
 }
 
 export type ExtraConfig = {
@@ -296,8 +298,9 @@ export interface FigmaStyles {
   gridStyles: Dict<GridStyle>;
 }
 
-type GlobalExtender = {
+export type GlobalExtender = {
   _tokens?: Dict<string>;
+  _customCss?: string;
 };
 
 type TextExtender = {

@@ -1,7 +1,10 @@
+import type { TooltipProps } from '@mui/material';
+
 import { env } from '../environment/env';
 
 export const appConfig = {
   variantsGridGap: 20, // in px
+  tooltipPosition: 'top-start' as TooltipProps['placement'], // used to be bottom-start
 };
 
 export const flags = {

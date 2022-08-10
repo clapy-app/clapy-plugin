@@ -49,7 +49,7 @@ export function effectsFigmaToCode(context: NodeContext, node: ValidNode, styles
   const backdropFilters: string[] = [];
   const filters: string[] = [];
 
-  if ((node as any)._tokens?.['boxShadow']) {
+  if (node._tokens?.['boxShadow']) {
     addStyle(context, node, styles, 'box-shadow', { boxShadow: '' });
   } else {
     //// Let's keep this code for now in case we need to restore the detailed version of shadows, each piece of the shadow rule using a different variable:

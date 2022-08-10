@@ -2,7 +2,12 @@ import type { DeclarationPlain, RulePlain } from 'css-tree';
 import type ts from 'typescript';
 
 import type { Nil } from '../../../common/general-utils.js';
-import type { Dict, FrameNodeBlackList, OmitMethods } from '../../sb-serialize-preview/sb-serialize.model.js';
+import type {
+  Dict,
+  FrameNodeBlackList,
+  GlobalExtender,
+  OmitMethods,
+} from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
 import type { MUIConfig } from '../tech-integration/mui/mui-config.js';
@@ -74,10 +79,10 @@ interface TextExtender {
 }
 
 type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
-  GlobalExtender &
+  GlobalExtender2 &
   SpecificExtender;
 
-interface GlobalExtender {
+interface GlobalExtender2 extends GlobalExtender {
   isRootInComponent?: boolean;
   maskedBy?: Masker;
   // Should we group className, swapName, hideProp and textOverrideProp? It should be the same.

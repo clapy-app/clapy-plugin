@@ -2,7 +2,7 @@ import type { ArgTypeObj } from '../../../../common/app-models.js';
 import type { Args } from '../../../../common/sb-serialize.model.js';
 import type { WithChildrenNode } from '../../../common/node-type-utils.js';
 import { isComponentSet } from '../../../common/node-type-utils.js';
-import { getFigmaSelection } from '../../../common/selection-utils.js';
+import { getFigmaSelectionOrThrow } from '../../../common/selection-utils.js';
 import { resizeNode } from './update-canvas-utils';
 
 // The front gives the index (i = 0, 1, 2...) of the component to insert.
@@ -12,12 +12,12 @@ import { resizeNode } from './update-canvas-utils';
 // Boucle sur les éléments du tableau dans l'ordre, rendre en back et rendre ici avec coord et nodes en arg.
 
 export async function runGrid() {
-  const selectedNodes = getFigmaSelection();
-  if (selectedNodes.length !== 1 || !isComponentSet(selectedNodes[0])) {
+  const selectedNode = getFigmaSelectionOrThrow();
+  if (!isComponentSet(selectedNode)) {
     console.warn('Not a valid selection for runGrid().');
     return;
   }
-  const node = selectedNodes[0];
+  const node = selectedNode;
 
   alignItemsInGrid(node);
 

@@ -8,6 +8,7 @@ import type { NodeContext } from './code.model.js';
 import { isInstanceContext } from './code.model.js';
 import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
 import { isText } from './create-ts-compiler/canvas-utils.js';
+import { csstree } from './create-ts-compiler/csstree.js';
 import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
 import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
@@ -68,6 +69,21 @@ export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dic
       styles = instanceStyles;
     }
   }
+
+  // Add user-defined custom CSS
+  if (node._customCss) {
+    const cssParsed = csstree.parse(`.tmp{${node._customCss}}`);
+    const css = csstree.toPlainObject(cssParsed);
+    if (css.type === 'StyleSheet' && css.children?.length === 1 && css.children[0].type === 'Rule') {
+      const declarations = css.children[0].block.children;
+      for (const decl of declarations) {
+        if (decl.type === 'Declaration') {
+          styles[decl.property] = decl;
+        }
+      }
+    }
+  }
+
   node.styles = styles;
   return styles;
 }

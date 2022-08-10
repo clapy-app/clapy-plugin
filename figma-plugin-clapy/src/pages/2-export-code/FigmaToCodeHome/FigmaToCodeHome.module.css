@@ -38,8 +38,12 @@
   content: none;
 }
 
-html body :where(.accordionRoot) * {
+html body :where(.accordionRoot) :not(style, script, span, a) {
   display: block;
+}
+
+html body :where(.accordionRoot) span, a {
+  display: inline;
 }
 
 .outerOption {

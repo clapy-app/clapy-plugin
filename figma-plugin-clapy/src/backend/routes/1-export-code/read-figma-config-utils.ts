@@ -73,6 +73,8 @@ export interface ExtractNodeContext {
   isComp?: boolean;
 }
 
+export const customCssPluginKey = 'customCss';
+
 export function shouldGroupAsSVG(nodeOriginal: SceneNode): boolean {
   const children = (nodeOriginal as ChildrenMixin).children as SceneNode[] | undefined;
   if (!children) return false;

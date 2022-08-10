@@ -16,7 +16,7 @@ import {
 import { exportNodeTokens2 } from './9-extract-tokens.js';
 import { nodeAttributes, rangeProps } from './node-attributes';
 import type { AnyNode3, AnyNodeOriginal, AnyParent, ExtractBatchContext } from './read-figma-config-utils.js';
-import { isProcessableInstance2, shouldGroupAsSVG } from './read-figma-config-utils.js';
+import { customCssPluginKey, isProcessableInstance2, shouldGroupAsSVG } from './read-figma-config-utils.js';
 
 export function readParentNodeConfig<T extends AnyNodeOriginal>(nodeOriginal: T) {
   // Possible optimization: only extract the fields that are useful for the parent. Some of the fields I've listed from the webservice:
@@ -169,6 +169,8 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
       }
     });
   }
+
+  node._customCss = nodeOriginal.getPluginData(customCssPluginKey);
 
   return node as AnyNode3;
 }

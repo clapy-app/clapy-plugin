@@ -29,7 +29,7 @@
     },
     "liveServer.settings.multiRootWorkspaceName": "backend-clapy",
     "cSpell.words": ["clapy", "metabase", "pipedrive"],
-    
+
     // To enable for Yarn Plug'n'Play:
     // "eslint.nodePath": ".yarn/sdks",
     // "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
@@ -56,7 +56,7 @@
     },
     "eslint.packageManager": "yarn",
     "eslint.format.enable": true,
-    "[css]": {
+    "[json]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
     },
@@ -64,7 +64,7 @@
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
     },
-    "[json]": {
+    "[css]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
     },
@@ -72,6 +72,11 @@
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
     },
+    "[markdown]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    // For HTML, we don't use prettier because the embedded JS is wrongly formatted.
     "[html]": {
       "editor.defaultFormatter": "vscode.html-language-features",
       "editor.formatOnSave": true
@@ -87,15 +92,12 @@
       "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "[typescript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "[typescriptreact]": {
       "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "[vue]": {
-      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-    },
-    "[markdown]": {
       "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "css.format.spaceAroundSelectorSeparator": true,
@@ -120,5 +122,5 @@
       "rangav.vscode-thunder-client",
       "arcanis.vscode-zipfs"
     ]
-  },
+  }
 }

@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { BadgeQuotas } from '../../../3-Account/components/Container/_BadgeQuotas/BadgeQuotas.js';
 import { Badge } from '../../../3-Account/components/Container/Badge/Badge.js';
+import { appConfig } from '../../../../common/app-config.js';
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectIncreasedQuotaUser } from '../../../../core/auth/auth-slice.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
@@ -93,7 +94,7 @@ export const PluginComponentCounter_License: FC<Props> = memo(function PluginCom
                   <Tooltip
                     title={showTooltipMessage(isQualifiedUser, mL[month])}
                     disableInteractive
-                    placement='bottom-start'
+                    placement={appConfig.tooltipPosition}
                     className={isPro(isFreeUser, 'tooltip')}
                   >
                     <div>

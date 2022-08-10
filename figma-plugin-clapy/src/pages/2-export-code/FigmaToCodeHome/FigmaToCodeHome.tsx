@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
 import { Button_SizeSmHierarchyLinkColo } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo/Button_SizeSmHierarchyLinkColo.js';
 import { track } from '../../../common/analytics';
+import { appConfig } from '../../../common/app-config.js';
 import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
 import { getDuration } from '../../../common/general-utils';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
@@ -41,6 +42,8 @@ import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import { selectSelection } from '../export-code-slice.js';
 import { downloadFile } from '../export-code-utils.js';
+import { AddCssOption } from './AddCssOption/AddCssOption.js';
+import classes2 from './AddCssOption/AddCssOption.module.css';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
@@ -276,7 +279,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           <Tooltip
             title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
             disableInteractive
-            placement='bottom-start'
+            placement={appConfig.tooltipPosition}
             className={state === 'generated' ? classes.hide : undefined}
           >
             <FormControl disabled={isLoading} className={classes.outerOption}>
@@ -307,19 +310,34 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
-                <Tooltip title='Framework' disableInteractive placement='bottom-start'>
-                  <FormControl disabled={isLoading}>
-                    <RadioGroup
-                      row
-                      name='framework'
-                      onChange={updateAdvancedOption as RadioGroupProps['onChange']}
-                      defaultValue={defaultSettings.framework}
-                    >
+                <FormControl disabled={isLoading}>
+                  <RadioGroup
+                    row
+                    name='framework'
+                    onChange={updateAdvancedOption as RadioGroupProps['onChange']}
+                    defaultValue={defaultSettings.framework}
+                  >
+                    <Tooltip title='Generates React code.' disableInteractive placement={appConfig.tooltipPosition}>
                       <FormControlLabel value='react' control={<Radio />} label='React' />
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        <div className={classes2.tooltipWrapper}>
+                          <div>Generates Angular code.</div>
+                          <div>
+                            Alpha limitation: only components are supported. All customizations applied on Figma
+                            instances (including custom CSS on instance nodes) are ignored. For this reason, the result
+                            may not exactly match the Figma design. For pixel-perfect, please choose React instead.
+                          </div>
+                        </div>
+                      }
+                      disableInteractive
+                      placement={appConfig.tooltipPosition}
+                    >
                       <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
-                    </RadioGroup>
-                  </FormControl>
-                </Tooltip>
+                    </Tooltip>
+                  </RadioGroup>
+                </FormControl>
                 {!isGithubEnabled && (
                   <Tooltip
                     title={
@@ -328,7 +346,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                         : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
                     }
                     disableInteractive
-                    placement='bottom-start'
+                    placement={appConfig.tooltipPosition}
                   >
                     <FormControlLabel
                       control={
@@ -346,7 +364,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 <Tooltip
                   title='If enabled, styles will be written in .scss files instead of .css.'
                   disableInteractive
-                  placement='bottom-start'
+                  placement={appConfig.tooltipPosition}
                 >
                   <FormControlLabel
                     control={
@@ -360,7 +378,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                   <Tooltip
                     title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
                     disableInteractive
-                    placement='bottom-start'
+                    placement={appConfig.tooltipPosition}
                   >
                     <FormControlLabel
                       control={
@@ -378,7 +396,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     scssSelected ? 'S' : ''
                   }CSS resets required by Clapy in your project.`}
                   disableInteractive
-                  placement='bottom-start'
+                  placement={appConfig.tooltipPosition}
                 >
                   <FormControlLabel
                     control={
@@ -392,6 +410,13 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     disabled={isLoading}
                   />
                 </Tooltip>
+
+                <AddCssOption
+                  className={state === 'generated' ? classes.hide : undefined}
+                  isLoading={isLoading}
+                  defaultSettings={defaultSettings}
+                  updateAdvancedOption={updateAdvancedOption}
+                />
               </FormGroup>
             </AccordionDetails>
           </Accordion>
@@ -416,7 +441,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           )}
         </Button>
       )}
-
       {isQuotaReached && state !== 'generated' ? (
         <div className={classes.fullQuotaTextContainer}>
           You have used up all your monthly credits.

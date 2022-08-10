@@ -4,7 +4,7 @@ import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
 import { isComponentSet } from '../../common/node-type-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
-import { getFigmaSelection } from '../../common/selection-utils';
+import { getFigmaSelectionOrThrow } from '../../common/selection-utils';
 import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
 import { optimizeConfig } from './4-optimize-config.js';
 import { extractFigmaTokens } from './9-extract-tokens.js';
@@ -31,18 +31,8 @@ async function notifyProgress(progress: ExtractionProgress, node?: SceneNode) {
 
 export async function serializeSelectedNode() {
   perfReset();
-  const selection = getFigmaSelection();
-  if (selection?.length !== 1) {
-    throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
-  }
-  const node = selection[0];
+  const node = getFigmaSelectionOrThrow();
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
-
-  const nodeParent = node.parent as SceneNode | undefined;
-  if (nodeParent) {
-    await notifyProgress({ stepId: 'readFigmaNodesConfig', stepNumber: 2 }, nodeParent);
-  }
-  const parentConfig = nodeParent ? readParentNodeConfig(nodeParent) : undefined;
 
   const extractBatchContext: ExtractBatchContext = {
     isRootNodeInComponent: true,
@@ -107,7 +97,6 @@ export async function serializeSelectedNode() {
 
   return {
     extraConfig,
-    parent: parentConfig,
     root: mainNode,
     components: components3,
     nodeIdsToExtractAsSVG: Array.from(nodeIdsToExtractAsSVG),
