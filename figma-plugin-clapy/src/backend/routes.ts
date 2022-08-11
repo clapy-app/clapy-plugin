@@ -1,4 +1,10 @@
-import { getSelectionPreview, selectionPreview } from './routes/1-export-code/1-selection-preview';
+import {
+  getSelectionCustomCss,
+  getSelectionPreview,
+  saveCustomCssInFigmaNode,
+  selectionCustomCss,
+  selectionPreview,
+} from './routes/1-export-code/1-selection-ops';
 import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/1-export-code/2-serialize-node';
 import { extractSVGs } from './routes/1-export-code/7-extract-svg.js';
 import { extractImages } from './routes/1-export-code/8-extract-images.js';
@@ -34,6 +40,8 @@ export const routes = {
 
   // Design to code: generate code
   getSelectionPreview,
+  saveCustomCssInFigmaNode,
+  getSelectionCustomCss,
   serializeSelectedNode,
   extractSVGs,
   extractImages,
@@ -52,10 +60,23 @@ export const routes = {
   runGrid,
 };
 
+// Possible refactoring: subscription functions could return the callback function and change the "next" to be called without any argument.
+// Benefit: the engine could call the function itself. Strong typing should still be possible.
+// => When subscribing, the callback would be initially called, so that the front doesn't need to call a separate route just to get the initial value (e.g. existing selection). The code would be much simpler. Example:
+// useEffect(subscribePlugin('selectionCustomCss', (error, customCss) => {
+//   // ...
+// }), []);
+// We could even make a useSubscribePlugin:
+// useSubscribePlugin('selectionCustomCss', (error, customCss) => {
+//   // ...
+// });
 export const subscriptions = {
-  selectedSbComp: selectedSbComp,
-  selectionPreview: selectionPreview,
-  figmaConfigExtractionProgress: figmaConfigExtractionProgress,
+  selectionPreview,
+  selectionCustomCss,
+  figmaConfigExtractionProgress,
+
+  // Code to design (old)
+  selectedSbComp,
 };
 
 // Use Routes from appModels.ts instead, which is clearly made to be shared between the front and the back.

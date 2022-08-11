@@ -1,0 +1,10 @@
+.root {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltipWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

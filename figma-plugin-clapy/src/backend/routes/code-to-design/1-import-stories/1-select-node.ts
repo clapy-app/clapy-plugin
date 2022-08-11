@@ -2,7 +2,7 @@ import type { NextFn, SbAnySelection, SbCompSelection, SbOtherSelection } from '
 import type { ArgTypes, Dict } from '../../../../common/sb-serialize.model';
 import { sbUrlIframe } from '../../../../common/storybook-utils';
 import { isComponentSet, isInstance } from '../../../common/node-type-utils';
-import { getFigmaSelection } from '../../../common/selection-utils';
+import { getFigmaSelections } from '../../../common/selection-utils';
 import { getParentCompNode, listVariantProps } from './import-sb-utils';
 
 export async function getSbCompSelection() {
@@ -21,7 +21,7 @@ export function selectedSbComp(next: NextFn<SbAnySelection[]>) {
 }
 
 function prepareSbCompSelection() /* : SbCompSelection[] */ {
-  const selectedSbComp = getFigmaSelection().reduce((selections, selectedNode) => {
+  const selectedSbComp = getFigmaSelections().reduce((selections, selectedNode) => {
     const { node, sbUrl, storyId } = getParentCompNode(selectedNode);
     if (storyId && sbUrl && node) {
       // &args=kind:secondary;size:xxs

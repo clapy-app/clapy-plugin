@@ -77,12 +77,14 @@ Fork: https://github.com/antoineol/opentype.js
 
 VS Code debugger : https://github.com/microsoft/vscode/issues/150036
 
+## AST exploration tools
+
+- https://ts-ast-viewer.com/ for typescript AST playground
+- https://astexplorer.net/ to list AST tools and play, e.g. CSS AST
+
 ## Notes for later
 
 - codesandbox uses parcel to bundle in the browser.
-- AST tools:
-    https://ts-ast-viewer.com/ for typescript AST playground
-    https://astexplorer.net/ to list AST tools and play, e.g. CSS AST
 - Puppeteer optimised for concurrent requests: https://stackoverflow.com/questions/57898974/calling-puppeteer-from-rest-api
 - If need to hash images, binaries... the lib sha256-uint8array can help. I also tried crypto-js and use sha.js in another context, but they seem bigger/slower.
 
@@ -104,9 +106,9 @@ Repo figma-plugin-helpers by a community member in slack: https://github.com/fig
 
 ## CSS AST tools
 
-https://github.com/csstree/csstree  20M downloads, 1.4k likes -- good, targetting my use case
-https://github.com/postcss/postcss  66M downlaods, 26k likes -- has a parser, but too general purpose, probably too big and harder to use.
-https://github.com/reworkcss/css  12M downloads, 1.4k likes -- seems to focus on read, not write
+https://github.com/csstree/csstree 20M downloads, 1.4k likes -- good, targetting my use case
+https://github.com/postcss/postcss 66M downlaods, 26k likes -- has a parser, but too general purpose, probably too big and harder to use.
+https://github.com/reworkcss/css 12M downloads, 1.4k likes -- seems to focus on read, not write
 
 downloads are weekly figures on npmjs.com.
 

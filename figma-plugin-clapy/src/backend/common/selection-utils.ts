@@ -1,4 +1,4 @@
-export function getFigmaSelection() {
+export function getFigmaSelections() {
   try {
     return figma.currentPage.selection;
   } catch (error: any) {
@@ -9,4 +9,18 @@ export function getFigmaSelection() {
     }
     throw error;
   }
+}
+
+export function getFigmaSelectionOrThrow() {
+  const selection = getFigmaSelections();
+  if (selection?.length !== 1) {
+    throw new Error('Selection is not exactly one node, which is not compatible with serialization.');
+  }
+  return selection[0];
+}
+
+export function getFigmaSelection() {
+  const selection = getFigmaSelections();
+  if (selection?.length !== 1) return;
+  return selection[0];
 }

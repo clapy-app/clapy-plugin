@@ -75,6 +75,7 @@ export const selectGithubEnabled = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
 export const selectDevTools = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
+export const selectCssOptionEnabled = (state: RootState) => true;
 
 // TODO edit here and in src/features/user/user.utils.ts
 // Next step: substitute isStripeDevTeam with isNewUserTmp

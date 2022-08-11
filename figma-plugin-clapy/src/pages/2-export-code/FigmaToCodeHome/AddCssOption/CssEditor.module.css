@@ -1,0 +1,12 @@
+.root {
+  align-self: stretch;
+  background-color: #f5f5f5;
+}
+.editor {
+  font-family: 'Fira code', 'Fira Mono', monospace;
+  display: block;
+  flex: 1;
+}
+.disabled {
+  opacity: 0.38;
+}

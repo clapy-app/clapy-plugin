@@ -52,6 +52,8 @@ const theme = createTheme({
       'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif',
   },
   components: {
+    MuiFormGroup: { styleOverrides: { root: { columnGap: 16 } } },
+    MuiFormControlLabel: { styleOverrides: { root: { marginRight: 0 } } },
     MuiButton: {
       defaultProps: {
         disableRipple: true,

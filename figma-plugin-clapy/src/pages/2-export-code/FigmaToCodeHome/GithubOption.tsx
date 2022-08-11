@@ -8,6 +8,7 @@ import type { FC } from 'react';
 import { memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { appConfig } from '../../../common/app-config.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { selectGithubEnabled, selectTokenDecoded } from '../../../core/auth/auth-slice.js';
@@ -27,7 +28,7 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
   return <GithubOptionInner {...props} />;
 });
 
-export const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(props) {
+const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(props) {
   const { className, isLoading, defaultSettings, updateAdvancedOption } = props;
   const [target, setTarget] = useState(defaultSettings.target);
   const token = useSelector(selectTokenDecoded);
@@ -57,21 +58,21 @@ export const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(prop
           <Tooltip
             title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code.'
             disableInteractive
-            placement='bottom-start'
+            placement={appConfig.tooltipPosition}
           >
             <FormControlLabel value={UserSettingsTarget.csb} control={<Radio />} label='CodeSandbox' />
           </Tooltip>
           <Tooltip
             title='Downloads the generated source code as a zip file. You need you unarchive, `yarn install` and `yarn start` to run the application locally.'
             disableInteractive
-            placement='bottom-start'
+            placement={appConfig.tooltipPosition}
           >
             <FormControlLabel value={UserSettingsTarget.zip} control={<Radio />} label='Zip' />
           </Tooltip>
           <Tooltip
             title='Sends the generated code to the selected github repository, in a new branch, and creates a pull request to merge it with your main branch.'
             disableInteractive
-            placement='bottom-start'
+            placement={appConfig.tooltipPosition}
           >
             <FormControlLabel value={UserSettingsTarget.github} control={<Radio />} label='Github' />
           </Tooltip>

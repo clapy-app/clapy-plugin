@@ -171,7 +171,7 @@ function getVarNameFromTokenNames(
     if (Array.isArray(name)) {
       [name, subKey] = name;
     }
-    let tokenName = (node as any)._tokens?.[name];
+    let tokenName = node._tokens?.[name];
     if (tokenName) {
       if (subKey) {
         tokenName = `${tokenName}.${subKey}`;
