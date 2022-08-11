@@ -2,8 +2,9 @@ import { exportTemplatesDir } from '../../../root.js';
 import type { ExtraConfig } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict } from '../code.model.js';
 
-export const resetsCssModulePath = 'src/resets.module.css';
-export const resetsCssModuleSrcPath = `${exportTemplatesDir}/resets.module.css`;
+export const resetsModuleBase = '_resets.module';
+export const resetsCssModulePath = `src/${resetsModuleBase}.css`;
+export const resetsCssModuleSrcPath = `${exportTemplatesDir}/${resetsModuleBase}.css`;
 
 export function separateTsCssAndResources(files: CodeDict, extraConfig: ExtraConfig) {
   const tsFiles: CodeDict = {};
