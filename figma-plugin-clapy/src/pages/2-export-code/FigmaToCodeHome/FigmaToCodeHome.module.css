@@ -61,3 +61,7 @@ html body :where(.accordionRoot) span, a {
   line-height: 24px;
   text-align: center;
 }
+
+.textSetting.textSetting {
+  margin-top: 10px;
+}

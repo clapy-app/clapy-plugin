@@ -1,6 +1,5 @@
 import ts from 'typescript';
 
-import type { AngularConfig } from '../../../sb-serialize-preview/sb-serialize.model';
 import type { ModuleContext } from '../../code.model';
 import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 
@@ -12,7 +11,7 @@ export function getComponentTsAst(
   hasCss: boolean | undefined,
 ) {
   const { projectContext, baseCompName, compName } = moduleContext;
-  const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
+  const { angularPrefix } = projectContext.extraConfig;
   const cssExt = getCSSExtension(projectContext.extraConfig);
 
   return [
@@ -50,7 +49,7 @@ export function getComponentTsAst(
               [
                 factory.createPropertyAssignment(
                   factory.createIdentifier('selector'),
-                  factory.createStringLiteral(compNameOverride || `${prefix}-${baseCompName}`),
+                  factory.createStringLiteral(compNameOverride || `${angularPrefix}-${baseCompName}`),
                 ),
                 factory.createPropertyAssignment(
                   factory.createIdentifier('templateUrl'),

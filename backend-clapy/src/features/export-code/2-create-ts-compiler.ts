@@ -8,12 +8,7 @@ import { perfMeasure } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { warnOrThrow } from '../../utils.js';
-import type {
-  AngularConfig,
-  CSBResponse,
-  Dict,
-  ExportCodePayload,
-} from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CSBResponse, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
@@ -62,9 +57,8 @@ export async function exportCode(
   }
   extraConfig.useZipProjectTemplate = env.isDev || extraConfig.output === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
-  if (!extraConfig.frameworkConfig) extraConfig.frameworkConfig = {};
-  if (extraConfig.framework === 'angular' && !(extraConfig.frameworkConfig as AngularConfig).prefix) {
-    (extraConfig.frameworkConfig as AngularConfig).prefix = 'cl';
+  if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
+    extraConfig.angularPrefix = 'cl';
   }
 
   const parent = (root as any)?.parent as ParentNode | Nil;
