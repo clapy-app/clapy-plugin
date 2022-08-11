@@ -247,7 +247,7 @@ export type OmitMethods<T> = {
 
 export interface ReactConfig {}
 export interface AngularConfig {
-  prefix: string;
+  angularPrefix: string;
 }
 
 export enum UserSettingsTarget {
@@ -256,14 +256,13 @@ export enum UserSettingsTarget {
   github = 'github',
 }
 
-export interface UserSettings {
+export interface UserSettings extends AngularConfig, ReactConfig {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
   globalResets?: boolean;
   framework: 'angular' | 'react';
-  frameworkConfig?: ReactConfig | AngularConfig;
   target: UserSettingsTarget;
   // Unused for now, only shows/hides the CSS block
   customCss?: boolean;

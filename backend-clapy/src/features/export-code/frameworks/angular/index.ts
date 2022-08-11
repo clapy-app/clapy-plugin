@@ -4,7 +4,7 @@ import type { ChildNode, Node } from 'parse5/dist/tree-adapters/default.js';
 import { isNonEmptyObject } from '../../../../common/general-utils.js';
 import { env } from '../../../../env-and-config/env.js';
 import { exportTemplatesDir } from '../../../../root.js';
-import type { AngularConfig, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
+import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
@@ -119,8 +119,8 @@ export const angularConnector: FrameworkConnector = {
     const modulePath = `${compDir}/${baseCompName}.module.ts`;
     projectContext.tsFiles[modulePath] = printTsStatements(getModuleTsAst(appModuleContext));
 
-    const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
-    printFileInProject(appModuleContext, `${prefix}-root`);
+    const { angularPrefix } = projectContext.extraConfig;
+    printFileInProject(appModuleContext, `${angularPrefix}-root`);
 
     // If the parent node is vertical, add a flex-direction: column to the root.
     if ((parent as FlexNode | undefined)?.layoutMode === 'VERTICAL') {
@@ -128,7 +128,7 @@ export const angularConnector: FrameworkConnector = {
       const stylesCssPath = getStylesCssPath(projectContext);
 
       cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replace(
-        new RegExp(`(${prefix}-root\\s*\\{[^\\}]*)\\}`),
+        new RegExp(`(${angularPrefix}-root\\s*\\{[^\\}]*)\\}`),
         '$1;flex-direction:column}',
       );
     }
@@ -155,18 +155,18 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
   proj.architect.build.options.styles.push(resetsCssPath);
   proj.architect.test.options.styles.push(resetsCssPath);
 
-  const { prefix } = extraConfig.frameworkConfig as AngularConfig;
-  if (prefix !== 'app') {
-    proj.prefix = prefix;
+  const { angularPrefix } = extraConfig;
+  if (angularPrefix !== 'app') {
+    proj.prefix = angularPrefix;
     if (!resources[indexHtmlPath]) throw new Error(`index.html not found at ${indexHtmlPath}`);
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '<app-root></app-root>',
-      `<${prefix}-root></${prefix}-root>`,
+      `<${angularPrefix}-root></${angularPrefix}-root>`,
     );
     if (!cssFiles[resetsCssPath]) throw new Error(`CSS resets not found at ${resetsCssPath}`);
-    cssFiles[resetsCssPath] = cssFiles[resetsCssPath].replaceAll('app-root', `${prefix}-root`);
+    cssFiles[resetsCssPath] = cssFiles[resetsCssPath].replaceAll('app-root', `${angularPrefix}-root`);
     if (!cssFiles[stylesCssPath]) throw new Error(`CSS resets not found at ${stylesCssPath}`);
-    cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${prefix}-root`);
+    cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${angularPrefix}-root`);
   }
 
   if (env.isDev) {
@@ -208,9 +208,9 @@ function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {
       `node ${node.name} should be an instance with componentContext attribute. But componentContext is undefined.`,
     );
   }
-  const { prefix } = projectContext.extraConfig.frameworkConfig as AngularConfig;
-  if (!prefix) throw new Error(`Angular prefix undefined, cannot generate component usage.`);
-  return mkHtmlElement(`${prefix}-${componentContext.baseCompName}`);
+  const { angularPrefix } = projectContext.extraConfig;
+  if (!angularPrefix) throw new Error(`Angular prefix undefined, cannot generate component usage.`);
+  return mkHtmlElement(`${angularPrefix}-${componentContext.baseCompName}`);
 }
 
 function createSvgTag(svgPathVarName: string, svgAttributes?: FwAttr[]) {
