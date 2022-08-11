@@ -27,6 +27,7 @@ const fontWeights = [
   ['Demi', 'Light'],
   ['Medium'],
   ['Semi', 'Bold'],
+  ['Demi', 'Bold'],
   ['Bold'],
   ['Extra', 'Bold'],
   ['Black'],
@@ -86,6 +87,7 @@ const fontWeightMapFontToCSS = {
   regular: 400, // 'normal' - default
   medium: 500,
   semibold: 600,
+  demibold: 600,
   bold: 700, // 'bold'
   extrabold: 800,
   black: 900,
