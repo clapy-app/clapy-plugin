@@ -19,7 +19,7 @@ import type {
 } from '../../code.model.js';
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
+import { resetsCssModulePath, resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
@@ -452,7 +452,7 @@ function addCssResetsModuleImport(moduleContext: ModuleContext) {
   const { extraConfig } = projectContext;
   if (!extraConfig.globalResets) {
     const cssExt = getCSSExtension(extraConfig);
-    const cssResetsFileName = `resets.module.${cssExt}`;
+    const cssResetsFileName = `${resetsModuleBase}.${cssExt}`;
     // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
     const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
     // Generate the '../../'...
