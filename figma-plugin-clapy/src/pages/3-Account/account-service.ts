@@ -29,6 +29,12 @@ export function useHandleUserUpgrade() {
         dispatch(stopLoadingStripe());
       }
     };
-    await upgradeUser();
+    try {
+      await upgradeUser();
+    } catch (error) {
+      dispatch(stopLoadingStripe());
+      // Showing the error is managed by useCallbackAsync2. We ensured the loading ended.
+      throw error;
+    }
   }, [dispatch]);
 }
