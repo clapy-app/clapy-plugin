@@ -9,9 +9,10 @@ import classes from './App.module.css';
 import { track } from './common/analytics';
 import { getDuration } from './common/general-utils';
 import alertClasses from './components-used/ErrorAlert/ErrorAlert.module.css';
-import { checkSessionLight } from './core/auth/auth-service.js';
-import { setAuthError } from './core/auth/auth-slice.js';
+import { checkSessionLight, isAuthError } from './core/auth/auth-service.js';
+import { setAuthError, setSignedInState } from './core/auth/auth-slice.js';
 import { useAppDispatch } from './core/redux/hooks.js';
+import { dispatchOther } from './core/redux/redux.utils.js';
 import { env } from './environment/env.js';
 import { handleError, toastError } from './front-utils/front-utils.js';
 import { Layout } from './pages/Layout/Layout';
@@ -31,11 +32,6 @@ declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     neutral: true;
   }
-}
-interface ApiResponse {
-  ok: boolean;
-  quotas?: number;
-  isLicenseExpired?: boolean;
 }
 const theme = createTheme({
   palette: {
@@ -94,18 +90,22 @@ export const App: FC = memo(function App() {
   useEffect(() => {
     let checkSession = async () => {
       try {
-        const res = (await checkSessionLight()) as ApiResponse;
+        const res = await checkSessionLight();
 
         track('open-plugin');
         dispatch(setStripeData(res));
-      } catch (e) {
-        handleError(e);
-        if (!env.isDev || !alreadyToasted) {
-          // In development, because of strict mode, we add a guard to ensure it toasts only once.
-          alreadyToasted = true;
-          toastError(e);
+      } catch (e: any) {
+        if (isAuthError(e)) {
+          dispatchOther(setSignedInState(false));
+        } else {
+          handleError(e);
+          if (!env.isDev || !alreadyToasted) {
+            // In development, because of strict mode, we add a guard to ensure it toasts only once.
+            alreadyToasted = true;
+            toastError(e);
+          }
+          dispatch(setAuthError(e));
         }
-        dispatch(setAuthError(e));
       }
     };
     checkSession();

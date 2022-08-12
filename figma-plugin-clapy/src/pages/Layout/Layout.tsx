@@ -24,7 +24,7 @@ import {
 import { useAppDispatch } from '../../core/redux/hooks.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
-import { selectHasMissingMetaProfile, selectHasMissingMetaUsage, selectIsUserLimited } from '../user/user-slice';
+import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header.js';
 import { HeaderGenerator } from './Header/Header_Generator.js';
@@ -58,7 +58,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // Show selection
 
   // use this flag after the tests
-  const isUserLimited = useSelector(selectIsUserLimited);
   const isStripeDevTeam = useSelector(selectIsStripeEnabled);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
