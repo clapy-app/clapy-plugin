@@ -313,7 +313,7 @@
 		},
 		{
 			"label": "Docker containers",
-			"detail": "`npm run up` as VSCode task",
+			"detail": "`npm run dup` as VSCode task",
 			"type": "npm",
 			"script": "upwait",
 			// "problemMatcher": [

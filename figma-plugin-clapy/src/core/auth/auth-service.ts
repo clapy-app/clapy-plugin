@@ -5,6 +5,7 @@ import { fetchPlugin } from '../../common/plugin-utils';
 import { env, isFigmaPlugin } from '../../environment/env';
 import { handleError, openNewTab, toastError } from '../../front-utils/front-utils';
 import { apiGet } from '../../front-utils/http.utils.js';
+import type { ApiResponse } from '../../front-utils/unauthenticated-http.utils.js';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../front-utils/unauthenticated-http.utils.js';
 import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
 import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
@@ -58,12 +59,19 @@ export async function checkSessionLight() {
   return await checkSessionComplete();
 }
 
+interface CheckSessionResp {
+  ok: boolean;
+  quotas: number;
+  quotasMax: number;
+  isLicenseExpired: boolean;
+}
+
 /**
  * This method makes a full session check by calling the Clapy webservice to check the auth token, refresh if required, then fetch the user metadata.
  * It's not blocking the UI because the webservice can have a cold start. But the result will re-render the UI if the result is different from the cache.
  */
 export async function checkSessionComplete() {
-  const { data } = await apiGet('check-session');
+  const { data } = await apiGet<CheckSessionResp>('check-session');
   await fetchUserMetadata();
   return data;
 }
@@ -154,7 +162,7 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
     }
     return { accessToken: _accessToken, tokenType: _tokenType, accessTokenDecoded: _accessTokenDecoded };
   } catch (error: any) {
-    if (error.message === interactiveSignInMsg) {
+    if (isInteractiveSignInMsg(error)) {
       dispatchOther(setSignedInState(false));
       return { accessToken: null, tokenType: null, accessTokenDecoded: null };
     } else {
@@ -164,6 +172,19 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
     }
   }
 });
+
+export function isAuthError(error: any) {
+  const statusCode = +(
+    (error as ApiResponse<any>)?.status ||
+    (error as ApiResponse<any>)?.data?.statusCode ||
+    (error as any)?.statusCode
+  );
+  return statusCode === 401 || statusCode === 403 || isInteractiveSignInMsg(error);
+}
+
+export function isInteractiveSignInMsg(error: any) {
+  return error?.message === interactiveSignInMsg;
+}
 
 export const refreshTokens = toConcurrencySafeAsyncFn(async () => {
   let refreshToken: string | null = await fetchPlugin('getRefreshToken');
