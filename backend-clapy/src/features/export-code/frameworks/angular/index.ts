@@ -104,7 +104,7 @@ export const angularConnector: FrameworkConnector = {
     const cssFileName = `${baseCompName}.component.${cssExt}`;
     cssFiles[`${compDir}/${cssFileName}`] = cssStr;
 
-    printFileInProject(moduleContext, undefined, hasCss);
+    printFileInProject(moduleContext, undefined, hasCss, false);
   },
   genCompUsage,
   createSvgTag,
@@ -120,7 +120,7 @@ export const angularConnector: FrameworkConnector = {
     projectContext.tsFiles[modulePath] = printTsStatements(getModuleTsAst(appModuleContext));
 
     const { angularPrefix } = projectContext.extraConfig;
-    printFileInProject(appModuleContext, `${angularPrefix}-root`);
+    printFileInProject(appModuleContext, `${angularPrefix}-root`, false, true);
 
     // If the parent node is vertical, add a flex-direction: column to the root.
     if ((parent as FlexNode | undefined)?.layoutMode === 'VERTICAL') {
@@ -194,11 +194,18 @@ export function registerSvgForWrite(context: NodeContext, svgContent: string) {
   return svgPathVarName;
 }
 
-function printFileInProject(moduleContext: ModuleContext, compNameOverride?: string, hasCss?: boolean) {
+function printFileInProject(
+  moduleContext: ModuleContext,
+  compNameOverride: string | undefined,
+  hasCss: boolean,
+  skipAnnotation: boolean,
+) {
   const { projectContext, compDir, baseCompName } = moduleContext;
 
   const path = `${compDir}/${baseCompName}.component.ts`;
-  projectContext.tsFiles[path] = printTsStatements(getComponentTsAst(moduleContext, compNameOverride, hasCss));
+  projectContext.tsFiles[path] = printTsStatements(
+    getComponentTsAst(moduleContext, compNameOverride, hasCss, skipAnnotation),
+  );
 }
 
 function genCompUsage(projectContext: ProjectContext, node: SceneNode2) {

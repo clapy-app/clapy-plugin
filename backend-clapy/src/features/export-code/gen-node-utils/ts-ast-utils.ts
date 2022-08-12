@@ -1,5 +1,5 @@
 import type { DeclarationPlain, RulePlain } from 'css-tree';
-import type { Statement } from 'typescript';
+import type { Node, Statement } from 'typescript';
 import ts from 'typescript';
 
 import { flags } from '../../../env-and-config/app-config.js';
@@ -425,20 +425,24 @@ export function mkCompFunction(
   );
 
   if (!skipAnnotation) {
-    // Attach an annotation with Figma ID.
-    // Ideally, it should be TSDoc (/ JSDoc), but it is not supported by the ts compiler API.
-    // As a workaround, we use multi-line comments.
-    // https://stackoverflow.com/a/57206925/4053349
-    // https://github.com/microsoft/TypeScript/issues/17146
-    ts.addSyntheticLeadingComment(
-      componentVariableStatement,
-      ts.SyntaxKind.MultiLineCommentTrivia,
-      ` @figmaId ${moduleContext.node.id} `,
-      true,
-    );
+    wrapWithFigmaIdAnnotation(componentVariableStatement, moduleContext);
   }
 
   return componentVariableStatement;
+}
+
+export function wrapWithFigmaIdAnnotation<T extends Node>(node: T, moduleContext: ModuleContext) {
+  // Attach an annotation with Figma ID.
+  // Ideally, it should be TSDoc (/ JSDoc), but it is not supported by the ts compiler API.
+  // As a workaround, we use multi-line comments.
+  // https://stackoverflow.com/a/57206925/4053349
+  // https://github.com/microsoft/TypeScript/issues/17146
+  ts.addSyntheticLeadingComment(
+    node,
+    ts.SyntaxKind.MultiLineCommentTrivia,
+    ` @figmaId ${moduleContext.node.id} `,
+    true,
+  );
 }
 
 function mkWrapExpressionFragment(
