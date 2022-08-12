@@ -56,9 +56,13 @@ export class StripeWebhookService {
               //   console.error('Cannot update Auth0 user:', error?.message);
               //   throw error;
               // }
+              await this.stripeService.completePayment(auth0Id);
+            } else {
+              throw new Error(`User deleted, the payment cannot be marked as completed.`);
             }
+          } else {
+            throw new Error(`The Stripe session is not 'active', the payment cannot be marked as completed.`);
           }
-          this.stripeService.emitStripePaymentStatus(true);
         }
         break;
       case 'customer.deleted': {

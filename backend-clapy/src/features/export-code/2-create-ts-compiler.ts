@@ -34,7 +34,7 @@ import { mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-nod
 import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
 import { addScssPackage, getCSSExtension, updateFilesAndContentForScss } from './tech-integration/scss/scss-utils.js';
 import { genStyles } from './tech-integration/style-dictionary/gen-styles.js';
-import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens';
+import type { TokenStore } from './tech-integration/style-dictionary/types/types/tokens/TokensStore.js';
 
 const { factory } = ts;
 

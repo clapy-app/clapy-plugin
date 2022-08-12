@@ -1,5 +1,9 @@
 import { generateTypes } from './details/hasura-schema.utils.js';
 
+// Deprecated script. To remove once we confirm we just need the CLI to generate the schemas.
+// After that, also check the hasura-schema utils. They may remain somewhere if needed later, e.g. another project.
+// But if not required in this project, we can clean it up.
+
 // Run it from the host machine, not inside docker. This script needs to access the backend and plugin project directories.
 (async () => {
   try {

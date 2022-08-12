@@ -1,7 +1,11 @@
 {
   "name": "clapy-root",
   "version": "0.0.1",
+  "description": "",
+  "author": "",
   "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
   "engines": {
     "node": ">=14"
   },
@@ -17,7 +21,7 @@
     "preview": "cd backend-clapy/atest-gen && yarn && yarn start",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive",
-    "dup": "docker compose stop dev && docker compose up -d db hasura stripe",
+    "dup": "docker compose stop dev && docker compose up -d --remove-orphans db hasura stripe",
     "dup2": "docker compose stop backend &&  docker compose up -d dev",
     "upold": "UID=\"$(id -u)\" GID=\"$(id -g)\" docker-compose stop dev && UID=\"$(id -u)\" GID=\"$(id -g)\" docker-compose up -d db hasura backend",
     "stop": "docker compose stop",
@@ -25,6 +29,7 @@
     "start:atest-gen": "cd backend-clapy/atest-gen && yarn start",
     "log": "docker compose logs -f --tail 100 backend",
     "analytics": "cd backend-clapy && yarn analytics",
+    "gentypes": "graphql-code-generator -r dotenv/config",
     "________________ deployment ________________": "",
     "migrate:dev": "yarn hasura migrate apply --endpoint http://localhost:8089/",
     "migrate:staging": "yarn migrate:staging1 && yarn migrate:staging2 && yarn migrate:staging3",
@@ -42,17 +47,20 @@
     "migrate:prod2": "yarn hasura:server migrate apply --all-databases --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
     "migrate:prod3": "yarn hasura:server metadata reload --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
     "hasura:squash": "yarn hasura migrate squash --database-name \"Clapy DB\"",
-    "hasura": "hasura --project db/hasura --envfile ../../.env --skip-update-check",
-    "hasura:server": "hasura --project db/hasura --skip-update-check",
-    "gentypes": "cd backend-clapy && yarn gentypes",
+    "hasura": "$(yarn bin hasura) --project db/hasura --envfile ../../.env --skip-update-check",
+    "hasura:server": "$(yarn bin hasura) --project db/hasura --skip-update-check",
     "pinggit": "ssh -T git@github.com",
     "kill": "sudo kill -9 `sudo lsof -t -i:9001`; sudo kill -9 `sudo lsof -t -i:9000`; sudo kill -9 `sudo lsof -t -i:3000`; sudo kill -9 `sudo lsof -t -i:9229`; echo Done"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.11.6",
+    "@graphql-codegen/schema-ast": "^2.5.1",
+    "@graphql-codegen/typescript": "^2.7.3",
     "@types/eslint": "^8.4.5",
     "@types/prettier": "^2.7.0",
     "eslint": "^8.21.0",
-    "hasura-cli": "^2.5.0",
+    "graphql": "^16.5.0",
+    "hasura-cli": "^2.9.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4"

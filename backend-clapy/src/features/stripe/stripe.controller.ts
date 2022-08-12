@@ -1,10 +1,12 @@
-import type { MessageEvent, RawBodyRequest } from '@nestjs/common';
-import { Controller, Get, HttpException, Inject, Post, Query, Render, Req, Sse } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
+import { Controller, Get, HttpException, Inject, Post, Query, Render, Req } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import type { Request } from 'express';
-import type { Observable } from 'rxjs';
 import { Stripe } from 'stripe';
+import type { Repository } from 'typeorm';
 
 import { IsBrowserGet } from '../../auth/IsBrowserGet.decorator.js';
+import { LoginTokensEntity } from '../../auth/login-tokens.entity.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
@@ -20,13 +22,16 @@ export class StripeController {
     @Inject(StripeService) private stripeService: StripeService,
     @Inject(StripeWebhookService) private stripeWebhookService: StripeWebhookService,
     @Inject(UserService) private userService: UserService,
+    @InjectRepository(LoginTokensEntity) private loginTokensRepo: Repository<LoginTokensEntity>,
   ) {}
 
   @Get('/checkout')
-  async stripeCheckout(@Req() request: Request, @Query('from') from: string) {
-    const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${from}`;
-    const user = (request as any).user as AccessTokenDecoded;
+  async stripeCheckout(@Req() req: Request, @Query('from') from: string) {
+    const user = (req as any).user as AccessTokenDecoded;
     const userId = user.sub;
+    const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${encodeURIComponent(
+      from,
+    )}&userId=${encodeURIComponent(userId)}`;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     //search if customer already exists in stripe
@@ -87,14 +92,14 @@ export class StripeController {
   }
 
   @Get('/get-user-quota')
-  async getUserQuotas(@Req() request: Request) {
-    const user = (request as any).user as AccessTokenDecoded;
+  async getUserQuotas(@Req() req: Request) {
+    const user = (req as any).user as AccessTokenDecoded;
     return this.userService.getUserSubscriptionData(user);
   }
   @Get('/customer-portal')
-  async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {
+  async stripeCustomerPortal(@Req() req: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
-    const user = (request as any).user as AccessTokenDecoded;
+    const user = (req as any).user as AccessTokenDecoded;
     const userId = user.sub;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
@@ -130,10 +135,14 @@ export class StripeController {
   @IsBrowserGet()
   @Get('/checkout-callback')
   @Render('checkout-callback')
-  async checkoutCallback(@Query('from') from: 'browser' | 'desktop', @Query('state') state: 'completed' | 'canceled') {
+  async checkoutCallback(
+    @Query('from') from: 'browser' | 'desktop',
+    @Query('userId') userId: string,
+    @Query('state') state: 'completed' | 'canceled',
+  ) {
     if (!state) throw new Error(`No state in query parameters.`);
     if (state === 'canceled') {
-      this.stripeService.emitStripePaymentStatus(false);
+      await this.stripeService.cancelPayment(userId);
     }
     return { from, state };
   }
@@ -149,10 +158,11 @@ export class StripeController {
     return { from };
   }
 
-  @PublicRoute()
-  @IsBrowserGet()
-  @Sse('sse')
-  sse(): Observable<MessageEvent> {
-    return this.stripeService.getPaymentCompletedObservable();
+  @Post('reset-payment-status')
+  async resetPaymentStatus(@Req() req: Request) {
+    const user = (req as any).user as AccessTokenDecoded;
+    const userId = user.sub;
+    // await this.loginTokensRepo.delete({ userId });
+    await this.stripeService.startPayment(userId);
   }
 }

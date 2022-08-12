@@ -8,7 +8,7 @@ x-backend:
   build:
     dockerfile: ./Dockerfile.dev
     context: ./backend-clapy
-  user: "${UID}:${GID}"
+  user: "${UID:-$(id -u)}:${GID:-1000}"
   volumes:
     - node_modules:/app/node_modules
     - ./backend-clapy:/app
@@ -53,7 +53,7 @@ services:
   hasura:
     # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
     # version) and the package hasura-cli in package.json.
-    image: hasura/graphql-engine:v2.4.0.cli-migrations-v3
+    image: hasura/graphql-engine:v2.9.0.cli-migrations-v3
     container_name: clapy_hasura
     ports:
       - '${VITE_HASURA_PORT}:${HASURA_DOCKER_PORT}'
@@ -62,6 +62,8 @@ services:
     volumes:
       - ./db/hasura/metadata:/hasura-metadata
       - ./db/hasura/migrations:/hasura-migrations
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
     env_file: .env
     environment:
       HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"

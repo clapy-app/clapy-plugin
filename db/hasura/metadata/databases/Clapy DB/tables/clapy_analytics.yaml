@@ -1,6 +1,6 @@
 table:
-  schema: clapy
   name: analytics
+  schema: clapy
 insert_permissions:
   - role: anonymous
     permission:
@@ -11,4 +11,3 @@ insert_permissions:
         - details
         - figma_id
         - status
-      backend_only: false

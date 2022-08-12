@@ -22,12 +22,32 @@ In a terminal, run:
 
 (1) Alternative: `yarn dev` through command-line to start everything
 
-Note: for now, `Hasura console` task is excluded from the default build because it's rarely useful in current developments. To start it, run this task or `yarn console` in the terminal. If you often need it, feel free to uncomment it in the default build task (.vscode/tasks.json, first task).
+## Update the database
+
+- Run `hasura console` in a terminal, and open the printed link. From the hasura console, make the desired changes.
+- Run `yarn gentypes` to update the TypeScript interface and graphql model in the code base.
+
+Note: for now, the corresponding `Hasura console` task is excluded from the default build because it's rarely useful in current developments. If you find yourself often opening the console, don't hesitate to add the task back to the main task, `Start dev env`, in `.vscode/tasks.json`.
 
 ## Update yarn
 
 - `yarn set version stable`
 - `yarn install` in the root, the back and the front directories.
+
+## Update libraries
+
+- `yarn upgr` and select the new versions.
+
+Special mentions:
+
+- Hasura CLI: you need to update the library version + the version of the image hasura/graphql-engine in docker-compose.yml + db/Dockerfile. They all have to have the same version number.
+- @types/node: the major version should be the same as the node used in the project
+- express-jwt: there used to be a bug in JWT validation when upgrading above 6.1.2. If you upgrade, ensure you test carefully the JWT validation.
+
+Code to design libraries, unused for now:
+
+- opentype.js: it's a fork, no need to upgrade for now (see _Open PR & issues from me_ below)
+- puppeteer
 
 ## Test Stripe workflow
 

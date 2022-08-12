@@ -1,0 +1,24 @@
+schema:
+  - http://${VITE_HASURA_HOSTNAME}:${VITE_HASURA_PORT}/v1/graphql:
+      headers:
+        X-Hasura-Role: admin
+        X-Hasura-Admin-Secret: ${HASURA_GRAPHQL_ADMIN_SECRET}
+# documents: ./src/**/*.graphql
+emitLegacyCommonJSImports: false
+generates:
+  ./figma-plugin-clapy/generated/schema.d.ts:
+    plugins:
+      - typescript
+      # - typescript-operations
+    # preset: gql-tag-operations-preset
+  ./backend-clapy/generated/schema.d.ts:
+    plugins:
+      - typescript
+      # - typescript-operations
+    # preset: gql-tag-operations-preset
+  ./figma-plugin-clapy/generated/schema.graphql:
+    plugins:
+      - schema-ast
+  ./backend-clapy/generated/schema.graphql:
+    plugins:
+      - schema-ast

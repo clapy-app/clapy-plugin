@@ -85,7 +85,9 @@ async function createGeneratedFolder() {
 }
 
 async function hasuraExtractSchema() {
-  const fetchSchema = (await import('graphql-fetch-schema')).default;
+  const fetchSchemaImport = await import('graphql-fetch-schema');
+  let fetchSchema = fetchSchemaImport.default;
+  if (fetchSchema.default) fetchSchema = fetchSchema.default;
   return Promise.all([
     fetchSchema(`${rootHasuraUrl}/graphql`, {
       json: false,
@@ -114,6 +116,7 @@ async function generateTypesFromSchema() {
     {
       schema: `${frontGeneratedDir}/schema.graphql`,
       // documents: './src/**/*.graphql',
+      emitLegacyCommonJSImports: false,
       generates: {
         [`${frontGeneratedDir}/schema.d.ts`]: {
           plugins: ['typescript'],

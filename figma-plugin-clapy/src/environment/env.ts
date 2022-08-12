@@ -37,8 +37,9 @@ const isSsl = isTrue(process.env.VITE_HASURA_SSL);
 const hasuraPort = `${process.env.VITE_HASURA_PORT || ''}`;
 const portFragment =
   !hasuraPort || (isSsl && hasuraPort === '443') || (!isSsl && hasuraPort === '80') ? '' : `:${hasuraPort}`;
-const hasuraHttp = `${isSsl ? 'https' : 'http'}://${process.env.VITE_HASURA_HOSTNAME}${portFragment}`;
-const hasuraWs = `${isSsl ? 'wss' : 'ws'}://${process.env.VITE_HASURA_HOSTNAME}${portFragment}`;
+const hasuraAfterProtocol = `://${process.env.VITE_HASURA_HOSTNAME}${portFragment}`;
+const hasuraHttp = `${isSsl ? 'https' : 'http'}${hasuraAfterProtocol}`;
+const hasuraWs = `${isSsl ? 'wss' : 'ws'}${hasuraAfterProtocol}`;
 
 export const env = {
   ...nonConfidentialEnv,
@@ -55,9 +56,9 @@ export const env = {
   securityRequestedByHeader: 'clapy',
   allowCorsApi: false,
   // Hasura
-  hasuraHttp,
+  hasuraGraphQL: `${hasuraHttp}/v1/graphql`,
+  hasuraGraphQLWS: `${hasuraWs}/v1/graphql`,
   hasuraRest: `${hasuraHttp}/api/rest`,
-  hasuraWs,
 };
 
 if (!isProd) {

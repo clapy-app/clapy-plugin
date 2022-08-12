@@ -1,3 +1,4 @@
+import type { UnwrapPromiseLike } from '../../../../common/app-models.js';
 import { unquoteAndTrimString } from '../../../../common/general-utils';
 import type { Property } from '../../../../common/sb-serialize.model';
 import { sizeWithUnitToPx } from './update-canvas-utils';
@@ -44,7 +45,6 @@ interface FontIndexValue {
   fontStyle: Property.FontStyle;
 }
 
-export declare type UnwrapPromiseLike<T> = T extends PromiseLike<infer U> ? U : T;
 type FontsIndexPromise = ReturnType<typeof indexFonts>;
 type FontsIndex = UnwrapPromiseLike<FontsIndexPromise>;
 let fontsIndexPromise: FontsIndexPromise | undefined = undefined;

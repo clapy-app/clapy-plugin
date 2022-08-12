@@ -18,7 +18,7 @@ const authEnv = JSON.stringify({ auth0Domain, auth0ClientId, baseUrl });
 export class LoginController {
   constructor(
     @Inject(HttpService) private httpService: HttpService,
-    @InjectRepository(LoginTokensEntity) private usersRepository: Repository<LoginTokensEntity>,
+    @InjectRepository(LoginTokensEntity) private loginTokensRepo: Repository<LoginTokensEntity>,
   ) {}
 
   // Debug
@@ -29,7 +29,7 @@ export class LoginController {
     if (!env.isDev) {
       return {};
     }
-    const res = await this.usersRepository.find();
+    const res = await this.loginTokensRepo.find();
     return {
       tokens: JSON.stringify(res),
       from,
@@ -43,7 +43,7 @@ export class LoginController {
     const writeToken = await generateToken();
     tokens.readToken = readToken;
     tokens.writeToken = writeToken;
-    await this.usersRepository.save(tokens);
+    await this.loginTokensRepo.save(tokens);
     return { readToken, writeToken };
   }
 
@@ -64,13 +64,13 @@ export class LoginController {
     @Query('from') from: string = 'browser',
   ) {
     if (!writeToken) throw new Error(`No state in query parameters.`);
-    const writeTokenEntity = await this.usersRepository.findOne({ where: { writeToken } });
+    const writeTokenEntity = await this.loginTokensRepo.findOne({ where: { writeToken } });
     if (!writeTokenEntity) {
       throw new Error(`Write token invalid or already consumed`);
     }
     writeTokenEntity.code = code;
     writeTokenEntity.writeToken = undefined;
-    await this.usersRepository.save(writeTokenEntity);
+    await this.loginTokensRepo.save(writeTokenEntity);
 
     return { authEnv, from };
   }
@@ -86,7 +86,7 @@ export class LoginController {
   @Get('read-code')
   async readCode(@Headers('read_token') readToken: string) {
     if (!readToken) throw new Error(`No read_token in query parameters.`);
-    const readTokenEntity = await this.usersRepository.findOne({ where: { readToken } });
+    const readTokenEntity = await this.loginTokensRepo.findOne({ where: { readToken } });
     return { code: readTokenEntity?.code };
   }
 
@@ -95,14 +95,14 @@ export class LoginController {
     // System to improve. If the deletion fails (e.g. network), it remains in memory forever.
     // At least, we should have an expiration date or a better transaction system with the front.
     if (!readToken) throw new Error(`No read_token in query parameters.`);
-    const res = await this.usersRepository.delete({ readToken });
+    const res = await this.loginTokensRepo.delete({ readToken });
     return { deleted: !!res.affected };
   }
 
   @Post('proxy-get-token')
   async proxyToken(@Body() body: any = {}, @Headers('read_token') readToken: string) {
     if (!readToken) throw new Error(`No read_token in query parameters.`);
-    const readTokenEntity = await this.usersRepository.findOne({ where: { readToken } });
+    const readTokenEntity = await this.loginTokensRepo.findOne({ where: { readToken } });
     if (!readTokenEntity) throw new Error(`Invalid read_token in query parameters.`);
 
     const url = `https://${auth0Domain}/oauth/token`;
