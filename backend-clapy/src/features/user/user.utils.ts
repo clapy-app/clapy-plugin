@@ -148,7 +148,7 @@ export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
 // Next step: substitute isStripeDevTeam with isNewUserTmp
 export const isStripeEnabled = (user: AccessTokenDecoded) => isStripeDevTeam(user);
 
-function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
+export function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
 }
 

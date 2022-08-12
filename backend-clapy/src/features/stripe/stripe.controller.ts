@@ -10,7 +10,7 @@ import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-import { getAuth0User } from '../user/user.utils.js';
+import { getAuth0User, isStripeDevTeam } from '../user/user.utils.js';
 import { StripeWebhookService } from './stripe-webhook.service.js';
 import { StripeService } from './stripe.service.js';
 
@@ -25,8 +25,8 @@ export class StripeController {
   @Get('/checkout')
   async stripeCheckout(@Req() request: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${from}`;
-    const user = (request as any).user;
-    const userId = (request as any).user.sub;
+    const user = (request as any).user as AccessTokenDecoded;
+    const userId = user.sub;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     //search if customer already exists in stripe
@@ -40,7 +40,7 @@ export class StripeController {
       customer = await stripe.customers.create({
         email: auth0User.email,
         metadata: {
-          auth0Id: (request as any).user.sub,
+          auth0Id: user.sub,
         },
       });
     } else {
@@ -50,9 +50,10 @@ export class StripeController {
     if (!this.stripeService.isLicenceInactive(user)) {
       throw new Error('You already have an active subscription.');
     }
-    const session = await stripe.checkout.sessions.create({
+
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
-      client_reference_id: (request as any).user.sub,
+      client_reference_id: user.sub,
       customer: customer.id,
       line_items: [
         {
@@ -71,7 +72,17 @@ export class StripeController {
         address: 'auto',
         shipping: 'auto',
       },
-    });
+    };
+
+    if (isStripeDevTeam(user)) {
+      sessionParams.discounts = [
+        {
+          coupon: 'betacoupon',
+        },
+      ];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
     return session.url;
   }
 
@@ -83,7 +94,8 @@ export class StripeController {
   @Get('/customer-portal')
   async stripeCustomerPortal(@Req() request: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
-    const userId = (request as any).user.sub;
+    const user = (request as any).user as AccessTokenDecoded;
+    const userId = user.sub;
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     const { data } = await stripe.customers.search({
