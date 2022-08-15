@@ -19,13 +19,14 @@
   align-self: flex-start;
   place-content: center;
   align-items: center;
-  gap: 5.6451px;
-  padding: 7.4383px 13.017px;
-  outline: solid 0.9297px #fff;
-  outline-offset: -0.9297px;
+  gap: 5.6452px;
+  padding: 7.4383px 13.0171px;
+  outline: solid 0.9298px #fff;
+  outline-offset: -1px;
   border-radius: 7.4383px;
-  overflow: hidden;
-  box-shadow: 0px 0.9297913312911987px 1.8595826625823975px 0px #1018280d;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0px 0.9298px 1.8596px 0px #1018280d;
 }
 .text {
   color: #fff;
