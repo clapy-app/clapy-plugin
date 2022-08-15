@@ -6,12 +6,95 @@ schema {
 
 """whether this query should be cached (Hasura Cloud only)"""
 directive @cached(
-  """measured in seconds"""
-  ttl: Int! = 60
-
   """refresh the cache entry"""
   refresh: Boolean! = false
+
+  """measured in seconds"""
+  ttl: Int! = 60
 ) on QUERY
+
+"""
+Boolean expression to compare columns of type "Boolean". All fields are combined with logical 'AND'.
+"""
+input Boolean_comparison_exp {
+  _eq: Boolean
+  _gt: Boolean
+  _gte: Boolean
+  _in: [Boolean!]
+  _is_null: Boolean
+  _lt: Boolean
+  _lte: Boolean
+  _neq: Boolean
+  _nin: [Boolean!]
+}
+
+"""
+Boolean expression to compare columns of type "Int". All fields are combined with logical 'AND'.
+"""
+input Int_comparison_exp {
+  _eq: Int
+  _gt: Int
+  _gte: Int
+  _in: [Int!]
+  _is_null: Boolean
+  _lt: Int
+  _lte: Int
+  _neq: Int
+  _nin: [Int!]
+}
+
+"""
+Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
+"""
+input String_comparison_exp {
+  _eq: String
+  _gt: String
+  _gte: String
+
+  """does the column match the given case-insensitive pattern"""
+  _ilike: String
+  _in: [String!]
+
+  """
+  does the column match the given POSIX regular expression, case insensitive
+  """
+  _iregex: String
+  _is_null: Boolean
+
+  """does the column match the given pattern"""
+  _like: String
+  _lt: String
+  _lte: String
+  _neq: String
+
+  """does the column NOT match the given case-insensitive pattern"""
+  _nilike: String
+  _nin: [String!]
+
+  """
+  does the column NOT match the given POSIX regular expression, case insensitive
+  """
+  _niregex: String
+
+  """does the column NOT match the given pattern"""
+  _nlike: String
+
+  """
+  does the column NOT match the given POSIX regular expression, case sensitive
+  """
+  _nregex: String
+
+  """does the column NOT match the given SQL regular expression"""
+  _nsimilar: String
+
+  """
+  does the column match the given POSIX regular expression, case sensitive
+  """
+  _regex: String
+
+  """does the column match the given SQL regular expression"""
+  _similar: String
+}
 
 """
 columns and relationships of "clapy.analytics"
@@ -71,7 +154,9 @@ input clapy_analytics_bool_exp {
 unique or primary key constraints on table "clapy.analytics"
 """
 enum clapy_analytics_constraint {
-  """unique or primary key constraint"""
+  """
+  unique or primary key constraint on columns "id"
+  """
   analytics_pkey
 }
 
@@ -83,8 +168,7 @@ input clapy_analytics_delete_at_path_input {
 }
 
 """
-delete the array element with specified index (negative integers count from the
-end). throws an error if top level container is not an array
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
 """
 input clapy_analytics_delete_elem_input {
   details: Int
@@ -236,12 +320,431 @@ enum clapy_analytics_update_column {
   status
 }
 
+"""
+columns and relationships of "clapy.generation_history"
+"""
+type clapy_generation_history {
+  auth0id: String!
+  created_at: timestamptz!
+  generated_link: String!
+  id: uuid!
+  is_free_user: Boolean!
+}
+
+"""
+aggregated selection of "clapy.generation_history"
+"""
+type clapy_generation_history_aggregate {
+  aggregate: clapy_generation_history_aggregate_fields
+  nodes: [clapy_generation_history!]!
+}
+
+"""
+aggregate fields of "clapy.generation_history"
+"""
+type clapy_generation_history_aggregate_fields {
+  count(columns: [clapy_generation_history_select_column!], distinct: Boolean): Int!
+  max: clapy_generation_history_max_fields
+  min: clapy_generation_history_min_fields
+}
+
+"""
+Boolean expression to filter rows from the table "clapy.generation_history". All fields are combined with a logical 'AND'.
+"""
+input clapy_generation_history_bool_exp {
+  _and: [clapy_generation_history_bool_exp!]
+  _not: clapy_generation_history_bool_exp
+  _or: [clapy_generation_history_bool_exp!]
+  auth0id: String_comparison_exp
+  created_at: timestamptz_comparison_exp
+  generated_link: String_comparison_exp
+  id: uuid_comparison_exp
+  is_free_user: Boolean_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "clapy.generation_history"
+"""
+enum clapy_generation_history_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  generation_history_pkey
+}
+
+"""
+input type for inserting data into table "clapy.generation_history"
+"""
+input clapy_generation_history_insert_input {
+  auth0id: String
+  created_at: timestamptz
+  generated_link: String
+  id: uuid
+  is_free_user: Boolean
+}
+
+"""aggregate max on columns"""
+type clapy_generation_history_max_fields {
+  auth0id: String
+  created_at: timestamptz
+  generated_link: String
+  id: uuid
+}
+
+"""aggregate min on columns"""
+type clapy_generation_history_min_fields {
+  auth0id: String
+  created_at: timestamptz
+  generated_link: String
+  id: uuid
+}
+
+"""
+response of any mutation on the table "clapy.generation_history"
+"""
+type clapy_generation_history_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [clapy_generation_history!]!
+}
+
+"""
+on_conflict condition type for table "clapy.generation_history"
+"""
+input clapy_generation_history_on_conflict {
+  constraint: clapy_generation_history_constraint!
+  update_columns: [clapy_generation_history_update_column!]! = []
+  where: clapy_generation_history_bool_exp
+}
+
+"""Ordering options when selecting data from "clapy.generation_history"."""
+input clapy_generation_history_order_by {
+  auth0id: order_by
+  created_at: order_by
+  generated_link: order_by
+  id: order_by
+  is_free_user: order_by
+}
+
+"""primary key columns input for table: clapy_generation_history"""
+input clapy_generation_history_pk_columns_input {
+  id: uuid!
+}
+
+"""
+select columns of table "clapy.generation_history"
+"""
+enum clapy_generation_history_select_column {
+  """column name"""
+  auth0id
+
+  """column name"""
+  created_at
+
+  """column name"""
+  generated_link
+
+  """column name"""
+  id
+
+  """column name"""
+  is_free_user
+}
+
+"""
+input type for updating data in table "clapy.generation_history"
+"""
+input clapy_generation_history_set_input {
+  auth0id: String
+  created_at: timestamptz
+  generated_link: String
+  id: uuid
+  is_free_user: Boolean
+}
+
+"""
+update columns of table "clapy.generation_history"
+"""
+enum clapy_generation_history_update_column {
+  """column name"""
+  auth0id
+
+  """column name"""
+  created_at
+
+  """column name"""
+  generated_link
+
+  """column name"""
+  id
+
+  """column name"""
+  is_free_user
+}
+
+"""
+columns and relationships of "clapy.login_tokens"
+"""
+type clapy_login_tokens {
+  code: String
+  id: Int!
+  payment_status: String
+  read_token: String
+  user_id: String
+  write_token: String
+}
+
+"""
+aggregated selection of "clapy.login_tokens"
+"""
+type clapy_login_tokens_aggregate {
+  aggregate: clapy_login_tokens_aggregate_fields
+  nodes: [clapy_login_tokens!]!
+}
+
+"""
+aggregate fields of "clapy.login_tokens"
+"""
+type clapy_login_tokens_aggregate_fields {
+  avg: clapy_login_tokens_avg_fields
+  count(columns: [clapy_login_tokens_select_column!], distinct: Boolean): Int!
+  max: clapy_login_tokens_max_fields
+  min: clapy_login_tokens_min_fields
+  stddev: clapy_login_tokens_stddev_fields
+  stddev_pop: clapy_login_tokens_stddev_pop_fields
+  stddev_samp: clapy_login_tokens_stddev_samp_fields
+  sum: clapy_login_tokens_sum_fields
+  var_pop: clapy_login_tokens_var_pop_fields
+  var_samp: clapy_login_tokens_var_samp_fields
+  variance: clapy_login_tokens_variance_fields
+}
+
+"""aggregate avg on columns"""
+type clapy_login_tokens_avg_fields {
+  id: Float
+}
+
+"""
+Boolean expression to filter rows from the table "clapy.login_tokens". All fields are combined with a logical 'AND'.
+"""
+input clapy_login_tokens_bool_exp {
+  _and: [clapy_login_tokens_bool_exp!]
+  _not: clapy_login_tokens_bool_exp
+  _or: [clapy_login_tokens_bool_exp!]
+  code: String_comparison_exp
+  id: Int_comparison_exp
+  payment_status: String_comparison_exp
+  read_token: String_comparison_exp
+  user_id: String_comparison_exp
+  write_token: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "clapy.login_tokens"
+"""
+enum clapy_login_tokens_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  login_tokens_pkey
+
+  """
+  unique or primary key constraint on columns "read_token"
+  """
+  login_tokens_read_token_key
+
+  """
+  unique or primary key constraint on columns "user_id"
+  """
+  login_tokens_user_id_key
+
+  """
+  unique or primary key constraint on columns "write_token"
+  """
+  login_tokens_write_token_key
+}
+
+"""
+input type for incrementing numeric columns in table "clapy.login_tokens"
+"""
+input clapy_login_tokens_inc_input {
+  id: Int
+}
+
+"""
+input type for inserting data into table "clapy.login_tokens"
+"""
+input clapy_login_tokens_insert_input {
+  code: String
+  id: Int
+  payment_status: String
+  read_token: String
+  user_id: String
+  write_token: String
+}
+
+"""aggregate max on columns"""
+type clapy_login_tokens_max_fields {
+  code: String
+  id: Int
+  payment_status: String
+  read_token: String
+  user_id: String
+  write_token: String
+}
+
+"""aggregate min on columns"""
+type clapy_login_tokens_min_fields {
+  code: String
+  id: Int
+  payment_status: String
+  read_token: String
+  user_id: String
+  write_token: String
+}
+
+"""
+response of any mutation on the table "clapy.login_tokens"
+"""
+type clapy_login_tokens_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [clapy_login_tokens!]!
+}
+
+"""
+on_conflict condition type for table "clapy.login_tokens"
+"""
+input clapy_login_tokens_on_conflict {
+  constraint: clapy_login_tokens_constraint!
+  update_columns: [clapy_login_tokens_update_column!]! = []
+  where: clapy_login_tokens_bool_exp
+}
+
+"""Ordering options when selecting data from "clapy.login_tokens"."""
+input clapy_login_tokens_order_by {
+  code: order_by
+  id: order_by
+  payment_status: order_by
+  read_token: order_by
+  user_id: order_by
+  write_token: order_by
+}
+
+"""primary key columns input for table: clapy_login_tokens"""
+input clapy_login_tokens_pk_columns_input {
+  id: Int!
+}
+
+"""
+select columns of table "clapy.login_tokens"
+"""
+enum clapy_login_tokens_select_column {
+  """column name"""
+  code
+
+  """column name"""
+  id
+
+  """column name"""
+  payment_status
+
+  """column name"""
+  read_token
+
+  """column name"""
+  user_id
+
+  """column name"""
+  write_token
+}
+
+"""
+input type for updating data in table "clapy.login_tokens"
+"""
+input clapy_login_tokens_set_input {
+  code: String
+  id: Int
+  payment_status: String
+  read_token: String
+  user_id: String
+  write_token: String
+}
+
+"""aggregate stddev on columns"""
+type clapy_login_tokens_stddev_fields {
+  id: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type clapy_login_tokens_stddev_pop_fields {
+  id: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type clapy_login_tokens_stddev_samp_fields {
+  id: Float
+}
+
+"""aggregate sum on columns"""
+type clapy_login_tokens_sum_fields {
+  id: Int
+}
+
+"""
+update columns of table "clapy.login_tokens"
+"""
+enum clapy_login_tokens_update_column {
+  """column name"""
+  code
+
+  """column name"""
+  id
+
+  """column name"""
+  payment_status
+
+  """column name"""
+  read_token
+
+  """column name"""
+  user_id
+
+  """column name"""
+  write_token
+}
+
+"""aggregate var_pop on columns"""
+type clapy_login_tokens_var_pop_fields {
+  id: Float
+}
+
+"""aggregate var_samp on columns"""
+type clapy_login_tokens_var_samp_fields {
+  id: Float
+}
+
+"""aggregate variance on columns"""
+type clapy_login_tokens_variance_fields {
+  id: Float
+}
+
 scalar jsonb
+
+input jsonb_cast_exp {
+  String: String_comparison_exp
+}
 
 """
 Boolean expression to compare columns of type "jsonb". All fields are combined with logical 'AND'.
 """
 input jsonb_comparison_exp {
+  _cast: jsonb_cast_exp
+
   """is the column contained in the given json value"""
   _contained_in: jsonb
 
@@ -283,6 +786,32 @@ type mutation_root {
   delete_clapy_analytics_by_pk(id: uuid!): clapy_analytics
 
   """
+  delete data from the table: "clapy.generation_history"
+  """
+  delete_clapy_generation_history(
+    """filter the rows which have to be deleted"""
+    where: clapy_generation_history_bool_exp!
+  ): clapy_generation_history_mutation_response
+
+  """
+  delete single row from the table: "clapy.generation_history"
+  """
+  delete_clapy_generation_history_by_pk(id: uuid!): clapy_generation_history
+
+  """
+  delete data from the table: "clapy.login_tokens"
+  """
+  delete_clapy_login_tokens(
+    """filter the rows which have to be deleted"""
+    where: clapy_login_tokens_bool_exp!
+  ): clapy_login_tokens_mutation_response
+
+  """
+  delete single row from the table: "clapy.login_tokens"
+  """
+  delete_clapy_login_tokens_by_pk(id: Int!): clapy_login_tokens
+
+  """
   insert data into the table: "clapy.analytics"
   """
   insert_clapy_analytics(
@@ -305,6 +834,50 @@ type mutation_root {
   ): clapy_analytics
 
   """
+  insert data into the table: "clapy.generation_history"
+  """
+  insert_clapy_generation_history(
+    """the rows to be inserted"""
+    objects: [clapy_generation_history_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: clapy_generation_history_on_conflict
+  ): clapy_generation_history_mutation_response
+
+  """
+  insert a single row into the table: "clapy.generation_history"
+  """
+  insert_clapy_generation_history_one(
+    """the row to be inserted"""
+    object: clapy_generation_history_insert_input!
+
+    """upsert condition"""
+    on_conflict: clapy_generation_history_on_conflict
+  ): clapy_generation_history
+
+  """
+  insert data into the table: "clapy.login_tokens"
+  """
+  insert_clapy_login_tokens(
+    """the rows to be inserted"""
+    objects: [clapy_login_tokens_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: clapy_login_tokens_on_conflict
+  ): clapy_login_tokens_mutation_response
+
+  """
+  insert a single row into the table: "clapy.login_tokens"
+  """
+  insert_clapy_login_tokens_one(
+    """the row to be inserted"""
+    object: clapy_login_tokens_insert_input!
+
+    """upsert condition"""
+    on_conflict: clapy_login_tokens_on_conflict
+  ): clapy_login_tokens
+
+  """
   update data of the table: "clapy.analytics"
   """
   update_clapy_analytics(
@@ -317,8 +890,7 @@ type mutation_root {
     _delete_at_path: clapy_analytics_delete_at_path_input
 
     """
-    delete the array element with specified index (negative integers count from
-    the end). throws an error if top level container is not an array
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
     """
     _delete_elem: clapy_analytics_delete_elem_input
 
@@ -350,8 +922,7 @@ type mutation_root {
     _delete_at_path: clapy_analytics_delete_at_path_input
 
     """
-    delete the array element with specified index (negative integers count from
-    the end). throws an error if top level container is not an array
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
     """
     _delete_elem: clapy_analytics_delete_elem_input
 
@@ -367,6 +938,52 @@ type mutation_root {
     _set: clapy_analytics_set_input
     pk_columns: clapy_analytics_pk_columns_input!
   ): clapy_analytics
+
+  """
+  update data of the table: "clapy.generation_history"
+  """
+  update_clapy_generation_history(
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_generation_history_set_input
+
+    """filter the rows which have to be updated"""
+    where: clapy_generation_history_bool_exp!
+  ): clapy_generation_history_mutation_response
+
+  """
+  update single row of the table: "clapy.generation_history"
+  """
+  update_clapy_generation_history_by_pk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_generation_history_set_input
+    pk_columns: clapy_generation_history_pk_columns_input!
+  ): clapy_generation_history
+
+  """
+  update data of the table: "clapy.login_tokens"
+  """
+  update_clapy_login_tokens(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: clapy_login_tokens_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_login_tokens_set_input
+
+    """filter the rows which have to be updated"""
+    where: clapy_login_tokens_bool_exp!
+  ): clapy_login_tokens_mutation_response
+
+  """
+  update single row of the table: "clapy.login_tokens"
+  """
+  update_clapy_login_tokens_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: clapy_login_tokens_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: clapy_login_tokens_set_input
+    pk_columns: clapy_login_tokens_pk_columns_input!
+  ): clapy_login_tokens
 }
 
 """column ordering options"""
@@ -433,59 +1050,96 @@ type query_root {
 
   """fetch data from the table: "clapy.analytics" using primary key columns"""
   clapy_analytics_by_pk(id: uuid!): clapy_analytics
-}
-
-"""
-Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
-"""
-input String_comparison_exp {
-  _eq: String
-  _gt: String
-  _gte: String
-
-  """does the column match the given case-insensitive pattern"""
-  _ilike: String
-  _in: [String!]
 
   """
-  does the column match the given POSIX regular expression, case insensitive
+  fetch data from the table: "clapy.generation_history"
   """
-  _iregex: String
-  _is_null: Boolean
+  clapy_generation_history(
+    """distinct select on columns"""
+    distinct_on: [clapy_generation_history_select_column!]
 
-  """does the column match the given pattern"""
-  _like: String
-  _lt: String
-  _lte: String
-  _neq: String
+    """limit the number of rows returned"""
+    limit: Int
 
-  """does the column NOT match the given case-insensitive pattern"""
-  _nilike: String
-  _nin: [String!]
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
 
-  """
-  does the column NOT match the given POSIX regular expression, case insensitive
-  """
-  _niregex: String
+    """sort the rows by one or more columns"""
+    order_by: [clapy_generation_history_order_by!]
 
-  """does the column NOT match the given pattern"""
-  _nlike: String
+    """filter the rows returned"""
+    where: clapy_generation_history_bool_exp
+  ): [clapy_generation_history!]!
 
   """
-  does the column NOT match the given POSIX regular expression, case sensitive
+  fetch aggregated fields from the table: "clapy.generation_history"
   """
-  _nregex: String
+  clapy_generation_history_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_generation_history_select_column!]
 
-  """does the column NOT match the given SQL regular expression"""
-  _nsimilar: String
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_generation_history_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_generation_history_bool_exp
+  ): clapy_generation_history_aggregate!
 
   """
-  does the column match the given POSIX regular expression, case sensitive
+  fetch data from the table: "clapy.generation_history" using primary key columns
   """
-  _regex: String
+  clapy_generation_history_by_pk(id: uuid!): clapy_generation_history
 
-  """does the column match the given SQL regular expression"""
-  _similar: String
+  """
+  fetch data from the table: "clapy.login_tokens"
+  """
+  clapy_login_tokens(
+    """distinct select on columns"""
+    distinct_on: [clapy_login_tokens_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_login_tokens_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_login_tokens_bool_exp
+  ): [clapy_login_tokens!]!
+
+  """
+  fetch aggregated fields from the table: "clapy.login_tokens"
+  """
+  clapy_login_tokens_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_login_tokens_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_login_tokens_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_login_tokens_bool_exp
+  ): clapy_login_tokens_aggregate!
+
+  """
+  fetch data from the table: "clapy.login_tokens" using primary key columns
+  """
+  clapy_login_tokens_by_pk(id: Int!): clapy_login_tokens
 }
 
 type subscription_root {
@@ -531,6 +1185,96 @@ type subscription_root {
 
   """fetch data from the table: "clapy.analytics" using primary key columns"""
   clapy_analytics_by_pk(id: uuid!): clapy_analytics
+
+  """
+  fetch data from the table: "clapy.generation_history"
+  """
+  clapy_generation_history(
+    """distinct select on columns"""
+    distinct_on: [clapy_generation_history_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_generation_history_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_generation_history_bool_exp
+  ): [clapy_generation_history!]!
+
+  """
+  fetch aggregated fields from the table: "clapy.generation_history"
+  """
+  clapy_generation_history_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_generation_history_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_generation_history_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_generation_history_bool_exp
+  ): clapy_generation_history_aggregate!
+
+  """
+  fetch data from the table: "clapy.generation_history" using primary key columns
+  """
+  clapy_generation_history_by_pk(id: uuid!): clapy_generation_history
+
+  """
+  fetch data from the table: "clapy.login_tokens"
+  """
+  clapy_login_tokens(
+    """distinct select on columns"""
+    distinct_on: [clapy_login_tokens_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_login_tokens_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_login_tokens_bool_exp
+  ): [clapy_login_tokens!]!
+
+  """
+  fetch aggregated fields from the table: "clapy.login_tokens"
+  """
+  clapy_login_tokens_aggregate(
+    """distinct select on columns"""
+    distinct_on: [clapy_login_tokens_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [clapy_login_tokens_order_by!]
+
+    """filter the rows returned"""
+    where: clapy_login_tokens_bool_exp
+  ): clapy_login_tokens_aggregate!
+
+  """
+  fetch data from the table: "clapy.login_tokens" using primary key columns
+  """
+  clapy_login_tokens_by_pk(id: Int!): clapy_login_tokens
 }
 
 scalar timestamptz

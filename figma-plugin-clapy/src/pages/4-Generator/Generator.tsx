@@ -6,10 +6,10 @@ import classes from './Generator.module.css';
 import { PluginComponentCounter_License } from './quotaBar/PluginComponentCounter_License/PluginComponentCounter_License';
 
 export const Generator: FC = () => {
-  return <LayoutInner />;
+  return <GeneratorInner />;
 };
 
-export const LayoutInner: FC = memo(function LayoutInner() {
+export const GeneratorInner: FC = memo(function GeneratorInner() {
   return (
     <>
       <div className={classes.content}>

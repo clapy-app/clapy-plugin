@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 
+import type { Nil } from '../../common/app-models.js';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { env, isFigmaPlugin } from '../../environment/env';
@@ -149,7 +150,7 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       setAccessToken(accessToken);
       _tokenType = tokenType;
     }
-    if (!_accessToken) {
+    if (!_accessToken || isJwtLikelyExpired()) {
       await refreshTokens();
     }
 
@@ -219,9 +220,19 @@ export function logout(mustReauth?: boolean) {
   dispatchOther(setSignedInState(false));
 }
 
+// This function could be used in http.utils.ts to refresh the token before attempting a first request that will surely fail with an auth error.
+export function isJwtLikelyExpired(accessTokenDecoded?: AccessTokenDecoded | Nil) {
+  if (accessTokenDecoded == null) accessTokenDecoded = _accessTokenDecoded;
+  return !accessTokenDecoded || Date.now() >= accessTokenDecoded.exp * 1000;
+}
+
 export async function getAuth0Id() {
   const { accessTokenDecoded } = await getTokens();
   return accessTokenDecoded ? accessTokenDecoded.sub : null;
+}
+
+export function getCurrentTokenExpiresIn() {
+  return _accessTokenDecoded != null ? _accessTokenDecoded.exp * 1000 - Date.now() : null;
 }
 
 // Steps (detail)

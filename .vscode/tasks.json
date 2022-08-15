@@ -12,11 +12,12 @@
 				"FP Plugin front",
 				"FP Websocket",
 				"Preview generated code",
+				// "Hasura console", 
+				//
 				// Enable to run the webservice without debugger.
 				// Use launch (F11) instead for debugging.
 				// "Backend NodeJS",
-				// "Hasura console", 
-				// "Docker containers", // Already marked as dependency of Hasura console, not needed here.
+				// "Docker containers", // Already marked as dependency of `FP Websocket`, not needed here.
 			],
 			"presentation": {
 				"reveal": "never"

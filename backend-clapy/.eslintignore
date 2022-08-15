@@ -1,1 +1,4 @@
+/build*
+/dist*
+/generated
 src/features/export-code/dev-figma-config*

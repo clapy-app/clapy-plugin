@@ -3,11 +3,9 @@ import { env } from '../environment/env';
 import type { ApiRequestConfig, ApiResponse } from './unauthenticated-http.utils';
 import { apiGetUnauthenticated, apiPostUnauthenticated, httpGetUnauthenticated } from './unauthenticated-http.utils';
 
-const hasuraUri = `${env.hasuraHttp}/v1/graphql`;
-
 // src: https://thetombomb.com/posts/do-you-need-graphql-client
 export async function hasuraFetch(query: string) {
-  return fetch(hasuraUri, {
+  return fetch(env.hasuraGraphQL, {
     method: 'POST',
     body: JSON.stringify({ query }),
   });

@@ -13,4 +13,10 @@ export class LoginTokensEntity {
 
   @Column({ name: 'code' })
   code?: string;
+
+  @Column({ name: 'user_id' })
+  userId?: string;
+
+  @Column({ name: 'payment_status', nullable: true, type: 'text' })
+  paymentStatus?: string | null;
 }

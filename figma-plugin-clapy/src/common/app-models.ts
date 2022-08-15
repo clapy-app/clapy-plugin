@@ -9,6 +9,7 @@ export type Dict2<Key extends ObjKey, Value> = {
 };
 
 export type Nil = null | undefined;
+export declare type UnwrapPromiseLike<T> = T extends PromiseLike<infer U> ? U : T;
 
 // Can be read from both client and server. It shares the controller model to help typing the client code.
 export type Routes = _Routes;

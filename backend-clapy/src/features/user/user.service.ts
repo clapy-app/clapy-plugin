@@ -20,15 +20,16 @@ export class UserService {
     @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
   ) {}
 
-  checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed = async (
+  async checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(
     figmaNode: ExportCodePayload,
     user: AccessTokenDecoded,
-  ) => {
+  ) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (isNoCodesandboxUser && (figmaNode.extraConfig.output === 'csb' || !figmaNode.extraConfig.zip)) {
       throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
     }
-  };
+  }
+
   async getUserSubscriptionData(user: AccessTokenDecoded) {
     const userId = user.sub;
     const isUserQualified = hasRoleIncreasedQuota(user);
@@ -37,6 +38,7 @@ export class UserService {
     const isLicenseExpired = this.stripeService.isLicenceInactive(user);
     return { quotas: quotas, quotasMax: quotasMax, isLicenseExpired };
   }
+
   async getQuotaCount(userId: string) {
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -80,11 +82,11 @@ export class UserService {
     }
   }
 
-  saveInHistoryUserCodeGeneration = async (
+  async saveInHistoryUserCodeGeneration(
     genType: 'csb' | 'zip' | undefined,
     res: StreamableFile | CSBResponse | undefined,
     user: AccessTokenDecoded,
-  ) => {
+  ) {
     if (res === undefined) return res;
     const generationHistory = new GenerationHistoryEntity();
     const userId = user.sub;
@@ -107,5 +109,5 @@ export class UserService {
     } else {
       throw new Error('Unsupported output format');
     }
-  };
+  }
 }

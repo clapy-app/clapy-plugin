@@ -17,6 +17,7 @@ export const stripeSlice = createSlice({
     },
     showPaymentConfirmation: state => {
       state.paymentConfirmation = true;
+      state.upgrading = false;
     },
     hidePaymentConfirmation: state => {
       state.paymentConfirmation = false;

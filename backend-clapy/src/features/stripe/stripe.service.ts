@@ -1,17 +1,13 @@
-import type { MessageEvent } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
-import { Subject } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import type { Repository } from 'typeorm';
 
+import { LoginTokensEntity } from '../../auth/login-tokens.entity.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-
-// TODO review. It looks like the webservice is NOT stateless, which will lead to pernicious bugs in production.
-const stripeSubject = new Subject<MessageEvent>();
 
 @Injectable()
 export class StripeService {
-  getPaymentCompletedObservable() {
-    return stripeSubject.asObservable();
-  }
+  constructor(@InjectRepository(LoginTokensEntity) private loginTokensRepo: Repository<LoginTokensEntity>) {}
 
   isLicenceInactive(user: AccessTokenDecoded) {
     const licenceExpirationDate = user['https://clapy.co/licence-expiration-date'];
@@ -24,7 +20,23 @@ export class StripeService {
     return isExpired;
   }
 
-  emitStripePaymentStatus(status: boolean) {
-    stripeSubject.next({ data: JSON.stringify({ status: status }) });
+  async startPayment(userId: string) {
+    await this.updatePaymentStatus(userId, 'start');
+  }
+
+  async completePayment(userId: string) {
+    await this.updatePaymentStatus(userId, 'completed');
+  }
+
+  async cancelPayment(userId: string) {
+    await this.updatePaymentStatus(userId, 'canceled');
+  }
+
+  private async updatePaymentStatus(userId: string, status: 'start' | 'completed' | 'canceled') {
+    if (!userId) throw new Error(`No Auth0 user ID, cannot update its payment status to '${status}'.`);
+    await this.loginTokensRepo.upsert(
+      { userId, paymentStatus: status },
+      { skipUpdateIfNoValuesChanged: true, conflictPaths: ['userId'] },
+    );
   }
 }

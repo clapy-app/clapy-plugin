@@ -1,3 +1,13 @@
 table:
-  schema: clapy
   name: login_tokens
+  schema: clapy
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - payment_status
+        - user_id
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
