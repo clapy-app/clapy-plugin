@@ -19,11 +19,7 @@ export function handleError(error: any) {
   if (!message) message = errorStr;
   if (!stack) stack = new Error(message).stack;
   const serialized = { message, stack, original };
-  apiPost('front-monitor', serialized, { noRetry: true }).catch(err => {
-    if (err?.data?.ok !== true) {
-      console.error('Failed to send the error to the webservice. The service may be down.');
-    }
-  });
+  apiPost('front-monitor', serialized, { noRetry: true, silentErrors: true }).catch(/* silent errors */);
 }
 
 /** Same as useCallback, but accepting async functions. @see useCallback */

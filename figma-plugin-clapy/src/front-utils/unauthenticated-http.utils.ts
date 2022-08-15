@@ -9,6 +9,7 @@ import { env } from '../environment/env';
 export interface ApiRequestConfig extends RequestInit {
   query?: Dict<string>;
   noRetry?: boolean;
+  silentErrors?: boolean;
   isAppApi?: boolean;
   noLogout?: boolean;
   forceJSONResponse?: boolean;
@@ -146,7 +147,7 @@ async function httpReqUnauthenticated<T>(
   config: ApiRequestConfig | undefined,
   sendRequest: (url: string, config: RequestInit) => Promise<Response>,
 ): Promise<ApiResponse<T>> {
-  const { noRetry, query, isAppApi, noLogout, forceJSONResponse, ...fetchConfig } = config || {};
+  const { noRetry, silentErrors, query, isAppApi, noLogout, forceJSONResponse, ...fetchConfig } = config || {};
   url = mkUrl(url, query);
   let resp: ApiResponse<T> | undefined;
   try {
@@ -185,7 +186,7 @@ async function httpReqUnauthenticated<T>(
       }
     }
   }
-  if (!resp.ok) {
+  if (!resp.ok && !silentErrors) {
     const { data, headers, status, statusText, type, url } = resp || {};
     const data2: any = data;
     if (status === 403 || data2?.error?.error === 'invalid_grant') {
