@@ -1,7 +1,7 @@
 steps:
   - id: Install
     name: 'gcr.io/cloud-builders/yarn'
-    timeout: 120s
+    timeout: 600s
   - id: Migrate
     name: 'gcr.io/cloud-builders/yarn'
     timeout: 40s
