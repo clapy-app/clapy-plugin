@@ -53,8 +53,16 @@ export function handleException(exception: any, response: any, user: AccessToken
     }
 
     // Error objects are not well logged by logger.error, so we prefer console.error here.
-    // tslint:disable-next-line:no-console
-    console.error(`[userID: ${userId}]`, (typeof error === 'string' && exception?.stack) || error);
+    // Google Cloud also better recognizes standard error objects in stderr.
+    const errToLog = (typeof error === 'string' && exception) /* ?.stack */ || error;
+    if (userId) {
+      if (errToLog?.message) {
+        errToLog.message = `[userID: ${userId}] ${errToLog.message}`;
+      } else {
+        console.error(`[userID: ${userId}]`);
+      }
+    }
+    console.error(errToLog);
 
     if (errorMessage) {
       logger.error(errorMessage);
