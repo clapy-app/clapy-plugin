@@ -35,25 +35,31 @@ export class AppController {
   }
 
   @Post('front-monitor')
-  frontReport(@Body() body: any, @Headers('Authorization') authHeader: string, @Req() req: Request) {
-    if (!body) body = {};
-    let { message, stack } = body;
-    if (!message) message = 'Unknown error';
-    message = `[FRONT REPORT] ${message}`;
-    if (!stack) {
-      stack = new Error(`[FRONT REPORT] No front stack trace - ${message}`).stack;
-    } else {
-      stack = `[FRONT REPORT] ${stack}`;
-    }
-    const err = new Error(message);
-    err.stack = stack;
-
+  async frontReport(@Body() body: any, @Headers('Authorization') authHeader: string, @Req() req: Request) {
     // Extract user data from the header. In public routes, express-jwt is not run so the user is not in the request.
     const accessToken = authHeader?.length >= 8 ? authHeader.slice(7) : authHeader;
     const user = accessToken ? (decode(accessToken) as AccessTokenDecoded) : undefined;
     // TODO to update when upgrading express-jwt that changes the key from `user` to `auth`. It will provide a new interface for that, that we should use, so that the code becomes strongly typed.
     (req as any).user = user;
 
-    throw err;
+    if (!body) body = {};
+    let { message /* , stack */ } = body;
+    if (!message) message = 'Unknown error';
+    message = `[FRONT REPORT] ${message}`;
+
+    // if (!stack) {
+    //   stack = new Error(`[FRONT REPORT] No front stack trace - ${message}`).stack;
+    // } else {
+    //   stack = `[FRONT REPORT] ${stack}`;
+    // }
+
+    throw new Error(message);
+
+    //     const err = new Error(message);
+    //     err.stack = stack;
+    //
+    //     throw err;
+
+    // throw new Error('This is an attempt to log the error in gcloud');
   }
 }
