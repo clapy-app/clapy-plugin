@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, Inject, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { decode } from 'jsonwebtoken';
 import type { Repository } from 'typeorm';
@@ -36,6 +36,7 @@ export class AppController {
   }
 
   @Post('front-monitor')
+  @HttpCode(500)
   frontReport(@Body() body: any, @Headers('Authorization') authHeader: string) {
     if (!body) body = {};
     let { message, stack } = body;
@@ -54,5 +55,6 @@ export class AppController {
     const user = accessToken ? (decode(accessToken) as AccessTokenDecoded) : undefined;
 
     handleException(err, null, user);
+    return { ok: true };
   }
 }

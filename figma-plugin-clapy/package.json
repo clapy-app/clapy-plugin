@@ -1,5 +1,5 @@
 {
-  "name": "clapy",
+  "name": "figma-plugin-clapy",
   "version": "1.0.0",
   "description": "Figma plugin to start building Clapy applications.",
   "private": true,
