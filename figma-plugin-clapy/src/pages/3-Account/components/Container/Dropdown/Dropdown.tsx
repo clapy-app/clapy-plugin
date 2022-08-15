@@ -43,6 +43,9 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
       setLoading(false);
     }
   }, []);
+  const throwFrontError = useCallbackAsync2(async () => {
+    throw new Error('This front error must be logged on the server');
+  }, []);
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <IconButton
@@ -68,6 +71,11 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
         {(env.isDev || devTools) && (
           <MenuItem onClick={refreshSession} disabled={loading}>
             Refresh session (dev)
+          </MenuItem>
+        )}
+        {(env.isDev || devTools) && (
+          <MenuItem onClick={throwFrontError} disabled={loading}>
+            Throw a front error (dev)
           </MenuItem>
         )}
       </Menu>

@@ -1,6 +1,8 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common';
 
+import type { AccessTokenDecoded } from '../features/user/user.utils.js';
+
 const logger = new Logger('AllExceptionsFilter');
 
 export function cleanErrorMessage(error: any, response: any = null, exception: any = null) {
@@ -12,9 +14,10 @@ export function cleanErrorMessage(error: any, response: any = null, exception: a
   return errorMessage;
 }
 
-export function handleException(exception: any, response: any = null): any {
+export function handleException(exception: any, response: any, user: AccessTokenDecoded | undefined): any {
   const resp = exception?.response || exception;
   const error = resp?.data || resp?.error || exception?.message || exception;
+  const userId = user?.sub;
   // if (error?.error) {
   //   error = error.error;
   // }
@@ -43,9 +46,6 @@ export function handleException(exception: any, response: any = null): any {
     (status !== 400 || !Array.isArray(errors))
   ) {
     logger.error('Global filter error:');
-    if (exception.isAirtable) {
-      logger.error('Airtable error');
-    }
 
     if (parentStack) {
       // tslint:disable-next-line:no-console
@@ -54,7 +54,7 @@ export function handleException(exception: any, response: any = null): any {
 
     // Error objects are not well logged by logger.error, so we prefer console.error here.
     // tslint:disable-next-line:no-console
-    console.error((typeof error === 'string' && exception?.stack) || error);
+    console.error(`[userID: ${userId}]`, (typeof error === 'string' && exception?.stack) || error);
 
     if (errorMessage) {
       logger.error(errorMessage);
@@ -70,13 +70,14 @@ export class UnknownExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     try {
-      const request = ctx.getRequest();
+      const req = ctx.getRequest();
+      const user = (req as any).user as AccessTokenDecoded | undefined;
 
-      const { error, errors, status, message } = handleException(exception, response);
+      const { error, errors, status, message } = handleException(exception, response, user);
 
       response.status(status).json({
         statusCode: status,
-        path: request.url,
+        path: req.url,
         error: error?.message || error,
         errors,
         message,

@@ -1,6 +1,6 @@
 steps:
   - id: Install
-    timeout: 600s
+    timeout: 300s
     name: node
     entrypoint: yarn
     args: ['workspace', 'clapy-root', 'install']
