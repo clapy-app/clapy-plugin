@@ -17,7 +17,7 @@ import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-util
 import { Loading } from '../../components-used/Loading/Loading.js';
 import {
   selectAuthError,
-  selectIsStripeEnabled,
+  selectIsLimitedUser,
   selectSessionChecking,
   selectSignedIn,
 } from '../../core/auth/auth-slice';
@@ -58,7 +58,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // Show selection
 
   // use this flag after the tests
-  const isStripeDevTeam = useSelector(selectIsStripeEnabled);
+  const isLimitedUser = useSelector(selectIsLimitedUser);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
   const dispatch = useAppDispatch();
@@ -99,7 +99,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isPricingPageActive) return <Pricing />;
 
-  return isStripeDevTeam ? (
+  return isLimitedUser ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}

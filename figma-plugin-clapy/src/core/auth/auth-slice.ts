@@ -79,11 +79,7 @@ export const selectCssOptionEnabled = (state: RootState) => true;
 
 // TODO edit here and in src/features/user/user.utils.ts
 // Next step: substitute isStripeDevTeam with isNewUserTmp
-export const selectIsStripeEnabled = (state: RootState) => isStripeDevTeam(state.auth.tokenDecoded);
-
-function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
-}
+export const selectIsLimitedUser = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
