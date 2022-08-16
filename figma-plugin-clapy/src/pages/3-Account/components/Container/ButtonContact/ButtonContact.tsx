@@ -16,7 +16,7 @@ export const ButtonContact: FC<Props> = memo(function ButtonContact(props = {}) 
   return (
     <Button
       className={`${classes.root} ${props.className || ''}`}
-      href={'mailto:subscriptions@clapy.co?subject=update%20plan'}
+      href={'https://calendly.com/matthieul/support-clapy-30'}
       target='_blank'
       rel='noreferrer'
     >

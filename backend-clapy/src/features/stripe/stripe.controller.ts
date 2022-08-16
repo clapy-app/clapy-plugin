@@ -102,7 +102,6 @@ export class StripeController {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
     const user = (req as any).user as AccessTokenDecoded;
     const userId = user.sub;
-    let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     const { data } = await stripe.customers.search({
       query: `metadata[\'auth0Id\']:'${userId}'`,
