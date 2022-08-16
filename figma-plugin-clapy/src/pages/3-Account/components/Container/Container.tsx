@@ -77,18 +77,8 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
             </div>
             <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
               <div className={`${classes.row} ${props.classes?.row || ''}`}>
-                {isFreeUser && (
-                  <>
-                    <BadgePlan />
-                    <BadgeBilling />
-                  </>
-                )}
-                {!isFreeUser && (
-                  <>
-                    <BadgePlan />
-                    <BadgeBilling />
-                  </>
-                )}
+                <BadgePlan />
+                <BadgeBilling />
               </div>
             </div>
           </div>

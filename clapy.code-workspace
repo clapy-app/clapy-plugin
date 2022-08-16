@@ -20,7 +20,8 @@
       "**/dist*": true,
       "**/old": true,
       "**/.yarn": true,
-      "**/.pnp.*": true
+      "**/.pnp.*": true,
+      "**/node_modules*": true
     },
     "files.exclude": {
       "**/.yarn": true,
