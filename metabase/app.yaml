@@ -1,0 +1,30 @@
+runtime: java17
+instance_class: F4
+env_variables:
+  MB_JETTY_PORT: 8080
+  MB_DB_TYPE: postgres
+  MB_DB_HOST: 34.77.63.17
+  MB_DB_PORT: 5432
+  MB_DB_DBNAME: metabase
+  MB_DB_USER: metabase
+  MB_PLUGINS_DIR: /tmp
+entrypoint: java -XX:MaxRAM=800m -Xmx800m -jar metabase.jar
+
+includes:
+- env_variables.yaml
+
+# Must set a max number of instances, otherwise too many instances pop because Metabase pings a lot. It will be highly unstable (often pinging a new instance) and will cost a lot.
+automatic_scaling:
+  max_instances: 1
+
+# Default values found on App Engine:
+# env: standard
+# handlers:
+#   - url: .*
+#     script: auto
+# automatic_scaling:
+#   min_idle_instances: automatic
+#   max_idle_instances: automatic
+#   min_pending_latency: automatic
+#   max_pending_latency: automatic
+# service_account: clapy-production@appspot.gserviceaccount.com

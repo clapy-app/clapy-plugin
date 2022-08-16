@@ -29,6 +29,19 @@ In a terminal, run:
 
 Note: for now, the corresponding `Hasura console` task is excluded from the default build because it's rarely useful in current developments. If you find yourself often opening the console, don't hesitate to add the task back to the main task, `Start dev env`, in `.vscode/tasks.json`.
 
+## Generate aggregated analytics for Pipedrive
+
+### Get raw analytics from Metabase
+
+URL: https://clapy-production.ew.r.appspot.com/
+Sign in with Google. Clapy emails should be allowed.
+
+To redeploy Metabase, check the instructions in `metabase/README.md`.
+
+### Run the script
+
+TODO Yacine
+
 ## Update yarn
 
 - `yarn set version stable`
