@@ -12,7 +12,7 @@ import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
-import { getAuth0User, isStripeDevTeam } from '../user/user.utils.js';
+import { getAuth0User } from '../user/user.utils.js';
 import { StripeWebhookService } from './stripe-webhook.service.js';
 import { StripeService } from './stripe.service.js';
 
@@ -38,7 +38,7 @@ export class StripeController {
     //We use Full-text search instead of search by id to avoid having to register the stripe id in auth0 and not do an api call to auth0
     //Stripe api has better rate limits than Auth0 api.
     const customerExist = await stripe.customers.search({
-      query: `email:'${auth0User.email}'`,
+      query: `metadata['auth0Id']:'${userId}'`,
     });
     let customer;
     if (!customerExist.data.length) {
@@ -69,6 +69,7 @@ export class StripeController {
       metadata: {
         auth0Id: userId,
       },
+      allow_promotion_codes: true,
       cancel_url: redirectUri + '&state=canceled',
       success_url: redirectUri + '&state=completed',
       automatic_tax: { enabled: true },
@@ -78,14 +79,14 @@ export class StripeController {
         shipping: 'auto',
       },
     };
-
-    if (isStripeDevTeam(user)) {
-      sessionParams.discounts = [
-        {
-          coupon: 'betacoupon',
-        },
-      ];
-    }
+    // use code betacode to test stripe in dev
+    // if (isStripeDevTeam(user)) {
+    //   sessionParams.discounts = [
+    //     {
+    //       coupon: 'betacoupon',
+    //     },
+    //   ];
+    // }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     return session.url;
@@ -104,7 +105,7 @@ export class StripeController {
     let auth0User = await getAuth0User(userId);
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     const { data } = await stripe.customers.search({
-      query: `email:'${auth0User.email}'`,
+      query: `metadata[\'auth0Id\']:'${userId}'`,
     });
     if (!data?.length) {
       // If user not found, e.g. removed in the stripe back-office while the plugin was open
