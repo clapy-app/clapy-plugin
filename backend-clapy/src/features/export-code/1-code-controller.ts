@@ -16,8 +16,8 @@ export class CodeController {
     const user: AccessTokenDecoded = (request as any).user;
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
 
-    const isStripeDevTeam = isStripeEnabled(user);
-    if (env.isDev || isStripeDevTeam) {
+    const isStripeOn = isStripeEnabled(user);
+    if (env.isDev || isStripeOn) {
       await this.userService.checkUserOrThrow(user);
     }
     const res = await exportCode(figmaNode, uploadToCsb, user);

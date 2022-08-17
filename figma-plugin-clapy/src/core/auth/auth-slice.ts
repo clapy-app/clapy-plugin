@@ -1,5 +1,5 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSelector, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 import type { Nil } from '../../common/app-models';
 import type { RootState } from '../redux/store';
@@ -78,24 +78,9 @@ export const selectDevTools = (state: RootState) =>
 export const selectCssOptionEnabled = (state: RootState) => true;
 
 // TODO edit here and in src/features/user/user.utils.ts
-// Next step: substitute isStripeDevTeam with isNewUserTmp
-export const selectIsStripeDevTeam = (state: RootState) => isStripeDevTeam(state.auth.tokenDecoded);
 export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
-
-function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
-}
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
-export const selectIsStripeEnabled = createSelector(
-  selectIsStripeDevTeam,
-  selectIsNewUserTmp,
-  (hasStripeDevTeamRole, isNewUserTmp) => {
-    if (!hasStripeDevTeamRole) {
-      return false;
-    }
-    return isNewUserTmp;
-  },
-);
+export const selectIsStripeEnabled = selectIsNewUserTmp;
