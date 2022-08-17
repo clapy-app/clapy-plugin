@@ -56,10 +56,6 @@ export const selectUserQuota = (state: RootState) => (state.user.userMetadata as
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 // export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
 export const selectIsFreeUser = (state: RootState) => {
-  const hasRoleFreeStripeAccess = state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
-  if (hasRoleFreeStripeAccess) {
-    return false;
-  }
   const { isLicenseExpired } = state.user.userMetadata as UserMetadata;
   return isLicenseExpired!;
 };

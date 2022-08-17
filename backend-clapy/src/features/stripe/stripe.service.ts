@@ -11,7 +11,13 @@ export class StripeService {
 
   isLicenceInactive(user: AccessTokenDecoded) {
     const licenceExpirationDate = user['https://clapy.co/licence-expiration-date'];
-    if (typeof licenceExpirationDate === 'undefined') return true;
+    const hasRoleFreeStripeAccess = user['https://clapy.co/roles']?.includes('FreeStripeAccess');
+    if (hasRoleFreeStripeAccess) {
+      return false;
+    }
+    if (typeof licenceExpirationDate === 'undefined') {
+      return true;
+    }
     const now = new Date();
     const expirationDate = new Date(licenceExpirationDate * 1000);
 
