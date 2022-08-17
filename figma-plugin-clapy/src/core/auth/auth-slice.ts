@@ -1,5 +1,5 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSelector, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 import type { Nil } from '../../common/app-models';
 import type { RootState } from '../redux/store';
@@ -76,26 +76,18 @@ export const selectGithubEnabled = (state: RootState) =>
 export const selectDevTools = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
 export const selectCssOptionEnabled = (state: RootState) => true;
+export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);
+export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
+export const selectIsStripeEnabled = (state: RootState) => isStripeEnabled(state.auth.tokenDecoded);
 
 // TODO edit here and in src/features/user/user.utils.ts
-// Next step: substitute isStripeDevTeam with isNewUserTmp
-export const selectIsStripeDevTeam = (state: RootState) => isStripeDevTeam(state.auth.tokenDecoded);
-export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
+export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
+  user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
 
-function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
-}
+export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
+  return isNewUserTmp(user);
+};
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
-export const selectIsStripeEnabled = createSelector(
-  selectIsStripeDevTeam,
-  selectIsNewUserTmp,
-  (hasStripeDevTeamRole, isNewUserTmp) => {
-    if (!hasStripeDevTeamRole) {
-      return false;
-    }
-    return isNewUserTmp;
-  },
-);
