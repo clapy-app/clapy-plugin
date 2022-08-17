@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { memo } from 'react';
-import Lottie from 'lottie-react';
 
 import animationData from '../../lotties/loading.json';
+import { LottieWrapper } from '../LottieWrapper/LottieWrapper.js';
 
 const defaultOptions: any /* LottieOptions */ = {
   loop: true,
@@ -17,16 +17,5 @@ interface Props {
   width?: number;
 }
 export const Loading: FC<Props> = memo(function Loading(props) {
-  return (
-    <Lottie
-      // loop={true}
-      // autoplay={true}
-      // animationData={animationData}
-      // rendererSettings={true}
-      {...defaultOptions}
-      height={props.height || 56}
-      width={props.width || 28}
-      isClickToPauseDisabled={true}
-    />
-  );
+  return <LottieWrapper animationData={animationData} {...props} />;
 });

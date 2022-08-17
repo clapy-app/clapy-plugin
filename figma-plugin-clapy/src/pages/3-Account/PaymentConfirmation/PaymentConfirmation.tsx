@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import type { FC } from 'react';
-import Lottie from 'lottie-react';
 
 import successLottie from '../../../lotties/gen-code-success.json';
 import { ArrowLeft } from './ArrowLeft/ArrowLeft';
 import { ArrowLeftIcon } from './ArrowLeftIcon';
 import { Button_SizeMdHierarchyLinkGray } from './Button_SizeMdHierarchyLinkGray/Button_SizeMdHierarchyLinkGray';
 import classes from './PaymentConfirmation.module.css';
+import { LottieWrapper } from '../../../components-used/LottieWrapper/LottieWrapper.js';
 
 interface Props {
   className?: string;
@@ -46,7 +46,7 @@ export const PaymentConfirmation: FC<Props> = memo(function PaymentConfirmation(
           }}
         />
         <div className={classes.content2}>
-          <Lottie {...successOptions} height={160} width={160} />
+          <LottieWrapper animationData={successLottie} width={160} height={160} loop={false} />
           <div className={classes.previewTitleBlock}>
             <div className={classes.thankYouForUpgrading}>Thank you for upgrading!</div>
           </div>

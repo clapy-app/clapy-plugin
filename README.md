@@ -45,7 +45,7 @@ TODO Yacine
 ## Update yarn
 
 - `yarn set version stable`
-- `yarn install` in the root, the back and the front directories.
+- `yarn install` in the root (and the back and the front?) directories.
 
 ## Update libraries
 
