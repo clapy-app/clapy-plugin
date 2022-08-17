@@ -20,8 +20,10 @@ export class CodeController {
     if (env.isDev || isStripeOn) {
       await this.userService.checkUserOrThrow(user);
     }
+
+    const generationHistoryId = await this.userService.saveInHistoryUserCodeGeneration(figmaNode, user);
     const res = await exportCode(figmaNode, uploadToCsb, user);
-    await this.userService.saveInHistoryUserCodeGeneration(figmaNode.extraConfig.output, res, user);
+    await this.userService.updateUserCodeGeneration(res, user, figmaNode.extraConfig.output, generationHistoryId);
     return res;
   }
 }
