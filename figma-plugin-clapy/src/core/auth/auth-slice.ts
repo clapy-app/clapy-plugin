@@ -92,10 +92,10 @@ function isNewUserTmp(user: AccessTokenDecoded | Nil) {
 export const selectIsStripeEnabled = createSelector(
   selectIsStripeDevTeam,
   selectIsNewUserTmp,
-  (hasStripeDevTeamRole, hasLimitedUserRole) => {
+  (hasStripeDevTeamRole, isNewUserTmp) => {
     if (!hasStripeDevTeamRole) {
       return false;
     }
-    return hasLimitedUserRole;
+    return isNewUserTmp;
   },
 );
