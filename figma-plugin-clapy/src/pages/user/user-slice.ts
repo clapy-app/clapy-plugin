@@ -2,7 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
-import { selectIsStripeDevTeam } from '../../core/auth/auth-slice.js';
+import { selectIsNewUserTmp } from '../../core/auth/auth-slice.js';
 import type { RootState } from '../../core/redux/store';
 import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
@@ -56,6 +56,10 @@ export const selectUserQuota = (state: RootState) => (state.user.userMetadata as
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 // export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
 export const selectIsFreeUser = (state: RootState) => {
+  const hasRoleFreeStripeAccess = state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+  if (hasRoleFreeStripeAccess) {
+    return false;
+  }
   const { isLicenseExpired } = state.user.userMetadata as UserMetadata;
   return isLicenseExpired!;
 };
@@ -76,9 +80,9 @@ export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadat
 export const selectIsUserMaxQuotaReached = createSelector(
   selectIsFreeUser,
   selectUserMetadata,
-  selectIsStripeDevTeam,
-  (isFreeUser, userMetadata, hasStripeDevTeamRole) => {
-    if (hasStripeDevTeamRole) {
+  selectIsNewUserTmp,
+  (isFreeUser, userMetadata, isNewUserTmp) => {
+    if (isNewUserTmp) {
       if (!isFreeUser) return false;
       const { isLicenseExpired, quotas, quotasMax } = userMetadata;
       const isMaxQuotaReached = quotas! >= quotasMax!;
