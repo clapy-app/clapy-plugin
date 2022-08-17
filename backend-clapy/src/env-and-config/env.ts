@@ -73,6 +73,8 @@ export const env = {
   dbUser: process.env.POSTGRES_USER as string,
   dbPassword: process.env.POSTGRES_PASSWORD as string,
   pipedriveApiKey: process.env.PIPEDRIVE_API_KEY as string,
+  // Developer opt-in feature, only active in development. See description in .env.example.
+  localPreviewInsteadOfCsb: isDev && process.env.LOCAL_PREVIEW_INSTEAD_OF_CSB?.toLowerCase() === 'true',
 };
 
 // variables in criticalVariables are cast to string (above) to remove `undefined` from the typing, which is safe with the guard below stopping the app if the values are missing.

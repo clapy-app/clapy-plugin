@@ -49,13 +49,13 @@ export async function exportCode(
   uploadToCsb = true,
   user: AccessTokenDecoded,
 ) {
-  // if (env.isDev) {
-  //   uploadToCsb = false;
-  // }
+  if (env.localPreviewInsteadOfCsb) {
+    uploadToCsb = false;
+  }
   if (!extraConfig.output) {
     extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
   }
-  extraConfig.useZipProjectTemplate = /*env.isDev ||*/ extraConfig.output === 'zip';
+  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.output === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
     extraConfig.angularPrefix = 'cl';

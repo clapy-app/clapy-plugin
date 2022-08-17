@@ -72,6 +72,13 @@ If an event, sent by Stripe CLI, was not caught locally by the API (e.g. while i
 
 In production, the events are re-sent, but Stripe CLI (dev) doesn't support it. Issue: https://github.com/stripe/stripe-cli/issues/313
 
+## Open pgAdmin
+
+- Get the database credentials, e.g. from Google Cloud Run environment variables. Ask Antoine if required. It may be in the format `postgres://username:password@hostname:port/maintenancedatabase`.
+- Locally, `yarn dup pgadmin` to start pgAdmin, then open its UI from Docker Desktop. Credentials are in `.env`, variables `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`.
+- Right-click Servers > Register > Server...
+- Name: whatever you want (e.g. Metabase prod). In Connection tab, fill the `hostname`, `port`, `maintenancedatabase`, `username`, `password`.
+
 ## Troubleshooting
 
 ### Switch to production branch
