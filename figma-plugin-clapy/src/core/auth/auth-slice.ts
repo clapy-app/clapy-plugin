@@ -1,5 +1,5 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSelector, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 import type { Nil } from '../../common/app-models';
 import type { RootState } from '../redux/store';
@@ -83,6 +83,4 @@ export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
-export const selectIsStripeEnabled = createSelector(selectIsNewUserTmp, isNewUserTmp => {
-  return isNewUserTmp;
-});
+export const selectIsStripeEnabled = selectIsNewUserTmp;
