@@ -58,7 +58,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // Show selection
 
   // use this flag after the tests
-  const isStripeDevTeam = useSelector(selectIsStripeEnabled);
+  const isStripeEnabled = useSelector(selectIsStripeEnabled);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
   const dispatch = useAppDispatch();
@@ -99,7 +99,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isPricingPageActive) return <Pricing />;
 
-  return isStripeDevTeam ? (
+  return isStripeEnabled ? (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}

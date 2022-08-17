@@ -1,0 +1,8 @@
+{
+  "name": "metabase",
+  "scripts": {
+    "deploy": "wget -nc https://downloads.metabase.com/v0.44.0/metabase.jar && gcloud app deploy metabase.jar --appyaml app.yaml --quiet",
+    "log": "gcloud app logs tail",
+    "log:once": "gcloud app logs read"
+  }
+}

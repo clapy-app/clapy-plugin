@@ -1,0 +1,4 @@
+# Create a file env_variables.yaml and replace with the content from
+# https://docs.google.com/document/d/1a21chBYSPKCQzYsQscQmhrtcaGSN0HSoTbiLkVKuGP8/edit#heading=h.fydli044u3z5
+env_variables:
+  MB_DB_PASS: XXXXXXX__replace_me__XXXXXXX

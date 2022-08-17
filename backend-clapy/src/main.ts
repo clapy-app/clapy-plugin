@@ -132,7 +132,8 @@ async function bootstrap() {
   app.use(
     json({
       limit: '50mb',
-      // Keep the raw body for use cases like stripe webhooks
+      // Keep the raw body for use cases like stripe webhooks.
+      // Pb: all routes have the raw body. We could optimize further by only exposing it to the routes that need it, e.g. via an annotation.
       verify: (req, res, buf, encoding) => {
         if (buf && buf.length) {
           (req as RawBodyRequest<Request>).rawBody = buf;

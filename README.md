@@ -29,6 +29,19 @@ In a terminal, run:
 
 Note: for now, the corresponding `Hasura console` task is excluded from the default build because it's rarely useful in current developments. If you find yourself often opening the console, don't hesitate to add the task back to the main task, `Start dev env`, in `.vscode/tasks.json`.
 
+## Generate aggregated analytics for Pipedrive
+
+### Get raw analytics from Metabase
+
+URL: https://clapy-production.ew.r.appspot.com/
+Sign in with Google. Clapy emails should be allowed.
+
+To redeploy Metabase, check the instructions in `metabase/README.md`.
+
+### Run the script
+
+TODO Yacine
+
 ## Update yarn
 
 - `yarn set version stable`
@@ -58,6 +71,13 @@ If an event, sent by Stripe CLI, was not caught locally by the API (e.g. while i
 - Command: `stripe events resend evt_<event ID>`
 
 In production, the events are re-sent, but Stripe CLI (dev) doesn't support it. Issue: https://github.com/stripe/stripe-cli/issues/313
+
+## Open pgAdmin
+
+- Get the database credentials, e.g. from Google Cloud Run environment variables. Ask Antoine if required. It may be in the format `postgres://username:password@hostname:port/maintenancedatabase`.
+- Locally, `yarn dup pgadmin` to start pgAdmin, then open its UI from Docker Desktop. Credentials are in `.env`, variables `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`.
+- Right-click Servers > Register > Server...
+- Name: whatever you want (e.g. Metabase prod). In Connection tab, fill the `hostname`, `port`, `maintenancedatabase`, `username`, `password`.
 
 ## Troubleshooting
 

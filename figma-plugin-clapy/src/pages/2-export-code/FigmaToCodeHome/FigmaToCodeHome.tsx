@@ -274,9 +274,8 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
   }, []);
-
   return (
-    <>
+    <div className={classes.root}>
       <div className={classes.previewTitle}>
         {state === 'noselection' && <>Choose an element to code</>}
         {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
@@ -498,6 +497,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           <BackToCodeGen onClick={backToSelection} />
         </>
       )}
-    </>
+    </div>
   );
 });
