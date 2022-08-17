@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
+import { selectFreeStripeAccess } from '../../../../core/auth/auth-slice.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
 import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
 import { selectPaymentConfirmation } from '../../stripe-slice.js';
@@ -41,6 +42,7 @@ interface Props {
 export const Container: FC<Props> = memo(function Container(props = {}) {
   const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
   const isFreeUser = useSelector(selectIsFreeUser);
+  const hasRoleFreeStripeAccess = useSelector(selectFreeStripeAccess);
   const isPaymentDone = useSelector(selectPaymentConfirmation);
 
   if (isPaymentDone) {
@@ -94,7 +96,7 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
               <BtnHistoryExportDisabled />
             </>
           )}
-          {!isFreeUser && (
+          {!isFreeUser && !hasRoleFreeStripeAccess && (
             <>
               <div className={`${classes.btnContainer}`}>
                 <ButtonViewPlan />

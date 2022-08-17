@@ -78,6 +78,9 @@ export const selectDevTools = (state: RootState) =>
 export const selectCssOptionEnabled = (state: RootState) => true;
 
 // TODO edit here and in src/features/user/user.utils.ts
+export const selectFreeStripeAccess = (state: RootState) =>
+  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+
 export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {

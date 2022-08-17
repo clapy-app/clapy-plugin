@@ -145,6 +145,9 @@ export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
 
 // TODO edit here and in src/core/auth/auth-slice.ts
+export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded) =>
+  user['https://clapy.co/roles']?.includes('FreeStripeAccess');
+
 export const isStripeEnabled = (user: AccessTokenDecoded) => {
   return isNewUserTmp(user);
 };
