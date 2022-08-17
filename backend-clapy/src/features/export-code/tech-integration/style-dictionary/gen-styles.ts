@@ -13,6 +13,7 @@ import createDictionary from 'style-dictionary/lib/utils/createDictionary.js';
 import createFormatArgs from 'style-dictionary/lib/utils/createFormatArgs.js';
 import type { DesignToken, DesignTokens } from 'style-dictionary/types/DesignToken';
 
+import { env } from '../../../../env-and-config/env.js';
 import type { Dict } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { MySingleToken } from '../../code.model.js';
 import { getStyleDictionaryConfig, postTransforms } from './style-dictionary-config.js';
@@ -214,9 +215,9 @@ function buildFile(
     Object.keys(filteredProperties.properties).length === 0 &&
     filteredProperties.properties.constructor === Object
   ) {
-    let warnNoFile = `No properties for ${destination}. File not created.`;
-    console.log(warnNoFile);
-    // console.log(chalk.keyword('darkorange')(warnNoFile));
+    if (env.isDev) {
+      console.log(`No properties for ${destination}. File not created.`);
+    }
     return null;
   }
 

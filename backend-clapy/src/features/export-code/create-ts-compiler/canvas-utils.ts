@@ -71,11 +71,18 @@ export interface Masker {
   y: number;
 }
 
+export interface TextBlock {
+  spacingAbove?: boolean;
+  segments: TextSegment2[];
+  blockStyles: Dict<DeclarationPlain>;
+  textInlineWrapperStyles?: Dict<DeclarationPlain>;
+}
+
 export type RulePlainExtended = RulePlain & { parentRule?: RulePlain; childRules?: RulePlain[] };
 
 interface TextExtender {
   _textSegments?: TextSegment2[];
-  _segmentsStyles?: Dict<DeclarationPlain>[];
+  _textBlocks?: TextBlock[];
 }
 
 type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
@@ -110,7 +117,6 @@ interface GlobalExtender2 extends GlobalExtender {
   muiConfig?: MUIConfig | false; // For MUI instances
   componentContext?: ModuleContext; // For instance nodes
   noLayoutWithChildren?: boolean; // For groups to skip styling and directly process children
-  textInlineWrapperStyles?: Dict<DeclarationPlain>; // For text nodes
   textSkipStyles?: boolean; // For text nodes
   svgPathVarName?: string; // For SVG nodes
   extraAttributes?: ts.JsxAttribute[];
@@ -132,7 +138,7 @@ export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode> & ChildrenMixin2;
 export type LineNode2 = ExtendNodeType<LineNode>;
 export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode> & ChildrenMixin2;
-export type TextSegment2 = StyledTextSegment;
+export type TextSegment2 = StyledTextSegment & { _segmentStyles: Dict<DeclarationPlain> };
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
