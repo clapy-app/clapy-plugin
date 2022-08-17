@@ -1,4 +1,4 @@
-import { sha256 } from 'sha.js';
+import { createHash } from 'sha256-uint8array';
 
 import type { Dict } from '../../common/sb-serialize.model';
 
@@ -21,14 +21,24 @@ export function createVerifier() {
   return random;
 }
 
-// TODO replace sha.js with sha256-uint8array for faster/lighter hash?
 export function createChallenge(verifier: string) {
   const b64Chars: { [index: string]: string } = { '+': '-', '/': '_', '=': '' };
   return (
-    new sha256()
-      .update(verifier)
-      .digest('base64')
+    // sha256 as base64
+    hexToBase64(createHash().update(verifier).digest('hex'))
       // Sanitize characters unsafe for URL
       .replace(/[+/=]/g, (m: string) => b64Chars[m])
+  );
+}
+
+function hexToBase64(hexstring: string) {
+  const m = hexstring.match(/\w{2}/g);
+  if (!m) return '';
+  return window.btoa(
+    m
+      .map(function (a) {
+        return String.fromCharCode(parseInt(a, 16));
+      })
+      .join(''),
   );
 }

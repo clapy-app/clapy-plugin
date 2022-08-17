@@ -1,4 +1,3 @@
-import NodeModulesPolyfills from '@esbuild-plugins/node-modules-polyfill';
 import * as cssModulesPlugin from 'esbuild-css-modules-plugin';
 import { readFile, writeFile } from 'fs/promises';
 
@@ -29,7 +28,6 @@ export async function getConfigFront(context: BuildContext) {
       '.avif': 'dataurl',
     },
     plugins: [
-      NodeModulesPolyfills(),
       cssModulesPlugin({
         inject: true,
         localsConvention: 'camelCase',
