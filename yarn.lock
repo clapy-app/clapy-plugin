@@ -2949,7 +2949,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-unless@npm:*":
+"@types/express-unless@npm:*, @types/express-unless@npm:^0.5.3":
   version: 0.5.3
   resolution: "@types/express-unless@npm:0.5.3"
   dependencies:
@@ -3780,7 +3780,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^3.2.0, async@npm:^3.2.2, async@npm:^3.2.3":
+"async@npm:^3.2.0, async@npm:^3.2.3":
   version: 3.2.4
   resolution: "async@npm:3.2.4"
   checksum: 43d07459a4e1d09b84a20772414aa684ff4de085cbcaec6eea3c7a8f8150e8c62aa6cd4e699fe8ee93c3a5b324e777d34642531875a0817a35697522c1b02e89
@@ -4038,7 +4038,7 @@ __metadata:
     eslint-plugin-unused-imports: ^2.0.0
     expr-eval: ^2.0.2
     express: ^4.18.1
-    express-jwt: 6.1.2
+    express-jwt: 7.7.5
     express-rate-limit: ^6.5.1
     express-sanitizer: ^1.0.6
     fast-deep-equal: ^3.1.3
@@ -6295,15 +6295,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-jwt@npm:6.1.2":
-  version: 6.1.2
-  resolution: "express-jwt@npm:6.1.2"
+"express-jwt@npm:7.7.5":
+  version: 7.7.5
+  resolution: "express-jwt@npm:7.7.5"
   dependencies:
-    async: ^3.2.2
-    express-unless: ^1.0.0
-    jsonwebtoken: ^8.1.0
-    lodash: ^4.17.21
-  checksum: 3263e10197e1d94585adc8c0e3b2d857a37443ae3feb7612264ac7bacfe348b0d8b9d80c6306c7172c7257a0fe2e9abc5983207524a1b51cb258b3efe866e76b
+    "@types/express-unless": ^0.5.3
+    "@types/jsonwebtoken": ^8.5.8
+    express-unless: ^2.0.2
+    jsonwebtoken: ^8.5.1
+  checksum: 815219a8102918e74fba2f392d2837848398beec5c1b604b8c4674881ce15f0c529a42daa7ec9e42da826e0db6cc622bd1718308e45963fae73a2b4de48dc24c
   languageName: node
   linkType: hard
 
@@ -6325,10 +6325,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-unless@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "express-unless@npm:1.0.0"
-  checksum: 0f27f8eae1ecb3ad41d65da903c855879f529412545e06f9df28bc6712b03460f79b74ffe3c51c9bfafa685dbdac11217c505e54d48f2f58e6d6928b7dbbad37
+"express-unless@npm:^2.0.2":
+  version: 2.1.1
+  resolution: "express-unless@npm:2.1.1"
+  checksum: 3ae3cfdf7775f825d1bece5c6252218250c2e2d445766e46ef63882905bf864bc2b29f11beee01ab4325bbbc57ee2909c93d1745c179cab81a31926b8470adbd
   languageName: node
   linkType: hard
 
@@ -8397,7 +8397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:^8.1.0, jsonwebtoken@npm:^8.5.1":
+"jsonwebtoken@npm:^8.5.1":
   version: 8.5.1
   resolution: "jsonwebtoken@npm:8.5.1"
   dependencies:

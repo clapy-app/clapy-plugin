@@ -12,8 +12,8 @@ import { exportCode } from './2-create-ts-compiler.js';
 export class CodeController {
   constructor(@Inject(UserService) private userService: UserService) {}
   @Post('export')
-  async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true, @Req() request: Request) {
-    const user: AccessTokenDecoded = (request as any).user;
+  async exportCode(@Body() figmaNode: ExportCodePayload, uploadToCsb = true, @Req() req: Request) {
+    const user: AccessTokenDecoded = req.auth;
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
 
     const isStripeOn = isStripeEnabled(user);

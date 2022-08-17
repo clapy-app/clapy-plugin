@@ -2,13 +2,13 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
-import expressjwt from 'express-jwt';
+import * as expressjwtModule from 'express-jwt';
 import jwks from 'jwks-rsa';
 
 import { env } from '../env-and-config/env.js';
 
-// express-jwt is stuck at version 6.1.2 for now. 7.4.3 is not working with jwks secret.
-// See https://github.com/auth0/express-jwt/issues/282
+// Typings are wrong, let's work around it.
+const expressjwt = (expressjwtModule as any).expressjwt as typeof expressjwtModule.default;
 
 const jwtCheck = expressjwt({
   secret: jwks.expressJwtSecret({

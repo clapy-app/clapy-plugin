@@ -32,8 +32,8 @@ export class UserController {
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);
     }
-    const user = (request as any).user;
-    const userId = (request as any).user.sub;
+    const user = request.auth;
+    const userId = user.sub;
 
     const auth0User = await getAuth0User(userId);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
@@ -54,7 +54,7 @@ export class UserController {
     return userMetadata;
   }
   @Post('update-profile')
-  async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
+  async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() req: Request) {
     perfReset('Starting...');
     const { firstName, lastName, companyName, jobRole, techTeamSize, phone } = userMetadata;
     if (hasMissingMetaProfile(userMetadata)) {
@@ -72,7 +72,7 @@ export class UserController {
           .join(', ')}`,
       );
     }
-    const userId = (request as any).user.sub;
+    const userId = req.auth.sub;
     const auth0user = await updateAuth0UserMetadata(userId, {
       firstName,
       lastName,
@@ -95,7 +95,7 @@ export class UserController {
   }
 
   @Post('update-usage')
-  async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() request: Request) {
+  async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() req: Request) {
     perfReset('Starting...');
     if (hasMissingMetaUsage(userMetaUsage)) {
       throw new BadRequestException(
@@ -111,7 +111,7 @@ export class UserController {
       }
     }
 
-    const userId = (request as any).user.sub;
+    const userId = req.auth.sub;
     const auth0user = await updateAuth0UserMetadata(userId, { usage: userMetaUsage });
 
     // Insert data in Pipedrive asynchronously (non-blocking operation)

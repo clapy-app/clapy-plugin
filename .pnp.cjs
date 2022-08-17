@@ -6155,7 +6155,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-plugin-unused-imports", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:2.0.0"],\
             ["expr-eval", "npm:2.0.2"],\
             ["express", "npm:4.18.1"],\
-            ["express-jwt", "npm:6.1.2"],\
+            ["express-jwt", "npm:7.7.5"],\
             ["express-rate-limit", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:6.5.1"],\
             ["express-sanitizer", "npm:1.0.6"],\
             ["fast-deep-equal", "npm:3.1.3"],\
@@ -8808,14 +8808,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["express-jwt", [\
-        ["npm:6.1.2", {\
-          "packageLocation": "./.yarn/cache/express-jwt-npm-6.1.2-6348d268d9-3263e10197.zip/node_modules/express-jwt/",\
+        ["npm:7.7.5", {\
+          "packageLocation": "./.yarn/cache/express-jwt-npm-7.7.5-5cbbb1eaaf-815219a810.zip/node_modules/express-jwt/",\
           "packageDependencies": [\
-            ["express-jwt", "npm:6.1.2"],\
-            ["async", "npm:3.2.4"],\
-            ["express-unless", "npm:1.0.0"],\
-            ["jsonwebtoken", "npm:8.5.1"],\
-            ["lodash", "npm:4.17.21"]\
+            ["express-jwt", "npm:7.7.5"],\
+            ["@types/express-unless", "npm:0.5.3"],\
+            ["@types/jsonwebtoken", "npm:8.5.8"],\
+            ["express-unless", "npm:2.1.1"],\
+            ["jsonwebtoken", "npm:8.5.1"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -8853,10 +8853,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["express-unless", [\
-        ["npm:1.0.0", {\
-          "packageLocation": "./.yarn/cache/express-unless-npm-1.0.0-e43c035a2a-0f27f8eae1.zip/node_modules/express-unless/",\
+        ["npm:2.1.1", {\
+          "packageLocation": "./.yarn/cache/express-unless-npm-2.1.1-7feeb46449-3ae3cfdf77.zip/node_modules/express-unless/",\
           "packageDependencies": [\
-            ["express-unless", "npm:1.0.0"]\
+            ["express-unless", "npm:2.1.1"]\
           ],\
           "linkType": "HARD"\
         }]\

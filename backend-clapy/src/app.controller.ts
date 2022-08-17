@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Headers, Inject, Post, Req } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Request } from 'express';
 import { decode } from 'jsonwebtoken';
 import type { Repository } from 'typeorm';
 
@@ -39,8 +40,7 @@ export class AppController {
     // Extract user data from the header. In public routes, express-jwt is not run so the user is not in the request.
     const accessToken = authHeader?.length >= 8 ? authHeader.slice(7) : authHeader;
     const user = accessToken ? (decode(accessToken) as AccessTokenDecoded) : undefined;
-    // TODO to update when upgrading express-jwt that changes the key from `user` to `auth`. It will provide a new interface for that, that we should use, so that the code becomes strongly typed.
-    (req as any).user = user;
+    req.auth = user;
 
     if (!body) body = {};
     let { message /* , stack */ } = body;

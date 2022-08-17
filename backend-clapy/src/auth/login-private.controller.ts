@@ -1,5 +1,6 @@
 import { Controller, Get, Inject, Req } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Request } from 'express';
 import type { Repository } from 'typeorm';
 
 import { wait } from '../common/general-utils.js';
@@ -8,7 +9,6 @@ import { env } from '../env-and-config/env.js';
 import { GenerationHistoryEntity } from '../features/export-code/generation-history.entity.js';
 import { StripeService } from '../features/stripe/stripe.service.js';
 import { UserService } from '../features/user/user.service.js';
-import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 
 @Controller()
 export class LoginPrivateController {
@@ -18,10 +18,10 @@ export class LoginPrivateController {
     @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
   ) {}
   @Get('check-session')
-  async checkSession(@Req() request: Request) {
-    const userId = (request as any).user.sub;
+  async checkSession(@Req() req: Request) {
+    const user = req.auth;
+    const userId = user.sub;
 
-    const user = (request as any).user as AccessTokenDecoded;
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);
     }

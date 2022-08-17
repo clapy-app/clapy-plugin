@@ -11,7 +11,6 @@ import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { UserService } from '../user/user.service.js';
-import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { getAuth0User } from '../user/user.utils.js';
 import { StripeWebhookService } from './stripe-webhook.service.js';
 import { StripeService } from './stripe.service.js';
@@ -27,7 +26,7 @@ export class StripeController {
 
   @Get('/checkout')
   async stripeCheckout(@Req() req: Request, @Query('from') from: string) {
-    const user = (req as any).user as AccessTokenDecoded;
+    const user = req.auth;
     const userId = user.sub;
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${encodeURIComponent(
       from,
@@ -94,13 +93,13 @@ export class StripeController {
 
   @Get('/get-user-quota')
   async getUserQuotas(@Req() req: Request) {
-    const user = (req as any).user as AccessTokenDecoded;
+    const user = req.auth;
     return this.userService.getUserSubscriptionData(user);
   }
   @Get('/customer-portal')
   async stripeCustomerPortal(@Req() req: Request, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
-    const user = (req as any).user as AccessTokenDecoded;
+    const user = req.auth;
     const userId = user.sub;
     const stripe = new Stripe(env.stripeSecretKey, appConfig.stripeConfig);
     const { data } = await stripe.customers.search({
@@ -160,7 +159,7 @@ export class StripeController {
 
   @Post('reset-payment-status')
   async resetPaymentStatus(@Req() req: Request) {
-    const user = (req as any).user as AccessTokenDecoded;
+    const user = req.auth;
     const userId = user.sub;
     // await this.loginTokensRepo.delete({ userId });
     await this.stripeService.startPayment(userId);
