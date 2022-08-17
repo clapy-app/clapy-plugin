@@ -4,6 +4,7 @@ import type { Repository } from 'typeorm';
 
 import { LoginTokensEntity } from '../../auth/login-tokens.entity.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
+import { hasRoleFreeStripeAccess } from '../user/user.utils.js';
 
 @Injectable()
 export class StripeService {
@@ -11,8 +12,7 @@ export class StripeService {
 
   isLicenceInactive(user: AccessTokenDecoded) {
     const licenceExpirationDate = user['https://clapy.co/licence-expiration-date'];
-    const hasRoleFreeStripeAccess = user['https://clapy.co/roles']?.includes('FreeStripeAccess');
-    if (hasRoleFreeStripeAccess) {
+    if (hasRoleFreeStripeAccess(user)) {
       return false;
     }
     if (typeof licenceExpirationDate === 'undefined') {
