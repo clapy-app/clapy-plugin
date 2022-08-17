@@ -1,4 +1,5 @@
-import react from '@vitejs/plugin-react';
+// import react from '@vitejs/plugin-react';
+import preact from '@preact/preset-vite';
 import { defineConfig } from 'vite';
 
 // @ts-ignore
@@ -13,6 +14,15 @@ export default defineConfig({
   // https://github.com/fi3ework/vite-plugin-checker
   // Checker can be useful, but let's try with the IDE problems only.
   // vite-plugin-checker to reinstall if we want to retry.
-  plugins: [react() /* , checker({ typescript: true }) */],
+  plugins: [preact() /* react() */ /* , checker({ typescript: true }) */],
   define: context.defineEnvVar,
+  // resolve: {
+  //   alias: {
+  //     // react: 'preact/compat',
+  //     // 'react-dom': 'preact/compat',
+  //     react: 'preact/compat',
+  //     'react-dom': 'preact/compat',
+  //     'react/jsx-runtime': 'preact/jsx-runtime',
+  //   },
+  // },
 });

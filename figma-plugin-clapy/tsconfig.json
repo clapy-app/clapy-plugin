@@ -11,13 +11,18 @@
     }
   },
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ESNext",
+    // "target": "ES2017",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     // "lib": [
     //   "es6"
     // ],
     "module": "ESNext",
     "moduleResolution": "node",
-    "jsx": "react-jsx",
+    // "jsx": "react-jsx",
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "noEmit": true,
     // "allowJs": true,
     "allowJs": false,
