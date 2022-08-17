@@ -76,14 +76,18 @@ export const selectGithubEnabled = (state: RootState) =>
 export const selectDevTools = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
 export const selectCssOptionEnabled = (state: RootState) => true;
+export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);
+export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
+export const selectIsStripeEnabled = (state: RootState) => isStripeEnabled(state.auth.tokenDecoded);
 
 // TODO edit here and in src/features/user/user.utils.ts
-export const selectFreeStripeAccess = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
+  user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
 
-export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
+export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
+  return isNewUserTmp(user);
+};
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
-export const selectIsStripeEnabled = selectIsNewUserTmp;
