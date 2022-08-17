@@ -1,22 +1,11 @@
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
-
+import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieWrapper.js';
 import animationData from '../../../../lotties/login-home.json';
 import classes from './Decoration.module.css';
-
-const defaultOptions: Options = {
-  loop: true,
-  autoplay: true,
-  animationData: animationData,
-  rendererSettings: {
-    preserveAspectRatio: 'xMidYMid slice',
-  },
-};
 
 export function Decoration() {
   return (
     <div className={classes.frame631}>
-      <Lottie options={defaultOptions} height={144} width={144} />
+      <LottieWrapper animationData={animationData} width={144} height={144} />
     </div>
   );
 }

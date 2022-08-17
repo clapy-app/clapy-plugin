@@ -1,5 +1,4 @@
 {
-  // To enable for Yarn Plug'n'Play:
-  // "eslint.nodePath": ".yarn/sdks",
-  // "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+  "eslint.nodePath": ".yarn/sdks",
+  "prettier.prettierPath": ".yarn/sdks/prettier/index.js"
 }

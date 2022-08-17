@@ -2,15 +2,13 @@
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
-      "lib": [
-        "es2020"
-      ],
+      "lib": ["es2020"],
       "module": "CommonJS",
       "moduleResolution": "node",
       "target": "ES2020",
       "esModuleInterop": false,
-      "allowSyntheticDefaultImports": true,
-    },
+      "allowSyntheticDefaultImports": true
+    }
   },
   "compilerOptions": {
     "target": "ES2017",
@@ -45,19 +43,10 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": false,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src",
-  ],
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "build",
-    "dist",
-    "src/old",
-    "src/**/old"
-  ],
+  "include": ["src"],
+  "exclude": ["node_modules", "**/node_modules", "build", "dist", "src/old", "src/**/old"],
   "references": [
     {
       "path": "./tsconfig.node.json"

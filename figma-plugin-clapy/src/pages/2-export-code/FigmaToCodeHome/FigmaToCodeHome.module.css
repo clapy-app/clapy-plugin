@@ -8,7 +8,6 @@
   text-align: center;
   flex-direction: column;
   justify-content: end;
-  height: 60px;
 }
 
 .genConfigSection {
@@ -49,7 +48,6 @@ a {
 .root {
   flex-direction: column;
   flex: 1;
-  justify-content: center;
   gap: 12px;
   align-self: stretch;
 }
