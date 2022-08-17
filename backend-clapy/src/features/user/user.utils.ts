@@ -145,16 +145,9 @@ export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
   user?.['https://clapy.co/roles']?.includes('increasedQuota');
 
 // TODO edit here and in src/core/auth/auth-slice.ts
-// Next step: substitute isStripeDevTeam with isNewUserTmp
 export const isStripeEnabled = (user: AccessTokenDecoded) => {
-  if (!isStripeDevTeam(user)) {
-    return false;
-  }
   return isNewUserTmp(user);
 };
-export function isStripeDevTeam(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('stripeDevTeam');
-}
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
