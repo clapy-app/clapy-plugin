@@ -12,21 +12,8 @@ interface Props {
   className?: string;
 }
 
-function lottieOptions(animationData: any) {
-  const defaultOptions: any /* LottieOptions */ = {
-    loop: false,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  };
-  return defaultOptions;
-}
 /* @figmaId 1688:131981 */
 export const PaymentConfirmation: FC<Props> = memo(function PaymentConfirmation(props = {}) {
-  const successOptions = lottieOptions(successLottie);
-
   return (
     <div className={classes.root}>
       <div className={classes.content}>

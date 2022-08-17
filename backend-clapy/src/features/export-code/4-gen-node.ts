@@ -94,7 +94,7 @@ export function prepareNode(context: NodeContext, node: SceneNode2) {
 
     if (!isValidNode(node) && !isGroup(node)) {
       warnNode(node, 'TODO Unsupported node');
-      (node as any).skip = true;
+      node.skip = true;
       return;
     }
     const parentIsAutoLayout = isFlexNode(parentNode) && parentNode.layoutMode !== 'NONE';
@@ -305,7 +305,7 @@ export function genNodeAst(node: SceneNode2) {
 
       return fwConnector.createNodeTag(context, [...attributes, ...(extraAttributes || [])], children || [], node);
     }
-    throw new Error(`[genNodeAst] Unsupported type for node ${(node as any).name}`);
+    throw new Error(`[genNodeAst] Unsupported type for node ${node.name}`);
   } catch (error) {
     warnNode(node, '[genNodeAst] Failed to generate node with error below. Skipping the node.');
     if (!env.isProd) {
@@ -325,8 +325,8 @@ function genNodeAstLoopChildren(node: SceneNode2) {
       continue;
     }
     const context = child.nodeContext;
-    if (!context) throw new Error(`[genNodeAst] node ${(node as any).name} has no nodeContext`);
-    context.parentIsRootInComponent = (node as SceneNode2).nodeContext!.isRootInComponent;
+    if (!context) throw new Error(`[genNodeAst] node ${node.name} has no nodeContext`);
+    context.parentIsRootInComponent = node.nodeContext!.isRootInComponent;
     context.isRootInComponent = false;
     const childTsx = genNodeAst(child);
     if (childTsx) {

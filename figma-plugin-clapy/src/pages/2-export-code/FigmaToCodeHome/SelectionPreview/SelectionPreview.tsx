@@ -15,21 +15,6 @@ interface Props {
   progress: ExtractionProgress | undefined;
 }
 
-function lottieOptions(animationData: any) {
-  const defaultOptions: any /* LottieOptions */ = {
-    loop: false,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  };
-  return defaultOptions;
-}
-
-const loadingOptions = lottieOptions(loadingLottie);
-const successOptions = lottieOptions(successLottie);
-
 export const SelectionPreview: FC<Props> = memo(function SelectionPreview(props) {
   const { state, selectionPreview, progress } = props;
   if (state === 'loading' || state === 'generated') {

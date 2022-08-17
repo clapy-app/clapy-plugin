@@ -14,11 +14,7 @@
     "*.webp",
     "*.zip"
   ],
-  "_installConfig": {
-    "pnp": true
-  },
   "scripts": {
-    "a": "ts-node src/foo.ts",
     "start": "NODE_ENV=development APP_ENV=development ts-node src/scripts/esbuild/serve.ts",
     "start0": "yarn webpackdev",
     "dev": "npm-run-all --parallel dev-with-browser:plugin dev-with-browser:browser dev-with-browser:server",

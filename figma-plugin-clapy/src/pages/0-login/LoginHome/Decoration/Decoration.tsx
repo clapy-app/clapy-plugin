@@ -2,15 +2,6 @@ import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieW
 import animationData from '../../../../lotties/login-home.json';
 import classes from './Decoration.module.css';
 
-const defaultOptions: any /* LottieOptions */ = {
-  loop: true,
-  autoplay: true,
-  animationData: animationData,
-  rendererSettings: {
-    preserveAspectRatio: 'xMidYMid slice',
-  },
-};
-
 export function Decoration() {
   return (
     <div className={classes.frame631}>
