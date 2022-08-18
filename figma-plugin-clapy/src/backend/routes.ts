@@ -8,7 +8,14 @@ import {
 import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/1-export-code/2-serialize-node';
 import { extractSVGs } from './routes/1-export-code/7-extract-svg.js';
 import { extractImages } from './routes/1-export-code/8-extract-images.js';
-import { clearCachedTokens, getCachedToken, getRefreshToken, setCachedToken } from './routes/2-user/getCachedToken';
+import {
+  clearCachedTokens,
+  getCachedIsFirstLogin,
+  getCachedToken,
+  getRefreshToken,
+  setCachedIsFirstLogin,
+  setCachedToken,
+} from './routes/2-user/getCachedToken';
 import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
@@ -45,6 +52,10 @@ export const routes = {
   serializeSelectedNode,
   extractSVGs,
   extractImages,
+
+  // To delete in a few weeks. flag related to news update toast that shows on first login of user.
+  setCachedIsFirstLogin,
+  getCachedIsFirstLogin,
 
   // Code to design (old)
   getSbCompSelection,

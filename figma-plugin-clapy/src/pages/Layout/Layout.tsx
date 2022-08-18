@@ -13,7 +13,7 @@ import { Pricing } from '../3-Account/Pricing/Pricing.js';
 import { selectFeedbackPageState, selectPricingPageState, selectStripeState } from '../3-Account/stripe-slice.js';
 import { Generator } from '../4-Generator/Generator.js';
 import { Feedback } from '../5-Feedback/Feedback';
-import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
+import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading.js';
 import {
   selectAuthError,
@@ -31,11 +31,16 @@ import { HeaderGenerator } from './Header/Header_Generator.js';
 import classes from './Layout.module.css';
 
 // Flag for development only. Will be ignored in production.
+import { handleError, toastError } from '../../front-utils/front-utils.js';
+import alertClasses from '../../components-used/ErrorAlert/NewUpdateAlert.module.css';
+import { toast } from 'react-toastify';
+import { ErrorAlert2, ErrorAlertButtons } from '../../components-used/ErrorAlert/ErrorAlert.js';
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;
 
 export type MyStates = 'loading' | 'noselection' | 'selection' | 'generated';
+let alreadyToasted = false;
 
 export const Layout: FC = memo(function Layout() {
   return (
@@ -68,9 +73,44 @@ export const LayoutInner: FC = memo(function LayoutInner() {
       const previewUrl = prev ? `data:image/jpeg;base64,${prev}` : prev;
       dispatch(setSelection(previewUrl));
     });
+    async function setFirstLoginStatus() {
+      try {
+        const cachedInfo = await fetchPlugin('getCachedIsFirstLogin');
+        if (isSignedIn && !cachedInfo && !alreadyToasted) {
+          alreadyToasted = true;
+          toast(
+            <ErrorAlert2 isInfo={true}>
+              <p className={alertClasses.textWrapper}>
+                After months of Beta, we are launching Pro plans for{' '}
+                <span className={alertClasses.label2}>priority support</span>, early access to{' '}
+                <span className={alertClasses.label2}>new features</span>, and{' '}
+                <span className={alertClasses.label2}>unlimited</span> code exports. Free plan includes monthly credits.
+              </p>
+            </ErrorAlert2>,
+            {
+              className: `${alertClasses.root}`,
+              closeButton: ({ closeToast }) => (
+                <ErrorAlertButtons
+                  isInfo={true}
+                  closeToast={e => {
+                    closeToast(e);
+                    fetchPluginNoResponse('setCachedIsFirstLogin');
+                  }}
+                  emailLink={'#'}
+                />
+              ),
+            },
+          );
+        }
+      } catch (error) {
+        handleError(error);
+        toastError(error);
+      }
+    }
+    setFirstLoginStatus();
     fetchPluginNoResponse('getSelectionPreview');
     return dispose;
-  }, [dispatch]);
+  }, [dispatch, isSignedIn]);
   if (authError) {
     return (
       <div className={loginHomeClasses.content}>
