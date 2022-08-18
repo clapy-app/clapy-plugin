@@ -82,26 +82,32 @@ export class UserService {
     }
   }
 
-  async saveInHistoryUserCodeGeneration(
-    genType: 'csb' | 'zip' | undefined,
-    res: StreamableFile | CSBResponse | undefined,
-    user: AccessTokenDecoded,
-  ) {
-    if (res === undefined) return res;
+  async saveInHistoryUserCodeGeneration(figmaNode: ExportCodePayload, user: AccessTokenDecoded) {
     const generationHistory = new GenerationHistoryEntity();
     const userId = user.sub;
-    const isUserQualified = hasRoleIncreasedQuota(user);
-
     generationHistory.auth0id = userId;
     generationHistory.isFreeUser = this.stripeService.isLicenceInactive(user);
+    generationHistory.figmaConfig = figmaNode;
+    const generationHistoryRow = await this.generationHistoryRepository.save(generationHistory);
+    return generationHistoryRow.id;
+  }
 
+  async updateUserCodeGeneration(
+    res: StreamableFile | CSBResponse | undefined,
+    user: AccessTokenDecoded,
+    genType: 'csb' | 'zip' | undefined,
+    generationHistoryId: string | undefined,
+  ) {
+    if (!res) {
+      return res;
+    }
+    const generationHistory = new GenerationHistoryEntity();
+    generationHistory.id = generationHistoryId;
     if (genType === 'csb') {
       res = res as CSBResponse;
       generationHistory.generatedLink = res.sandbox_id;
       await this.generationHistoryRepository.save(generationHistory);
-      res.quotas = await this.getQuotaCount(userId);
-      res.quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
-      res.isLicenseExpired = this.stripeService.isLicenceInactive(user);
+      res = Object.assign(res, this.getUserSubscriptionData(user));
       // TODO: si une erreur survient, ne pas bloquer l'exécution du code et envoyer la réponse à l'utilisateur dans ce cas.
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
