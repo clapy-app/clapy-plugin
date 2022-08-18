@@ -13,7 +13,7 @@ export class GenerationHistoryEntity {
   @Column({ name: 'created_at' })
   createdAt?: Date;
 
-  @Column({ name: 'generated_link' })
+  @Column({ name: 'generated_link', nullable: true })
   generatedLink?: string;
 
   @Column({ name: 'is_free_user' })

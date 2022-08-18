@@ -1,4 +1,7 @@
 
+alter table "clapy"."generation_history" alter column "generated_link" set not null;
+
+
 -- Could not auto-generate a down migration.
 -- Please write an appropriate down migration for the SQL below:
 -- alter table "clapy"."generation_history" add column "figma_config" jsonb

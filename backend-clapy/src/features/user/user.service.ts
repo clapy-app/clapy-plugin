@@ -88,7 +88,6 @@ export class UserService {
     generationHistory.auth0id = userId;
     generationHistory.isFreeUser = this.stripeService.isLicenceInactive(user);
     generationHistory.figmaConfig = figmaNode;
-    generationHistory.generatedLink = 'unfinished';
     const generationHistoryRow = await this.generationHistoryRepository.save(generationHistory);
     return generationHistoryRow.id;
   }
