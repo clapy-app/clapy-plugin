@@ -1,9 +1,11 @@
 import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import type { CountryCode } from 'libphonenumber-js';
 import { parsePhoneNumber } from 'libphonenumber-js';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { CountryData } from 'react-phone-input-material-ui';
 import ReactPhoneInput from 'react-phone-input-material-ui';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -76,7 +78,8 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
 });
 
 export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInner(props = {}) {
-  const [value, setValue] = useState('');
+  const [phoneValue, setPhoneValue] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState<boolean>();
 
   const dispatch = useDispatch();
   const userMetadata = useSelector(selectUserMetadata);
@@ -84,7 +87,6 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
   const defaultValuesRef = useRef<Partial<UserMetadata>>({});
   const [allFilled, setAllFilled] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isValidNumber, setIsValidNumber] = useState(false);
 
   const submitMetadata = useCallbackAsync2(
     async (e: MouseEvent<HTMLButtonElement>) => {
@@ -137,12 +139,13 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     [allFilled],
   );
   const handleChangePhoneInput = useCallback(
-    (value: string) => {
-      setValue(value);
+    (value: string, data: CountryData | {}) => {
+      setPhoneValue(value);
+      setIsPhoneValid(checkIsPhoneValid(value, (data as CountryData)?.countryCode));
       const name = 'phone';
       handleChange({ target: { name, value } } as any);
     },
-    [handleChange, setValue],
+    [handleChange],
   );
   const { firstName, lastName, phone, jobRole, techTeamSize } = userMetadata;
 
@@ -212,31 +215,19 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
               {teamSizesTsx}
             </TextField>
             <ReactPhoneInput
-              value={value}
+              value={phoneValue}
               country={'fr'}
               onChange={handleChangePhoneInput}
               containerClass={classes.textField}
               component={TextField}
-              isValid={(value, country: any) => {
-                try {
-                  const phoneNumber = parsePhoneNumber(value, country.iso2.toUpperCase());
-                  if (phoneNumber && phoneNumber.isValid()) {
-                    setIsValidNumber(true);
-                    return true;
-                  }
-                  return false;
-                } catch (e) {
-                  setIsValidNumber(false);
-                  return false;
-                }
-              }}
+              isValid={isPhoneValid}
             />
           </div>
           <LoadingButton
             size='large'
             variant='contained'
             className={classes.submitButton}
-            disabled={!allFilled || isLoading || !isValidNumber}
+            disabled={!allFilled || isLoading || !isPhoneValid}
             loading={isLoading}
             onClick={submitMetadata}
           >
@@ -254,4 +245,14 @@ function objToMenuItems(obj: Dict<string>) {
       {label}
     </MenuItem>
   ));
+}
+
+function checkIsPhoneValid(phoneValue: string, country: string | undefined) {
+  if (!country) return false;
+  try {
+    const phoneNumber = parsePhoneNumber(phoneValue, country.toUpperCase() as CountryCode);
+    return !!phoneNumber && phoneNumber.isValid();
+  } catch (e) {
+    return false;
+  }
 }

@@ -70,7 +70,7 @@
     "morgan": "^1.10.0",
     "parse5": "^7.0.0",
     "pg": "^8.7.3",
-    "pipedrive": "^15.1.0",
+    "pipedrive": "^16.1.0",
     "prettier": "^2.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

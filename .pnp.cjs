@@ -6093,7 +6093,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["npm-run-all", "npm:4.1.5"],\
             ["parse5", "npm:7.0.0"],\
             ["pg", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:8.7.3"],\
-            ["pipedrive", "npm:15.1.0"],\
+            ["pipedrive", "npm:16.1.0"],\
             ["prettier", "npm:2.7.1"],\
             ["react", "npm:18.2.0"],\
             ["react-dom", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:18.2.0"],\
@@ -13070,10 +13070,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["pipedrive", [\
-        ["npm:15.1.0", {\
-          "packageLocation": "./.yarn/cache/pipedrive-npm-15.1.0-2ebafdcb1f-ec1639ee3d.zip/node_modules/pipedrive/",\
+        ["npm:16.1.0", {\
+          "packageLocation": "./.yarn/cache/pipedrive-npm-16.1.0-5663b5b749-0461785676.zip/node_modules/pipedrive/",\
           "packageDependencies": [\
-            ["pipedrive", "npm:15.1.0"],\
+            ["pipedrive", "npm:16.1.0"],\
             ["@babel/runtime", "npm:7.18.9"],\
             ["lodash", "npm:4.17.21"],\
             ["superagent", "npm:7.1.5"]\
