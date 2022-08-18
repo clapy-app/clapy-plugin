@@ -2594,126 +2594,126 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core-android-arm-eabi@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-android-arm-eabi@npm:1.2.237"
+"@swc/core-android-arm-eabi@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-android-arm-eabi@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.122
   conditions: os=android & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-android-arm64@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-android-arm64@npm:1.2.237"
+"@swc/core-android-arm64@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-android-arm64@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-arm64@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-darwin-arm64@npm:1.2.237"
+"@swc/core-darwin-arm64@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-darwin-arm64@npm:1.2.239"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-x64@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-darwin-x64@npm:1.2.237"
+"@swc/core-darwin-x64@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-darwin-x64@npm:1.2.239"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-freebsd-x64@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-freebsd-x64@npm:1.2.237"
+"@swc/core-freebsd-x64@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-freebsd-x64@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm-gnueabihf@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.2.237"
+"@swc/core-linux-arm-gnueabihf@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-gnu@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-linux-arm64-gnu@npm:1.2.237"
+"@swc/core-linux-arm64-gnu@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.2.239"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-musl@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-linux-arm64-musl@npm:1.2.237"
+"@swc/core-linux-arm64-musl@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-linux-arm64-musl@npm:1.2.239"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-gnu@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-linux-x64-gnu@npm:1.2.237"
+"@swc/core-linux-x64-gnu@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-linux-x64-gnu@npm:1.2.239"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-musl@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-linux-x64-musl@npm:1.2.237"
+"@swc/core-linux-x64-musl@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-linux-x64-musl@npm:1.2.239"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-win32-arm64-msvc@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-win32-arm64-msvc@npm:1.2.237"
+"@swc/core-win32-arm64-msvc@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-win32-ia32-msvc@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-win32-ia32-msvc@npm:1.2.237"
+"@swc/core-win32-ia32-msvc@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.2.239"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/core-win32-x64-msvc@npm:1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core-win32-x64-msvc@npm:1.2.237"
+"@swc/core-win32-x64-msvc@npm:1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core-win32-x64-msvc@npm:1.2.239"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.2.237":
-  version: 1.2.237
-  resolution: "@swc/core@npm:1.2.237"
+"@swc/core@npm:^1.2.239":
+  version: 1.2.239
+  resolution: "@swc/core@npm:1.2.239"
   dependencies:
-    "@swc/core-android-arm-eabi": 1.2.237
-    "@swc/core-android-arm64": 1.2.237
-    "@swc/core-darwin-arm64": 1.2.237
-    "@swc/core-darwin-x64": 1.2.237
-    "@swc/core-freebsd-x64": 1.2.237
-    "@swc/core-linux-arm-gnueabihf": 1.2.237
-    "@swc/core-linux-arm64-gnu": 1.2.237
-    "@swc/core-linux-arm64-musl": 1.2.237
-    "@swc/core-linux-x64-gnu": 1.2.237
-    "@swc/core-linux-x64-musl": 1.2.237
-    "@swc/core-win32-arm64-msvc": 1.2.237
-    "@swc/core-win32-ia32-msvc": 1.2.237
-    "@swc/core-win32-x64-msvc": 1.2.237
+    "@swc/core-android-arm-eabi": 1.2.239
+    "@swc/core-android-arm64": 1.2.239
+    "@swc/core-darwin-arm64": 1.2.239
+    "@swc/core-darwin-x64": 1.2.239
+    "@swc/core-freebsd-x64": 1.2.239
+    "@swc/core-linux-arm-gnueabihf": 1.2.239
+    "@swc/core-linux-arm64-gnu": 1.2.239
+    "@swc/core-linux-arm64-musl": 1.2.239
+    "@swc/core-linux-x64-gnu": 1.2.239
+    "@swc/core-linux-x64-musl": 1.2.239
+    "@swc/core-win32-arm64-msvc": 1.2.239
+    "@swc/core-win32-ia32-msvc": 1.2.239
+    "@swc/core-win32-x64-msvc": 1.2.239
   dependenciesMeta:
     "@swc/core-android-arm-eabi":
       optional: true
@@ -2743,7 +2743,7 @@ __metadata:
       optional: true
   bin:
     swcx: run_swcx.js
-  checksum: 250d010745a068a5f483ffdae759f346d405ea46776842a3e051fc702e2bb815a4c9c2790c48a0d037949802c78f414c27ec430cf7934c9ba5d6e4e0bca677c5
+  checksum: fd68067456b217053eda97fcc94224b8138840d492d85d15d7a10434fc1029a4bf55259e54c23b3852d8b3ab53d27cd360b472052ab9578cb3f3c935c1c6c4da
   languageName: node
   linkType: hard
 
@@ -3157,7 +3157,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18, @types/react-dom@npm:^18.0.6":
+"@types/react-dom@npm:^18.0.6":
   version: 18.0.6
   resolution: "@types/react-dom@npm:18.0.6"
   dependencies:
@@ -3172,15 +3172,6 @@ __metadata:
   dependencies:
     "@types/react": "*"
   checksum: 6abb7c47d54f012272650df8a962a28bd82f219291e5ef8b4dfa7fe0bb98ae243b060bf9fbe8ceff6213141794855a006db194b490b00ffd15842ae19d0ce1f0
-  languageName: node
-  linkType: hard
-
-"@types/react-lottie@npm:^1.2.6":
-  version: 1.2.6
-  resolution: "@types/react-lottie@npm:1.2.6"
-  dependencies:
-    "@types/react": "*"
-  checksum: 7930bad2cc998d62c3be4a0c66edfcbf1d87af6ffca5befa860acec706fd62e6e1e964ecffe88c3ed5a42668606e9ff1f43cc1beff764c679f68aa05166ce746
   languageName: node
   linkType: hard
 
@@ -3984,16 +3975,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-runtime@npm:^6.26.0":
-  version: 6.26.0
-  resolution: "babel-runtime@npm:6.26.0"
-  dependencies:
-    core-js: ^2.4.0
-    regenerator-runtime: ^0.11.0
-  checksum: 8aeade94665e67a73c1ccc10f6fd42ba0c689b980032b70929de7a6d9a12eb87ef51902733f8fefede35afea7a5c3ef7e916a64d503446c1eedc9e3284bd3d50
-  languageName: node
-  linkType: hard
-
 "backend-clapy@workspace:backend-clapy":
   version: 0.0.0-use.local
   resolution: "backend-clapy@workspace:backend-clapy"
@@ -4010,7 +3991,7 @@ __metadata:
     "@svgr/plugin-jsx": ^6.3.1
     "@svgr/plugin-svgo": ^6.3.1
     "@swc/cli": ^0.1.57
-    "@swc/core": ^1.2.237
+    "@swc/core": ^1.2.239
     "@trivago/prettier-plugin-sort-imports": ^3.3.0
     "@types/auth0": ^2.35.3
     "@types/express": ^4.17.13
@@ -4022,7 +4003,7 @@ __metadata:
     "@types/morgan": ^1.9.3
     "@types/node": ^16.11.49
     "@types/react": ^18.0.17
-    "@types/react-dom": ^18
+    "@types/react-dom": ^18.0.6
     "@types/supertest": ^2.0.12
     "@typescript-eslint/eslint-plugin": ^5.33.1
     "@typescript-eslint/parser": ^5.33.1
@@ -4837,13 +4818,6 @@ __metadata:
   version: 2.1.3
   resolution: "cookiejar@npm:2.1.3"
   checksum: 88259983ebc52ceb23cdacfa48762b6a518a57872eff1c7ed01d214fff5cf492e2660d7d5c04700a28f1787a76811df39e8639f8e17670b3cf94ecd86e161f07
-  languageName: node
-  linkType: hard
-
-"core-js@npm:^2.4.0":
-  version: 2.6.12
-  resolution: "core-js@npm:2.6.12"
-  checksum: 44fa9934a85f8c78d61e0c8b7b22436330471ffe59ec5076fe7f324d6e8cf7f824b14b1c81ca73608b13bdb0fef035bd820989bf059767ad6fa13123bb8bd016
   languageName: node
   linkType: hard
 
@@ -6503,7 +6477,6 @@ __metadata:
     "@types/prismjs": ^1.26.0
     "@types/react": ^18.0.17
     "@types/react-dom": ^18.0.6
-    "@types/react-lottie": ^1.2.6
     "@typescript-eslint/eslint-plugin": ^5.33.1
     "@typescript-eslint/parser": ^5.33.1
     "@urql/exchange-auth": ^0.1.7
@@ -6536,7 +6509,6 @@ __metadata:
     prismjs: ^1.28.0
     react: 18.2.0
     react-dom: 18.2.0
-    react-lottie: ^1.2.3
     react-phone-input-material-ui: ^2.17.4
     react-redux: ^8.0.2
     react-simple-code-editor: ^0.11.3
@@ -8806,7 +8778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lottie-web@npm:^5.1.3, lottie-web@npm:^5.9.4":
+"lottie-web@npm:^5.9.4":
   version: 5.9.6
   resolution: "lottie-web@npm:5.9.6"
   checksum: aed6a1d0c24eefb6c42a42aae18f29737746551cfdc86319f1b9675f5bc276ba26971e8d2b0e1498df880571fe4bfe2fc87885a1d4f8a318d5e4e5b939b7a474
@@ -10439,18 +10411,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-lottie@npm:^1.2.3":
-  version: 1.2.3
-  resolution: "react-lottie@npm:1.2.3"
-  dependencies:
-    babel-runtime: ^6.26.0
-    lottie-web: ^5.1.3
-  peerDependencies:
-    react: ^0.14.7 || ^15.0.0 || ^16.0.0
-  checksum: 05326e40b45cb1f52efe324386875858cec4725392d98033f767566c2f101bdbf59111a42108596ef63c96c897f13cf8d3c612e7a288d0dee3e1b7fb1a7911a2
-  languageName: node
-  linkType: hard
-
 "react-phone-input-material-ui@npm:^2.17.4":
   version: 2.17.4
   resolution: "react-phone-input-material-ui@npm:2.17.4"
@@ -10643,13 +10603,6 @@ __metadata:
   version: 0.1.13
   resolution: "reflect-metadata@npm:0.1.13"
   checksum: 798d379a7b6f6455501145419505c97dd11cbc23857a386add2b9ef15963ccf15a48d9d15507afe01d4cd74116df8a213247200bac00320bd7c11ddeaa5e8fb4
-  languageName: node
-  linkType: hard
-
-"regenerator-runtime@npm:^0.11.0":
-  version: 0.11.1
-  resolution: "regenerator-runtime@npm:0.11.1"
-  checksum: 3c97bd2c7b2b3247e6f8e2147a002eb78c995323732dad5dc70fac8d8d0b758d0295e7015b90d3d444446ae77cbd24b9f9123ec3a77018e81d8999818301b4f4
   languageName: node
   linkType: hard
 
