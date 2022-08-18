@@ -99,7 +99,7 @@ export class UserService {
     genType: 'csb' | 'zip' | undefined,
     generationHistoryId: string | undefined,
   ) {
-    if (res === undefined) {
+    if (!res) {
       return res;
     }
     const generationHistory = new GenerationHistoryEntity();
