@@ -2,21 +2,19 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
-import * as expressjwtModule from 'express-jwt';
+import { expressjwt } from 'express-jwt';
+import type { GetVerificationKey } from 'jwks-rsa';
 import jwks from 'jwks-rsa';
 
 import { env } from '../env-and-config/env.js';
 
-// Typings are wrong, let's work around it.
-const expressjwt = (expressjwtModule as any).expressjwt as typeof expressjwtModule.default;
-
-const jwtCheck = expressjwt({
+const jwtMiddleware = expressjwt({
   secret: jwks.expressJwtSecret({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
     jwksUri: `https://${env.auth0Domain}/.well-known/jwks.json`,
-  }),
+  }) as GetVerificationKey,
   audience: env.auth0Audience,
   issuer: `https://${env.auth0Domain}/`,
   algorithms: ['RS256'],
@@ -24,7 +22,7 @@ const jwtCheck = expressjwt({
 
 async function hasValidationError(req: Request, res: Response) {
   return new Promise<any>((resolve /* , reject */) => {
-    jwtCheck(req, res, (error: any) => {
+    jwtMiddleware(req, res, (error: any) => {
       if (error) resolve(error);
       else resolve(undefined);
     });
