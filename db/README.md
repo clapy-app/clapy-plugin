@@ -1,3 +1,5 @@
+## Before commiting migrations
+
 Recommended approach before commit / deployment to staging:
 
 ```bash
@@ -6,11 +8,20 @@ yarn hasura:squash --name "migration_name" --from 1647464761013
 
 where `1647464761013` is the version number (number at the beginning of the migration directory names).
 
-Source: https://hasura.io/docs/latest/graphql/core/migrations/migrations-setup.html#step-6-squash-migrations-and-add-checkpoints-to-version-control
+Source: https://hasura.io/docs/latest/migrations-metadata-seeds/migrations-metadata-setup/#step-6-squash-migrations-and-add-checkpoints-to-version-control
+
+## Updating Hasura
+
+Change the version at 3 locations (they should all match):
+- docker-compose.yml, services > hasura > image
+- db/hasura/Dockerfile
+- the package `hasura-cli` in package.json (might be late in some cases - if that's your case, just use the latest available version)
 
 ---
 
-Older approach:
+## Archives
+
+Older approach to squash:
 
 Update the schema with `yarn schema`.
 
