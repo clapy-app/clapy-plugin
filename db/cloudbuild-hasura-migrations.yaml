@@ -7,8 +7,8 @@ steps:
   - id: Migrate
     timeout: 40s
     name: node
-    entrypoint: yarn
-    args: ['${_MIGRATE_SCRIPT}']
+    entrypoint: npm
+    args: ['run', '${_MIGRATE_SCRIPT}']
     env:
       - 'HASURA_GRAPHQL_ADMIN_SECRET=$_HASURA_GRAPHQL_ADMIN_SECRET'
 options:

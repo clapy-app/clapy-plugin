@@ -42,12 +42,14 @@ To redeploy Metabase, check the instructions in `metabase/README.md`.
 
 TODO Yacine
 
-## Update yarn
+## Updates
+
+### Update yarn
 
 - `yarn set version stable`
 - `yarn install` in the root (and the back and the front?) directories.
 
-## Update libraries
+### Update libraries
 
 - `yarn upgr` and select the new versions.
 
@@ -60,6 +62,10 @@ Code to design libraries, unused for now:
 
 - opentype.js: it's a fork, no need to upgrade for now (see _Open PR & issues from me_ below)
 - puppeteer
+
+### Update Hasura
+
+See [db/README.md](db/README.md)
 
 ## Test Stripe workflow
 

@@ -51,9 +51,8 @@ services:
     env_file: .env
 
   hasura:
-    # When updating the image version here, also update in db/hasura/Dockerfile (for deployed
-    # version) and the package hasura-cli in package.json.
-    image: hasura/graphql-engine:v2.9.0.cli-migrations-v3
+    # See db/README.md to update the version number.
+    image: hasura/graphql-engine:v2.10.1.cli-migrations-v3
     container_name: clapy_hasura
     ports:
       - '${VITE_HASURA_PORT}:${HASURA_DOCKER_PORT}'
@@ -77,6 +76,29 @@ services:
       HASURA_GRAPHQL_NO_OF_RETRIES: 1000
       HASURA_GRAPHQL_JWT_SECRET: "{\"jwk_url\": \"https://${VITE_AUTH0_DOMAIN}/.well-known/jwks.json\", \"type\": \"RS256\", \"audience\": \"${VITE_AUTH0_AUDIENCE}\", \"issuer\": \"https://${VITE_AUTH0_DOMAIN}/\"}"
   #    restart: on-failure
+
+  hasuraprod:
+    build:
+      context: ./db
+    container_name: clapy_hasuraprod
+    ports:
+      - '${VITE_HASURA_PORT}:${HASURA_DOCKER_PORT}'
+    depends_on:
+      - "db"
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    env_file: .env
+    environment:
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"
+      PG_DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_NO_OF_RETRIES: 1000
+      HASURA_GRAPHQL_JWT_SECRET: "{\"jwk_url\": \"https://${VITE_AUTH0_DOMAIN}/.well-known/jwks.json\", \"type\": \"RS256\", \"audience\": \"${VITE_AUTH0_AUDIENCE}\", \"issuer\": \"https://${VITE_AUTH0_DOMAIN}/\"}"
 
   backend:
     <<: *backend

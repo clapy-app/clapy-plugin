@@ -2594,126 +2594,126 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core-android-arm-eabi@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-android-arm-eabi@npm:1.2.239"
+"@swc/core-android-arm-eabi@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-android-arm-eabi@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.122
   conditions: os=android & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-android-arm64@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-android-arm64@npm:1.2.239"
+"@swc/core-android-arm64@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-android-arm64@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-arm64@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-darwin-arm64@npm:1.2.239"
+"@swc/core-darwin-arm64@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-darwin-arm64@npm:1.2.241"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-x64@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-darwin-x64@npm:1.2.239"
+"@swc/core-darwin-x64@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-darwin-x64@npm:1.2.241"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-freebsd-x64@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-freebsd-x64@npm:1.2.239"
+"@swc/core-freebsd-x64@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-freebsd-x64@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm-gnueabihf@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.2.239"
+"@swc/core-linux-arm-gnueabihf@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-gnu@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-linux-arm64-gnu@npm:1.2.239"
+"@swc/core-linux-arm64-gnu@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.2.241"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-musl@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-linux-arm64-musl@npm:1.2.239"
+"@swc/core-linux-arm64-musl@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-linux-arm64-musl@npm:1.2.241"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-gnu@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-linux-x64-gnu@npm:1.2.239"
+"@swc/core-linux-x64-gnu@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-linux-x64-gnu@npm:1.2.241"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-musl@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-linux-x64-musl@npm:1.2.239"
+"@swc/core-linux-x64-musl@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-linux-x64-musl@npm:1.2.241"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-win32-arm64-msvc@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-win32-arm64-msvc@npm:1.2.239"
+"@swc/core-win32-arm64-msvc@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-win32-ia32-msvc@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-win32-ia32-msvc@npm:1.2.239"
+"@swc/core-win32-ia32-msvc@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.2.241"
   dependencies:
     "@swc/wasm": 1.2.130
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/core-win32-x64-msvc@npm:1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core-win32-x64-msvc@npm:1.2.239"
+"@swc/core-win32-x64-msvc@npm:1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core-win32-x64-msvc@npm:1.2.241"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.2.239":
-  version: 1.2.239
-  resolution: "@swc/core@npm:1.2.239"
+"@swc/core@npm:^1.2.241":
+  version: 1.2.241
+  resolution: "@swc/core@npm:1.2.241"
   dependencies:
-    "@swc/core-android-arm-eabi": 1.2.239
-    "@swc/core-android-arm64": 1.2.239
-    "@swc/core-darwin-arm64": 1.2.239
-    "@swc/core-darwin-x64": 1.2.239
-    "@swc/core-freebsd-x64": 1.2.239
-    "@swc/core-linux-arm-gnueabihf": 1.2.239
-    "@swc/core-linux-arm64-gnu": 1.2.239
-    "@swc/core-linux-arm64-musl": 1.2.239
-    "@swc/core-linux-x64-gnu": 1.2.239
-    "@swc/core-linux-x64-musl": 1.2.239
-    "@swc/core-win32-arm64-msvc": 1.2.239
-    "@swc/core-win32-ia32-msvc": 1.2.239
-    "@swc/core-win32-x64-msvc": 1.2.239
+    "@swc/core-android-arm-eabi": 1.2.241
+    "@swc/core-android-arm64": 1.2.241
+    "@swc/core-darwin-arm64": 1.2.241
+    "@swc/core-darwin-x64": 1.2.241
+    "@swc/core-freebsd-x64": 1.2.241
+    "@swc/core-linux-arm-gnueabihf": 1.2.241
+    "@swc/core-linux-arm64-gnu": 1.2.241
+    "@swc/core-linux-arm64-musl": 1.2.241
+    "@swc/core-linux-x64-gnu": 1.2.241
+    "@swc/core-linux-x64-musl": 1.2.241
+    "@swc/core-win32-arm64-msvc": 1.2.241
+    "@swc/core-win32-ia32-msvc": 1.2.241
+    "@swc/core-win32-x64-msvc": 1.2.241
   dependenciesMeta:
     "@swc/core-android-arm-eabi":
       optional: true
@@ -2743,7 +2743,7 @@ __metadata:
       optional: true
   bin:
     swcx: run_swcx.js
-  checksum: fd68067456b217053eda97fcc94224b8138840d492d85d15d7a10434fc1029a4bf55259e54c23b3852d8b3ab53d27cd360b472052ab9578cb3f3c935c1c6c4da
+  checksum: 06c181bee327da23f89497d1c13d1c86e0f0aa3f3623350bda296ae00c3a0469ad39ff21a20f5cb133ba4c81e97e74b09a3bacb3dab6cc6c4a6f7f4ca8d53dc7
   languageName: node
   linkType: hard
 
@@ -2901,13 +2901,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/eslint@npm:^8.4.5":
-  version: 8.4.5
-  resolution: "@types/eslint@npm:8.4.5"
+"@types/eslint@npm:^8.4.6":
+  version: 8.4.6
+  resolution: "@types/eslint@npm:8.4.6"
   dependencies:
     "@types/estree": "*"
     "@types/json-schema": "*"
-  checksum: 428b0c971a50adb0d08621e76f21b284580a0052a31341a0e6d553f72b54cd0142d549aa1497c7e3bc56e9f6bcc27286e66e0216e1ba76d1a5ecd2279c40bc8c
+  checksum: bfaf27b00031b2238139003965475d023306119e467947f7a43a41e380918e365618e2ae6a6ae638697f6421a6bb1571db078695ff5e548f23618000b38acd23
   languageName: node
   linkType: hard
 
@@ -3071,10 +3071,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.14.183":
-  version: 4.14.183
-  resolution: "@types/lodash@npm:4.14.183"
-  checksum: 9c754dc7a2e5f26f9c67e494cffbe5447135a4e30eb2fcbc9da05dd5fa5fbf8579059bcf15014307c1c5d1c6d1b7870860618990d96abee9389d8cb79b3ac93c
+"@types/lodash@npm:^4.14.184":
+  version: 4.14.184
+  resolution: "@types/lodash@npm:4.14.184"
+  checksum: 6d9a4d67f7f9d0ec3fd21174f3dd3d00629dc1227eb469450eace53adbc1f7e2330699c28d0fe093e5f0fef0f0e763098be1f779268857213224af082b62be21
   languageName: node
   linkType: hard
 
@@ -3387,39 +3387,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@urql/core@npm:>=2.3.6, @urql/core@npm:>=2.4.4, @urql/core@npm:^2.6.1":
-  version: 2.6.1
-  resolution: "@urql/core@npm:2.6.1"
+"@urql/core@npm:>=3.0.0, @urql/core@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@urql/core@npm:3.0.0"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
-    wonka: ^4.0.14
+    wonka: ^6.0.0
   peerDependencies:
     graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: d3bdc343d77b2473c1fbc02bd8669376e46f00ac93efb387e7df7783b62b201096531f3021668e696b40bbf6c5cbb6bcdc79905e16b9c4603baf6174a4949153
+  checksum: b6650011853fae54f091226c44e672657bfcaaa01789deed559b475be01671243a202a8f84eef7b1f2043603138b2ad07193b183957b7d71716476804849cca0
   languageName: node
   linkType: hard
 
-"@urql/exchange-auth@npm:^0.1.7":
-  version: 0.1.7
-  resolution: "@urql/exchange-auth@npm:0.1.7"
+"@urql/exchange-auth@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@urql/exchange-auth@npm:1.0.0"
   dependencies:
-    "@urql/core": ">=2.3.6"
-    wonka: ^4.0.14
+    "@urql/core": ">=3.0.0"
+    wonka: ^6.0.0
   peerDependencies:
     graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 36036f02d7873f9fd9385b16f1980a85918307cf23ffad83152bd67aa93b16a405c44f2e5c2b378fdef1837c33dfcc9b0db22143127a43a63da2c3c378c0600e
+  checksum: ce621e4f873745167bc58679fe3f1a0033e57b7fa8b57a1f4022de89ccaeff2c280e1ad637a6e398a0cf45923c76e03bc97283e9069b0b07dc42f895bb0ccb66
   languageName: node
   linkType: hard
 
-"@urql/exchange-retry@npm:^0.3.3":
-  version: 0.3.3
-  resolution: "@urql/exchange-retry@npm:0.3.3"
+"@urql/exchange-retry@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@urql/exchange-retry@npm:1.0.0"
   dependencies:
-    "@urql/core": ">=2.4.4"
-    wonka: ^4.0.14
+    "@urql/core": ">=3.0.0"
+    wonka: ^6.0.0
   peerDependencies:
     graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 61f69751fc2bf91bfc1507d9d4af790c9671b78112c15b5ca90076da0efa36dd43bf5c9b0d5785a767d994bf92e4e099bc7a32d088a711bb8dbd0c9e7bb14b8f
+  checksum: 99320fc6d03a5b318a9ae3907b9bcd22c60d5aed1badab803e082e7a165ee55b365b48fa2f63e6cb5e7e6ef37550603a57b9f501c232366d72bab0e6fade1fd2
   languageName: node
   linkType: hard
 
@@ -3991,7 +3991,7 @@ __metadata:
     "@svgr/plugin-jsx": ^6.3.1
     "@svgr/plugin-svgo": ^6.3.1
     "@swc/cli": ^0.1.57
-    "@swc/core": ^1.2.239
+    "@swc/core": ^1.2.241
     "@trivago/prettier-plugin-sort-imports": ^3.3.0
     "@types/auth0": ^2.35.3
     "@types/express": ^4.17.13
@@ -3999,7 +3999,7 @@ __metadata:
     "@types/glob": ^7.2.0
     "@types/jest": 28.1.7
     "@types/jsonwebtoken": ^8.5.8
-    "@types/lodash": ^4.14.183
+    "@types/lodash": ^4.14.184
     "@types/morgan": ^1.9.3
     "@types/node": ^16.11.49
     "@types/react": ^18.0.17
@@ -4500,11 +4500,11 @@ __metadata:
     "@graphql-codegen/cli": ^2.11.6
     "@graphql-codegen/schema-ast": ^2.5.1
     "@graphql-codegen/typescript": ^2.7.3
-    "@types/eslint": ^8.4.5
+    "@types/eslint": ^8.4.6
     "@types/prettier": ^2.7.0
     eslint: ^8.22.0
     graphql: ^16.6.0
-    hasura-cli: ^2.9.0
+    hasura-cli: 2.9.0
     npm-run-all: ^4.1.5
     prettier: ^2.7.1
     typescript: ^4.7.4
@@ -6479,8 +6479,8 @@ __metadata:
     "@types/react-dom": ^18.0.6
     "@typescript-eslint/eslint-plugin": ^5.33.1
     "@typescript-eslint/parser": ^5.33.1
-    "@urql/exchange-auth": ^0.1.7
-    "@urql/exchange-retry": ^0.3.3
+    "@urql/exchange-auth": ^1.0.0
+    "@urql/exchange-retry": ^1.0.0
     "@vitejs/plugin-react": ^2.0.1
     bestzip: ^2.2.1
     csstype: ^3.1.0
@@ -6496,10 +6496,10 @@ __metadata:
     eslint-plugin-unused-imports: ^2.0.0
     fast-deep-equal: ^3.1.3
     graphql: ^16.6.0
-    graphql-ws: ^5.10.0
+    graphql-ws: ^5.10.1
     immer: ^9.0.15
     jwt-decode: ^3.1.2
-    libphonenumber-js: ^1.10.12
+    libphonenumber-js: ^1.10.13
     lottie-react: ^2.3.1
     magic-bytes.js: ^1.0.12
     mkdirp: ^1.0.4
@@ -6511,14 +6511,14 @@ __metadata:
     react-dom: 18.2.0
     react-phone-input-material-ui: ^2.17.4
     react-redux: ^8.0.2
-    react-simple-code-editor: ^0.11.3
+    react-simple-code-editor: ^0.13.0
     react-toastify: ^9.0.8
     rimraf: ^3.0.2
     sha256-uint8array: ^0.10.3
     ts-node: ^10.9.1
     typescript: ^4.7.4
-    urql: ^2.2.3
-    vite: ^3.0.8
+    urql: ^3.0.0
+    vite: ^3.0.9
     wonka: ^6.0.0
     ws: ^8.8.1
   languageName: unknown
@@ -6994,7 +6994,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:^5.10.0, graphql-ws@npm:^5.4.1":
+"graphql-ws@npm:^5.10.1":
+  version: 5.10.1
+  resolution: "graphql-ws@npm:5.10.1"
+  peerDependencies:
+    graphql: ">=0.11 <=16"
+  checksum: ad8eb8a6823a32a7bd9bc6ec73a0b244f503e50318ef5db1312f1d09c5f0b0e4505ad75b08f06e4c40c6935cf5170444b19347b7b83222b4e1af01401418cb91
+  languageName: node
+  linkType: hard
+
+"graphql-ws@npm:^5.4.1":
   version: 5.10.0
   resolution: "graphql-ws@npm:5.10.0"
   peerDependencies:
@@ -7090,7 +7099,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hasura-cli@npm:^2.9.0":
+"hasura-cli@npm:2.9.0":
   version: 2.9.0
   resolution: "hasura-cli@npm:2.9.0"
   dependencies:
@@ -8505,10 +8514,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libphonenumber-js@npm:^1.10.12":
-  version: 1.10.12
-  resolution: "libphonenumber-js@npm:1.10.12"
-  checksum: 8b8789b8b46f59e540108cdd3b925990e722a52134e03ab78a360312b7a001ab7f8211320338ddd60b8c68dd49d56075e16567f68aa22698e2218b69300fad42
+"libphonenumber-js@npm:^1.10.13":
+  version: 1.10.13
+  resolution: "libphonenumber-js@npm:1.10.13"
+  checksum: a1740bbed8faa1adb4ae01dda6a7c16b4fd2917efdd9bafac53fa06d9e4b53dc67543d282f7fd0043649edddc0f03359448a17adb837e534358c7ba92c7dc268
   languageName: node
   linkType: hard
 
@@ -10480,13 +10489,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-simple-code-editor@npm:^0.11.3":
-  version: 0.11.3
-  resolution: "react-simple-code-editor@npm:0.11.3"
+"react-simple-code-editor@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "react-simple-code-editor@npm:0.13.0"
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 15a03bfd7fef4efd73f0c25136e2eb253990ec9878199083853d8bcfad2246ac9750edfb64183c9dc33ad27d38f5e0e12052005c2ef7c80cbb6b1d4a9a4da511
+  checksum: 054f6b6d799fa67df884d0ee9bbb79a0a0dd0e3b42ca68e5aebdbc8488b2b77746d5c6f8efc28cbafbf23f970826acab257a28d9f516fe7176e6de52734cfd13
   languageName: node
   linkType: hard
 
@@ -12262,16 +12271,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"urql@npm:^2.2.3":
-  version: 2.2.3
-  resolution: "urql@npm:2.2.3"
+"urql@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "urql@npm:3.0.0"
   dependencies:
-    "@urql/core": ^2.6.1
-    wonka: ^4.0.14
+    "@urql/core": ^3.0.0
+    wonka: ^6.0.0
   peerDependencies:
     graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     react: ">= 16.8.0"
-  checksum: b105d10036e5cdbc92dac03bf50e81bfc946eb4909c5f2009fa7b83b5161493ac3288f97f42fd18c7bae6a5645ff18535d6746ec6d0c8cdbce5803b24a8a10a4
+  checksum: dadb26885356225b7c6342cb76349c6ba5ebb8c3650dc0aeb7693ff161146601fde6ae668d6633dae66dc5c09e3a6c2ebbd1c6e02d3a5780d441036baf339f0b
   languageName: node
   linkType: hard
 
@@ -12356,9 +12365,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^3.0.8":
-  version: 3.0.8
-  resolution: "vite@npm:3.0.8"
+"vite@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "vite@npm:3.0.9"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
@@ -12384,7 +12393,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: ec3f57d52f2bf28f2f89898053c2156f025a108a95e9308ce6580f43d8fdaae866f7988afa8207a8c8509069d3a0b50ee79b9a8050590a825f4b7771646c2755
+  checksum: 6341aa43579ae45f8a383bdc0c5041dea3dff98f14e0a546d6d884a864134b00082246a28d1de8adff0ce0dd92b468c7ade8f972ffe1ed97258671d63e0f16f7
   languageName: node
   linkType: hard
 
@@ -12514,13 +12523,6 @@ __metadata:
   dependencies:
     string-width: ^1.0.2 || 2 || 3 || 4
   checksum: d5fc37cd561f9daee3c80e03b92ed3e84d80dde3365a8767263d03dacfc8fa06b065ffe1df00d8c2a09f731482fcacae745abfbb478d4af36d0a891fad4834d3
-  languageName: node
-  linkType: hard
-
-"wonka@npm:^4.0.14":
-  version: 4.0.15
-  resolution: "wonka@npm:4.0.15"
-  checksum: afbee7359ed2d0a9146bf682f3953cb093f47d5f827e767e6ef33cb70ca6f30631afe5fe31dbb8d6c7eaed26c4ac6426e7c13568917c017ef6f42c71139b38f7
   languageName: node
   linkType: hard
 
