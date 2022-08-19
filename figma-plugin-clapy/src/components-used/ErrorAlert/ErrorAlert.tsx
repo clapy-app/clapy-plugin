@@ -41,10 +41,10 @@ export const ErrorAlertButtons: FC<Props2> = memo(function ErrorAlertButtons(pro
     <div className={`${classes.actions} ${props.isInfo ? classes.actionsInfo : null}`}>
       {props.isInfo ? (
         <>
-          <Button isInfo={true} icon={<CheckCircleIcon className={classes.icon} />} href={emailLink}>
+          <Button isInfo={true} icon={<ExternalLinkIcon className={classes.icon} />} href={emailLink}>
             Learn more
           </Button>
-          <Button isInfo={true} icon={<ExternalLinkIcon className={classes.icon} />} onClick={closeToast}>
+          <Button isInfo={true} icon={<CheckCircleIcon className={classes.icon} />} onClick={closeToast}>
             Got it
           </Button>
         </>
