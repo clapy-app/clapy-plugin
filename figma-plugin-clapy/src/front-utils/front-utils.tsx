@@ -2,7 +2,8 @@ import type { DependencyList } from 'react';
 import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import { ErrorAlert2, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
+import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
+import { env } from '../environment/env.js';
 import { apiPost } from './http.utils.js';
 
 // TODO search all usages of handleErrorBack in the front, and replace with handleError
@@ -12,14 +13,16 @@ export function handleError(error: any) {
   }
   console.error('[handleError]', error);
 
-  // Send the error to the webservice for monitoring.
-  let { message, stack } = error;
-  const errorStr = JSON.stringify(error);
-  const original = JSON.parse(errorStr);
-  if (!message) message = errorStr;
-  if (!stack) stack = new Error(message).stack;
-  const serialized = { message, stack, original };
-  apiPost('front-monitor', serialized, { noRetry: true, silentErrors: true }).catch(/* silent errors */);
+  if (!env.isDev) {
+    // Send the error to the webservice for monitoring.
+    let { message, stack } = error;
+    const errorStr = JSON.stringify(error);
+    const original = JSON.parse(errorStr);
+    if (!message) message = errorStr;
+    if (!stack) stack = new Error(message).stack;
+    const serialized = { message, stack, original };
+    apiPost('front-monitor', serialized, { noRetry: true, silentErrors: true }).catch(/* silent errors */);
+  }
 }
 
 /** Same as useCallback, but accepting async functions. @see useCallback */
@@ -75,7 +78,7 @@ export function toastError(error: any) {
 
   const { emailLink, errorMsgDisplayed } = parseErrorForDisplay(error);
 
-  toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
+  toast(<Alert>{errorMsgDisplayed}</Alert>, {
     closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
   });
 }

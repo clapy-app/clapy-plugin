@@ -45,7 +45,7 @@ TODO Yacine
 ## Update yarn
 
 - `yarn set version stable`
-- `yarn install` in the root, the back and the front directories.
+- `yarn install` in the root (and the back and the front?) directories.
 
 ## Update libraries
 
@@ -55,7 +55,6 @@ Special mentions:
 
 - Hasura CLI: you need to update the library version + the version of the image hasura/graphql-engine in docker-compose.yml + db/Dockerfile. They all have to have the same version number.
 - @types/node: the major version should be the same as the node used in the project
-- express-jwt: there used to be a bug in JWT validation when upgrading above 6.1.2. If you upgrade, ensure you test carefully the JWT validation.
 
 Code to design libraries, unused for now:
 

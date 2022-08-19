@@ -1,7 +1,5 @@
 import type { FC } from 'react';
 import { memo } from 'react';
-import type { Options } from 'react-lottie';
-import Lottie from 'react-lottie';
 
 import { extractionStepsLabels, extractionStepsTotal } from '../../../../common/app-config.js';
 import type { ExtractionProgress } from '../../../../common/app-models.js';
@@ -9,6 +7,7 @@ import successLottie from '../../../../lotties/gen-code-success.json';
 import loadingLottie from '../../../../lotties/generating-code.json';
 import type { MyStates } from '../FigmaToCodeHome';
 import classes from './SelectionPreview.module.css';
+import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieWrapper.js';
 
 interface Props {
   state: MyStates;
@@ -16,27 +15,17 @@ interface Props {
   progress: ExtractionProgress | undefined;
 }
 
-function lottieOptions(animationData: any) {
-  const defaultOptions: Options = {
-    loop: false,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  };
-  return defaultOptions;
-}
-
-const loadingOptions = lottieOptions(loadingLottie);
-const successOptions = lottieOptions(successLottie);
-
 export const SelectionPreview: FC<Props> = memo(function SelectionPreview(props) {
   const { state, selectionPreview, progress } = props;
   if (state === 'loading' || state === 'generated') {
     return (
       <div className={classes.rootLoading}>
-        <Lottie options={state === 'loading' ? loadingOptions : successOptions} height={160} width={160} />
+        <LottieWrapper
+          animationData={state === 'loading' ? loadingLottie : successLottie}
+          width={120}
+          height={120}
+          loop={false}
+        />
         {progress && (
           <div className={classes.loadingWrapper}>
             <div className={classes.loadingText}>

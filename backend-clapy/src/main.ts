@@ -125,7 +125,10 @@ async function bootstrap() {
       max: 100, // limit each IP to 15 requests per windowMs
     }),
   );
-  app.use(morgan('[:date[iso]] :remote-addr :method :status :url - :response-time ms'));
+  if (env.isDev) {
+    // Google Cloud Run already logs requests.
+    app.use(morgan('[:date[iso]] :remote-addr :method :status :url - :response-time ms'));
+  }
   // Security (XSS): sanitize incoming requests (remove common injections)
   app.use(expressSanitizer());
 

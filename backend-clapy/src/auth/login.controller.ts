@@ -59,16 +59,22 @@ export class LoginController {
   @Render('login-callback')
   @IsBrowserGet()
   async loginCallback(
-    @Query('code') code: string,
-    @Query('state') writeToken: string,
-    @Query('from') from: string = 'browser',
+    @Query('code') code: string | undefined,
+    @Query('state') writeToken: string | undefined,
+    @Query('from') from: 'browser' | 'desktop' | undefined,
+    @Query('error') error: 'access_denied' | undefined,
+    @Query('error_description') errorDescription: string | undefined,
   ) {
     if (!writeToken) throw new Error(`No state in query parameters.`);
     const writeTokenEntity = await this.loginTokensRepo.findOne({ where: { writeToken } });
     if (!writeTokenEntity) {
       throw new Error(`Write token invalid or already consumed`);
     }
-    writeTokenEntity.code = code;
+    if (code) {
+      writeTokenEntity.code = code;
+    } else {
+      writeTokenEntity.code = `error|${error}|${errorDescription}`;
+    }
     writeTokenEntity.writeToken = undefined;
     await this.loginTokensRepo.save(writeTokenEntity);
 

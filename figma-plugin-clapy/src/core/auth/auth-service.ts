@@ -90,16 +90,31 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
 // Then Github API:
 // - https://github.com/octokit/rest.js
 // - https://octokit.github.io/rest.js/v18
-export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
+export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (extraScopes?: string | string[]) => {
   let readToken: string | undefined = undefined,
     writeToken: string | undefined = undefined;
   try {
     const verifier = createVerifier();
     const challenge = createChallenge(verifier);
     ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp, extraScopes);
-    // ... TODO
+    const authUrl = getAuthenticationURL(writeToken, challenge, { extraScopes, provider: 'github' });
+    console.log('requestAdditionalScopes authUrl', authUrl);
+    openNewTab(authUrl);
+    const authoCode = await waitForAuthorizationCode(readToken);
+    const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
     deleteReadToken(readToken);
+    if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+    console.log(accessToken);
+    setAccessToken(accessToken);
+    _tokenType = tokenType;
+    await Promise.all([
+      fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken),
+      fetchPlugin('setGithubCachedToken', undefined),
+    ]);
+
+    // console.log('----------- accessToken');
+    // console.log(accessToken);
+    // console.log('-----------');
   } catch (err) {
     if (readToken) {
       deleteReadToken(readToken);
@@ -119,7 +134,7 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraSc
     const challenge = createChallenge(verifier);
 
     ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, isSignUp, extraScopes);
+    const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
     openNewTab(authUrl);
     const authoCode = await waitForAuthorizationCode(readToken);
     const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
@@ -268,9 +283,13 @@ interface ExchangeTokenResponse {
 function getAuthenticationURL(
   state: string,
   challenge: string,
-  isSignUp: boolean | undefined,
-  extraScopes: string[] | undefined,
+  options: {
+    isSignUp?: boolean;
+    provider?: 'github';
+    extraScopes?: string | string[];
+  } = {},
 ) {
+  const { isSignUp, provider, extraScopes } = options;
   const data: any = {
     audience: env.auth0Audience,
     // Add openid to get an ID token along with the access token
@@ -287,9 +306,12 @@ function getAuthenticationURL(
     data.prompt = 'login';
     data.screen_hint = 'signup';
   }
+  if (provider) {
+    data.connection = provider;
+  }
   if (extraScopes) {
     // https://auth0.com/docs/authenticate/identity-providers/adding-scopes-for-an-external-idp#pass-scopes-to-authorize-endpoint
-    data.connection_scope = extraScopes.join(',');
+    data.connection_scope = Array.isArray(extraScopes) ? extraScopes.join(',') : extraScopes;
   }
   return mkUrl(`https://${auth0Domain}/authorize`, data);
 }
@@ -338,6 +360,10 @@ async function waitForAuthorizationCode(readToken: string) {
   while (true) {
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
+      if (authoCode.startsWith('error|')) {
+        const [_, errorMsg, errorDescription] = authoCode.split('|');
+        throw new Error(`${errorMsg} - ${errorDescription}`);
+      }
       return authoCode;
     }
     await wait(1000);

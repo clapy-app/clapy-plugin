@@ -1,10 +1,10 @@
 import { BadRequestException, Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
-import type { Request } from 'express';
 
 import { wait } from '../../common/general-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
+import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
 import { StripeService } from '../stripe/stripe.service.js';
@@ -24,16 +24,17 @@ export class UserController {
     @Inject(UserService) private userService: UserService,
     @Inject(StripeService) private stripeService: StripeService,
   ) {}
+
   @Get('')
-  async getUser(@Body() {}: UserMetadata, @Req() request: Request) {
+  async getUser(@Body() {}: UserMetadata, @Req() request: RequestPrivate) {
     perfReset('Starting...');
     // Simulates a potential cold start on Google Cloud Run.
     // This API is one of the first calls.
     if (env.isDev && flags.simulateColdStart) {
       await wait(3000);
     }
-    const user = (request as any).user;
-    const userId = (request as any).user.sub;
+    const user = request.auth;
+    const userId = user.sub;
 
     const auth0User = await getAuth0User(userId);
     const userMetadata: UserMetadata = auth0User.user_metadata || {};
@@ -53,8 +54,9 @@ export class UserController {
     perfMeasure();
     return userMetadata;
   }
+
   @Post('update-profile')
-  async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() request: Request) {
+  async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() req: RequestPrivate) {
     perfReset('Starting...');
     const { firstName, lastName, companyName, jobRole, techTeamSize, phone } = userMetadata;
     if (hasMissingMetaProfile(userMetadata)) {
@@ -72,7 +74,7 @@ export class UserController {
           .join(', ')}`,
       );
     }
-    const userId = (request as any).user.sub;
+    const userId = req.auth.sub;
     const auth0user = await updateAuth0UserMetadata(userId, {
       firstName,
       lastName,
@@ -95,7 +97,7 @@ export class UserController {
   }
 
   @Post('update-usage')
-  async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() request: Request) {
+  async updateUserUsage(@Body() userMetaUsage: UserMetaUsage, @Req() req: RequestPrivate) {
     perfReset('Starting...');
     if (hasMissingMetaUsage(userMetaUsage)) {
       throw new BadRequestException(
@@ -111,7 +113,7 @@ export class UserController {
       }
     }
 
-    const userId = (request as any).user.sub;
+    const userId = req.auth.sub;
     const auth0user = await updateAuth0UserMetadata(userId, { usage: userMetaUsage });
 
     // Insert data in Pipedrive asynchronously (non-blocking operation)

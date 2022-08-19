@@ -96,28 +96,29 @@ services:
     ports:
       - "5409:80"
 
-  # backendprod:
-  #   build:
-  #     dockerfile: ./backend-clapy/Dockerfile
-  #     context: .
-  #   env_file: .env
-  #   environment:
-  #     ISDOCKER: 'true'
-  #     VITE_HASURA_HOSTNAME: hasura
-  #     VITE_HASURA_PORT: ${HASURA_DOCKER_PORT}
-  #     POSTGRES_HOST: db
-  #     POSTGRES_PORT_CONSUMER: ${POSTGRES_PORT_CONTAINER}
-  #   depends_on:
-  #     - "db"
-  #   ports:
-  #     - '4141:4141'
-  #     - '9229:9229'
-  #   command: yarn start:prod
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
-  #         memory: 700M
+  backendprod:
+    build:
+      dockerfile: ./backend-clapy/Dockerfile
+      context: .
+    env_file: .env
+    environment:
+      ISDOCKER: 'true'
+      VITE_HASURA_HOSTNAME: hasura
+      VITE_HASURA_PORT: ${HASURA_DOCKER_PORT}
+      POSTGRES_HOST: db
+      POSTGRES_PORT_CONSUMER: ${POSTGRES_PORT_CONTAINER}
+    depends_on:
+      - "db"
+    ports:
+      - '4141:4141'
+      - '9229:9229'
+    command: yarn start:prod
+    # command: ls -la
+    deploy:
+      resources:
+        limits:
+          # Should be 512 to match Cloud Run, but the rebuild in watch mode seems to consume too much and needs an extended memory.
+          memory: 700M
 
   ### Check tutorial for setup: https://cloud.google.com/sql/docs/postgres/connect-admin-ip?hl=fr
   # proxy-cloud-sql:

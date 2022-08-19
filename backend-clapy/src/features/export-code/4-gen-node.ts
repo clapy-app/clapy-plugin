@@ -265,7 +265,7 @@ export function genNodeAst(node: SceneNode2) {
     }
 
     if (isText(node)) {
-      return genTextAst(node);
+      return genTextAst(node, false);
     } else if (isVector(node)) {
       if (!svgPathVarName) {
         if (node.visible) {

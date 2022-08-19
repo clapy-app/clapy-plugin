@@ -169,7 +169,7 @@ async function httpReqUnauthenticated<T>(
     );
     throw new Error('Missing mock error');
   }
-  if (!resp.ok && !noRetry) {
+  if (!resp.ok && !noRetry && !env.isDev) {
     // Ideally, test what other types of errors look like to retry them
     if (resp.status >= 500 || !resp.status) {
       await wait(1000);

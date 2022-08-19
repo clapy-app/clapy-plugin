@@ -1,5 +1,6 @@
 import type { DeclarationPlain } from 'css-tree';
 import equal from 'fast-deep-equal';
+import type ts from 'typescript';
 
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
@@ -543,7 +544,7 @@ function addTextOverride(context: InstanceContext, node: TextNode2, styles: Dict
     return;
   }
   prepareStylesOnTextSegments(context, node, styles);
-  const textAst = genTextAst(node);
+  const textAst = genTextAst(node, true);
   if (!textAst) {
     return;
   }
@@ -565,7 +566,7 @@ function addOverrides(
   intermediateNodes: InstanceContext['intermediateNodes'],
   intermediateComponentContexts: InstanceContext['intermediateComponentContexts'],
   intermediateInstanceNodeOfComps: InstanceContext['intermediateInstanceNodeOfComps'],
-  overrideValue: SwapAst | string | boolean | FwNodeOneOrMore,
+  overrideValue: SwapAst | string | boolean | FwNodeOneOrMore | ts.BinaryExpression | ts.ConditionalExpression,
   genAndRegisterPropName: (componentContext: ModuleContext, intermediateNode: SceneNode2) => string,
   compContextField: 'instanceStyleOverrides' | 'instanceSwaps' | 'instanceHidings' | 'instanceTextOverrides',
   nodeFieldForOverrideValue: 'className' | 'swapName' | 'hideProp' | 'textOverrideProp',

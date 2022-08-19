@@ -32,10 +32,10 @@
     "cSpell.words": ["clapy", "metabase", "pipedrive"],
 
     // To enable for Yarn Plug'n'Play:
-    // "eslint.nodePath": ".yarn/sdks",
-    // "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
-    // "typescript.tsdk": ".yarn/sdks/typescript/lib",
-    // "typescript.enablePromptUseWorkspaceTsdk": true,
+    "eslint.nodePath": ".yarn/sdks",
+    "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+    "typescript.tsdk": "ROOT/.yarn/sdks/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
 
     // Shareable settings between projects
     "code-runner.executorMap": {

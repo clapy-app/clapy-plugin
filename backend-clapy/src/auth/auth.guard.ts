@@ -2,21 +2,19 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
-import expressjwt from 'express-jwt';
+import { expressjwt } from 'express-jwt';
+import type { GetVerificationKey } from 'jwks-rsa';
 import jwks from 'jwks-rsa';
 
 import { env } from '../env-and-config/env.js';
 
-// express-jwt is stuck at version 6.1.2 for now. 7.4.3 is not working with jwks secret.
-// See https://github.com/auth0/express-jwt/issues/282
-
-const jwtCheck = expressjwt({
+const jwtMiddleware = expressjwt({
   secret: jwks.expressJwtSecret({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
     jwksUri: `https://${env.auth0Domain}/.well-known/jwks.json`,
-  }),
+  }) as GetVerificationKey,
   audience: env.auth0Audience,
   issuer: `https://${env.auth0Domain}/`,
   algorithms: ['RS256'],
@@ -24,7 +22,7 @@ const jwtCheck = expressjwt({
 
 async function hasValidationError(req: Request, res: Response) {
   return new Promise<any>((resolve /* , reject */) => {
-    jwtCheck(req, res, (error: any) => {
+    jwtMiddleware(req, res, (error: any) => {
       if (error) resolve(error);
       else resolve(undefined);
     });

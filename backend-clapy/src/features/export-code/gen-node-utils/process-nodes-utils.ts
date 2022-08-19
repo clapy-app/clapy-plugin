@@ -201,15 +201,18 @@ const entities = Object.keys(htmlEntitiesMap) as Array<EntitiesToEscape>;
 const entitiesRegex = new RegExp(`[${entities.join('')}]`, 'g');
 
 // A more complete version, if required: https://www.npmjs.com/package/html-entities
-export function escapeHTML(str: string) {
+export function escapeHTMLSplitParagraphsNoSpacing(str: string) {
   // Escape forbidden characters in HTML
   str = str.replace(entitiesRegex, (tag: string) => {
     const res = htmlEntitiesMap[tag as htmlEntitiesKeys];
     return res;
   });
   // Replaces all line breaks with HTML tag <br /> to preserve line breaks
-  str = str.replace(/\r\n|\r|\n|[\x0B\x0C\u0085\u2028\u2029]/g, '<br />');
-  return str;
+  return str.split(/[\x0B\x0C\u0085\u2028\u2029]/g);
+}
+
+export function splitParagraphsWithSpacing(str: string) {
+  return str.split(/\r\n|\r|\n/g);
 }
 
 export function useBem(context: NodeContext) {

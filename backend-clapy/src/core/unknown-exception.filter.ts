@@ -1,5 +1,6 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import type { Request } from 'express';
 
 import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 
@@ -78,8 +79,8 @@ export class UnknownExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     try {
-      const req = ctx.getRequest();
-      const user = (req as any).user as AccessTokenDecoded | undefined;
+      const req = ctx.getRequest<Request>();
+      const user: AccessTokenDecoded | undefined = req.auth;
 
       const { error, errors, status, message } = handleException(exception, response, user);
 

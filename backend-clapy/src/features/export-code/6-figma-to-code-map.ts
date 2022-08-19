@@ -9,6 +9,7 @@ import { isInstanceContext } from './code.model.js';
 import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
 import { isText } from './create-ts-compiler/canvas-utils.js';
 import { csstree } from './create-ts-compiler/csstree.js';
+import { addStyle } from './css-gen/css-factories-high.js';
 import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
 import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
@@ -21,6 +22,7 @@ import { fontFigmaToCode } from './figma-code-map/font.js';
 import { maskFigmaToCode } from './figma-code-map/mask.js';
 import { opacityFigmaToCode } from './figma-code-map/opacity.js';
 import { overflowFigmaToCode } from './figma-code-map/overflow.js';
+import { paragraphIndentFigmaToCode } from './figma-code-map/paragraph-indent.js';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute.js';
 import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches.js';
 import { postTransform, transformFigmaToCode } from './figma-code-map/transform.js';
@@ -108,6 +110,7 @@ function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<Decl
   effectsFigmaToCode(context, node, styles);
   maskFigmaToCode(context, node, styles);
   textNodePatchesFigmaToCode(context, node, styles);
+  paragraphIndentFigmaToCode(context, node, styles);
   return context;
 }
 
@@ -117,6 +120,7 @@ export function mapTextSegmentStyles(
   styles: Dict<DeclarationPlain>,
   node: TextNode2,
 ) {
+  addStyle(context, node, styles, 'display', 'inline');
   colorFigmaToCode(context, textSegment, styles, node);
   fontFigmaToCode(context, textSegment, styles, node);
 

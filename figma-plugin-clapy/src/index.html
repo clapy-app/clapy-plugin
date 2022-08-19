@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@600&family=Nunito%20Sans:wght@400;800&family=Spartan:wght@700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
 
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="react-page"></div>
+<head>
+  <!-- Later, we could host the plugin front online with a redirection like: -->
+  <!-- <script>location.href = 'https://csb-uy5q3.netlify.app/'</script> -->
+  <!-- Attention: we lose access to the plugin backend. A bridge would be required. -->
+  <meta charset="utf-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@600&family=Nunito%20Sans:wght@400;800&family=Spartan:wght@700&display=swap"
+    rel="stylesheet" />
+</head>
 
-    <!-- ViteJS-specific main script. Ensure it is deleted by the build script in src/scripts/esbuild/config-front.ts
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="react-page"></div>
+
+  <!-- ViteJS-specific main script. Ensure it is deleted by the build script in src/scripts/esbuild/config-front.ts
   (currently with indexHtml.replace(...)) -->
-    <script type="module" src="./index.tsx"></script>
-    <!--
+  <script type="module" src="./index.tsx"></script>
+  <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
@@ -27,5 +30,6 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-  </body>
+</body>
+
 </html>

@@ -20,7 +20,8 @@ export async function writeSVGReactComponents(projectContext: ProjectContext) {
         memo: true,
         // svgo optimizes the SVG, reducing its size: https://github.com/svg/svgo
         // jsx converts into React component
-        plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
+        // Temporarily disabled because of a bug, it seems it cannot find the corresponding module.
+        plugins: [/* '@svgr/plugin-svgo', */ '@svgr/plugin-jsx'],
         // prettierConfig: await getPrettierConfig(),
         svgoConfig: {
           plugins: [

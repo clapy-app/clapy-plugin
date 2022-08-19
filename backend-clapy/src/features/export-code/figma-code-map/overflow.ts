@@ -19,24 +19,25 @@ export function overflowFigmaToCode(context: NodeContext, node: ValidNode, style
   if (isText(node) || isVector(node) || isRectangle(node) || isComponentSet(node) || isGroup(node) || isLine(node))
     return;
   const { x, y } = guessScroll(context, node, styles);
+  const fullWidthHeightFromSetting = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
   if (node.overflowDirection === 'BOTH' || (x && y)) {
     addStyle(context, node, styles, 'overflow', 'auto');
     resetStyleIfOverriding(context, node, styles, 'overflow-x');
     resetStyleIfOverriding(context, node, styles, 'overflow-y');
-  } else if (node.overflowDirection === 'VERTICAL' || y) {
-    addStyle(context, node, styles, 'overflow-y', 'auto');
-    if (node.clipsContent) {
-      addStyle(context, node, styles, 'overflow-x', 'hidden');
-    } else {
-      resetStyleIfOverriding(context, node, styles, 'overflow-x');
-    }
-    resetStyleIfOverriding(context, node, styles, 'overflow');
   } else if (node.overflowDirection === 'HORIZONTAL' || x) {
     addStyle(context, node, styles, 'overflow-x', 'auto');
     if (node.clipsContent) {
       addStyle(context, node, styles, 'overflow-y', 'hidden');
     } else {
       resetStyleIfOverriding(context, node, styles, 'overflow-y');
+    }
+    resetStyleIfOverriding(context, node, styles, 'overflow');
+  } else if (node.overflowDirection === 'VERTICAL' || y || fullWidthHeightFromSetting) {
+    addStyle(context, node, styles, 'overflow-y', 'auto');
+    if (node.clipsContent) {
+      addStyle(context, node, styles, 'overflow-x', 'hidden');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'overflow-x');
     }
     resetStyleIfOverriding(context, node, styles, 'overflow');
   } else if (node.clipsContent) {

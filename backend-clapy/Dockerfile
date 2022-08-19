@@ -4,10 +4,12 @@ RUN apk -U upgrade && apk add git
 
 ENV NODE_ENV production
 WORKDIR /app
-COPY backend-clapy/package.json yarn.lock ./
-RUN NODE_ENV=development yarn install --immutable
-COPY backend-clapy/. .
+COPY .yarn ./.yarn
+COPY .pnp.* .yarnrc.yml package.json yarn.lock ./
+COPY backend-clapy/package.json ./backend-clapy/package.json
+RUN NODE_ENV=development yarn workspace backend-clapy install
+COPY backend-clapy/. ./backend-clapy
+WORKDIR /app/backend-clapy
 RUN yarn build
-# && yarn install --immutable
 
 CMD [ "yarn", "start:prod" ]
