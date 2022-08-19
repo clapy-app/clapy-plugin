@@ -4,6 +4,9 @@
   border-radius: 16px;
   background-color: #d92d20;
 }
+.rootInfo {
+  background-color: #155eef;
+}
 .text {
   color: #fff;
   font-size: 12px;
@@ -13,4 +16,7 @@
     'Liberation Sans', sans-serif;
   text-align: center;
   white-space: nowrap;
+}
+.textInfo {
+  color: #fff;
 }
