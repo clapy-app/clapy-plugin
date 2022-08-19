@@ -42,7 +42,24 @@ export async function fetchGHTest() {
   }
 }
 
-export async function fetchGithub(path: string, authUserId: string, accessToken: string | undefined) {
+export interface GHRepo {
+  id: number;
+  node_id: string;
+  name: string;
+  full_name: string;
+  private: boolean;
+  owner: {
+    login: string;
+  };
+  html_url: string;
+  description: string;
+}
+
+export function listGHRepos(authUserId: string, accessToken: string | undefined) {
+  return fetchGithub<GHRepo[]>('/user/repos', authUserId, accessToken);
+}
+
+async function fetchGithub<GithubResp>(path: string, authUserId: string, accessToken: string | undefined) {
   if (path == null) path = '';
   if (!path.startsWith('/')) path = `/${path}`;
   if (!accessToken) {
@@ -51,10 +68,12 @@ export async function fetchGithub(path: string, authUserId: string, accessToken:
   if (!accessToken) {
     throw new Error(`[BUG] Couldn't fetch github token from Auth0. Please contact us to fix it.`);
   }
-  let response: AxiosResponse<any, any>;
+  let response: AxiosResponse<GithubResp>;
   try {
     response = await axios.get(`https://api.github.com${path}`, {
+      params: { visibility: 'private' },
       headers: {
+        Accept: 'application/vnd.github+json',
         Authorization: `token ${accessToken}`,
       },
     });
@@ -62,6 +81,9 @@ export async function fetchGithub(path: string, authUserId: string, accessToken:
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       console.warn('Retry with new token');
       accessToken = await fetchGithubAccessToken(authUserId);
+      if (!accessToken) {
+        throw new Error(`[BUG] Couldn't fetch github token from Auth0 when retrying. Please contact us to fix it.`);
+      }
       response = await axios.get(`https://api.github.com${path}`, {
         headers: {
           Authorization: `token ${accessToken}`,

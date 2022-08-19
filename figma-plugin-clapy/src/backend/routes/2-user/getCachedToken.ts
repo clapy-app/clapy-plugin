@@ -25,3 +25,15 @@ export async function clearCachedTokens() {
     figma.clientStorage.deleteAsync('refreshToken'),
   ]);
 }
+
+export async function getGithubCachedToken() {
+  return figma.clientStorage.getAsync('githubAccessToken') as Promise<string | undefined>;
+}
+
+export async function setGithubCachedToken(githubAccessToken: string | undefined) {
+  if (!githubAccessToken) {
+    await figma.clientStorage.deleteAsync('githubAccessToken');
+  } else {
+    await figma.clientStorage.setAsync('githubAccessToken', githubAccessToken);
+  }
+}

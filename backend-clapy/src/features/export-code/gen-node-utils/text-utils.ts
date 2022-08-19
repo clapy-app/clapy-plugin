@@ -14,6 +14,7 @@ import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTMLSplitParagraphsNoSpacing, splitParagraphsWithSpacing } from './process-nodes-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
+import type ts from 'typescript';
 
 function mkTextBlock(): TextBlock {
   return { segments: [], blockStyles: {} };
@@ -130,7 +131,12 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
   }
 }
 
-export function genTextAst(node: TextNode2) {
+export function genTextAst<T extends boolean>(
+  node: TextNode2,
+  isJsExprAllowed: T,
+): T extends true
+  ? FwNodeOneOrMore | ts.BinaryExpression | ts.ConditionalExpression | undefined
+  : FwNodeOneOrMore | undefined {
   const { nodeContext: context, styles } = node;
   if (!context) throw new Error(`[genTextAst] node ${node.name} has no nodeContext`);
   if (!styles) throw new Error(`[genTextAst] node ${node.name} has no styles`);
@@ -260,14 +266,9 @@ export function genTextAst(node: TextNode2) {
     blockASTs = fwConnector.wrapNode(blockASTs, 'div', textBlockWrapperStyleAttributes);
   }
 
-  blockASTs = fwConnector.wrapHideAndTextOverride(context, blockASTs, node, false);
+  const blockASTs2 = fwConnector.wrapHideAndTextOverride(context, blockASTs, node, isJsExprAllowed);
 
-  return blockASTs;
-}
-
-export function createTextAst(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
-  prepareStylesOnTextSegments(context, node, styles);
-  return genTextAst(node);
+  return blockASTs2;
 }
 
 export function genInputPlaceholderStyles(context: NodeContext, node: TextNode2) {

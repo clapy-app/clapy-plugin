@@ -177,15 +177,12 @@
 		},
 		{
 			"label": "Backend NodeJS",
-			"detail": "`npm run dev:debug` as VSCode task",
+			"detail": "`npm run dev` as VSCode task",
 			"options": {
 				"cwd": "${workspaceFolder}/backend-clapy"
 			},
 			"type": "npm",
-			"script": "dev:debug",
-			"dependsOn": [
-				"Docker containers"
-			],
+			"script": "devnpm",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {

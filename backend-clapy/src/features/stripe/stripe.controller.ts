@@ -1,7 +1,6 @@
 import type { RawBodyRequest } from '@nestjs/common';
 import { Controller, Get, HttpException, Inject, Post, Query, Render, Req } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Request } from 'express';
 import { Stripe } from 'stripe';
 import type { Repository } from 'typeorm';
 
@@ -10,6 +9,7 @@ import { LoginTokensEntity } from '../../auth/login-tokens.entity.js';
 import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
+import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { UserService } from '../user/user.service.js';
 import { getAuth0User } from '../user/user.utils.js';
 import { StripeWebhookService } from './stripe-webhook.service.js';
@@ -25,7 +25,7 @@ export class StripeController {
   ) {}
 
   @Get('/checkout')
-  async stripeCheckout(@Req() req: Request, @Query('from') from: string) {
+  async stripeCheckout(@Req() req: RequestPrivate, @Query('from') from: string) {
     const user = req.auth;
     const userId = user.sub;
     const redirectUri = `${env.baseUrl}/stripe/checkout-callback?from=${encodeURIComponent(
@@ -92,12 +92,12 @@ export class StripeController {
   }
 
   @Get('/get-user-quota')
-  async getUserQuotas(@Req() req: Request) {
+  async getUserQuotas(@Req() req: RequestPrivate) {
     const user = req.auth;
     return this.userService.getUserSubscriptionData(user);
   }
   @Get('/customer-portal')
-  async stripeCustomerPortal(@Req() req: Request, @Query('from') from: string) {
+  async stripeCustomerPortal(@Req() req: RequestPrivate, @Query('from') from: string) {
     const redirectUri = `${env.baseUrl}/stripe/customer-portal-callback?from=${from}`;
     const user = req.auth;
     const userId = user.sub;
@@ -120,7 +120,7 @@ export class StripeController {
   @PublicRoute()
   @IsBrowserGet()
   @Post('webhook')
-  async webhook(@Req() req: RawBodyRequest<Request>) {
+  async webhook(@Req() req: RawBodyRequest<RequestPrivate>) {
     if (!req.rawBody) throw new HttpException('Invalid stripe body, cannot be empty.', 400);
     const sig = req.headers['stripe-signature'];
     if (typeof sig !== 'string') throw new HttpException('Invalid stripe header type, expected a string.', 400);
@@ -158,7 +158,7 @@ export class StripeController {
   }
 
   @Post('reset-payment-status')
-  async resetPaymentStatus(@Req() req: Request) {
+  async resetPaymentStatus(@Req() req: RequestPrivate) {
     const user = req.auth;
     const userId = user.sub;
     // await this.loginTokensRepo.delete({ userId });

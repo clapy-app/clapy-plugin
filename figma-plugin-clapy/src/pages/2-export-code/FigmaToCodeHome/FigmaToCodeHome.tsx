@@ -50,7 +50,7 @@ import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
 import classes from './FigmaToCodeHome.module.css';
-import { GithubOption } from './GithubOption.js';
+import { GithubOption } from '../github/GithubOption.js';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';

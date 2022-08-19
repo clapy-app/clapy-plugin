@@ -12,6 +12,7 @@ import { LoginController } from './auth/login.controller.js';
 import { env } from './env-and-config/env.js';
 import { CodeController } from './features/export-code/1-code-controller.js';
 import { GenerationHistoryEntity } from './features/export-code/generation-history.entity.js';
+import { GithubController } from './features/github/1-github-controller.js';
 import { SbSerializeController } from './features/sb-serialize-preview/sb-serialize.controller.js';
 import { StripeWebhookService } from './features/stripe/stripe-webhook.service.js';
 import { StripeController } from './features/stripe/stripe.controller.js';
@@ -46,6 +47,7 @@ import { UserService } from './features/user/user.service.js';
     StripeController,
     SbSerializeController,
     CodeController,
+    GithubController,
   ],
   providers: [
     AppService,
