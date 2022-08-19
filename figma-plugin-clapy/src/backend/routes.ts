@@ -55,6 +55,10 @@ export const routes = {
   extractSVGs,
   extractImages,
 
+  // To delete in a few weeks. flag related to news update toast that shows on first login of user.
+  setCachedIsFirstLogin,
+  getCachedIsFirstLogin,
+
   // Code to design (old)
   getSbCompSelection,
   getStoriesSamples,

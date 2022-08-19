@@ -1,3 +1,4 @@
+// todo: A modifier dans une semaine retirer hasClosedUpdateToast.
 export async function getCachedToken() {
   const [accessToken, tokenType]: [string | null, string | null] = await Promise.all([
     figma.clientStorage.getAsync('accessToken'),
@@ -16,6 +17,13 @@ export async function setCachedToken(accessToken: string, tokenType: string, ref
     figma.clientStorage.setAsync('tokenType', tokenType),
     figma.clientStorage.setAsync('refreshToken', refreshToken),
   ]);
+}
+
+export async function getCachedIsFirstLogin() {
+  return (await figma.clientStorage.getAsync('isFirstLogin')) as boolean | undefined;
+}
+export async function setCachedIsFirstLogin() {
+  await figma.clientStorage.setAsync('isFirstLogin', true);
 }
 
 export async function clearCachedTokens() {
