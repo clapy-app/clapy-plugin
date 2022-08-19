@@ -22,7 +22,7 @@ export function InfoAlert() {
             closeToast(e);
             fetchPluginNoResponse('setCachedIsFirstLogin');
           }}
-          emailLink={'#'}
+          emailLink={'https://blog.clapy.co/professional-plans-are-here'}
         />
       ),
     },
