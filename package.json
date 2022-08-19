@@ -17,7 +17,7 @@
   "scripts": {
     "________________ development ________________": "",
     "install:all": "yarn && yarn install:backend && yarn install:plugin",
-    "dev": "npm-run-all --parallel plugin-dev up console",
+    "dev": "npm-run-all --parallel plugin-dev dup console",
     "preview": "cd backend-clapy/atest-gen && yarn && yarn start",
     "console": "yarn hasura console",
     "upgr": "yarn upgrade-interactive",

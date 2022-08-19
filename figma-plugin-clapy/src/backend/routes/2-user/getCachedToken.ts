@@ -20,7 +20,7 @@ export async function setCachedToken(accessToken: string, tokenType: string, ref
 }
 
 export async function getCachedIsFirstLogin() {
-  return (await figma.clientStorage.getAsync('isFirstLogin')) as string | null;
+  return (await figma.clientStorage.getAsync('isFirstLogin')) as boolean | undefined;
 }
 export async function setCachedIsFirstLogin() {
   await figma.clientStorage.setAsync('isFirstLogin', true);

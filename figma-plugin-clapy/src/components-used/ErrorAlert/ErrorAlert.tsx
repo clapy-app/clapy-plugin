@@ -13,6 +13,7 @@ interface Props {
   // Like PropsWithChildren<...>
   children?: ReactNode;
   isInfo?: boolean;
+  infoText?: string;
 }
 
 export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
@@ -22,7 +23,7 @@ export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
   }
   return (
     <div className={classes.content}>
-      <BadgeGroup isInfo={props.isInfo} />
+      <BadgeGroup isInfo={props.isInfo} infoText={props.isInfo ? props.infoText : undefined} />
       <div className={`${classes.supportingText} ${props.isInfo ? classes.supportingTextInfo : null}`}>{children}</div>
     </div>
   );
