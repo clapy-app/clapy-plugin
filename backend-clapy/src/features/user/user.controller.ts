@@ -24,6 +24,7 @@ export class UserController {
     @Inject(UserService) private userService: UserService,
     @Inject(StripeService) private stripeService: StripeService,
   ) {}
+
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: RequestPrivate) {
     perfReset('Starting...');
@@ -53,6 +54,7 @@ export class UserController {
     perfMeasure();
     return userMetadata;
   }
+
   @Post('update-profile')
   async updateUserProfile(@Body() userMetadata: UserMetadata, @Req() req: RequestPrivate) {
     perfReset('Starting...');
