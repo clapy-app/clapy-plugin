@@ -19,6 +19,7 @@ type Props = AnchorProps | ButtonProps;
 export const Button: FC<Props> = memo(function Button(props) {
   if (isAnchorProps(props)) {
     const { icon, href, children, ...buttonProps } = props;
+    delete buttonProps.isInfo;
     return (
       <a href={href} target='_blank' rel='noreferrer' className={classes.root} {...buttonProps}>
         <_ButtonBase isInfo={props.isInfo} icon={icon}>
@@ -28,6 +29,7 @@ export const Button: FC<Props> = memo(function Button(props) {
     );
   } else {
     const { icon, children, ...buttonProps } = props;
+    delete buttonProps.isInfo;
     return (
       <button className={classes.root} {...buttonProps}>
         <_ButtonBase isInfo={props.isInfo} icon={icon}>
