@@ -2,7 +2,7 @@ import type { DependencyList } from 'react';
 import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import { ErrorAlert2, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
+import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
 import { env } from '../environment/env.js';
 import { apiPost } from './http.utils.js';
 
@@ -78,7 +78,7 @@ export function toastError(error: any) {
 
   const { emailLink, errorMsgDisplayed } = parseErrorForDisplay(error);
 
-  toast(<ErrorAlert2>{errorMsgDisplayed}</ErrorAlert2>, {
+  toast(<Alert>{errorMsgDisplayed}</Alert>, {
     closeButton: ({ closeToast }) => <ErrorAlertButtons closeToast={closeToast} emailLink={emailLink} />,
   });
 }

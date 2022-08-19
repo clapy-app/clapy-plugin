@@ -16,7 +16,7 @@ interface Props {
   infoText?: string;
 }
 
-export const ErrorAlert2: FC<Props> = memo(function ErrorAlert2(props) {
+export const Alert: FC<Props> = memo(function ErrorAlert2(props) {
   let { children } = props;
   if (typeof children === 'string' && children.length > 150) {
     children = `${children.substring(0, 150)}...`;
