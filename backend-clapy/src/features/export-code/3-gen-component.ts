@@ -9,7 +9,7 @@ import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
 import { genNodeAst, prepareNode } from './4-gen-node.js';
 import type { ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
 import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
-import { isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
+import { isPage, isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
 import { mkNamedImportsDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
@@ -48,7 +48,13 @@ export function getOrGenComponent(
   assertDefined(comp);
   let moduleContext = components.get(comp.id);
   if (!moduleContext) {
-    moduleContext = createModuleContextForNode(parentModuleContext, comp, parent, isRootComponent, isEmbeddedComponent);
+    moduleContext = createModuleContextForNode(
+      parentModuleContext,
+      comp,
+      parent,
+      isRootComponent,
+      !isPage(comp.parent),
+    );
     components.set(comp.id, moduleContext);
   }
   if (!skipAddImport) {
