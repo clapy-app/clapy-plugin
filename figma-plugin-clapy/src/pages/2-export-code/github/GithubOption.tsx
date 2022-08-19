@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button.js';
 import FormControl from '@mui/material/FormControl/FormControl.js';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel.js';
 import Radio from '@mui/material/Radio/Radio.js';
