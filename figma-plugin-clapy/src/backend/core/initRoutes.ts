@@ -52,8 +52,15 @@ export function initRoutes(routes: Routes) {
 export function initSubscriptions(subscriptions: Subscriptions) {
   for (const [name, subscription] of Object.entries(subscriptions)) {
     subscription(value => {
-      const msg: NextMessage = { type: name as keyof Subscriptions, payload: value };
-      figma.ui.postMessage(msg);
+      try {
+        const msg: NextMessage = { type: name as keyof Subscriptions, payload: value };
+        figma.ui.postMessage(msg);
+      } catch (error) {
+        error = error || new Error(`[Custom] Unknown error when running controller code on subscription ${name}.`);
+        // Should we emit an error response for the client?
+        console.error('plugin route:', name);
+        console.error(error);
+      }
     });
   }
 }
