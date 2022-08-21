@@ -7,6 +7,7 @@ import type {
   FrameNodeBlackList,
   GlobalExtender,
   OmitMethods,
+  TextExtender,
 } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
@@ -78,11 +79,22 @@ export interface TextBlock {
   textInlineWrapperStyles?: Dict<DeclarationPlain>;
 }
 
+export enum ListType {
+  NONE,
+  UNORDERED,
+  ORDERED,
+}
+
+export interface ListBlock {
+  textBlocks: TextBlock[];
+  listType: ListType;
+}
+
 export type RulePlainExtended = RulePlain & { parentRule?: RulePlain; childRules?: RulePlain[] };
 
-interface TextExtender {
+interface TextExtender2 extends TextExtender {
   _textSegments?: TextSegment2[];
-  _textBlocks?: TextBlock[];
+  _listBlocks?: ListBlock[];
 }
 
 type ExtendNodeType<Node, SpecificExtender = {}> = Omit<OmitMethods<Node>, FrameNodeBlackList> &
@@ -130,7 +142,7 @@ export type PageNode2 = ExtendNodeType<PageNode> & ChildrenMixin2;
 export type SceneNode2 = ExtendNodeType<SceneNode>;
 export type VectorNode2 = ExtendNodeType<VectorNode, { _svg?: string }>;
 export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode, { _svg?: string }>;
-export type TextNode2 = ExtendNodeType<TextNode, TextExtender>;
+export type TextNode2 = ExtendNodeType<TextNode, TextExtender2>;
 export type FrameNode2 = ExtendNodeType<FrameNode> & ChildrenMixin2;
 export type ComponentNode2 = ExtendNodeType<ComponentNode> & ChildrenMixin2;
 export type InstanceNode2 = ExtendNodeType<InstanceNode> & ChildrenMixin2;

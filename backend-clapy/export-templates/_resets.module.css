@@ -8,11 +8,17 @@
   text-decoration: none;
   min-width: 0;
 }
+
 :where(.clapyResets),
 :where(.clapyResets) :not(ul) {
   padding: 0;
 }
+
 :where(.clapyResets),
 :where(.clapyResets) :not(span, a, ul, ol, li) {
   display: flex;
+}
+
+:where(.clapyResets) ul {
+  text-indent: 0;
 }

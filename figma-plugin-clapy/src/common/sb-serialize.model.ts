@@ -301,7 +301,7 @@ export type GlobalExtender = {
   _customCss?: string;
 };
 
-type TextExtender = {
+export type TextExtender = {
   _textSegments?: TextSegment2[];
   listSpacing: number; // Temporary workaround, to remove once Figma API includes it.
 };
