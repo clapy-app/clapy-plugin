@@ -24,7 +24,6 @@ import {
   separateTsCssAndResources,
 } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
-import { patchCssResetsShared, readResetRules } from './css-gen/css-gen-utils.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
 import type { FrameworkConnector } from './frameworks/framework-connectors.js';
 import { frameworkConnectors } from './frameworks/framework-connectors.js';
@@ -116,11 +115,10 @@ export async function exportCode(
     newDependencies: {},
     newDevDependencies: {},
     fwConnector,
-    cssResetRules: readResetRules(cssFiles),
   };
 
   // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
-  patchCssResetsShared(projectContext);
+
   updateFilesAndContentForScss(extraConfig, projectContext);
   fwConnector.patchProjectConfigFiles(projectContext, extraConfig);
   perfMeasure('b2');

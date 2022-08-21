@@ -261,7 +261,6 @@ export interface UserSettings extends AngularConfig, ReactConfig {
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;
-  globalResets?: boolean;
   framework: 'angular' | 'react';
   target: UserSettingsTarget;
   // Unused for now, only shows/hides the CSS block

@@ -681,7 +681,7 @@ function mkClassExpression(overrideEntry: BaseStyleOverride, extraConfig: ExtraC
   const isRoot = overrideValue === 'root' || propValue === 'root';
   const exprFragments: (ts.BinaryExpression | ts.PropertyAccessExpression)[] = [];
 
-  if (isRoot && !extraConfig.globalResets) {
+  if (isRoot) {
     exprFragments.push(
       factory.createPropertyAccessExpression(
         factory.createIdentifier('resets'),

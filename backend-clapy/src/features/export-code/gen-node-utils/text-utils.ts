@@ -92,7 +92,6 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
         );
       } else {
         const textWrapperStyles: Dict<DeclarationPlain> = {};
-        addStyle(context, node, textWrapperStyles, 'display', 'inline');
         textWrapperStyles['font-size'] = block.segments[smallestFontSizeIndex]._segmentStyles['font-size'];
         textWrapperStyles['font-family'] = firstSegmentStyles['font-family'];
         // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.

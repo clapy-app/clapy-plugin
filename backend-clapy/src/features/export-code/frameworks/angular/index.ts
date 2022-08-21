@@ -86,7 +86,7 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
-    const { cssFiles, cssResetRules } = projectContext;
+    const { cssFiles } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -94,7 +94,7 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    let cssStr = `:host, * { ${cssResetRules} }`;
+    let cssStr = cssFiles[resetsCssModulePath].replace(/:where(.clapyResets)/g, ':host');
 
     const hasCss = isNonEmptyObject(css.children);
     if (hasCss) {
