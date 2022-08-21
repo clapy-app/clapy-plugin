@@ -3,7 +3,15 @@ import { join } from 'path';
 
 import type { CodeDict } from '../code.model.js';
 
-const ignoredFilesAndDir = new Set(['node_modules', 'yarn.lock', 'favicon.ico']);
+const ignoredFilesAndDir = new Set([
+  'node_modules',
+  'yarn.lock',
+  'favicon.ico',
+  '.pnp.cjs',
+  '.pnp.loader.mjs',
+  '.yarn',
+  '.yarnrc',
+]);
 
 export async function readTemplateFiles(directory: string, base = '', files: CodeDict = {}) {
   for (const fileOrDir of await readdir(directory)) {
