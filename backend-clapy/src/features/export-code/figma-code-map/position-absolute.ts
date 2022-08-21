@@ -5,6 +5,7 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { isComponent, isConstraintMixin, isFlexNode, isGroup, isLine } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { round } from '../gen-node-utils/utils-and-reset.js';
 import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
 function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -60,6 +61,8 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     // Don't subtract borderLeftWidth, it's already included in nodeX.
     const right = parentNode.width - nodeX - node.width;
     const parentWidth = parentNode.width;
+    const nodeCenterX = node.width / 2;
+    const nodeCenterY = node.height / 2;
 
     if (horizontal === 'MIN') {
       addStyle(context, node, styles, 'left', [left, 'px']);
@@ -69,13 +72,13 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       resetStyleIfOverriding(context, node, styles, 'left');
     } else if (horizontal === 'CENTER') {
       // https://stackoverflow.com/a/25776315/4053349
-      const toSubstractForLeftShift = parentNode.width / 2 - (left + node.width / 2);
+      const toSubstractForLeftShift = parentNode.width / 2 - (left + applyRotationToX(node, nodeCenterX, nodeCenterY));
       addStyle(
         context,
         node,
         styles,
         'left',
-        toSubstractForLeftShift ? `calc(50% - ${toSubstractForLeftShift}px)` : '50%',
+        toSubstractForLeftShift ? `calc(50% - ${round(toSubstractForLeftShift)}px)` : '50%',
       );
       addTransformTranslateX(context, '-50%');
     } else if (horizontal === 'STRETCH') {
@@ -105,13 +108,13 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [bottom, 'px']);
       resetStyleIfOverriding(context, node, styles, 'top');
     } else if (vertical === 'CENTER') {
-      const toSubstractForTopShift = parentNode.height / 2 - (top + node.height / 2);
+      const toSubstractForTopShift = parentNode.height / 2 - (top + applyRotationToY(node, nodeCenterX, nodeCenterY));
       addStyle(
         context,
         node,
         styles,
         'top',
-        toSubstractForTopShift ? `calc(50% - ${toSubstractForTopShift}px)` : '50%',
+        toSubstractForTopShift ? `calc(50% - ${round(toSubstractForTopShift)}px)` : '50%',
       );
       addTransformTranslateY(context, '-50%');
     } else if (vertical === 'STRETCH') {
@@ -135,4 +138,14 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     resetStyleIfOverriding(context, node, styles, 'margin-bottom', 'auto');
     resetStyleIfOverriding(context, node, styles, 'margin-left', 'auto');
   }
+}
+
+function applyRotationToX(node: ValidNode, x: number, y: number) {
+  const angle = (node.rotation * Math.PI) / 180; // To radian
+  return round(y * Math.sin(angle) + x * Math.cos(angle));
+}
+
+function applyRotationToY(node: ValidNode, x: number, y: number) {
+  const angle = (node.rotation * Math.PI) / 180; // To radian
+  return round(y * Math.cos(angle) - x * Math.sin(angle));
 }
