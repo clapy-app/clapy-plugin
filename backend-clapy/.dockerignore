@@ -8,5 +8,4 @@
 **/Dockerfile*
 **/.gitignore
 **/cloudbuild.yaml
-/atest-gen
 /stories

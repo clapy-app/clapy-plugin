@@ -11,6 +11,10 @@
     {
       "name": "figma-plugin-clapy",
       "path": "figma-plugin-clapy"
+    },
+    {
+      "name": "local-gen-clapy",
+      "path": "../local-gen-clapy"
     }
   ],
   "settings": {

@@ -9,6 +9,7 @@ if (__dirname.endsWith('/')) {
 export const srcDir = __dirname;
 export const backendDir = `${__dirname}/..`;
 export const rootDir = `${backendDir}/..`;
+export const localGenClapyDir = `${rootDir}/../local-gen-clapy`;
 export const pluginDir = `${rootDir}/figma-plugin-clapy`;
 export const dockerPluginCompDir = `/plugin/components`;
 

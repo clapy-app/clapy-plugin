@@ -261,54 +261,54 @@
 		// 	"group": "build"
 		// },
 		{
-			"label": "Preview generated code",
-			"detail": "`npm run preview` as VSCode task",
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"type": "npm",
-			"script": "preview",
-			"problemMatcher": {
-				"source": "vitejs",
-				"applyTo": "allDocuments",
-				"pattern": [
-					{
-						"regexp": "^✘ ([ERROR]) (.+)$",
-						"code": 1,
-						"message": 2
-					},
-					{
-						"regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
-						"file": 1,
-						"line": 2,
-						"column": 3
-					},
-					// Attempt for vite-plugin-checker
-					// {
-					// 	"regexp": "^ ERROR\\(TypeScript\\)  (.*)$",
-					// 	"message": 1
-					// },
-					// {
-					// 	"regexp": "^ FILE  ([^:]+):(\\d+):(\\d+)$",
-					// 	"file": 1,
-					// 	"line": 2,
-					// 	"column": 3
-					// },
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "^[watch] build started",
-					"endsPattern": "  ready in "
-					// Attempt for vite-plugin-checker
-					// "endsPattern": "\\[TypeScript\\] Found \\d+ errors?\\. Watching for file changes\\."
-				}
-			},
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
-			},
-			"group": "build"
-		},
+      "label": "Preview generated code",
+      "detail": "`npm run preview` as VSCode task",
+      "options": {
+        "cwd": "${workspaceFolder}/../local-gen-clapy"
+      },
+      "type": "shell",
+      "command": "yarn && yarn start",
+      "problemMatcher": {
+        "source": "vitejs",
+        "applyTo": "allDocuments",
+        "pattern": [
+          {
+            "regexp": "^✘ ([ERROR]) (.+)$",
+            "code": 1,
+            "message": 2
+          },
+          {
+            "regexp": "^    at .*?\\s\\(([^:]+):(\\d+):(\\d+)\\)$",
+            "file": 1,
+            "line": 2,
+            "column": 3
+          }
+          // Attempt for vite-plugin-checker
+          // {
+          // 	"regexp": "^ ERROR\\(TypeScript\\)  (.*)$",
+          // 	"message": 1
+          // },
+          // {
+          // 	"regexp": "^ FILE  ([^:]+):(\\d+):(\\d+)$",
+          // 	"file": 1,
+          // 	"line": 2,
+          // 	"column": 3
+          // },
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^[watch] build started",
+          "endsPattern": "  ready in "
+          // Attempt for vite-plugin-checker
+          // "endsPattern": "\\[TypeScript\\] Found \\d+ errors?\\. Watching for file changes\\."
+        }
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": "build"
+    },
 		{
 			"label": "Docker containers",
 			"detail": "`npm run dup` as VSCode task",

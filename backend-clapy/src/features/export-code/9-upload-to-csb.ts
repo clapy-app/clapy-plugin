@@ -8,7 +8,7 @@ import { promisify } from 'util';
 
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
-import { backendDir, dockerPluginCompDir } from '../../root.js';
+import { dockerPluginCompDir, localGenClapyDir } from '../../root.js';
 import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, CsbDict, ModuleContext, ProjectContext } from './code.model.js';
 
@@ -65,7 +65,7 @@ export async function writeToDisk(
   const filesToWrite: CodeDict = {};
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
-      const files = [`${backendDir}/atest-gen/${path}`];
+      const files = [`${localGenClapyDir}/${path}`];
       if (flags.writeClapyFiles && isClapyFile && path.startsWith(srcCompPrefix)) {
         const file = `${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`;
         const dir = resolve(dirname(file));
@@ -94,11 +94,11 @@ export async function writeToDisk(
   // List files and directories to clean up
   const dirsToClean = [
     // src
-    `${backendDir}/atest-gen/src`,
+    `${localGenClapyDir}/src`,
   ];
   if (moduleContext?.projectContext.extraConfig.framework === 'react') {
     // public
-    dirsToClean.push(`${backendDir}/atest-gen/public`);
+    dirsToClean.push(`${localGenClapyDir}/public`);
   }
   if (flags.writeClapyFiles && isClapyFile && compName) {
     // clapy plugin
