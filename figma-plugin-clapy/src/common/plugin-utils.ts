@@ -26,7 +26,7 @@ export async function fetchPlugin<T extends keyof Routes>(
   return new Promise<UnPromise<ReturnType<Routes[T]>>>((resolve, reject) => {
     const requestId = getRequestId();
     let start: number = 0;
-    if (!isFigmaPlugin) {
+    if (!isFigmaPlugin && env.isDev && flags.logWebsocketRequests) {
       start = new Date().getTime();
       console.info('[plugin req]', { type: routeName, __id: requestId, payload: args });
     }

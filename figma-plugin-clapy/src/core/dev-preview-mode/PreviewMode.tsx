@@ -93,6 +93,18 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
   ws.current.onopen = () => {
     setIsConnected(true);
     wsReady = true;
+    if (isPreviewInFigma) {
+      window.parent.postMessage(
+        {
+          pluginMessage: {
+            noResponse: true,
+            payload: [],
+            type: 'notifyReady',
+          },
+        },
+        '*',
+      );
+    }
   };
   ws.current.onclose = () => {
     setIsConnected(false);
