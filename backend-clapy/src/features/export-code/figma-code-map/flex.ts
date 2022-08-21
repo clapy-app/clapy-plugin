@@ -302,25 +302,15 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const parentIsAbsolute = isGroup(parent) || (isFlexNode(parent) && parent?.layoutMode === 'NONE');
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
-  const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
-  const nodePrimaryAxisHugContents =
-    isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
-  const nodeCounterAxisHugContents =
-    isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
-  const widthHugContents = isFlex
-    ? isNodeVertical
-      ? nodeCounterAxisHugContents
-      : nodePrimaryAxisHugContents
-    : nodeIsText
-    ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
-    : false;
-  const heightHugContents = isFlex
-    ? isNodeVertical
-      ? nodePrimaryAxisHugContents
-      : nodeCounterAxisHugContents
-    : nodeIsText
+  const isNodeVertical = nodeIsText || (isFlex && node.layoutMode === 'VERTICAL');
+  const nodePrimaryAxisHugContents = nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
-    : false;
+    : isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
+  const nodeCounterAxisHugContents = nodeIsText
+    ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
+    : isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
+  const widthHugContents = isFlex ? (isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents) : false;
+  const heightHugContents = isFlex ? (isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents) : false;
 
   const isParentAutoLayout = !parent || (parentIsFlex && parent?.layoutMode !== 'NONE');
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
