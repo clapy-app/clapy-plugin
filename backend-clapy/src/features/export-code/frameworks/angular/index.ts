@@ -94,7 +94,7 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    let cssStr = cssFiles[resetsCssModulePath].replace(/:where(.clapyResets)/g, ':host');
+    let cssStr = cssFiles[resetsCssModulePath].replace(/:where\(\.clapyResets\)/g, ':host');
 
     const hasCss = isNonEmptyObject(css.children);
     if (hasCss) {
