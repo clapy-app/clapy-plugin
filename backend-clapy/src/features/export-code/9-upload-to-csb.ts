@@ -10,7 +10,7 @@ import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { backendDir, dockerPluginCompDir } from '../../root.js';
 import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
-import type { CodeDict, CsbDict, ModuleContext } from './code.model.js';
+import type { CodeDict, CsbDict, ModuleContext, ProjectContext } from './code.model.js';
 
 export async function uploadToCSB(files: CsbDict) {
   const { data } = await axios.post<CSBResponse>('https://codesandbox.io/api/v1/sandboxes/define?json=1', {
@@ -113,7 +113,8 @@ export async function writeToDisk(
     const [srcMatches, publicMatches, clapyMatches] = await Promise.all(
       globsToClean.map(g => globPromise(resolve(g), { ignore: filePaths })),
     );
-    await Promise.all([...srcMatches, ...(publicMatches || []), ...(clapyMatches || [])].map(match => unlink(match)));
+    const allFilesMatches = [...srcMatches, ...(publicMatches || []), ...(clapyMatches || [])];
+    await Promise.all(allFilesMatches.map(match => unlink(match)));
 
     // Then remove empty folders
     await Promise.all(dirsToClean.map(dir => cleanEmptyFoldersRecursively(dir)));
@@ -138,6 +139,17 @@ export async function downloadFile(fileUrl: string, outputLocationPath: string) 
     response.data.pipe(writer);
     return finished(writer);
   });
+}
+
+export function patchViteJSConfigForDev(projectContext: ProjectContext) {
+  const { extraConfig } = projectContext;
+  if (env.isDev && extraConfig.useZipProjectTemplate) {
+    const { tsFiles } = projectContext;
+    tsFiles['vite.config.ts'] = tsFiles['vite.config.ts'].replace(
+      'defineConfig({',
+      'defineConfig({\n  server: { watch: { awaitWriteFinish: true } },',
+    );
+  }
 }
 
 async function cleanEmptyFoldersRecursively(folder: string) {

@@ -30,7 +30,7 @@ export async function getPrettierConfig() {
 
 const newlineAfterImportRegex = /(import [^\n]+)(\n+)(?!import)/;
 
-export async function diagnoseFormatTsFiles(tsFiles: CodeDict) {
+export async function formatTsFiles(tsFiles: CodeDict) {
   // Global diagnostic
   // TODO to restore later
   // if (env.isDev && flags.runDiagnostics) {

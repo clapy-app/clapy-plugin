@@ -12,8 +12,8 @@ import type { CSBResponse, Dict, ExportCodePayload } from '../sb-serialize-previ
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
-import { diagnoseFormatTsFiles, prepareCssFiles, prepareHtmlFiles } from './8-diagnose-format-ts-files.js';
-import { makeZip, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
+import { formatTsFiles, prepareCssFiles, prepareHtmlFiles } from './8-format-ts-files.js';
+import { makeZip, patchViteJSConfigForDev, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
 import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
 import { readTemplateFile, readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
@@ -159,7 +159,9 @@ export async function exportCode(
   await fwConnector.writeSVGReactComponents(projectContext);
   perfMeasure('f');
 
-  tsFiles = await diagnoseFormatTsFiles(tsFiles); // Takes time with many files
+  patchViteJSConfigForDev(projectContext);
+
+  tsFiles = await formatTsFiles(tsFiles); // Takes time with many files
   perfMeasure('g');
   await prepareCssFiles(cssFiles);
   perfMeasure('h');
