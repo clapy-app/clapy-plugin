@@ -7,11 +7,12 @@ import type React from 'react';
 import { useSelector } from 'react-redux';
 
 import { logout, refreshUser } from '../../../../../core/auth/auth-service.js';
-import { selectDevTools } from '../../../../../core/auth/auth-slice.js';
+import { selectClapyDevTeam, selectDevTools } from '../../../../../core/auth/auth-slice.js';
 import { env } from '../../../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import classes from './Dropdown.module.css';
 import { MoreHorizontalIcon } from './MoreHorizontalIcon';
+import { useHandleFigmaConfigs } from '../../../../user/user-service.js';
 
 interface Props {
   className?: string;
@@ -21,6 +22,7 @@ interface Props {
 }
 export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   const devTools = useSelector(selectDevTools);
+  const clapyDevTeam = useSelector(selectClapyDevTeam);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
   const open = Boolean(anchorEl);
@@ -46,6 +48,7 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   const throwFrontError = useCallbackAsync2(async () => {
     throw new Error('This front error must be logged on the server');
   }, []);
+  const getConfigs = useHandleFigmaConfigs();
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <IconButton
@@ -76,6 +79,11 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
         {(env.isDev || devTools) && (
           <MenuItem onClick={throwFrontError} disabled={loading}>
             Throw a front error (dev)
+          </MenuItem>
+        )}
+        {(env.isDev || clapyDevTeam) && (
+          <MenuItem onClick={getConfigs} disabled={loading}>
+            Generate two last registred figma Configs (dev)
           </MenuItem>
         )}
       </Menu>

@@ -7,10 +7,10 @@ import { env } from '../../env-and-config/env.js';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
-import { StripeService } from '../stripe/stripe.service.js';
 import { UserService } from './user.service.js';
 import type { UserMetadata, UserMetaUsage } from './user.utils.js';
 import {
+  hasRoleClapyDevTeam,
   getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
@@ -20,10 +20,7 @@ import {
 
 @Controller('user')
 export class UserController {
-  constructor(
-    @Inject(UserService) private userService: UserService,
-    @Inject(StripeService) private stripeService: StripeService,
-  ) {}
+  constructor(@Inject(UserService) private userService: UserService) {}
 
   @Get('')
   async getUser(@Body() {}: UserMetadata, @Req() request: RequestPrivate) {
@@ -121,5 +118,14 @@ export class UserController {
     upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
 
     perfMeasure();
+  }
+  //------------------------------------------------Admin-features--------------------------------------------------
+
+  @Get('get-config')
+  async getFigmaConfig(@Req() req: RequestPrivate) {
+    if (!hasRoleClapyDevTeam(req.auth)) {
+      throw new Error('you do not have permission for this action.');
+    }
+    return await this.userService.getFigmaConfig();
   }
 }

@@ -79,6 +79,7 @@ export const selectCssOptionEnabled = (state: RootState) => true;
 export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);
 export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
 export const selectIsStripeEnabled = (state: RootState) => isStripeEnabled(state.auth.tokenDecoded);
+export const selectClapyDevTeam = (state: RootState) => hasRoleClapyDevTeam(state.auth.tokenDecoded);
 
 // TODO edit here and in src/features/user/user.utils.ts
 export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
@@ -90,4 +91,8 @@ export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
+}
+
+export function hasRoleClapyDevTeam(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('clapy_dev_team');
 }

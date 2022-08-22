@@ -4,6 +4,7 @@ import equal from 'fast-deep-equal';
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import { fetchPlugin } from '../../common/plugin-utils.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils';
+import { useCallbackAsync2 } from '../../front-utils/front-utils.js';
 import { apiGet, apiPost } from '../../front-utils/http.utils.js';
 import { clearMetadata, selectUserProfileState, setMetadata, setMetaProfile, setMetaUsage } from './user-slice';
 
@@ -64,4 +65,10 @@ export function hasMissingMetaProfile(
 export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
   const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage || {};
   return !components && !designSystem && !landingPages && !(other && otherDetail);
+}
+
+export function useHandleFigmaConfigs() {
+  return useCallbackAsync2(async () => {
+    console.log(await apiGet('user/get-config'));
+  }, []);
 }
