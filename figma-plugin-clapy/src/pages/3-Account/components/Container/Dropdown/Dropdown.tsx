@@ -12,7 +12,7 @@ import { env } from '../../../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import classes from './Dropdown.module.css';
 import { MoreHorizontalIcon } from './MoreHorizontalIcon';
-import { useHandleFigmaConfigs } from '../../../../../admin/admin-service.js';
+import { renderFigmaConfig } from '../../../../../admin/admin-service.js';
 
 interface Props {
   className?: string;
@@ -47,7 +47,6 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   const throwFrontError = useCallbackAsync2(async () => {
     throw new Error('This front error must be logged on the server');
   }, []);
-  const getConfigs = useHandleFigmaConfigs();
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
       <IconButton
@@ -81,7 +80,7 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
           </MenuItem>
         )}
         {(env.isDev || devTools) && (
-          <MenuItem onClick={getConfigs} disabled={loading}>
+          <MenuItem onClick={renderFigmaConfig} disabled={loading}>
             Generate two last registred figma Configs (dev)
           </MenuItem>
         )}

@@ -1,8 +1,14 @@
-import { useCallbackAsync2 } from '../front-utils/front-utils.js';
+import { handleError, toastError } from '../front-utils/front-utils.js';
 import { apiGet } from '../front-utils/http.utils.js';
 
-export function useHandleFigmaConfigs() {
-  return useCallbackAsync2(async () => {
-    console.log(await apiGet('admin/get-config'));
-  }, []);
+// call le back du plugin pour génér<er des frame depuis les deux configs récupérer
+export function renderFigmaConfig() {
+  (async () => {
+    try {
+      console.log(await apiGet('admin/get-config'));
+    } catch (e) {
+      handleError(e);
+      toastError(e);
+    }
+  })();
 }
