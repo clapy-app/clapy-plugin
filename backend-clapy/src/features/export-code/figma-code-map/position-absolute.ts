@@ -8,25 +8,23 @@ import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-
 import { round } from '../gen-node-utils/utils-and-reset.js';
 import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
-function applyPositionRelative(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+function shouldApplyPositionRelativeOnGroup(context: NodeContext) {
   const inheritedStyle = getInheritedNodeStyle(context, 'position');
-  if (!inheritedStyle || ((inheritedStyle.value as ValuePlain).children[0] as Raw).value === 'initial') {
-    addStyle(context, node, styles, 'position', 'relative');
-  }
+  return !inheritedStyle || ((inheritedStyle.value as ValuePlain).children[0] as Raw).value === 'initial';
+}
+
+function shouldApplyPositionRelative(context: NodeContext, node: ValidNode) {
+  const isFlex = isFlexNode(node);
+  return isFlex && node.layoutMode === 'NONE';
 }
 
 export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  const isFlex = isFlexNode(node);
   const isGrp = isGroup(node);
   const nodeHasConstraints = isConstraintMixin(node);
 
-  if (isFlex && node.layoutMode === 'NONE') {
-    applyPositionRelative(context, node, styles);
-  }
-
   // If we are here, the group was not skipped. It means the parent is a flex node (frame, instance...) with auto-layout. We must treat the group as a wrapper for position absolute, with scale mode.
-  if (isGrp) {
-    applyPositionRelative(context, node, styles);
+  if (isGrp && shouldApplyPositionRelativeOnGroup(context)) {
+    addStyle(context, node, styles, 'position', 'relative');
     return;
   }
 
@@ -126,17 +124,25 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
       addStyle(context, node, styles, 'bottom', [(bottom / parentHeight) * 100, '%']);
       node.autoHeight = true; // Auto-height
     }
-  } else {
-    resetStyleIfOverriding(context, node, styles, 'position', 'absolute');
+  } else if (shouldApplyPositionRelative(context, node)) {
+    addStyle(context, node, styles, 'position', 'relative');
     resetStyleIfOverriding(context, node, styles, 'top');
     resetStyleIfOverriding(context, node, styles, 'right');
     resetStyleIfOverriding(context, node, styles, 'bottom');
     resetStyleIfOverriding(context, node, styles, 'left');
-    resetStyleIfOverriding(context, node, styles, 'margin', 'auto');
-    resetStyleIfOverriding(context, node, styles, 'margin-top', 'auto');
-    resetStyleIfOverriding(context, node, styles, 'margin-right', 'auto');
-    resetStyleIfOverriding(context, node, styles, 'margin-bottom', 'auto');
-    resetStyleIfOverriding(context, node, styles, 'margin-left', 'auto');
+  } else {
+    resetStyleIfOverriding(context, node, styles, 'position');
+    resetStyleIfOverriding(context, node, styles, 'top');
+    resetStyleIfOverriding(context, node, styles, 'right');
+    resetStyleIfOverriding(context, node, styles, 'bottom');
+    resetStyleIfOverriding(context, node, styles, 'left');
+    // Likely an old reset I have disabled for now.
+    // If it is confirmed that we don't need them after a couple of weeks, delete this code.
+    // resetStyleIfOverriding(context, node, styles, 'margin', 'auto');
+    // resetStyleIfOverriding(context, node, styles, 'margin-top', 'auto');
+    // resetStyleIfOverriding(context, node, styles, 'margin-right', 'auto');
+    // resetStyleIfOverriding(context, node, styles, 'margin-bottom', 'auto');
+    // resetStyleIfOverriding(context, node, styles, 'margin-left', 'auto');
   }
 }
 

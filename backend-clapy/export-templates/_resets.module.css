@@ -10,7 +10,7 @@
 }
 
 :where(.clapyResets),
-:where(.clapyResets) :not(ul, ol) {
+:where(.clapyResets) * {
   padding: 0;
 }
 
@@ -19,7 +19,7 @@
   display: flex;
 }
 
-:where(.clapyResets) ul, ol {
+:where(.clapyResets) ul, :where(.clapyResets) ol {
   text-indent: 0;
   padding-inline-start: 1.5em;
 }

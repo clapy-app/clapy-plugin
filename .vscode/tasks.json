@@ -298,7 +298,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^[watch] build started",
-          "endsPattern": "  ready in "
+          "endsPattern": "(  ready in |✔ Compiled successfully.)"
           // Attempt for vite-plugin-checker
           // "endsPattern": "\\[TypeScript\\] Found \\d+ errors?\\. Watching for file changes\\."
         }

@@ -143,7 +143,7 @@ export async function downloadFile(fileUrl: string, outputLocationPath: string) 
 
 export function patchViteJSConfigForDev(projectContext: ProjectContext) {
   const { extraConfig } = projectContext;
-  if (env.isDev && extraConfig.useZipProjectTemplate) {
+  if (env.isDev && extraConfig.framework === 'react' && extraConfig.useZipProjectTemplate) {
     const { tsFiles } = projectContext;
     tsFiles['vite.config.ts'] = tsFiles['vite.config.ts'].replace(
       'defineConfig({',

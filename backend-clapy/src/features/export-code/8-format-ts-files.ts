@@ -138,6 +138,8 @@ export async function formatHtmlFile(path: string, content: string) {
     return content;
   }
   // Prettier
+  // Known issue: if we get from Figma something like ...Foo </span> (with a space before closing tag), the space is stripped, which breaks some formattings. There may be other examples of broken layouts.
+  // We may consider switching to another HTML formatter if too annoying.
   return prettier.format(content, {
     ...(await getPrettierConfig()),
     plugins: [parserHtml],

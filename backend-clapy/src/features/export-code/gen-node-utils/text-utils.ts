@@ -254,6 +254,7 @@ export function genTextAst<T extends boolean>(
     let listBlockAttributes: FwAttr[] = [];
     if (listBlock.markerStyles) {
       let className: string | undefined;
+      let skipAddClassAttribute = false;
       if (listBlock.markerStyles['font-size']) {
         const listStyles = {
           'font-size': listBlock.markerStyles['font-size'],
@@ -268,10 +269,12 @@ export function genTextAst<T extends boolean>(
             classBaseLabel: 'list',
           },
         ));
+        skipAddClassAttribute = true;
       }
       applyStyles(context, listBlock.markerStyles, htmlClass2, listBlockAttributes, node, {
         className,
         customSelector: '_class_ ::marker',
+        skipAddClassAttribute,
       });
     }
 
@@ -441,25 +444,36 @@ function applyStyles(
     skipAssignRule?: boolean;
     customSelector?: string;
     className?: string;
+    skipAddClassAttribute?: boolean;
   },
 ) {
-  let { attachClassToNode, classBaseLabel, fullClassOverrides, skipAssignRule, customSelector, className } =
-    options || {};
+  let {
+    attachClassToNode,
+    classBaseLabel,
+    fullClassOverrides,
+    skipAssignRule,
+    customSelector,
+    className,
+    skipAddClassAttribute,
+  } = options || {};
   const { moduleContext } = context;
   const { fwConnector, extraConfig } = moduleContext.projectContext;
   const blockStyleDeclarations = stylesToList(styles);
-  if (flags.writeFigmaIdOnNode && attachClassToNode && !node.idAttached) attributes.push(mkIdAttribute(node.id));
+  if (flags.writeFigmaIdOnNode && attachClassToNode && !node.idAttached && !skipAddClassAttribute)
+    attributes.push(mkIdAttribute(node.id));
   if (blockStyleDeclarations.length) {
     if (!className) {
       className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
     }
     htmlClass = mkHtmlFullClass(context, className, htmlClass);
     addCssRule(context, className, blockStyleDeclarations, node, { skipAssignRule, customSelector });
-    attributes.push(
-      fullClassOverrides
-        ? fwConnector.createClassAttribute(node, extraConfig, htmlClass)
-        : fwConnector.createClassAttrForClassNoOverride(htmlClass, extraConfig),
-    );
+    if (!skipAddClassAttribute) {
+      attributes.push(
+        fullClassOverrides
+          ? fwConnector.createClassAttribute(node, extraConfig, htmlClass)
+          : fwConnector.createClassAttrForClassNoOverride(htmlClass, extraConfig),
+      );
+    }
   }
   return { htmlClass, className };
 }
