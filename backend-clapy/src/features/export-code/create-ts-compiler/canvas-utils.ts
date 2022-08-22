@@ -87,7 +87,7 @@ export enum ListType {
 export interface ListBlock {
   paragraphBlocks: ParagraphBlock[];
   listType: ListType;
-  styles?: Dict<DeclarationPlain>;
+  markerStyles?: Dict<DeclarationPlain>;
 }
 
 export interface ParagraphBlock {

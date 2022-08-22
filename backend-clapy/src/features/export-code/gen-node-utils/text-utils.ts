@@ -84,8 +84,14 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
           latestTextBlock = mkTextBlock();
           latestParagraphBlock.textBlocks.push(latestTextBlock);
         }
+        // Special case: the empty segment after \n belongs to the next segment, e.g. for the style applied. This is important for list bullets and maybe empty paragraphs.
+        const isEmptyTextAfterParagraphBreak =
+          !block && j >= 1 && j === blocksWithParagraphSpacing.length - 1 && k === blocksNoParagraphSpacing.length - 1;
+        const copiedSegment =
+          isEmptyTextAfterParagraphBreak && i < textSegments.length - 1 ? textSegments[i + 1] : segment;
+
         const newSegment = {
-          ...segment,
+          ...copiedSegment,
           characters: block,
         };
         latestTextBlock.segments.push(newSegment);
@@ -131,8 +137,8 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
           mapTextSegmentStyles(context, segment, segmentStyles, node);
 
           segment._segmentStyles = segmentStyles;
-          if (!listBlock.styles) {
-            listBlock.styles = segmentStyles;
+          if (!listBlock.markerStyles) {
+            listBlock.markerStyles = segmentStyles;
           }
         }
 
@@ -229,10 +235,10 @@ export function genTextAst<T extends boolean>(
   if (!node.textSkipStyles) {
     let attributes: FwAttr[] = [];
 
-    htmlClass = applyStyles(context, styles, htmlClass, attributes, node, {
+    ({ htmlClass } = applyStyles(context, styles, htmlClass, attributes, node, {
       attachClassToNode: true,
       fullClassOverrides: true,
-    });
+    }));
 
     textBlockWrapperStyleAttributes = attributes;
   }
@@ -246,10 +252,26 @@ export function genTextAst<T extends boolean>(
     let htmlClass2 = htmlClass;
 
     let listBlockAttributes: FwAttr[] = [];
-    if (listBlock.styles) {
-      htmlClass2 = applyStyles(context, listBlock.styles, htmlClass2, listBlockAttributes, node, {
-        classBaseLabel: 'list',
-        subSelector: '::marker',
+    if (listBlock.markerStyles) {
+      let className: string | undefined;
+      if (listBlock.markerStyles['font-size']) {
+        const listStyles = {
+          'font-size': listBlock.markerStyles['font-size'],
+        };
+        ({ htmlClass: htmlClass2, className } = applyStyles(
+          context,
+          listStyles,
+          htmlClass2,
+          listBlockAttributes,
+          node,
+          {
+            classBaseLabel: 'list',
+          },
+        ));
+      }
+      applyStyles(context, listBlock.markerStyles, htmlClass2, listBlockAttributes, node, {
+        className,
+        customSelector: '_class_ ::marker',
       });
     }
 
@@ -279,18 +301,32 @@ export function genTextAst<T extends boolean>(
           }
         }
 
-        htmlClass3 = applyStyles(context, block.blockStyles, htmlClass3, textBlockStyleAttributes, node, {
-          classBaseLabel: 'textBlock',
-        });
+        ({ htmlClass: htmlClass3 } = applyStyles(
+          context,
+          block.blockStyles,
+          htmlClass3,
+          textBlockStyleAttributes,
+          node,
+          {
+            classBaseLabel: 'textBlock',
+          },
+        ));
 
         // Text span wrapper
         // If multiple segments, surround with span to maintain the inline style
         if (!singleChild) {
           const attributes: FwAttr[] = [];
           if (block.textInlineWrapperStyles) {
-            htmlClass3 = applyStyles(context, block.textInlineWrapperStyles, htmlClass3, attributes, node, {
-              classBaseLabel: 'labelWrapper',
-            });
+            ({ htmlClass: htmlClass3 } = applyStyles(
+              context,
+              block.textInlineWrapperStyles,
+              htmlClass3,
+              attributes,
+              node,
+              {
+                classBaseLabel: 'labelWrapper',
+              },
+            ));
           }
           textSpanWrapperAttributes = attributes;
         }
@@ -403,25 +439,29 @@ function applyStyles(
     classBaseLabel?: string;
     fullClassOverrides?: boolean;
     skipAssignRule?: boolean;
-    subSelector?: string;
+    customSelector?: string;
+    className?: string;
   },
 ) {
-  const { attachClassToNode, classBaseLabel, fullClassOverrides, skipAssignRule, subSelector } = options || {};
+  let { attachClassToNode, classBaseLabel, fullClassOverrides, skipAssignRule, customSelector, className } =
+    options || {};
   const { moduleContext } = context;
   const { fwConnector, extraConfig } = moduleContext.projectContext;
   const blockStyleDeclarations = stylesToList(styles);
   if (flags.writeFigmaIdOnNode && attachClassToNode && !node.idAttached) attributes.push(mkIdAttribute(node.id));
   if (blockStyleDeclarations.length) {
-    const className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
+    if (!className) {
+      className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
+    }
     htmlClass = mkHtmlFullClass(context, className, htmlClass);
-    addCssRule(context, className, blockStyleDeclarations, node, { skipAssignRule, subSelector });
+    addCssRule(context, className, blockStyleDeclarations, node, { skipAssignRule, customSelector });
     attributes.push(
       fullClassOverrides
         ? fwConnector.createClassAttribute(node, extraConfig, htmlClass)
         : fwConnector.createClassAttrForClassNoOverride(htmlClass, extraConfig),
     );
   }
-  return htmlClass;
+  return { htmlClass, className };
 }
 
 function push<T>(array: T[], elements: T | T[]) {

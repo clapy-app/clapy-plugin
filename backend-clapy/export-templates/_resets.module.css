@@ -19,22 +19,9 @@
   display: flex;
 }
 
-:where(.clapyResets) ul {
+:where(.clapyResets) ul, ol {
   text-indent: 0;
-  padding-inline-start: 22px;
-}
-
-:where(.clapyResets) ul > li > * {
-  margin-left: -4px;
-}
-
-:where(.clapyResets) ol {
-  text-indent: 0;
-  padding-inline-start: 16px;
-}
-
-:where(.clapyResets) ol > li {
-  padding-left: 2px;
+  padding-inline-start: 1.5em;
 }
 
 :where(.clapyResets) p:empty::before {

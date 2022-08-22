@@ -61,10 +61,10 @@ export const angularConnector: FrameworkConnector = {
   },
   createClassAttributeSimple: className => mkHtmlAttribute('class', className),
   createClassAttrForClassNoOverride: className => mkHtmlAttribute('class', className),
-  mkSelector: (context, className, subSelector) =>
+  mkSelector: (context, className, customSelector) =>
     !context.hasExtraAttributes && className === 'root'
-      ? mkRawCss(subSelector ? `${':host'} ${subSelector}` : ':host')
-      : mkRawCss(subSelector ? `.${className} ${subSelector}` : `.${className}`),
+      ? mkRawCss(customSelector ? customSelector.replaceAll('_class_', ':host') : ':host')
+      : mkRawCss(customSelector ? customSelector.replaceAll('_class_', `.${className}`) : `.${className}`),
   createNodeTag: (context, attributes, children, node) => {
     const { isRootInComponent } = context;
     if (isRootInComponent && !context.hasExtraAttributes) {

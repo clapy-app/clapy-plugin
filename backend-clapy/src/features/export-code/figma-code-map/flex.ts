@@ -366,7 +366,9 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     (fixedHeight && parentRequireMaxSize && isNodeAutoLayout) ||
     isSeparatorOrWorkaround; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
 
-  if (fixedWidth) {
+  if (widthHugContents) {
+    addStyle(context, node, styles, 'width', 'min-content');
+  } else if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
     if (isVector(node) && node.strokeWeight > width) {
@@ -377,11 +379,13 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     // I'm not sure which one has highest priority between fixedWidth and node.autoWidth. To review with a test case.
     resetStyleIfOverriding(context, node, styles, 'width');
   }
-
   if (shouldApplyMaxWidth) {
     addStyle(context, node, styles, 'max-width', [100, '%']);
   }
-  if (fixedHeight) {
+
+  if (heightHugContents) {
+    addStyle(context, node, styles, 'height', 'min-content');
+  } else if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
     if (isVector(node) && node.strokeWeight > height) {
       height = node.strokeWeight;

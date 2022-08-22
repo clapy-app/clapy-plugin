@@ -82,8 +82,8 @@ export const reactConnector: FrameworkConnector = {
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
   createClassAttrForClassNoOverride,
-  mkSelector: (context, className, subSelector) =>
-    mkRawCss(subSelector ? `.${className} ${subSelector}` : `.${className}`),
+  mkSelector: (context, className, customSelector) =>
+    mkRawCss(customSelector ? customSelector.replaceAll('_class_', `.${className}`) : `.${className}`),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return wrapHideAndTextOverride(context, ast2, node, false);
