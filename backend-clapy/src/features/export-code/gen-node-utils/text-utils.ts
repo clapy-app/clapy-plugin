@@ -5,7 +5,13 @@ import { isEmptyObject } from '../../../common/general-utils.js';
 import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
-import type { ListBlock, TextBlock, TextNode2, TextSegment2 } from '../create-ts-compiler/canvas-utils.js';
+import type {
+  ListBlock,
+  ParagraphBlock,
+  TextBlock,
+  TextNode2,
+  TextSegment2,
+} from '../create-ts-compiler/canvas-utils.js';
 import { ListType } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
 import { mkBlockCss, mkRawCss, mkRuleCss, mkSelectorCss, mkSelectorListCss } from '../css-gen/css-factories-low.js';
@@ -17,12 +23,16 @@ import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
 import type ts from 'typescript';
 
-function mkTextBlock(): TextBlock {
-  return { segments: [], blockStyles: {} };
+function mkListBlock(listType: ListType): ListBlock {
+  return { paragraphBlocks: [], listType };
 }
 
-function mkListBlock(listType: ListType): ListBlock {
-  return { textBlocks: [], listType };
+function mkParagraphBlock(): ParagraphBlock {
+  return { textBlocks: [] };
+}
+
+function mkTextBlock(): TextBlock {
+  return { segments: [], blockStyles: {} };
 }
 
 export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode2, styles: Dict<DeclarationPlain>) {
@@ -32,120 +42,135 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
   const listBlocks: ListBlock[] = [];
   node._listBlocks = listBlocks;
   let latestListBlock: ListBlock | undefined = undefined;
+  let latestParagraphBlock: ParagraphBlock | undefined = undefined;
   let latestTextBlock: TextBlock | undefined = undefined;
 
-  // We restructure the segments to group by list and paragraph blocks. The Figma structure doesn't match the HTML needs, i.e. each segment can contain multiple paragraphs, and a paragraph can overlap with multiple segments.
+  // We restructure the segments to group by list, paragraph and text blocks. The Figma structure doesn't match the HTML needs, i.e. each segment can contain multiple paragraphs, and a paragraph can overlap with multiple segments.
   for (let i = 0; i < textSegments.length; i++) {
     const segment = textSegments[i];
 
-    let isFirstListElt = false;
-    // Wrap all blocks in list blocks, if the segment belongs to a list.
-    const listType = segment.listOptions?.type;
-    if (!latestListBlock || listType !== textSegments[i - 1].listOptions?.type) {
-      latestListBlock = mkListBlock(
-        listType === 'ORDERED' ? ListType.ORDERED : listType === 'UNORDERED' ? ListType.UNORDERED : ListType.NONE,
-      );
-      listBlocks.push(latestListBlock);
-      latestTextBlock = undefined;
-      isFirstListElt = true;
-    }
-
-    //
-    //
-    // TODO wrap again in list items.
-    // I may need to invert the 2 `for`. Does it work? Why did I order like that?
-    //
-    //
-
     // In the segment, the text is split by new line (new paragraph with spacing and "same paragraph" without spacing)
-    const blocksNoParagraphSpacing = escapeHTMLSplitParagraphsNoSpacing(segment.characters);
-    for (let j = 0; j < blocksNoParagraphSpacing.length; j++) {
-      const blockNoSpacing = blocksNoParagraphSpacing[j];
-      const blocksWithParagraphSpacing = splitParagraphsWithSpacing(blockNoSpacing);
-      for (let k = 0; k < blocksWithParagraphSpacing.length; k++) {
-        const block = blocksWithParagraphSpacing[k];
-        // A segment can end with `\n`, which changes the block but should not generate an empty <span/>.
-        if (block) {
-          // Detect new blocks: delimited by a new line. Otherwise, it's a new segment, changing the style into the same block.
-          if (j >= 1 || k >= 1 || !latestTextBlock || isFirstListElt) {
-            latestTextBlock = mkTextBlock();
-            latestListBlock.textBlocks.push(latestTextBlock);
-            if (k >= 1 || isFirstListElt) {
-              latestTextBlock.spacingAbove = true;
-              //
-              //
-              // TODO
-              // Should apply list spacing from 2nd element of the list. For the first, it's a paragraphSpacing as usual.
-              //
-              //
-            }
-          }
-          const newSegment = {
-            ...segment,
-            characters: block,
-          };
-          latestTextBlock.segments.push(newSegment);
+    const blocksWithParagraphSpacing = splitParagraphsWithSpacing(segment.characters);
+    for (let j = 0; j < blocksWithParagraphSpacing.length; j++) {
+      const blockWithSpacing = blocksWithParagraphSpacing[j];
+
+      // Create new paragraph block if \n detected or if this fragment is in a new list block.
+      if (j >= 1 || !latestParagraphBlock) {
+        const segIndex = latestListBlock ? i + 1 : i;
+        let listTypeRaw = textSegments[segIndex]?.listOptions?.type;
+        if (!latestListBlock || (listTypeRaw && listTypeRaw !== textSegments[segIndex - 1].listOptions?.type)) {
+          const listType =
+            listTypeRaw === 'ORDERED'
+              ? ListType.ORDERED
+              : listTypeRaw === 'UNORDERED'
+              ? ListType.UNORDERED
+              : ListType.NONE;
+          latestListBlock = mkListBlock(listType);
+          listBlocks.push(latestListBlock);
         }
-        isFirstListElt = false;
+
+        latestParagraphBlock = mkParagraphBlock();
+        latestListBlock.paragraphBlocks.push(latestParagraphBlock);
+        latestTextBlock = undefined;
+      }
+
+      const blocksNoParagraphSpacing = escapeHTMLSplitParagraphsNoSpacing(blockWithSpacing);
+      for (let k = 0; k < blocksNoParagraphSpacing.length; k++) {
+        const block = blocksNoParagraphSpacing[k];
+
+        // Detect new blocks: delimited by a new line. Otherwise, it's a new segment, changing the style into the same block.
+        if (j >= 1 || k >= 1 || !latestTextBlock) {
+          latestTextBlock = mkTextBlock();
+          latestParagraphBlock.textBlocks.push(latestTextBlock);
+        }
+        const newSegment = {
+          ...segment,
+          characters: block,
+        };
+        latestTextBlock.segments.push(newSegment);
       }
     }
   }
 
-  if (!listBlocks?.length || !listBlocks[0].textBlocks.length || !listBlocks[0].textBlocks[0].segments.length) {
+  if (!listBlocks?.[0]?.paragraphBlocks?.[0]?.textBlocks?.[0]?.segments?.length) {
     throw new Error(`BUG node ${node.name} has a text block without any text found.`);
   }
 
-  // Generate styles for each segment
-  for (const listBlock of listBlocks) {
-    const { textBlocks } = listBlock;
-    for (const block of textBlocks) {
-      for (const segment of block.segments) {
-        const segmentStyles: Dict<DeclarationPlain> = {};
+  // Generate styles for each segment. Loop over lists, paragraphs and text blocks. We use the indexes because the position in the list impacts how styles are applied.
+  let isFirstBlock = true;
+  for (let i = 0; i < listBlocks.length; i++) {
+    const listBlock = listBlocks[i];
+    const { paragraphBlocks } = listBlock;
 
-        // Add text segment styles
-        mapTextSegmentStyles(context, segment, segmentStyles, node);
+    for (let j = 0; j < paragraphBlocks.length; j++) {
+      const pBlock = paragraphBlocks[j];
+      const { textBlocks } = pBlock;
 
-        segment._segmentStyles = segmentStyles;
-      }
+      for (let k = 0; k < textBlocks.length; k++) {
+        const block = textBlocks[k];
 
-      if (block.spacingAbove) {
-        const spacing = listBlock.listType !== ListType.NONE ? node.listSpacing : node.paragraphSpacing;
-        addStyle(context, node, block.blockStyles, 'margin-top', [spacing, 'px']);
-      }
-
-      // Text wrapper styles in the block
-      const singleChild = block.segments.length === 1;
-      const firstSegmentStyles = block.segments[0]._segmentStyles;
-
-      if (singleChild) {
-        Object.assign(block.blockStyles, firstSegmentStyles);
-        block.segments[0]._segmentStyles = {};
-      } else {
-        // Smallest font size for the inline wrapper
-        const smallestFontSizeIndex = block.segments.reduce(
-          (prevIndex, curr, index) => (block.segments[prevIndex].fontSize <= curr.fontSize ? prevIndex : index),
-          0,
-        );
-        if (smallestFontSizeIndex == null || !firstSegmentStyles['font-family']) {
-          warnNode(
-            node,
-            'BUG No font-size or font-family to apply on the span wrapper. As of now, texts are supposed to always have those styles applied. To review.',
-          );
+        // Add the space between two paragraphs. Between p1 and p2, if they are both lists (regardless of whether they are in the same list or 2 different lists), the list spacing applies. Otherwise, paragraph spacing is used.
+        if (!isFirstBlock) {
+          if (k === 0) {
+            const spacing =
+              listBlock.listType !== ListType.NONE &&
+              (j > 0 || (j === 0 && i > 0 && listBlocks[i - 1]?.listType !== ListType.NONE))
+                ? node.listSpacing
+                : node.paragraphSpacing;
+            addStyle(context, node, block.blockStyles, 'margin-top', [spacing, 'px']);
+          }
         } else {
-          const textWrapperStyles: Dict<DeclarationPlain> = {};
-          textWrapperStyles['font-size'] = block.segments[smallestFontSizeIndex]._segmentStyles['font-size'];
-          textWrapperStyles['font-family'] = firstSegmentStyles['font-family'];
-          // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
-          addStyle(context, node, textWrapperStyles, 'flex-shrink', 1);
+          isFirstBlock = false;
+        }
 
-          block.textInlineWrapperStyles = textWrapperStyles;
+        for (const segment of block.segments) {
+          const segmentStyles: Dict<DeclarationPlain> = {};
+
+          // Add text segment styles
+          mapTextSegmentStyles(context, segment, segmentStyles, node);
+
+          segment._segmentStyles = segmentStyles;
+        }
+
+        // Text wrapper styles in the block
+        const singleChild = block.segments.length === 1;
+        const firstSegmentStyles = block.segments[0]._segmentStyles;
+
+        if (singleChild) {
+          Object.assign(block.blockStyles, firstSegmentStyles);
+          block.segments[0]._segmentStyles = {};
+        } else {
+          // Smallest font size for the inline wrapper
+          const smallestFontSizeIndex = block.segments.reduce(
+            (prevIndex, curr, index) => (block.segments[prevIndex].fontSize <= curr.fontSize ? prevIndex : index),
+            0,
+          );
+          if (smallestFontSizeIndex == null || !firstSegmentStyles['font-family']) {
+            warnNode(
+              node,
+              'BUG No font-size or font-family to apply on the span wrapper. As of now, texts are supposed to always have those styles applied. To review.',
+            );
+          } else {
+            const textWrapperStyles: Dict<DeclarationPlain> = {};
+            textWrapperStyles['font-size'] = block.segments[smallestFontSizeIndex]._segmentStyles['font-size'];
+            textWrapperStyles['font-family'] = firstSegmentStyles['font-family'];
+            // Cancel flex-shrink reset here since it prevents text wrap with this intermediate span.
+            addStyle(context, node, textWrapperStyles, 'flex-shrink', 1);
+
+            block.textInlineWrapperStyles = textWrapperStyles;
+          }
         }
       }
     }
   }
 
-  if (listBlocks.length === 1 && listBlocks[0].listType === ListType.NONE && listBlocks[0].textBlocks.length === 1) {
-    const tb = listBlocks[0].textBlocks[0];
+  if (
+    listBlocks.length === 1 &&
+    listBlocks[0].listType === ListType.NONE &&
+    listBlocks[0].paragraphBlocks.length === 1 &&
+    listBlocks[0].paragraphBlocks[0].textBlocks.length === 1
+  ) {
+    const tb = listBlocks[0].paragraphBlocks[0].textBlocks[0];
     Object.assign(styles, tb.blockStyles);
     tb.blockStyles = {};
   }
@@ -210,135 +235,137 @@ export function genTextAst<T extends boolean>(
     textBlockWrapperStyleAttributes = attributes;
   }
 
-  let listASTs: FwNodeOneOrMore | undefined = [];
+  let allListBlocksASTs: FwNodeOneOrMore | undefined = [];
 
+  // list blocks correspond to a <ul>, <ol> or nothing if no list.
   for (const listBlock of listBlocks) {
-    // TODO wrap in <ul> or <ol> if list type is not NONE, and replace the first child tag with <li>
-    let blockASTs: FwNodeOneOrMore | undefined = [];
-    for (const block of listBlock.textBlocks) {
-      const singleChild = block.segments.length === 1;
-      let htmlClass2 = htmlClass;
-      let textBlockStyleAttributes: FwAttr[] | undefined = undefined;
-      let textSpanWrapperAttributes: FwAttr[] | undefined = undefined;
+    let listBlockASTs: FwNodeOneOrMore | undefined = [];
 
-      const blockStyleDeclarations = stylesToList(block.blockStyles);
-      if (blockStyleDeclarations.length) {
-        const className = getOrGenClassName(moduleContext, undefined, 'textBlock');
-        htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
-        addCssRule(context, className, blockStyleDeclarations, node);
-        if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
-        textBlockStyleAttributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
-      }
+    // paragraphs correspond to a <li> or nothing if no list.
+    for (const paragraphBlock of listBlock.paragraphBlocks) {
+      let paragraphBlockASTs: FwNodeOneOrMore | undefined = [];
 
-      let useAnchorSingleChild = false;
-      if (singleChild) {
-        const segment = block.segments[0];
-        if (segment.hyperlink) {
-          if (segment.hyperlink.type === 'URL') {
-            if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
-            // hyperlink of type NODE not handled for now
-            textBlockStyleAttributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
-            useAnchorSingleChild = true;
-          } else {
-            warnNode(segment, 'TODO Unsupported hyperlink of type node');
-          }
+      // blocks correspond to the parent div or span around the text, inside the list if any.
+      for (const block of paragraphBlock.textBlocks) {
+        const singleChild = block.segments.length === 1;
+        let htmlClass2 = htmlClass;
+        let textBlockStyleAttributes: FwAttr[] | undefined = undefined;
+        let textSpanWrapperAttributes: FwAttr[] | undefined = undefined;
+
+        const blockStyleDeclarations = stylesToList(block.blockStyles);
+        if (blockStyleDeclarations.length) {
+          const className = getOrGenClassName(moduleContext, undefined, 'textBlock');
+          htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
+          addCssRule(context, className, blockStyleDeclarations, node);
+          if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
+          textBlockStyleAttributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
         }
-      }
 
-      // Text span wrapper
-      // If multiple segments, surround with span to maintain the inline style
-      if (!singleChild) {
-        const attributes: FwAttr[] = [];
-        if (block.textInlineWrapperStyles) {
-          const styleDeclarations = stylesToList(block.textInlineWrapperStyles);
-          if (styleDeclarations.length) {
-            const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
-            htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
-            addCssRule(context, className, styleDeclarations, node);
-            attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
-          }
-        }
-        if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
-        textSpanWrapperAttributes = attributes;
-      }
-
-      let segmentASTs: FwNodeOneOrMore | undefined = [];
-
-      // Prepare AST for each text segment
-      for (let i = 0; i < block.segments.length; i++) {
-        const segment = block.segments[i];
-        const segmentStyles = segment._segmentStyles;
-        let segAst: FwNodeOneOrMore = fwConnector.createText(segment.characters);
-
-        if (!singleChild) {
-          const styleDeclarations = stylesToList(segmentStyles);
-          const attributes: FwAttr[] = [];
-          if (styleDeclarations.length) {
-            const className = getOrGenClassName(moduleContext);
-            const htmlClass3 = mkHtmlFullClass(context, className, htmlClass2);
-            addCssRule(context, className, styleDeclarations, node, true);
-            attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass3, extraConfig));
-          }
-          let useAnchor = false;
+        let useAnchorSingleChild = false;
+        if (singleChild) {
+          const segment = block.segments[0];
           if (segment.hyperlink) {
             if (segment.hyperlink.type === 'URL') {
+              if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
               // hyperlink of type NODE not handled for now
-              attributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
-              useAnchor = true;
+              textBlockStyleAttributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
+              useAnchorSingleChild = true;
             } else {
               warnNode(segment, 'TODO Unsupported hyperlink of type node');
             }
           }
-          segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
         }
 
-        push(segmentASTs, segAst);
+        // Text span wrapper
+        // If multiple segments, surround with span to maintain the inline style
+        if (!singleChild) {
+          const attributes: FwAttr[] = [];
+          if (block.textInlineWrapperStyles) {
+            const styleDeclarations = stylesToList(block.textInlineWrapperStyles);
+            if (styleDeclarations.length) {
+              const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
+              htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
+              addCssRule(context, className, styleDeclarations, node);
+              attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
+            }
+          }
+          if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
+          textSpanWrapperAttributes = attributes;
+        }
+
+        let segmentASTs: FwNodeOneOrMore | undefined = [];
+
+        // Prepare AST for each text segment
+        for (let i = 0; i < block.segments.length; i++) {
+          const segment = block.segments[i];
+          const segmentStyles = segment._segmentStyles;
+          let segAst: FwNodeOneOrMore = fwConnector.createText(segment.characters);
+
+          if (!singleChild) {
+            const styleDeclarations = stylesToList(segmentStyles);
+            const attributes: FwAttr[] = [];
+            if (styleDeclarations.length) {
+              const className = getOrGenClassName(moduleContext);
+              const htmlClass3 = mkHtmlFullClass(context, className, htmlClass2);
+              addCssRule(context, className, styleDeclarations, node, true);
+              attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass3, extraConfig));
+            }
+            let useAnchor = false;
+            if (segment.hyperlink) {
+              if (segment.hyperlink.type === 'URL') {
+                // hyperlink of type NODE not handled for now
+                attributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
+                useAnchor = true;
+              } else {
+                warnNode(segment, 'TODO Unsupported hyperlink of type node');
+              }
+            }
+            segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
+          }
+
+          push(segmentASTs, segAst);
+        }
+
+        if (textSpanWrapperAttributes) {
+          segmentASTs = fwConnector.wrapNode(segmentASTs, 'span', textSpanWrapperAttributes);
+        }
+
+        if (textBlockStyleAttributes) {
+          segmentASTs = fwConnector.wrapNode(segmentASTs, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
+        }
+
+        // Wrap with blocks here
+        push(paragraphBlockASTs, segmentASTs);
       }
 
-      if (textSpanWrapperAttributes) {
-        segmentASTs = fwConnector.wrapNode(segmentASTs, 'span', textSpanWrapperAttributes);
+      // Wrap paragraph in <li> if we are in a list
+      if (listBlock.listType !== ListType.NONE) {
+        paragraphBlockASTs = fwConnector.wrapNode(paragraphBlockASTs, 'li', []);
       }
 
-      if (textBlockStyleAttributes) {
-        segmentASTs = fwConnector.wrapNode(segmentASTs, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
-      }
-
-      //
-      //
-      // TODO
-      // if (listBlock.listType !== ListType.NONE) {
-      //   segmentASTs = fwConnector.wrapNode(segmentASTs, 'li', []);
-      // }
-      //
-      //
-
-      // Wrap with blocks here
-      push(blockASTs, segmentASTs);
+      push(listBlockASTs, paragraphBlockASTs);
     }
-    //
-    //
-    // TODO
-    // if (listBlock.listType !== ListType.NONE) {
-    //   blockASTs = fwConnector.wrapNode(blockASTs, listBlock.listType === ListType.ORDERED ? 'ol' : 'ul', []);
-    // }
-    //
-    //
-    push(listASTs, blockASTs);
-    // blockASTs
+
+    // Wrap paragraphs in <ul> or <ol> if we are in a list
+    if (listBlock.listType !== ListType.NONE) {
+      listBlockASTs = fwConnector.wrapNode(listBlockASTs, listBlock.listType === ListType.ORDERED ? 'ol' : 'ul', []);
+    }
+
+    push(allListBlocksASTs, listBlockASTs);
   }
 
   if (textBlockWrapperStyleAttributes) {
-    listASTs = fwConnector.wrapNode(listASTs, 'div', textBlockWrapperStyleAttributes);
+    allListBlocksASTs = fwConnector.wrapNode(allListBlocksASTs, 'div', textBlockWrapperStyleAttributes);
   }
 
-  const blockASTs2 = fwConnector.wrapHideAndTextOverride(context, listASTs, node, isJsExprAllowed);
+  const blockASTs2 = fwConnector.wrapHideAndTextOverride(context, allListBlocksASTs, node, isJsExprAllowed);
 
   return blockASTs2;
 }
 
 export function genInputPlaceholderStyles(context: NodeContext, node: TextNode2) {
   const { moduleContext } = context;
-  const segmentStyles = node._listBlocks?.[0]?.textBlocks?.[0]?.segments?.[0]._segmentStyles;
+  const segmentStyles = node._listBlocks?.[0]?.paragraphBlocks?.[0]?.textBlocks?.[0]?.segments?.[0]._segmentStyles;
   if (!segmentStyles?.length) return;
 
   const styleDeclarations = stylesToList(segmentStyles);

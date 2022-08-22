@@ -73,7 +73,6 @@ export interface Masker {
 }
 
 export interface TextBlock {
-  spacingAbove?: boolean;
   segments: TextSegment2[];
   blockStyles: Dict<DeclarationPlain>;
   textInlineWrapperStyles?: Dict<DeclarationPlain>;
@@ -86,8 +85,12 @@ export enum ListType {
 }
 
 export interface ListBlock {
-  textBlocks: TextBlock[];
+  paragraphBlocks: ParagraphBlock[];
   listType: ListType;
+}
+
+export interface ParagraphBlock {
+  textBlocks: TextBlock[];
 }
 
 export type RulePlainExtended = RulePlain & { parentRule?: RulePlain; childRules?: RulePlain[] };

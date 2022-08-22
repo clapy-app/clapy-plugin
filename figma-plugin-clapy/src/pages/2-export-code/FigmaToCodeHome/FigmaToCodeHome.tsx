@@ -197,11 +197,15 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           // Replace Figma asset URL with our own CDN. Benefits:
           // - Avoid CORS issue in codesandbox when exporting the project as zip
           // - Allows image compression if useful later, instead of keeping the original HD image.
-          let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
-          if (!url) {
-            handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
-          } else {
-            images[imageHash] = { ...imageEntryRest, url };
+          try {
+            let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
+            if (!url) {
+              handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
+            } else {
+              images[imageHash] = { ...imageEntryRest, url };
+            }
+          } catch (error) {
+            handleError(error);
           }
           perfMeasure(`Image uploaded`);
         }

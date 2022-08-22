@@ -11,8 +11,8 @@ In a terminal, run:
 ## Usage
 
 - With VSCode, `Open Workspace from File...`, select the file `clapy.code-workspace`. **Don't** open the root directory.
-- Install the suggested plugins and accept to use the TypeScript workspace version when prompted.
-- `yarn install:all` to install dependencies in root and subprojects
+- Required: Install the suggested plugins and accept to use the TypeScript workspace version when prompted.
+- `yarn install` in the root directory
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice

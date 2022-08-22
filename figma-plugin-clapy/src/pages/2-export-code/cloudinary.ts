@@ -19,5 +19,10 @@ async function uploadAsset(file: Blob | string, imageHash: string) {
   formData.append('file', file);
   formData.append('upload_preset', env.isDev ? 'code-export-dev' : 'code-export');
   formData.append('public_id', imageHash);
-  return (await (await fetch(cloudinaryUploadUrl, { method: 'POST', body: formData })).json()).secure_url as string;
+  const resp = await (await fetch(cloudinaryUploadUrl, { method: 'POST', body: formData })).json();
+  const { secure_url } = resp;
+  if (!secure_url) {
+    throw new Error(`BUG Missing cloudinary response URL. Response: ${JSON.stringify(resp)}`);
+  }
+  return secure_url as string;
 }
