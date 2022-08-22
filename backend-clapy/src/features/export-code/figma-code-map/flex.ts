@@ -96,6 +96,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const {
     isParentAutoLayout,
     isParentVertical,
+    isNodeVertical,
     nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
     parentAndNodeHaveSameDirection,
@@ -143,7 +144,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       addStyle(context, node, styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       if (node.textAlignHorizontal !== 'JUSTIFIED') {
-        if (defaultIsVertical) {
+        if (isNodeVertical) {
           addStyle(context, node, styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
         } else {
           addStyle(
@@ -157,20 +158,20 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       }
     } else {
       resetStyleIfOverriding(context, node, styles, 'text-align');
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         resetStyleIfOverriding(context, node, styles, 'align-items');
       } else {
         resetStyleIfOverriding(context, node, styles, 'justify-content');
       }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         addStyle(context, node, styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
       } else {
         addStyle(context, node, styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
       }
     } else {
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         resetStyleIfOverriding(context, node, styles, 'justify-content');
       } else {
         resetStyleIfOverriding(context, node, styles, 'align-items');

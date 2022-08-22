@@ -87,6 +87,7 @@ export enum ListType {
 export interface ListBlock {
   paragraphBlocks: ParagraphBlock[];
   listType: ListType;
+  styles?: Dict<DeclarationPlain>;
 }
 
 export interface ParagraphBlock {
@@ -133,6 +134,7 @@ interface GlobalExtender2 extends GlobalExtender {
   componentContext?: ModuleContext; // For instance nodes
   noLayoutWithChildren?: boolean; // For groups to skip styling and directly process children
   textSkipStyles?: boolean; // For text nodes
+  idAttached?: boolean;
   svgPathVarName?: string; // For SVG nodes
   extraAttributes?: ts.JsxAttribute[];
   rule?: RulePlainExtended;

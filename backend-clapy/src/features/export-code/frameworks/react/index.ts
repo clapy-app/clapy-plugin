@@ -20,7 +20,7 @@ import type {
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import { resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
-import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
+import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
 import {
@@ -82,7 +82,8 @@ export const reactConnector: FrameworkConnector = {
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
   createClassAttrForClassNoOverride,
-  mkSelector: (context, className) => mkClassSelectorCss(className),
+  mkSelector: (context, className, subSelector) =>
+    mkRawCss(subSelector ? `.${className} ${subSelector}` : `.${className}`),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return wrapHideAndTextOverride(context, ast2, node, false);

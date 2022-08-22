@@ -15,10 +15,28 @@
 }
 
 :where(.clapyResets),
-:where(.clapyResets) :not(span, a, ul, ol, li) {
+:where(.clapyResets) :not(span, a, ul, ol, li, p) {
   display: flex;
 }
 
-:where(.clapyResets) :where(ul, ol) {
+:where(.clapyResets) ul {
   text-indent: 0;
+  padding-inline-start: 22px;
+}
+
+:where(.clapyResets) ul > li > * {
+  margin-left: -4px;
+}
+
+:where(.clapyResets) ol {
+  text-indent: 0;
+  padding-inline-start: 16px;
+}
+
+:where(.clapyResets) ol > li {
+  padding-left: 2px;
+}
+
+:where(.clapyResets) img {
+  object-fit: contain;
 }

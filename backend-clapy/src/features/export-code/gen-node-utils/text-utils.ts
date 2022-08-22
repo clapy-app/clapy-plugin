@@ -11,6 +11,7 @@ import type {
   TextBlock,
   TextNode2,
   TextSegment2,
+  ValidNode,
 } from '../create-ts-compiler/canvas-utils.js';
 import { ListType } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../css-gen/css-factories-high.js';
@@ -130,6 +131,9 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
           mapTextSegmentStyles(context, segment, segmentStyles, node);
 
           segment._segmentStyles = segmentStyles;
+          if (!listBlock.styles) {
+            listBlock.styles = segmentStyles;
+          }
         }
 
         // Text wrapper styles in the block
@@ -214,7 +218,7 @@ export function genTextAst<T extends boolean>(
 
   let htmlClass = node.htmlClass;
 
-  let textBlockWrapperStyleAttributes: FwAttr[] | undefined = undefined;
+  let textBlockWrapperStyleAttributes: FwAttr[] = [];
 
   // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
   // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
@@ -223,15 +227,13 @@ export function genTextAst<T extends boolean>(
   // Text block wrapper
   // If node has styles to render, surround with a styled div
   if (!node.textSkipStyles) {
-    const styleDeclarations = stylesToList(styles);
     let attributes: FwAttr[] = [];
-    if (flags.writeFigmaIdOnNode) attributes.push(mkIdAttribute(node.id));
-    if (styleDeclarations.length) {
-      const className = getOrGenClassName(moduleContext, node);
-      htmlClass = mkHtmlFullClass(context, className, htmlClass);
-      addCssRule(context, className, styleDeclarations, node);
-      attributes.push(fwConnector.createClassAttribute(node, extraConfig, htmlClass));
-    }
+
+    htmlClass = applyStyles(context, styles, htmlClass, attributes, node, {
+      attachClassToNode: true,
+      fullClassOverrides: true,
+    });
+
     textBlockWrapperStyleAttributes = attributes;
   }
 
@@ -241,6 +243,16 @@ export function genTextAst<T extends boolean>(
   for (const listBlock of listBlocks) {
     let listBlockASTs: FwNodeOneOrMore | undefined = [];
 
+    let htmlClass2 = htmlClass;
+
+    let listBlockAttributes: FwAttr[] = [];
+    if (listBlock.styles) {
+      htmlClass2 = applyStyles(context, listBlock.styles, htmlClass2, listBlockAttributes, node, {
+        classBaseLabel: 'list',
+        subSelector: '::marker',
+      });
+    }
+
     // paragraphs correspond to a <li> or nothing if no list.
     for (const paragraphBlock of listBlock.paragraphBlocks) {
       let paragraphBlockASTs: FwNodeOneOrMore | undefined = [];
@@ -248,48 +260,38 @@ export function genTextAst<T extends boolean>(
       // blocks correspond to the parent div or span around the text, inside the list if any.
       for (const block of paragraphBlock.textBlocks) {
         const singleChild = block.segments.length === 1;
-        let htmlClass2 = htmlClass;
-        let textBlockStyleAttributes: FwAttr[] | undefined = undefined;
-        let textSpanWrapperAttributes: FwAttr[] | undefined = undefined;
-
-        const blockStyleDeclarations = stylesToList(block.blockStyles);
-        if (blockStyleDeclarations.length) {
-          const className = getOrGenClassName(moduleContext, undefined, 'textBlock');
-          htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
-          addCssRule(context, className, blockStyleDeclarations, node);
-          if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
-          textBlockStyleAttributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
-        }
+        let htmlClass3 = htmlClass2;
+        let textBlockStyleAttributes: FwAttr[] = [];
+        let textSpanWrapperAttributes: FwAttr[] = [];
 
         let useAnchorSingleChild = false;
         if (singleChild) {
           const segment = block.segments[0];
           if (segment.hyperlink) {
             if (segment.hyperlink.type === 'URL') {
-              if (!textBlockStyleAttributes) textBlockStyleAttributes = [];
               // hyperlink of type NODE not handled for now
               textBlockStyleAttributes.push(...fwConnector.createLinkAttributes(segment.hyperlink.value));
               useAnchorSingleChild = true;
+              addStyle(context, node, block.blockStyles, 'display', 'block');
             } else {
               warnNode(segment, 'TODO Unsupported hyperlink of type node');
             }
           }
         }
 
+        htmlClass3 = applyStyles(context, block.blockStyles, htmlClass3, textBlockStyleAttributes, node, {
+          classBaseLabel: 'textBlock',
+        });
+
         // Text span wrapper
         // If multiple segments, surround with span to maintain the inline style
         if (!singleChild) {
           const attributes: FwAttr[] = [];
           if (block.textInlineWrapperStyles) {
-            const styleDeclarations = stylesToList(block.textInlineWrapperStyles);
-            if (styleDeclarations.length) {
-              const className = getOrGenClassName(moduleContext, undefined, 'labelWrapper');
-              htmlClass2 = mkHtmlFullClass(context, className, htmlClass2);
-              addCssRule(context, className, styleDeclarations, node);
-              attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass2, extraConfig));
-            }
+            htmlClass3 = applyStyles(context, block.textInlineWrapperStyles, htmlClass3, attributes, node, {
+              classBaseLabel: 'labelWrapper',
+            });
           }
-          if (flags.writeFigmaIdOnNode && node.textSkipStyles) attributes.push(mkIdAttribute(node.id));
           textSpanWrapperAttributes = attributes;
         }
 
@@ -302,14 +304,12 @@ export function genTextAst<T extends boolean>(
           let segAst: FwNodeOneOrMore = fwConnector.createText(segment.characters);
 
           if (!singleChild) {
-            const styleDeclarations = stylesToList(segmentStyles);
             const attributes: FwAttr[] = [];
-            if (styleDeclarations.length) {
-              const className = getOrGenClassName(moduleContext);
-              const htmlClass3 = mkHtmlFullClass(context, className, htmlClass2);
-              addCssRule(context, className, styleDeclarations, node, true);
-              attributes.push(fwConnector.createClassAttrForClassNoOverride(htmlClass3, extraConfig));
-            }
+
+            applyStyles(context, segmentStyles, htmlClass3, attributes, node, {
+              skipAssignRule: true,
+            });
+
             let useAnchor = false;
             if (segment.hyperlink) {
               if (segment.hyperlink.type === 'URL') {
@@ -326,11 +326,11 @@ export function genTextAst<T extends boolean>(
           push(segmentASTs, segAst);
         }
 
-        if (textSpanWrapperAttributes) {
-          segmentASTs = fwConnector.wrapNode(segmentASTs, 'span', textSpanWrapperAttributes);
+        if (textSpanWrapperAttributes.length) {
+          segmentASTs = fwConnector.wrapNode(segmentASTs, 'p', textSpanWrapperAttributes);
         }
 
-        if (textBlockStyleAttributes) {
+        if (textBlockStyleAttributes.length) {
           segmentASTs = fwConnector.wrapNode(segmentASTs, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
         }
 
@@ -348,13 +348,17 @@ export function genTextAst<T extends boolean>(
 
     // Wrap paragraphs in <ul> or <ol> if we are in a list
     if (listBlock.listType !== ListType.NONE) {
-      listBlockASTs = fwConnector.wrapNode(listBlockASTs, listBlock.listType === ListType.ORDERED ? 'ol' : 'ul', []);
+      listBlockASTs = fwConnector.wrapNode(
+        listBlockASTs,
+        listBlock.listType === ListType.ORDERED ? 'ol' : 'ul',
+        listBlockAttributes,
+      );
     }
 
     push(allListBlocksASTs, listBlockASTs);
   }
 
-  if (textBlockWrapperStyleAttributes) {
+  if (textBlockWrapperStyleAttributes.length) {
     allListBlocksASTs = fwConnector.wrapNode(allListBlocksASTs, 'div', textBlockWrapperStyleAttributes);
   }
 
@@ -377,6 +381,38 @@ export function genInputPlaceholderStyles(context: NodeContext, node: TextNode2)
     let cssRule = mkRuleCss(selectors, block);
     cssRules.push(cssRule);
   }
+}
+
+function applyStyles(
+  context: NodeContext,
+  styles: Dict<DeclarationPlain>,
+  htmlClass: string | undefined,
+  attributes: FwAttr[],
+  node: ValidNode,
+  options?: {
+    attachClassToNode?: boolean;
+    classBaseLabel?: string;
+    fullClassOverrides?: boolean;
+    skipAssignRule?: boolean;
+    subSelector?: string;
+  },
+) {
+  const { attachClassToNode, classBaseLabel, fullClassOverrides, skipAssignRule, subSelector } = options || {};
+  const { moduleContext } = context;
+  const { fwConnector, extraConfig } = moduleContext.projectContext;
+  const blockStyleDeclarations = stylesToList(styles);
+  if (flags.writeFigmaIdOnNode && attachClassToNode && !node.idAttached) attributes.push(mkIdAttribute(node.id));
+  if (blockStyleDeclarations.length) {
+    const className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
+    htmlClass = mkHtmlFullClass(context, className, htmlClass);
+    addCssRule(context, className, blockStyleDeclarations, node, { skipAssignRule, subSelector });
+    attributes.push(
+      fullClassOverrides
+        ? fwConnector.createClassAttribute(node, extraConfig, htmlClass)
+        : fwConnector.createClassAttrForClassNoOverride(htmlClass, extraConfig),
+    );
+  }
+  return htmlClass;
 }
 
 function push<T>(array: T[], elements: T | T[]) {

@@ -36,13 +36,14 @@ export function addCssRule(
   className: string | false,
   styleDeclarations: DeclarationPlain[],
   node: SceneNode2,
-  skipAssignRule?: boolean,
+  options?: { skipAssignRule?: boolean; subSelector?: string },
 ) {
+  const { skipAssignRule, subSelector } = options || {};
   const bem = useBem(context);
   const increaseSpecificity = shouldIncreaseSpecificity(context);
 
   const { cssRules } = context.moduleContext;
-  const selectors = mkSelectorsWithBem(context, className, node.rule);
+  const selectors = mkSelectorsWithBem(context, className, node.rule, subSelector);
   const block = mkBlockCss(styleDeclarations);
   let cssRule: RulePlain;
   if (bem && increaseSpecificity && className) {
