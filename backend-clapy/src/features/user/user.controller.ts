@@ -10,7 +10,6 @@ import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.j
 import { UserService } from './user.service.js';
 import type { UserMetadata, UserMetaUsage } from './user.utils.js';
 import {
-  hasRoleClapyDevTeam,
   getAuth0FirstLastName,
   getAuth0User,
   hasMissingMetaProfile,
@@ -118,14 +117,5 @@ export class UserController {
     upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
 
     perfMeasure();
-  }
-  //------------------------------------------------Admin-features--------------------------------------------------
-
-  @Get('get-config')
-  async getFigmaConfig(@Req() req: RequestPrivate) {
-    if (!hasRoleClapyDevTeam(req.auth)) {
-      throw new Error('you do not have permission for this action.');
-    }
-    return await this.userService.getFigmaConfig();
   }
 }

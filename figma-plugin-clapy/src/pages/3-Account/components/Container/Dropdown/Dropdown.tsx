@@ -7,12 +7,12 @@ import type React from 'react';
 import { useSelector } from 'react-redux';
 
 import { logout, refreshUser } from '../../../../../core/auth/auth-service.js';
-import { selectClapyDevTeam, selectDevTools } from '../../../../../core/auth/auth-slice.js';
+import { selectDevTools } from '../../../../../core/auth/auth-slice.js';
 import { env } from '../../../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import classes from './Dropdown.module.css';
 import { MoreHorizontalIcon } from './MoreHorizontalIcon';
-import { useHandleFigmaConfigs } from '../../../../user/user-service.js';
+import { useHandleFigmaConfigs } from '../../../../../admin/admin-service.js';
 
 interface Props {
   className?: string;
@@ -22,7 +22,6 @@ interface Props {
 }
 export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   const devTools = useSelector(selectDevTools);
-  const clapyDevTeam = useSelector(selectClapyDevTeam);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
   const open = Boolean(anchorEl);
@@ -81,7 +80,7 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
             Throw a front error (dev)
           </MenuItem>
         )}
-        {(env.isDev || clapyDevTeam) && (
+        {(env.isDev || devTools) && (
           <MenuItem onClick={getConfigs} disabled={loading}>
             Generate two last registred figma Configs (dev)
           </MenuItem>

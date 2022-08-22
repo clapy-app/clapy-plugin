@@ -66,16 +66,6 @@ export class UserService {
     return +count;
   }
 
-  async getFigmaConfig() {
-    const data = await this.generationHistoryRepository.find({
-      order: {
-        createdAt: 'DESC',
-      },
-      take: 2,
-    });
-    return data;
-  }
-
   async checkUserOrThrow(user: AccessTokenDecoded) {
     const userId = user.sub;
 

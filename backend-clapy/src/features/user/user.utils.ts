@@ -156,6 +156,6 @@ function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
 
-export function hasRoleClapyDevTeam(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('clapy_dev_team');
+export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
 }
