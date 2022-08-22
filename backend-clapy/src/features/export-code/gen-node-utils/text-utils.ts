@@ -295,11 +295,15 @@ export function genTextAst<T extends boolean>(
           textSpanWrapperAttributes = attributes;
         }
 
-        let segmentASTs: FwNodeOneOrMore | undefined = [];
+        let segmentASTs: FwNodeOneOrMore = [];
 
         // Prepare AST for each text segment
         for (let i = 0; i < block.segments.length; i++) {
           const segment = block.segments[i];
+
+          // Don't make empty spans
+          if (!segment.characters) continue;
+
           const segmentStyles = segment._segmentStyles;
           let segAst: FwNodeOneOrMore = fwConnector.createText(segment.characters);
 
@@ -328,6 +332,11 @@ export function genTextAst<T extends boolean>(
 
         if (textSpanWrapperAttributes.length) {
           segmentASTs = fwConnector.wrapNode(segmentASTs, 'p', textSpanWrapperAttributes);
+        } else if (!segmentASTs.length) {
+          // If no content, leave an empty <p></p> to take the vertical space.
+          // It will work thanks to a CSS rule applied to empty <p> in resets.
+          // Inspiration: https://stackoverflow.com/a/66457550/4053349
+          segmentASTs = fwConnector.wrapNode(segmentASTs, 'p', []);
         }
 
         if (textBlockStyleAttributes.length) {

@@ -37,6 +37,11 @@
   padding-left: 2px;
 }
 
+:where(.clapyResets) p:empty::before {
+  content: '';
+  display: inline-block;
+}
+
 :where(.clapyResets) img {
   object-fit: contain;
 }
