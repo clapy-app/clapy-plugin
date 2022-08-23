@@ -310,8 +310,8 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const nodeCounterAxisHugContents = nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
     : isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
-  const widthHugContents = isFlex ? (isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents) : false;
-  const heightHugContents = isFlex ? (isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents) : false;
+  const widthHugContents = isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents;
+  const heightHugContents = isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents;
 
   const isParentAutoLayout = !parent || (parentIsFlex && parent?.layoutMode !== 'NONE');
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
