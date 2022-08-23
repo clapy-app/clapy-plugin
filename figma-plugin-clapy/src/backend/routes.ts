@@ -1,3 +1,4 @@
+import { generateConfig } from './admin/1-figma-from-config/1-read-figma-config.js';
 import {
   getSelectionCustomCss,
   getSelectionPreview,
@@ -48,6 +49,9 @@ export const routes = {
   serializeSelectedNode,
   extractSVGs,
   extractImages,
+
+  // admin
+  generateConfig,
 
   // To delete in a few weeks. flag related to news update toast that shows on first login of user.
   setCachedIsFirstLogin,
