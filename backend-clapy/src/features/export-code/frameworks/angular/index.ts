@@ -50,9 +50,9 @@ export const angularConnector: FrameworkConnector = {
   webpackIgnoreInCSS: false,
   addScssPackages: () => {},
   patchCssResets: projectContext => {
-    const { cssFiles } = projectContext;
-    // In Angular, always delete the CSS module file.
-    delete cssFiles[resetsCssModulePath];
+    // const { cssFiles } = projectContext;
+    // // In Angular, always delete the CSS module file.
+    // delete cssFiles[resetsCssModulePath];
   },
   registerSvgForWrite,
   createClassAttribute(node, extraConfig, className) {

@@ -19,7 +19,7 @@ import type {
 } from '../../code.model.js';
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import { resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
+import { resetsCssModulePath, resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
@@ -59,7 +59,13 @@ export const reactConnector: FrameworkConnector = {
   templateBaseDirectory: extraConfig => (extraConfig.useZipProjectTemplate ? zipDir : csbDir),
   getIndexHtmlPath: ({ useZipProjectTemplate }) => (useZipProjectTemplate ? 'index.html' : 'public/index.html'),
   enableInstanceOverrides: true,
-  patchProjectConfigFiles: () => {},
+  patchProjectConfigFiles: (projectContext, extraConfig) => {
+    const { useZipProjectTemplate } = extraConfig;
+    const { cssFiles } = projectContext;
+    if (!useZipProjectTemplate) {
+      cssFiles[resetsCssModulePath] = cssFiles[resetsCssModulePath].replaceAll(':where(.clapyResets)', '.clapyResets');
+    }
+  },
   appCompDir: 'src',
   appBaseCompName: 'App',
   // MyRectangle
