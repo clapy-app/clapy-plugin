@@ -320,13 +320,44 @@ enum clapy_analytics_update_column {
   status
 }
 
+input clapy_analytics_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: clapy_analytics_append_input
+
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: clapy_analytics_delete_at_path_input
+
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: clapy_analytics_delete_elem_input
+
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: clapy_analytics_delete_key_input
+
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: clapy_analytics_prepend_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: clapy_analytics_set_input
+  where: clapy_analytics_bool_exp!
+}
+
 """
 columns and relationships of "clapy.generation_history"
 """
 type clapy_generation_history {
   auth0id: String!
   created_at: timestamptz!
-  generated_link: String!
+  figma_config(
+    """JSON select path"""
+    path: String
+  ): jsonb
+  generated_link: String
   id: uuid!
   is_free_user: Boolean!
 }
@@ -348,6 +379,11 @@ type clapy_generation_history_aggregate_fields {
   min: clapy_generation_history_min_fields
 }
 
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input clapy_generation_history_append_input {
+  figma_config: jsonb
+}
+
 """
 Boolean expression to filter rows from the table "clapy.generation_history". All fields are combined with a logical 'AND'.
 """
@@ -357,6 +393,7 @@ input clapy_generation_history_bool_exp {
   _or: [clapy_generation_history_bool_exp!]
   auth0id: String_comparison_exp
   created_at: timestamptz_comparison_exp
+  figma_config: jsonb_comparison_exp
   generated_link: String_comparison_exp
   id: uuid_comparison_exp
   is_free_user: Boolean_comparison_exp
@@ -373,11 +410,33 @@ enum clapy_generation_history_constraint {
 }
 
 """
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input clapy_generation_history_delete_at_path_input {
+  figma_config: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input clapy_generation_history_delete_elem_input {
+  figma_config: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input clapy_generation_history_delete_key_input {
+  figma_config: String
+}
+
+"""
 input type for inserting data into table "clapy.generation_history"
 """
 input clapy_generation_history_insert_input {
   auth0id: String
   created_at: timestamptz
+  figma_config: jsonb
   generated_link: String
   id: uuid
   is_free_user: Boolean
@@ -423,6 +482,7 @@ input clapy_generation_history_on_conflict {
 input clapy_generation_history_order_by {
   auth0id: order_by
   created_at: order_by
+  figma_config: order_by
   generated_link: order_by
   id: order_by
   is_free_user: order_by
@@ -431,6 +491,11 @@ input clapy_generation_history_order_by {
 """primary key columns input for table: clapy_generation_history"""
 input clapy_generation_history_pk_columns_input {
   id: uuid!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input clapy_generation_history_prepend_input {
+  figma_config: jsonb
 }
 
 """
@@ -442,6 +507,9 @@ enum clapy_generation_history_select_column {
 
   """column name"""
   created_at
+
+  """column name"""
+  figma_config
 
   """column name"""
   generated_link
@@ -459,6 +527,7 @@ input type for updating data in table "clapy.generation_history"
 input clapy_generation_history_set_input {
   auth0id: String
   created_at: timestamptz
+  figma_config: jsonb
   generated_link: String
   id: uuid
   is_free_user: Boolean
@@ -475,6 +544,9 @@ enum clapy_generation_history_update_column {
   created_at
 
   """column name"""
+  figma_config
+
+  """column name"""
   generated_link
 
   """column name"""
@@ -482,6 +554,33 @@ enum clapy_generation_history_update_column {
 
   """column name"""
   is_free_user
+}
+
+input clapy_generation_history_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: clapy_generation_history_append_input
+
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: clapy_generation_history_delete_at_path_input
+
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: clapy_generation_history_delete_elem_input
+
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: clapy_generation_history_delete_key_input
+
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: clapy_generation_history_prepend_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: clapy_generation_history_set_input
+  where: clapy_generation_history_bool_exp!
 }
 
 """
@@ -718,6 +817,15 @@ enum clapy_login_tokens_update_column {
   write_token
 }
 
+input clapy_login_tokens_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: clapy_login_tokens_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: clapy_login_tokens_set_input
+  where: clapy_login_tokens_bool_exp!
+}
+
 """aggregate var_pop on columns"""
 type clapy_login_tokens_var_pop_fields {
   id: Float
@@ -940,9 +1048,38 @@ type mutation_root {
   ): clapy_analytics
 
   """
+  update multiples rows of table: "clapy.analytics"
+  """
+  update_clapy_analytics_many(
+    """updates to execute, in order"""
+    updates: [clapy_analytics_updates!]!
+  ): [clapy_analytics_mutation_response]
+
+  """
   update data of the table: "clapy.generation_history"
   """
   update_clapy_generation_history(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: clapy_generation_history_append_input
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: clapy_generation_history_delete_at_path_input
+
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: clapy_generation_history_delete_elem_input
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: clapy_generation_history_delete_key_input
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: clapy_generation_history_prepend_input
+
     """sets the columns of the filtered rows to the given values"""
     _set: clapy_generation_history_set_input
 
@@ -954,10 +1091,39 @@ type mutation_root {
   update single row of the table: "clapy.generation_history"
   """
   update_clapy_generation_history_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: clapy_generation_history_append_input
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: clapy_generation_history_delete_at_path_input
+
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: clapy_generation_history_delete_elem_input
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: clapy_generation_history_delete_key_input
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: clapy_generation_history_prepend_input
+
     """sets the columns of the filtered rows to the given values"""
     _set: clapy_generation_history_set_input
     pk_columns: clapy_generation_history_pk_columns_input!
   ): clapy_generation_history
+
+  """
+  update multiples rows of table: "clapy.generation_history"
+  """
+  update_clapy_generation_history_many(
+    """updates to execute, in order"""
+    updates: [clapy_generation_history_updates!]!
+  ): [clapy_generation_history_mutation_response]
 
   """
   update data of the table: "clapy.login_tokens"
@@ -984,6 +1150,14 @@ type mutation_root {
     _set: clapy_login_tokens_set_input
     pk_columns: clapy_login_tokens_pk_columns_input!
   ): clapy_login_tokens
+
+  """
+  update multiples rows of table: "clapy.login_tokens"
+  """
+  update_clapy_login_tokens_many(
+    """updates to execute, in order"""
+    updates: [clapy_login_tokens_updates!]!
+  ): [clapy_login_tokens_mutation_response]
 }
 
 """column ordering options"""

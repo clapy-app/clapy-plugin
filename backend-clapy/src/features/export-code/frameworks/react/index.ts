@@ -19,8 +19,8 @@ import type {
 } from '../../code.model.js';
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import { resetsCssModulePath, resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
-import { cssAstToString, mkClassSelectorCss } from '../../css-gen/css-factories-low.js';
+import { resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
+import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
 import {
@@ -77,18 +77,13 @@ export const reactConnector: FrameworkConnector = {
   addScssPackages: (newDevDependencies: Dict<string>) => {
     Object.assign(newDevDependencies, scssDevDependencies);
   },
-  patchCssResets: projectContext => {
-    const { cssFiles, extraConfig } = projectContext;
-    // In React, keep the CSS module file for component-level resets, delete if global resets
-    if (extraConfig.globalResets) {
-      delete cssFiles[resetsCssModulePath];
-    }
-  },
+  patchCssResets: () => {},
   registerSvgForWrite,
   createClassAttribute: createClassAttrForNode,
   createClassAttributeSimple: mkClassAttr3,
   createClassAttrForClassNoOverride,
-  mkSelector: (context, className) => mkClassSelectorCss(className),
+  mkSelector: (context, className, customSelector) =>
+    mkRawCss(customSelector ? customSelector.replaceAll('_class_', `.${className}`) : `.${className}`),
   createNodeTag: (context, attributes, children, node) => {
     const ast2 = mkTag(context.tagName, attributes as ts.JsxAttribute[], children as ts.JsxChild[]);
     return wrapHideAndTextOverride(context, ast2, node, false);
@@ -450,14 +445,12 @@ function mkSwitchThemeHandler() {
 function addCssResetsModuleImport(moduleContext: ModuleContext) {
   const { projectContext, compDir, imports } = moduleContext;
   const { extraConfig } = projectContext;
-  if (!extraConfig.globalResets) {
-    const cssExt = getCSSExtension(extraConfig);
-    const cssResetsFileName = `${resetsModuleBase}.${cssExt}`;
-    // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
-    const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
-    // Generate the '../../'...
-    const moduleSpecPrefix = new Array(nbOfCdToParent).fill('../').join('');
-    const cssResetsModuleSpecifier = `${moduleSpecPrefix || './'}${cssResetsFileName}`;
-    imports[cssResetsModuleSpecifier] = mkDefaultImportDeclaration('resets', cssResetsModuleSpecifier);
-  }
+  const cssExt = getCSSExtension(extraConfig);
+  const cssResetsFileName = `${resetsModuleBase}.${cssExt}`;
+  // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
+  const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
+  // Generate the '../../'...
+  const moduleSpecPrefix = new Array(nbOfCdToParent).fill('../').join('');
+  const cssResetsModuleSpecifier = `${moduleSpecPrefix || './'}${cssResetsFileName}`;
+  imports[cssResetsModuleSpecifier] = mkDefaultImportDeclaration('resets', cssResetsModuleSpecifier);
 }

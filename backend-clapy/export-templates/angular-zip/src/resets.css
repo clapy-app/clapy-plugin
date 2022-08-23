@@ -13,11 +13,6 @@ body > app-root {
   position: relative;
 }
 
-/* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
-body > app-root * {
-  /* $RESETS */
-}
-
 body button:not(:disabled) {
   cursor: pointer;
   -webkit-user-select: none;
@@ -28,13 +23,4 @@ body label {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-}
-
-body span,
-body a {
-  display: inline;
-}
-
-img {
-  object-fit: contain;
 }

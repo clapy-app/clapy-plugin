@@ -2,6 +2,8 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminController } from './admin/admin.controller.js';
+import { AdminService } from './admin/admin.service.js';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -48,12 +50,14 @@ import { UserService } from './features/user/user.service.js';
     SbSerializeController,
     CodeController,
     GithubController,
+    AdminController,
   ],
   providers: [
     AppService,
     StripeService,
     StripeWebhookService,
     UserService,
+    AdminService,
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
 })

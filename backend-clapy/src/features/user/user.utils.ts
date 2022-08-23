@@ -155,3 +155,7 @@ export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
+
+export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
+}

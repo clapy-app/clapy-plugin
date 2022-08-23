@@ -176,24 +176,18 @@ export function patchDimensionFromRotation(node: AnyNode3) {
     const rotationRad = (rotation * Math.PI) / 180;
     // Adjust x/y depending on the rotation. Figma's x/y are the coordinates of the original top/left corner after rotation. In CSS, it's the top-left corner of the final square containing the SVG.
     // Sounds a bit complex. We could avoid that by rotating in CSS instead. But It will have other side effects, like the space used in the flow (different in Figma and CSS).
+    node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
+    node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
     if (rotation >= -180 && rotation <= -90) {
-      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
       node.x = node.x - node.width;
       node.y = node.y - getOppositeSide(90 - (rotation + 180), height);
     } else if (rotation > -90 && rotation <= 0) {
       node.x = node.x + getOppositeSide(rotation, height);
-      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
       // Do nothing for y
     } else if (rotation > 0 && rotation <= 90) {
-      node.width = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-      node.height = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
       // Do nothing for x
       node.y = node.y - getOppositeSide(rotation, width);
     } else if (rotation > 90 && rotation <= 180) {
-      node.height = Math.abs(width * Math.sin(rotationRad)) + Math.abs(height * Math.cos(rotationRad));
-      node.width = Math.abs(width * Math.cos(rotationRad)) + Math.abs(height * Math.sin(rotationRad));
       node.x = node.x - getOppositeSide(rotation - 90, width);
       node.y = node.y - node.height;
     }

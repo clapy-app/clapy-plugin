@@ -9,7 +9,7 @@ import type { ModuleContext, NodeContext, ProjectContext } from '../../code.mode
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
-import { cssAstToString, mkClassSelectorCss, mkRawCss } from '../../css-gen/css-factories-low.js';
+import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import {
   dashCaseToPascalCase,
   genIconComponentImportName,
@@ -61,8 +61,10 @@ export const angularConnector: FrameworkConnector = {
   },
   createClassAttributeSimple: className => mkHtmlAttribute('class', className),
   createClassAttrForClassNoOverride: className => mkHtmlAttribute('class', className),
-  mkSelector: (context, className) =>
-    !context.hasExtraAttributes && className === 'root' ? mkRawCss(':host') : mkClassSelectorCss(className),
+  mkSelector: (context, className, customSelector) =>
+    !context.hasExtraAttributes && className === 'root'
+      ? mkRawCss(customSelector ? customSelector.replaceAll('_class_', ':host') : ':host')
+      : mkRawCss(customSelector ? customSelector.replaceAll('_class_', `.${className}`) : `.${className}`),
   createNodeTag: (context, attributes, children, node) => {
     const { isRootInComponent } = context;
     if (isRootInComponent && !context.hasExtraAttributes) {
@@ -86,7 +88,7 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
-    const { cssFiles, cssResetRules } = projectContext;
+    const { cssFiles } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -94,7 +96,7 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    let cssStr = `:host, * { ${cssResetRules} }`;
+    let cssStr = cssFiles[resetsCssModulePath].replace(/:where\(\.clapyResets\)/g, ':host');
 
     const hasCss = isNonEmptyObject(css.children);
     if (hasCss) {

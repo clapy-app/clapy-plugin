@@ -17,7 +17,6 @@ export function figmaConfigExtractionProgress(next: NextFn<ExtractionProgress>) 
 }
 
 async function notifyProgress(progress: ExtractionProgress, node?: SceneNode) {
-  await wait();
   if (node) {
     let nodeName = node.name;
     const parent = node?.parent;
@@ -27,6 +26,7 @@ async function notifyProgress(progress: ExtractionProgress, node?: SceneNode) {
     progress.nodeName = `Component: ${nodeName}`;
   }
   _notifyProgress?.(progress);
+  await wait();
 }
 
 export async function serializeSelectedNode() {

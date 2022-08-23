@@ -3,7 +3,7 @@ import { isBlendMixin } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
 import { customCssPluginKey } from './read-figma-config-utils.js';
 
-let sendSelectionPreview: (() => void) | undefined;
+export let sendSelectionPreview: (() => void) | undefined;
 
 export async function getSelectionPreview() {
   sendSelectionPreview?.();

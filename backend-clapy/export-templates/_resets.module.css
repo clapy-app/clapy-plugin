@@ -1,11 +1,34 @@
-.clapyResets, .clapyResets * {
-  display: flex;
+:where(.clapyResets),
+:where(.clapyResets) * {
   box-sizing: border-box;
   margin: 0;
-  padding: 0;
   background: none;
   border: none;
   flex-shrink: 0;
   text-decoration: none;
   min-width: 0;
+}
+
+:where(.clapyResets),
+:where(.clapyResets) * {
+  padding: 0;
+}
+
+:where(.clapyResets),
+:where(.clapyResets) :not(span, a, ul, ol, li, p) {
+  display: flex;
+}
+
+:where(.clapyResets) ul, :where(.clapyResets) ol {
+  text-indent: 0;
+  padding-inline-start: 1.5em;
+}
+
+:where(.clapyResets) p:empty::before {
+  content: '';
+  display: inline-block;
+}
+
+:where(.clapyResets) img {
+  object-fit: contain;
 }

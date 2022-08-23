@@ -4502,11 +4502,13 @@ __metadata:
     "@graphql-codegen/typescript": ^2.7.3
     "@types/eslint": ^8.4.6
     "@types/prettier": ^2.7.0
+    dotenv: ^16.0.1
     eslint: ^8.22.0
     graphql: ^16.6.0
     hasura-cli: ^2.9.0
     npm-run-all: ^4.1.5
     prettier: ^2.7.1
+    tslib: ^2.4.0
     typescript: ^4.7.4
   languageName: unknown
   linkType: soft
@@ -11950,7 +11952,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.4.0, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:~2.4.0":
+"tslib@npm:*, tslib@npm:2.4.0, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:~2.4.0":
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113

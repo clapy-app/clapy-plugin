@@ -118,29 +118,17 @@ function optimizeNodeConfig<T extends AnyNode3>(node: T, context: ExtractNodeCon
     const isTxt = isText2(node);
 
     if (isTxt && node._textSegments) {
-      for (const { textStyleId, fillStyleId } of node._textSegments) {
+      for (const { textStyleId, fillStyleId, fills } of node._textSegments) {
         addStyle(extractBatchContext.textStyles, textStyleId);
         addStyle(extractBatchContext.fillStyles, fillStyleId);
+        extractFillsImages(node, fills, extractBatchContext);
       }
     }
 
     if (!exportAsSvg && !isTxt && isMinimalFillsMixin(node) && isArrayOf<Paint>(node.fills)) {
       // Fills can be mixed if node is Text. Ignore it, text segments are already processed earlier.
       addStyle(extractBatchContext.fillStyles, node.fillStyleId);
-
-      for (const fill of node.fills) {
-        if (fill.type === 'IMAGE') {
-          if (!fill.imageHash) {
-            warnNode(
-              node,
-              'BUG Image fill has no hash, to check and understand why. Ignoring image:',
-              JSON.stringify(fill),
-            );
-          } else {
-            extractBatchContext.imageHashesToExtract.add(fill.imageHash);
-          }
-        }
-      }
+      extractFillsImages(node, node.fills, extractBatchContext);
     }
 
     if (isChildrenMixin2(node) && !exportAsSvg) {
@@ -207,6 +195,22 @@ function addStyle<TStyle extends BaseStyle>(styles: Dict<TStyle>, styleId: strin
       }
 
       styles[styleId] = style as TStyle;
+    }
+  }
+}
+
+function extractFillsImages(node: AnyNode3, fills: Paint[], extractBatchContext: ExtractBatchContext) {
+  for (const fill of fills) {
+    if (fill.type === 'IMAGE') {
+      if (!fill.imageHash) {
+        warnNode(
+          node,
+          'BUG Image fill has no hash, to check and understand why. Ignoring image:',
+          JSON.stringify(fill),
+        );
+      } else {
+        extractBatchContext.imageHashesToExtract.add(fill.imageHash);
+      }
     }
   }
 }

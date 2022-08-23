@@ -38,7 +38,7 @@ export interface FrameworkConnector {
   createClassAttribute: (node: SceneNode2, extraConfig: ExtraConfig, className: string) => FwAttr;
   createClassAttributeSimple: (className: string) => FwAttr;
   createClassAttrForClassNoOverride: (className: string, extraConfig: ExtraConfig) => FwAttr;
-  mkSelector(context: NodeContext, className: string): Raw | ClassSelector;
+  mkSelector(context: NodeContext, className: string, customSelector: string | undefined): Raw | ClassSelector;
   createNodeTag: (
     context: NodeContext,
     attributes: FwAttr[],

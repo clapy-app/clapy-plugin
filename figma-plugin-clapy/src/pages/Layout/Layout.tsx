@@ -72,7 +72,7 @@ export const LayoutInner: FC = memo(function LayoutInner() {
       dispatch(setSelection(previewUrl));
     });
 
-    fetchPluginNoResponse('getSelectionPreview');
+    fetchPluginNoResponse('notifyReady');
     return dispose;
   }, [dispatch]);
 

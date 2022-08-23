@@ -36,13 +36,14 @@ export function addCssRule(
   className: string | false,
   styleDeclarations: DeclarationPlain[],
   node: SceneNode2,
-  skipAssignRule?: boolean,
+  options?: { skipAssignRule?: boolean; customSelector?: string },
 ) {
+  const { skipAssignRule, customSelector } = options || {};
   const bem = useBem(context);
   const increaseSpecificity = shouldIncreaseSpecificity(context);
 
   const { cssRules } = context.moduleContext;
-  const selectors = mkSelectorsWithBem(context, className, node.rule);
+  const selectors = mkSelectorsWithBem(context, className, node.rule, customSelector);
   const block = mkBlockCss(styleDeclarations);
   let cssRule: RulePlain;
   if (bem && increaseSpecificity && className) {
@@ -681,7 +682,7 @@ function mkClassExpression(overrideEntry: BaseStyleOverride, extraConfig: ExtraC
   const isRoot = overrideValue === 'root' || propValue === 'root';
   const exprFragments: (ts.BinaryExpression | ts.PropertyAccessExpression)[] = [];
 
-  if (isRoot && !extraConfig.globalResets) {
+  if (isRoot) {
     exprFragments.push(
       factory.createPropertyAccessExpression(
         factory.createIdentifier('resets'),

@@ -8,6 +8,7 @@ import { addFrontDefineVarToContext, pluginDir } from './src/scripts/esbuild/bui
 const context: BuildContext = {};
 addFrontDefineVarToContext(context);
 export default defineConfig({
+  server: { port: 5100 },
   root: `${pluginDir}/src`,
   // import checker from 'vite-plugin-checker';
   // https://github.com/fi3ework/vite-plugin-checker

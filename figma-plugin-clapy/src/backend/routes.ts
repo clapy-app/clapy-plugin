@@ -21,19 +21,11 @@ import {
 import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
-import { getSbCompSelection, selectedSbComp } from './routes/code-to-design/1-import-stories/1-select-node';
-import {
-  detachPage,
-  getStoriesSamples,
-  importStories,
-} from './routes/code-to-design/1-import-stories/2-import-sb-routes';
-import { commitUndo, updateCanvas } from './routes/code-to-design/2-update-canvas/1-update-canvas.js';
-import { updateCanvasVariant } from './routes/code-to-design/2-update-canvas/2-update-canvas-variant.js';
-import { runGrid } from './routes/code-to-design/2-update-canvas/grid-utils.js';
-import { updateVariantsFromFilters } from './routes/code-to-design/3-properties/1-update-variants-from-filters.js';
+import { notifyReady } from './routes/9-common/notify-ready.js';
 
 export const routes = {
   // Common
+  notifyReady,
   reloadUI,
   closePlugin: () => figma.closePlugin(),
   getCurrentUser,
@@ -62,17 +54,17 @@ export const routes = {
   getCachedIsFirstLogin,
 
   // Code to design (old)
-  getSbCompSelection,
-  getStoriesSamples,
-  importStories,
-  detachPage,
-  updateCanvas,
-  updateCanvasVariant,
-  commitUndo,
-
-  updateVariantsFromFilters,
-
-  runGrid,
+  //   getSbCompSelection,
+  //   getStoriesSamples,
+  //   importStories,
+  //   detachPage,
+  //   updateCanvas,
+  //   updateCanvasVariant,
+  //   commitUndo,
+  //
+  //   updateVariantsFromFilters,
+  //
+  //   runGrid,
 };
 
 // Possible refactoring: subscription functions could return the callback function and change the "next" to be called without any argument.
@@ -91,7 +83,7 @@ export const subscriptions = {
   figmaConfigExtractionProgress,
 
   // Code to design (old)
-  selectedSbComp,
+  // selectedSbComp,
 };
 
 // Use Routes from appModels.ts instead, which is clearly made to be shared between the front and the back.

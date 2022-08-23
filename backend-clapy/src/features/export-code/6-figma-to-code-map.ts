@@ -9,7 +9,6 @@ import { isInstanceContext } from './code.model.js';
 import type { TextNode2, TextSegment2, ValidNode } from './create-ts-compiler/canvas-utils.js';
 import { isText } from './create-ts-compiler/canvas-utils.js';
 import { csstree } from './create-ts-compiler/csstree.js';
-import { addStyle } from './css-gen/css-factories-high.js';
 import { backgroundFigmaToCode, prepareBackgrounds } from './figma-code-map/background.js';
 import { borderRadiusFigmaToCode } from './figma-code-map/border-radius.js';
 import { borderFigmaToCode, prepareBorders } from './figma-code-map/border.js';
@@ -120,7 +119,6 @@ export function mapTextSegmentStyles(
   styles: Dict<DeclarationPlain>,
   node: TextNode2,
 ) {
-  addStyle(context, node, styles, 'display', 'inline');
   colorFigmaToCode(context, textSegment, styles, node);
   fontFigmaToCode(context, textSegment, styles, node);
 

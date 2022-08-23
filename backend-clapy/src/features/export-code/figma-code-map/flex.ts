@@ -96,6 +96,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const {
     isParentAutoLayout,
     isParentVertical,
+    isNodeVertical,
     nodePrimaryAxisHugContents,
     nodeCounterAxisHugContents,
     parentAndNodeHaveSameDirection,
@@ -143,7 +144,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       addStyle(context, node, styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       if (node.textAlignHorizontal !== 'JUSTIFIED') {
-        if (defaultIsVertical) {
+        if (isNodeVertical) {
           addStyle(context, node, styles, 'align-items', textAlignHorizontalToAlignItems[node.textAlignHorizontal]);
         } else {
           addStyle(
@@ -157,20 +158,20 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       }
     } else {
       resetStyleIfOverriding(context, node, styles, 'text-align');
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         resetStyleIfOverriding(context, node, styles, 'align-items');
       } else {
         resetStyleIfOverriding(context, node, styles, 'justify-content');
       }
     }
     if (!nodePrimaryAxisHugContents && node.textAlignVertical !== 'TOP') {
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         addStyle(context, node, styles, 'justify-content', textAlignVerticalToJustifyContent[node.textAlignVertical]);
       } else {
         addStyle(context, node, styles, 'align-items', textAlignVerticalToAlignItems[node.textAlignVertical]);
       }
     } else {
-      if (defaultIsVertical) {
+      if (isNodeVertical) {
         resetStyleIfOverriding(context, node, styles, 'justify-content');
       } else {
         resetStyleIfOverriding(context, node, styles, 'align-items');
@@ -302,25 +303,15 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   const parentIsAbsolute = isGroup(parent) || (isFlexNode(parent) && parent?.layoutMode === 'NONE');
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
-  const isNodeVertical = isFlex && node.layoutMode === 'VERTICAL';
-  const nodePrimaryAxisHugContents =
-    isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
-  const nodeCounterAxisHugContents =
-    isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
-  const widthHugContents = isFlex
-    ? isNodeVertical
-      ? nodeCounterAxisHugContents
-      : nodePrimaryAxisHugContents
-    : nodeIsText
-    ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
-    : false;
-  const heightHugContents = isFlex
-    ? isNodeVertical
-      ? nodePrimaryAxisHugContents
-      : nodeCounterAxisHugContents
-    : nodeIsText
+  const isNodeVertical = nodeIsText || (isFlex && node.layoutMode === 'VERTICAL');
+  const nodePrimaryAxisHugContents = nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
-    : false;
+    : isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
+  const nodeCounterAxisHugContents = nodeIsText
+    ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
+    : isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
+  const widthHugContents = isFlex ? (isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents) : false;
+  const heightHugContents = isFlex ? (isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents) : false;
 
   const isParentAutoLayout = !parent || (parentIsFlex && parent?.layoutMode !== 'NONE');
   const isParentVertical = isParentAutoLayout && parent?.layoutMode === 'VERTICAL';
@@ -375,7 +366,9 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     (fixedHeight && parentRequireMaxSize && isNodeAutoLayout) ||
     isSeparatorOrWorkaround; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
 
-  if (fixedWidth) {
+  if (widthHugContents) {
+    addStyle(context, node, styles, 'width', 'min-content');
+  } else if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
     if (isVector(node) && node.strokeWeight > width) {
@@ -386,11 +379,13 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     // I'm not sure which one has highest priority between fixedWidth and node.autoWidth. To review with a test case.
     resetStyleIfOverriding(context, node, styles, 'width');
   }
-
   if (shouldApplyMaxWidth) {
     addStyle(context, node, styles, 'max-width', [100, '%']);
   }
-  if (fixedHeight) {
+
+  if (heightHugContents) {
+    addStyle(context, node, styles, 'height', 'min-content');
+  } else if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
     if (isVector(node) && node.strokeWeight > height) {
       height = node.strokeWeight;

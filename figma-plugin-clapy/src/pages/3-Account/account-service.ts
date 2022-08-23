@@ -40,7 +40,7 @@ export function useHandleUserUpgrade() {
     // Subscribe to the payment status. This is a bunch of code to handle potential errors.
     let waitForPaymentStartStatus = true;
     const { unsubscribe } = pipe(
-      gqlClient.subscription(loginTokensSub) as any,
+      gqlClient.subscription(loginTokensSub, {}) as any,
       subscribe<SubscriptionResp>(result => {
         // Wrap in async function because managing async error is easier.
         (async () => {
