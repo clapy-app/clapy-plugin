@@ -2,6 +2,7 @@ import { basename } from 'path';
 
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, ProjectContext } from '../../code.model.js';
+import { resetsCssModulePath, resetsCssModulePathAsScss } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 
 export const scssDevDependencies = {
   sass: '^1.53.0',
@@ -65,4 +66,9 @@ export function getCssResetsPath(extraConfig: ExtraConfig, postExtensionChange =
   if (!postExtensionChange) return `src/resets.css`;
   const cssExt = getCSSExtension(extraConfig);
   return `src/resets.${cssExt}`;
+}
+
+export function getCssResetsModulePath(extraConfig: ExtraConfig, postExtensionChange = true) {
+  if (!postExtensionChange) return resetsCssModulePath;
+  return extraConfig.scss ? resetsCssModulePathAsScss : resetsCssModulePath;
 }
