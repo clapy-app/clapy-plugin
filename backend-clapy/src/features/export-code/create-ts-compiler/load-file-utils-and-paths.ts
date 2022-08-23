@@ -4,6 +4,7 @@ import type { CodeDict } from '../code.model.js';
 
 export const resetsModuleBase = '_resets.module';
 export const resetsCssModulePath = `src/${resetsModuleBase}.css`;
+export const resetsCssModulePathAsScss = `src/${resetsModuleBase}.scss`;
 export const resetsCssModuleSrcPath = `${exportTemplatesDir}/${resetsModuleBase}.css`;
 
 export function separateTsCssAndResources(files: CodeDict, extraConfig: ExtraConfig) {

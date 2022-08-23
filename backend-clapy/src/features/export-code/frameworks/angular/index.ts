@@ -7,7 +7,6 @@ import { exportTemplatesDir } from '../../../../root.js';
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
-import { resetsCssModulePath } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import {
@@ -18,7 +17,7 @@ import {
 } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
-import { getCSSExtension, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
+import { getCSSExtension, getCssResetsModulePath, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
@@ -49,11 +48,6 @@ export const angularConnector: FrameworkConnector = {
   assetsCssBaseUrl: '/assets/',
   webpackIgnoreInCSS: false,
   addScssPackages: () => {},
-  patchCssResets: projectContext => {
-    // const { cssFiles } = projectContext;
-    // // In Angular, always delete the CSS module file.
-    // delete cssFiles[resetsCssModulePath];
-  },
   registerSvgForWrite,
   createClassAttribute(node, extraConfig, className) {
     const className2 = className || node.className!;
@@ -88,7 +82,7 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
-    const { cssFiles } = projectContext;
+    const { cssFiles, extraConfig } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -96,7 +90,14 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    let cssStr = cssFiles[resetsCssModulePath].replace(/:where\(\.clapyResets\)/g, ':host');
+    const resetsCssModulePath = getCssResetsModulePath(extraConfig);
+
+    if (!cssFiles[resetsCssModulePath]) throw new Error(`CSS resets module not found at ${resetsCssModulePath}`);
+    let cssStr = cssFiles[resetsCssModulePath]
+      // Replace .clapyResets class with the Angular equivalent
+      .replace(/:where\(\.clapyResets\)/g, ':host')
+      // Angular patch: remove :host prefix when targeting child elements, to reduce the specificity. Angular already takes care of scoping in the component.
+      .replace(/:host\s+([^,{])/g, '$1');
 
     const hasCss = isNonEmptyObject(css.children);
     if (hasCss) {
@@ -129,6 +130,7 @@ export const angularConnector: FrameworkConnector = {
       const { cssFiles } = projectContext;
       const stylesCssPath = getStylesCssPath(projectContext);
 
+      if (!cssFiles[stylesCssPath]) throw new Error(`CSS styles not found at ${stylesCssPath}`);
       cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replace(
         new RegExp(`(${angularPrefix}-root\\s*\\{[^\\}]*)\\}`),
         '$1;flex-direction:column}',
@@ -136,6 +138,13 @@ export const angularConnector: FrameworkConnector = {
     }
   },
   writeSVGReactComponents: async () => {},
+  cleanUpProject: projectContext => {
+    const { cssFiles, extraConfig } = projectContext;
+    const resetsCssModulePath = getCssResetsModulePath(extraConfig);
+
+    // In Angular, always delete the CSS module file.
+    delete cssFiles[resetsCssModulePath];
+  },
 };
 
 function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: ExtraConfig) {

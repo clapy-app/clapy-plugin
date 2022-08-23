@@ -159,6 +159,8 @@ export async function exportCode(
 
   patchViteJSConfigForDev(projectContext);
 
+  fwConnector.cleanUpProject(projectContext);
+
   tsFiles = await formatTsFiles(tsFiles); // Takes time with many files
   perfMeasure('g');
   await prepareCssFiles(cssFiles);

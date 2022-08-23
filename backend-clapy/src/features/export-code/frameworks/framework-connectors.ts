@@ -33,7 +33,6 @@ export interface FrameworkConnector {
   assetsCssBaseUrl: string;
   webpackIgnoreInCSS: boolean;
   addScssPackages: (newDevDependencies: Dict<string>) => void;
-  patchCssResets: (projectContext: ProjectContext) => void;
   registerSvgForWrite: (context: NodeContext, svgContent: string) => string;
   createClassAttribute: (node: SceneNode2, extraConfig: ExtraConfig, className: string) => FwAttr;
   createClassAttributeSimple: (className: string) => FwAttr;
@@ -72,6 +71,7 @@ export interface FrameworkConnector {
     parent: ParentNode | Nil,
   ) => void;
   writeSVGReactComponents: (projectContext: ProjectContext) => Promise<void>;
+  cleanUpProject: (projectContext: ProjectContext) => void;
 }
 
 export const frameworkConnectors = makeConnectors({
