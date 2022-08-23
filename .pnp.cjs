@@ -48,11 +48,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@graphql-codegen/typescript", "virtual:6174ac99648495a52ac33fa925cda3d502cdabddaa46cd34f266742fa676ff3da0d16d051909a7b1e3d17be7ac7e7d5b09380019a6eba994d0d567588f2f4d60#npm:2.7.3"],\
             ["@types/eslint", "npm:8.4.6"],\
             ["@types/prettier", "npm:2.7.0"],\
+            ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.22.0"],\
             ["graphql", "npm:16.6.0"],\
             ["hasura-cli", "npm:2.9.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["prettier", "npm:2.7.1"],\
+            ["tslib", "npm:2.4.0"],\
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"]\
           ],\
           "linkType": "SOFT"\
@@ -3499,7 +3501,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@n1ru4l/graphql-live-query", "virtual:1d27414960741960bc7a8e40af0c66e8245f77621a7326e48da4ac3a354bdf1a24c813b4aefa821dc792901f913f7a5032b71da0505e315022895ef08787e91d#npm:0.10.0"],\
             ["@types/graphql", null],\
-            ["graphql", "npm:16.6.0"]\
+            ["graphql", "npm:16.6.0"],\
+            ["tslib", "npm:2.4.0"]\
           ],\
           "packagePeers": [\
             "@types/graphql",\
@@ -6601,11 +6604,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@graphql-codegen/typescript", "virtual:6174ac99648495a52ac33fa925cda3d502cdabddaa46cd34f266742fa676ff3da0d16d051909a7b1e3d17be7ac7e7d5b09380019a6eba994d0d567588f2f4d60#npm:2.7.3"],\
             ["@types/eslint", "npm:8.4.6"],\
             ["@types/prettier", "npm:2.7.0"],\
+            ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.22.0"],\
             ["graphql", "npm:16.6.0"],\
             ["hasura-cli", "npm:2.9.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["prettier", "npm:2.7.1"],\
+            ["tslib", "npm:2.4.0"],\
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"]\
           ],\
           "linkType": "SOFT"\

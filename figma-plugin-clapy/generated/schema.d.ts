@@ -271,14 +271,37 @@ export enum Clapy_Analytics_Update_Column {
   Status = 'status'
 }
 
+export type Clapy_Analytics_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Clapy_Analytics_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Clapy_Analytics_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Clapy_Analytics_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Clapy_Analytics_Delete_Key_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Clapy_Analytics_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Clapy_Analytics_Set_Input>;
+  where: Clapy_Analytics_Bool_Exp;
+};
+
 /** columns and relationships of "clapy.generation_history" */
 export type Clapy_Generation_History = {
   __typename?: 'clapy_generation_history';
   auth0id: Scalars['String'];
   created_at: Scalars['timestamptz'];
-  generated_link: Scalars['String'];
+  figma_config?: Maybe<Scalars['jsonb']>;
+  generated_link?: Maybe<Scalars['String']>;
   id: Scalars['uuid'];
   is_free_user: Scalars['Boolean'];
+};
+
+
+/** columns and relationships of "clapy.generation_history" */
+export type Clapy_Generation_HistoryFigma_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']>;
 };
 
 /** aggregated selection of "clapy.generation_history" */
@@ -303,6 +326,11 @@ export type Clapy_Generation_History_Aggregate_FieldsCountArgs = {
   distinct?: InputMaybe<Scalars['Boolean']>;
 };
 
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Clapy_Generation_History_Append_Input = {
+  figma_config?: InputMaybe<Scalars['jsonb']>;
+};
+
 /** Boolean expression to filter rows from the table "clapy.generation_history". All fields are combined with a logical 'AND'. */
 export type Clapy_Generation_History_Bool_Exp = {
   _and?: InputMaybe<Array<Clapy_Generation_History_Bool_Exp>>;
@@ -310,6 +338,7 @@ export type Clapy_Generation_History_Bool_Exp = {
   _or?: InputMaybe<Array<Clapy_Generation_History_Bool_Exp>>;
   auth0id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  figma_config?: InputMaybe<Jsonb_Comparison_Exp>;
   generated_link?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   is_free_user?: InputMaybe<Boolean_Comparison_Exp>;
@@ -321,10 +350,26 @@ export enum Clapy_Generation_History_Constraint {
   GenerationHistoryPkey = 'generation_history_pkey'
 }
 
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Clapy_Generation_History_Delete_At_Path_Input = {
+  figma_config?: InputMaybe<Array<Scalars['String']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Clapy_Generation_History_Delete_Elem_Input = {
+  figma_config?: InputMaybe<Scalars['Int']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Clapy_Generation_History_Delete_Key_Input = {
+  figma_config?: InputMaybe<Scalars['String']>;
+};
+
 /** input type for inserting data into table "clapy.generation_history" */
 export type Clapy_Generation_History_Insert_Input = {
   auth0id?: InputMaybe<Scalars['String']>;
   created_at?: InputMaybe<Scalars['timestamptz']>;
+  figma_config?: InputMaybe<Scalars['jsonb']>;
   generated_link?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['uuid']>;
   is_free_user?: InputMaybe<Scalars['Boolean']>;
@@ -368,6 +413,7 @@ export type Clapy_Generation_History_On_Conflict = {
 export type Clapy_Generation_History_Order_By = {
   auth0id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
+  figma_config?: InputMaybe<Order_By>;
   generated_link?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_free_user?: InputMaybe<Order_By>;
@@ -378,12 +424,19 @@ export type Clapy_Generation_History_Pk_Columns_Input = {
   id: Scalars['uuid'];
 };
 
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Clapy_Generation_History_Prepend_Input = {
+  figma_config?: InputMaybe<Scalars['jsonb']>;
+};
+
 /** select columns of table "clapy.generation_history" */
 export enum Clapy_Generation_History_Select_Column {
   /** column name */
   Auth0id = 'auth0id',
   /** column name */
   CreatedAt = 'created_at',
+  /** column name */
+  FigmaConfig = 'figma_config',
   /** column name */
   GeneratedLink = 'generated_link',
   /** column name */
@@ -396,6 +449,7 @@ export enum Clapy_Generation_History_Select_Column {
 export type Clapy_Generation_History_Set_Input = {
   auth0id?: InputMaybe<Scalars['String']>;
   created_at?: InputMaybe<Scalars['timestamptz']>;
+  figma_config?: InputMaybe<Scalars['jsonb']>;
   generated_link?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['uuid']>;
   is_free_user?: InputMaybe<Scalars['Boolean']>;
@@ -408,12 +462,30 @@ export enum Clapy_Generation_History_Update_Column {
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
+  FigmaConfig = 'figma_config',
+  /** column name */
   GeneratedLink = 'generated_link',
   /** column name */
   Id = 'id',
   /** column name */
   IsFreeUser = 'is_free_user'
 }
+
+export type Clapy_Generation_History_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Clapy_Generation_History_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Clapy_Generation_History_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Clapy_Generation_History_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Clapy_Generation_History_Delete_Key_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Clapy_Generation_History_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Clapy_Generation_History_Set_Input>;
+  where: Clapy_Generation_History_Bool_Exp;
+};
 
 /** columns and relationships of "clapy.login_tokens" */
 export type Clapy_Login_Tokens = {
@@ -621,6 +693,14 @@ export enum Clapy_Login_Tokens_Update_Column {
   WriteToken = 'write_token'
 }
 
+export type Clapy_Login_Tokens_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Clapy_Login_Tokens_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Clapy_Login_Tokens_Set_Input>;
+  where: Clapy_Login_Tokens_Bool_Exp;
+};
+
 /** aggregate var_pop on columns */
 export type Clapy_Login_Tokens_Var_Pop_Fields = {
   __typename?: 'clapy_login_tokens_var_pop_fields';
@@ -698,14 +778,20 @@ export type Mutation_Root = {
   update_clapy_analytics?: Maybe<Clapy_Analytics_Mutation_Response>;
   /** update single row of the table: "clapy.analytics" */
   update_clapy_analytics_by_pk?: Maybe<Clapy_Analytics>;
+  /** update multiples rows of table: "clapy.analytics" */
+  update_clapy_analytics_many?: Maybe<Array<Maybe<Clapy_Analytics_Mutation_Response>>>;
   /** update data of the table: "clapy.generation_history" */
   update_clapy_generation_history?: Maybe<Clapy_Generation_History_Mutation_Response>;
   /** update single row of the table: "clapy.generation_history" */
   update_clapy_generation_history_by_pk?: Maybe<Clapy_Generation_History>;
+  /** update multiples rows of table: "clapy.generation_history" */
+  update_clapy_generation_history_many?: Maybe<Array<Maybe<Clapy_Generation_History_Mutation_Response>>>;
   /** update data of the table: "clapy.login_tokens" */
   update_clapy_login_tokens?: Maybe<Clapy_Login_Tokens_Mutation_Response>;
   /** update single row of the table: "clapy.login_tokens" */
   update_clapy_login_tokens_by_pk?: Maybe<Clapy_Login_Tokens>;
+  /** update multiples rows of table: "clapy.login_tokens" */
+  update_clapy_login_tokens_many?: Maybe<Array<Maybe<Clapy_Login_Tokens_Mutation_Response>>>;
 };
 
 
@@ -812,7 +898,18 @@ export type Mutation_RootUpdate_Clapy_Analytics_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Clapy_Analytics_ManyArgs = {
+  updates: Array<Clapy_Analytics_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Clapy_Generation_HistoryArgs = {
+  _append?: InputMaybe<Clapy_Generation_History_Append_Input>;
+  _delete_at_path?: InputMaybe<Clapy_Generation_History_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Clapy_Generation_History_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Clapy_Generation_History_Delete_Key_Input>;
+  _prepend?: InputMaybe<Clapy_Generation_History_Prepend_Input>;
   _set?: InputMaybe<Clapy_Generation_History_Set_Input>;
   where: Clapy_Generation_History_Bool_Exp;
 };
@@ -820,8 +917,19 @@ export type Mutation_RootUpdate_Clapy_Generation_HistoryArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Clapy_Generation_History_By_PkArgs = {
+  _append?: InputMaybe<Clapy_Generation_History_Append_Input>;
+  _delete_at_path?: InputMaybe<Clapy_Generation_History_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Clapy_Generation_History_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Clapy_Generation_History_Delete_Key_Input>;
+  _prepend?: InputMaybe<Clapy_Generation_History_Prepend_Input>;
   _set?: InputMaybe<Clapy_Generation_History_Set_Input>;
   pk_columns: Clapy_Generation_History_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Clapy_Generation_History_ManyArgs = {
+  updates: Array<Clapy_Generation_History_Updates>;
 };
 
 
@@ -838,6 +946,12 @@ export type Mutation_RootUpdate_Clapy_Login_Tokens_By_PkArgs = {
   _inc?: InputMaybe<Clapy_Login_Tokens_Inc_Input>;
   _set?: InputMaybe<Clapy_Login_Tokens_Set_Input>;
   pk_columns: Clapy_Login_Tokens_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Clapy_Login_Tokens_ManyArgs = {
+  updates: Array<Clapy_Login_Tokens_Updates>;
 };
 
 /** column ordering options */
