@@ -145,10 +145,16 @@ export function patchViteJSConfigForDev(projectContext: ProjectContext) {
   const { extraConfig } = projectContext;
   if (env.isDev && extraConfig.framework === 'react' && extraConfig.useZipProjectTemplate) {
     const { tsFiles } = projectContext;
-    tsFiles['vite.config.ts'] = tsFiles['vite.config.ts'].replace(
-      'defineConfig({',
-      'defineConfig({\n  server: { watch: { awaitWriteFinish: true } },',
-    );
+    if (!tsFiles['vite.config.ts']) {
+      if (env.isDev) {
+        throw new Error(`BUG vite.config.ts is not found in the template. Clapy cannot patch it.`);
+      }
+    } else {
+      tsFiles['vite.config.ts'] = tsFiles['vite.config.ts'].replace(
+        'defineConfig({',
+        'defineConfig({\n  server: { watch: { awaitWriteFinish: true } },',
+      );
+    }
   }
 }
 

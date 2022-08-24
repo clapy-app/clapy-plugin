@@ -182,6 +182,7 @@ export async function addFontsToIndexHtml(projectContext: ProjectContext) {
         return `family=${encodeURIComponent(familyName)}${weightFragment}`;
       })
       .join('&');
+    if (!resources[indexHtmlPath]) throw new Error(`BUG file not found in template: ${indexHtmlPath}`);
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '</head>',
       // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
@@ -192,6 +193,7 @@ export async function addFontsToIndexHtml(projectContext: ProjectContext) {
     const version =
       (await axios.get('https://raw.githubusercontent.com/brandcodeapp/headless-ds-tokens/main/dist/version.json')).data
         .version || 'latest';
+    if (!resources[indexHtmlPath]) throw new Error(`BUG file not found in template: ${indexHtmlPath}`);
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '</head>',
       // `  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
