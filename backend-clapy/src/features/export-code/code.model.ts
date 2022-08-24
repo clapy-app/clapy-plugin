@@ -56,6 +56,9 @@ export interface ProjectContext {
   readonly newDependencies: Dict<string>;
   readonly newDevDependencies: Dict<string>;
   readonly fwConnector: FrameworkConnector;
+
+  // State in the code generation progress
+  wasScssRenamed?: boolean;
 }
 
 interface OverrideFromProp {

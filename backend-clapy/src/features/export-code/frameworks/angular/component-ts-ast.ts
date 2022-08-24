@@ -14,7 +14,7 @@ export function getComponentTsAst(
 ) {
   const { projectContext, baseCompName, compName } = moduleContext;
   const { angularPrefix } = projectContext.extraConfig;
-  const cssExt = getCSSExtension(projectContext.extraConfig);
+  const cssExt = getCSSExtension(projectContext);
 
   const imports = [
     factory.createImportDeclaration(

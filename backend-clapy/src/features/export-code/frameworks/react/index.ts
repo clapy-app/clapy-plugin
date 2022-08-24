@@ -19,7 +19,6 @@ import type {
 } from '../../code.model.js';
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
-import { resetsCssModulePath, resetsModuleBase } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
@@ -49,6 +48,7 @@ import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension, scssDevDependencies } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr, FwNodeOneOrMore } from '../framework-connectors.js';
+import { getResetsCssModulePath, getResetsModuleBase } from '../../css-gen/css-gen-utils.js';
 
 const { factory } = ts;
 
@@ -62,8 +62,9 @@ export const reactConnector: FrameworkConnector = {
   patchProjectConfigFiles: (projectContext, extraConfig) => {
     const { useZipProjectTemplate } = extraConfig;
     const { cssFiles } = projectContext;
+    const resetsCssModulePath = getResetsCssModulePath(projectContext);
+    if (!cssFiles[resetsCssModulePath]) throw new Error(`CSS resets module not found at ${resetsCssModulePath}`);
     if (!useZipProjectTemplate) {
-      if (!cssFiles[resetsCssModulePath]) throw new Error(`CSS resets module not found at ${resetsCssModulePath}`);
       cssFiles[resetsCssModulePath] = cssFiles[resetsCssModulePath].replaceAll(':where(.clapyResets)', '.clapyResets');
     }
   },
@@ -102,7 +103,7 @@ export const reactConnector: FrameworkConnector = {
     mkTag(tagName, attributes as ts.JsxAttribute[], (Array.isArray(node) ? node : [node]) as ts.JsxChild[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, compName, imports } = moduleContext;
-    const { cssFiles, extraConfig } = projectContext;
+    const { cssFiles } = projectContext;
 
     const [tsx, css] = ast;
 
@@ -114,7 +115,7 @@ export const reactConnector: FrameworkConnector = {
       >,
     );
 
-    const cssExt = getCSSExtension(extraConfig);
+    const cssExt = getCSSExtension(projectContext);
     if (isNonEmptyObject(css.children)) {
       const cssFileName = `${compName}.module.${cssExt}`;
       cssFiles[`${compDir}/${cssFileName}`] = cssAstToString(css);
@@ -452,9 +453,7 @@ function mkSwitchThemeHandler() {
 
 function addCssResetsModuleImport(moduleContext: ModuleContext) {
   const { projectContext, compDir, imports } = moduleContext;
-  const { extraConfig } = projectContext;
-  const cssExt = getCSSExtension(extraConfig);
-  const cssResetsFileName = `${resetsModuleBase}.${cssExt}`;
+  const cssResetsFileName = getResetsModuleBase(projectContext);
   // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
   const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
   // Generate the '../../'...

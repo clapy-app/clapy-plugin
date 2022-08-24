@@ -18,12 +18,9 @@ import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js'
 import { readTemplateFile, readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
-import {
-  resetsCssModulePath,
-  resetsCssModuleSrcPath,
-  separateTsCssAndResources,
-} from './create-ts-compiler/load-file-utils-and-paths.js';
+import { separateTsCssAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
+import { getResetsCssModulePath, getResetsCssModuleSrcPath } from './css-gen/css-gen-utils.js';
 import { addFontsToIndexHtml } from './figma-code-map/font.js';
 import type { FrameworkConnector } from './frameworks/framework-connectors.js';
 import { frameworkConnectors } from './frameworks/framework-connectors.js';
@@ -88,8 +85,7 @@ export async function exportCode(
 
   // Initialize the project template with base files
   let filesCsb = await readTemplateFiles(fwConnector.templateBaseDirectory(extraConfig));
-  let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb, extraConfig);
-  cssFiles[resetsCssModulePath] = await readTemplateFile(resetsCssModuleSrcPath);
+  let [tsFiles, cssFiles, resources] = separateTsCssAndResources(filesCsb);
 
   // Most context elements here should be per component (but not compNamesAlreadyUsed).
   // When we have multiple components, we should split in 2 locations to initialize the context (global vs per component)
@@ -117,9 +113,11 @@ export async function exportCode(
     fwConnector,
   };
 
+  cssFiles[getResetsCssModulePath(projectContext)] = await readTemplateFile(getResetsCssModuleSrcPath(projectContext));
+
   // /!\ filesCsb doesn't share any ref with tsFiles, cssFiles and resources. It should not be used anymore.
 
-  updateFilesAndContentForScss(extraConfig, projectContext);
+  updateFilesAndContentForScss(projectContext);
   fwConnector.patchProjectConfigFiles(projectContext, extraConfig);
   perfMeasure('b2');
 
@@ -224,15 +222,10 @@ function addCompToAppRoot(
   cssVarsDeclaration: string | Nil,
   compAst: ReturnType<FrameworkConnector['genCompUsage']>,
 ) {
-  const {
-    compDir,
-    baseCompName,
-    projectContext: { cssFiles, extraConfig, fwConnector },
-    imports,
-    statements,
-  } = appModuleContext;
+  const { compDir, baseCompName, projectContext, imports, statements } = appModuleContext;
+  const { cssFiles, extraConfig, fwConnector } = projectContext;
   const { isFTD } = extraConfig;
-  const cssExt = getCSSExtension(extraConfig);
+  const cssExt = getCSSExtension(projectContext);
 
   // Add design tokens on top of the file, if any
   if (cssVarsDeclaration && !isFTD) {
