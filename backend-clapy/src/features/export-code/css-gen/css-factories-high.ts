@@ -287,6 +287,7 @@ export function mkSelectorsWithBem(
   className: string | false,
   parentRule: RulePlainExtended | undefined,
   customSelector?: string,
+  reuseClassName?: boolean,
 ) {
   const bem = useBem(context);
   const increaseSpecificity = shouldIncreaseSpecificity(context) && !bem;
@@ -294,7 +295,9 @@ export function mkSelectorsWithBem(
   const { fwConnector } = context.moduleContext.projectContext;
   const classSelector =
     bem && parentRule
-      ? mkRawCss(customSelector ? customSelector.replaceAll('_class_', `&__${cls}`) : `&__${cls}`)
+      ? mkRawCss(
+          customSelector ? customSelector.replaceAll('_class_', reuseClassName ? '&' : `&__${cls}`) : `&__${cls}`,
+        )
       : fwConnector.mkSelector(context, cls, customSelector);
   let overrideDepth = context.notOverridingAnotherClass ? 1 : (context as InstanceContext).intermediateNodes?.length;
   // if the CSS selector specificity should be increased, the selector is repeated `overrideDepth` times.

@@ -18,7 +18,7 @@ import {
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
 import { getCSSExtension, getCssResetsModulePath, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
-import type { FrameworkConnector, FwAttr } from '../framework-connectors.js';
+import type { FrameworkConnector, FwAttr, FwNode } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
 
@@ -78,8 +78,13 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlAttribute('target', '_blank'),
     mkHtmlAttribute('rel', 'noreferrer'),
   ],
-  wrapNode: (node, tagName, attributes) =>
-    mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
+  wrapNode: (context, node, tagName, attributes, isNodeTag) => {
+    const { isRootInComponent } = context;
+    if (isNodeTag && isRootInComponent && !context.hasExtraAttributes) {
+      return node as FwNode;
+    }
+    return mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]);
+  },
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
     const { cssFiles, extraConfig } = projectContext;

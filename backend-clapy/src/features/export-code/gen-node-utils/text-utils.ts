@@ -275,6 +275,7 @@ export function genTextAst<T extends boolean>(
         className,
         customSelector: '_class_ ::marker',
         skipAddClassAttribute,
+        skipAssignRule: true,
       });
     }
 
@@ -363,23 +364,28 @@ export function genTextAst<T extends boolean>(
                 warnNode(segment, 'TODO Unsupported hyperlink of type node');
               }
             }
-            segAst = fwConnector.wrapNode(segAst, useAnchor ? 'a' : 'span', attributes);
+            segAst = fwConnector.wrapNode(context, segAst, useAnchor ? 'a' : 'span', attributes);
           }
 
           push(segmentASTs, segAst);
         }
 
         if (textSpanWrapperAttributes.length) {
-          segmentASTs = fwConnector.wrapNode(segmentASTs, 'p', textSpanWrapperAttributes);
+          segmentASTs = fwConnector.wrapNode(context, segmentASTs, 'p', textSpanWrapperAttributes);
         } else if (!segmentASTs.length) {
           // If no content, leave an empty <p></p> to take the vertical space.
           // It will work thanks to a CSS rule applied to empty <p> in resets.
           // Inspiration: https://stackoverflow.com/a/66457550/4053349
-          segmentASTs = fwConnector.wrapNode(segmentASTs, 'p', []);
+          segmentASTs = fwConnector.wrapNode(context, segmentASTs, 'p', []);
         }
 
         if (textBlockStyleAttributes.length) {
-          segmentASTs = fwConnector.wrapNode(segmentASTs, useAnchorSingleChild ? 'a' : 'div', textBlockStyleAttributes);
+          segmentASTs = fwConnector.wrapNode(
+            context,
+            segmentASTs,
+            useAnchorSingleChild ? 'a' : 'div',
+            textBlockStyleAttributes,
+          );
         }
 
         // Wrap with blocks here
@@ -388,7 +394,7 @@ export function genTextAst<T extends boolean>(
 
       // Wrap paragraph in <li> if we are in a list
       if (listBlock.listType !== ListType.NONE) {
-        paragraphBlockASTs = fwConnector.wrapNode(paragraphBlockASTs, 'li', []);
+        paragraphBlockASTs = fwConnector.wrapNode(context, paragraphBlockASTs, 'li', []);
       }
 
       push(listBlockASTs, paragraphBlockASTs);
@@ -397,6 +403,7 @@ export function genTextAst<T extends boolean>(
     // Wrap paragraphs in <ul> or <ol> if we are in a list
     if (listBlock.listType !== ListType.NONE) {
       listBlockASTs = fwConnector.wrapNode(
+        context,
         listBlockASTs,
         listBlock.listType === ListType.ORDERED ? 'ol' : 'ul',
         listBlockAttributes,
@@ -407,7 +414,7 @@ export function genTextAst<T extends boolean>(
   }
 
   if (textBlockWrapperStyleAttributes.length) {
-    allListBlocksASTs = fwConnector.wrapNode(allListBlocksASTs, 'div', textBlockWrapperStyleAttributes);
+    allListBlocksASTs = fwConnector.wrapNode(context, allListBlocksASTs, 'div', textBlockWrapperStyleAttributes, true);
   }
 
   const blockASTs2 = fwConnector.wrapHideAndTextOverride(context, allListBlocksASTs, node, isJsExprAllowed);
@@ -462,11 +469,16 @@ function applyStyles(
   if (flags.writeFigmaIdOnNode && attachClassToNode && !node.idAttached && !skipAddClassAttribute)
     attributes.push(mkIdAttribute(node.id));
   if (blockStyleDeclarations.length) {
+    const reuseClassName = !!className;
     if (!className) {
       className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
     }
     htmlClass = mkHtmlFullClass(context, className, htmlClass);
-    addCssRule(context, className, blockStyleDeclarations, node, { skipAssignRule, customSelector });
+    addCssRule(context, className, blockStyleDeclarations, node, {
+      skipAssignRule: skipAssignRule || (attachClassToNode && context.isRootInComponent),
+      customSelector,
+      reuseClassName,
+    });
     if (!skipAddClassAttribute) {
       attributes.push(
         fullClassOverrides

@@ -98,7 +98,7 @@ export const reactConnector: FrameworkConnector = {
   wrapHideAndTextOverride,
   createText: text => factory.createJsxText(text, false),
   createLinkAttributes: href => [mkHrefAttr(href), mkTargetBlankAttr(), mkNoReferrerAttr()],
-  wrapNode: (node, tagName, attributes) =>
+  wrapNode: (context, node, tagName, attributes, isNodeTag) =>
     mkTag(tagName, attributes as ts.JsxAttribute[], (Array.isArray(node) ? node : [node]) as ts.JsxChild[]),
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, compName, imports } = moduleContext;
