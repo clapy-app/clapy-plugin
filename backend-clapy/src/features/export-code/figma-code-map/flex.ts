@@ -92,7 +92,7 @@ const textAlignVerticalToAlignItems: {
 export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   const isFlex = isFlexNode(node);
 
-  const { parentStyles, outerLayoutOnly } = context;
+  const { parentStyles, outerLayoutOnly, isRootNode } = context;
   const {
     isParentAutoLayout,
     isParentVertical,
@@ -107,8 +107,8 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   const parentPrimaryAxisHugContents = parentAndNodeHaveSameDirection
     ? nodePrimaryAxisHugContents
     : nodeCounterAxisHugContents;
-  const applySettingFullWidthHeight = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
-  const applySettingHugContents = context.isRootNode && !context.moduleContext.projectContext.extraConfig.page;
+  const applySettingFullWidthHeight = isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
+  const applySettingHugContents = isRootNode && !context.moduleContext.projectContext.extraConfig.page;
 
   // Flex: 1 if it's a figma rule or it's a top-level component
   if (!outerLayoutOnly && !isLine(node) && (node.layoutGrow === 1 || applySettingFullWidthHeight)) {
@@ -129,7 +129,11 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
     const parentAlignItems = readCssValueFromAst(parentStyles?.['align-items']) as AlignItems | null;
-    if ((parentStyles || applySettingHugContents) && (!parentAlignItems || parentAlignItems === 'stretch')) {
+    if (
+      (parentStyles || applySettingHugContents) &&
+      (!parentAlignItems || parentAlignItems === 'stretch') &&
+      !isRootNode
+    ) {
       addStyle(context, node, styles, 'align-self', 'flex-start');
     } else {
       resetStyleIfOverriding(context, node, styles, 'align-self');
