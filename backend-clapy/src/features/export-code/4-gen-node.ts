@@ -241,6 +241,7 @@ export function genNodeAst(node: SceneNode2) {
     node.htmlClass = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.htmlClass;
     const parentRule = isRootInComponent || parentIsRootInComponent ? undefined : context.parentNode?.rule;
     node.rule = parentRule;
+    // htmlClass and parentRule should be grouped in a single object everywhere. There are too many opportunities to introduce a mismatch bug.
 
     if (!isRootInComponent && node.componentContext) {
       // Note: if the node is a component (i.e. in Figma, we have a component in the middle of a Frame),

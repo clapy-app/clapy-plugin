@@ -36,14 +36,25 @@ export function addCssRule(
   className: string | false,
   styleDeclarations: DeclarationPlain[],
   node: SceneNode2,
-  options?: { skipAssignRule?: boolean; customSelector?: string; reuseClassName?: boolean },
+  options?: {
+    skipAssignRule?: boolean;
+    customSelector?: string;
+    reuseClassName?: boolean;
+    parentRule?: RulePlainExtended | null; // Provide an explicit null to indicate there is no parent without defaulting to node.rule.
+  },
 ) {
-  const { skipAssignRule, customSelector, reuseClassName } = options || {};
+  let { skipAssignRule, customSelector, reuseClassName, parentRule } = options || {};
   const bem = useBem(context);
   const increaseSpecificity = shouldIncreaseSpecificity(context);
+  const providedAParentRule = parentRule !== undefined; // null counts as a provided parentRule
+  if (!providedAParentRule) {
+    parentRule = node.rule;
+  } else if (parentRule === null) {
+    parentRule = undefined; // replace null with undefined, more convenient for typings in the usage below
+  }
 
   const { cssRules } = context.moduleContext;
-  const selectors = mkSelectorsWithBem(context, className, node.rule, customSelector, reuseClassName);
+  const selectors = mkSelectorsWithBem(context, className, parentRule, customSelector, reuseClassName);
   const block = mkBlockCss(styleDeclarations);
   let cssRule: RulePlain;
   if (bem && increaseSpecificity && className) {
@@ -54,13 +65,12 @@ export function addCssRule(
   } else {
     cssRule = mkRuleCss(selectors, block);
   }
-  const parentRule = node.rule;
   if (bem && parentRule) {
     bindRuleToParent(parentRule, cssRule);
   } else {
     cssRules.push(cssRule);
   }
-  if (bem && !skipAssignRule) {
+  if (bem && !skipAssignRule && !providedAParentRule) {
     node.rule = cssRule;
   }
   return cssRule;

@@ -8,6 +8,7 @@ import type { NodeContext } from '../code.model.js';
 import type {
   ListBlock,
   ParagraphBlock,
+  RulePlainExtended,
   TextBlock,
   TextNode2,
   TextSegment2,
@@ -137,7 +138,7 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
           mapTextSegmentStyles(context, segment, segmentStyles, node);
 
           segment._segmentStyles = segmentStyles;
-          if (!listBlock.markerStyles) {
+          if (listBlock.listType !== ListType.NONE && !listBlock.markerStyles) {
             listBlock.markerStyles = segmentStyles;
           }
         }
@@ -225,6 +226,7 @@ export function genTextAst<T extends boolean>(
   let htmlClass = node.htmlClass;
 
   let textBlockWrapperStyleAttributes: FwAttr[] = [];
+  let parentRule = node.rule;
 
   // The attributes are prepared from parent to children. We need this order for `bemClass` to list classes in the correct order.
   // But the AST nodes are wrapped from child to parent. We need this order to do the wrapping well.
@@ -235,7 +237,7 @@ export function genTextAst<T extends boolean>(
   if (!node.textSkipStyles) {
     let attributes: FwAttr[] = [];
 
-    ({ htmlClass } = applyStyles(context, styles, htmlClass, attributes, node, {
+    ({ htmlClass, parentRule } = applyStyles(context, styles, htmlClass, attributes, node, parentRule, {
       attachClassToNode: true,
       fullClassOverrides: true,
     }));
@@ -250,6 +252,7 @@ export function genTextAst<T extends boolean>(
     let listBlockASTs: FwNodeOneOrMore | undefined = [];
 
     let htmlClass2 = htmlClass;
+    let parentRule2 = parentRule;
 
     let listBlockAttributes: FwAttr[] = [];
     if (listBlock.markerStyles) {
@@ -259,19 +262,16 @@ export function genTextAst<T extends boolean>(
         const listStyles = {
           'font-size': listBlock.markerStyles['font-size'],
         };
-        ({ htmlClass: htmlClass2, className } = applyStyles(
-          context,
-          listStyles,
-          htmlClass2,
-          listBlockAttributes,
-          node,
-          {
-            classBaseLabel: 'list',
-          },
-        ));
+        ({
+          htmlClass: htmlClass2,
+          parentRule: parentRule2,
+          className,
+        } = applyStyles(context, listStyles, htmlClass2, listBlockAttributes, node, parentRule2, {
+          classBaseLabel: 'list',
+        }));
         skipAddClassAttribute = true;
       }
-      applyStyles(context, listBlock.markerStyles, htmlClass2, listBlockAttributes, node, {
+      applyStyles(context, listBlock.markerStyles, htmlClass2, listBlockAttributes, node, parentRule2, {
         className,
         customSelector: '_class_ ::marker',
         skipAddClassAttribute,
@@ -287,6 +287,7 @@ export function genTextAst<T extends boolean>(
       for (const block of paragraphBlock.textBlocks) {
         const singleChild = block.segments.length === 1;
         let htmlClass3 = htmlClass2;
+        let parentRule3 = parentRule2;
         let textBlockStyleAttributes: FwAttr[] = [];
         let textSpanWrapperAttributes: FwAttr[] = [];
 
@@ -305,12 +306,13 @@ export function genTextAst<T extends boolean>(
           }
         }
 
-        ({ htmlClass: htmlClass3 } = applyStyles(
+        ({ htmlClass: htmlClass3, parentRule: parentRule3 } = applyStyles(
           context,
           block.blockStyles,
           htmlClass3,
           textBlockStyleAttributes,
           node,
+          parentRule3,
           {
             classBaseLabel: 'textBlock',
           },
@@ -321,12 +323,13 @@ export function genTextAst<T extends boolean>(
         if (!singleChild) {
           const attributes: FwAttr[] = [];
           if (block.textInlineWrapperStyles) {
-            ({ htmlClass: htmlClass3 } = applyStyles(
+            ({ htmlClass: htmlClass3, parentRule: parentRule3 } = applyStyles(
               context,
               block.textInlineWrapperStyles,
               htmlClass3,
               attributes,
               node,
+              parentRule3,
               {
                 classBaseLabel: 'labelWrapper',
               },
@@ -350,7 +353,7 @@ export function genTextAst<T extends boolean>(
           if (!singleChild) {
             const attributes: FwAttr[] = [];
 
-            applyStyles(context, segmentStyles, htmlClass3, attributes, node, {
+            applyStyles(context, segmentStyles, htmlClass3, attributes, node, parentRule3, {
               skipAssignRule: true,
             });
 
@@ -444,6 +447,7 @@ function applyStyles(
   htmlClass: string | undefined,
   attributes: FwAttr[],
   node: ValidNode,
+  parentRule: RulePlainExtended | undefined,
   options?: {
     attachClassToNode?: boolean;
     classBaseLabel?: string;
@@ -473,11 +477,12 @@ function applyStyles(
     if (!className) {
       className = getOrGenClassName(moduleContext, attachClassToNode ? node : undefined, classBaseLabel);
     }
-    htmlClass = mkHtmlFullClass(context, className, htmlClass);
-    addCssRule(context, className, blockStyleDeclarations, node, {
+    htmlClass = reuseClassName ? className : mkHtmlFullClass(context, className, htmlClass);
+    parentRule = addCssRule(context, className, blockStyleDeclarations, node, {
       skipAssignRule: skipAssignRule || (attachClassToNode && context.isRootInComponent),
       customSelector,
       reuseClassName,
+      parentRule: parentRule || null, // null for no fallback to node rule when undefined. Here, it should remain a top-level rule.
     });
     if (!skipAddClassAttribute) {
       attributes.push(
@@ -487,7 +492,14 @@ function applyStyles(
       );
     }
   }
-  return { htmlClass, className };
+  if (attachClassToNode && context.isRootInComponent) {
+    // It typically means that htmlClass === 'root'
+    // root is the :host element in Angular and should not prefix class names when using the BEM convention.
+    // That's how it is implemented in 4-gen-node.ts for other types of nodes.
+    htmlClass = undefined;
+    parentRule = undefined;
+  }
+  return { htmlClass, parentRule, className };
 }
 
 function push<T>(array: T[], elements: T | T[]) {
