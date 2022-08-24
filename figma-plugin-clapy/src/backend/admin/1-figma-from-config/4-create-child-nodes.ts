@@ -1,78 +1,121 @@
+/* eslint-disable prettier/prettier */
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------child Node generation functions implementation--------------------------------
 
-import { generateParentNode } from './3-create-parent-nodes.js';
+import type { OmitMethods} from '../../../common/sb-serialize.model.js';
 import { ensureFontIsLoaded } from './utils.js';
 
 //-------------------------------------------------------------------------------------------------------------
 interface textNode2 extends TextNode {
   _textSegments: StyledTextSegment[];
 }
-export async function generateTextNode(child: textNode2) {
-  let element;
+// attribute black list [readonly]
+const attrBlackListRaw = ['absoluteBoundingBox',
+'absoluteRenderBounds',
+'absoluteTransform',
+"attachedConnectors",
+"backgrounds",
+"children",
+"componentPropertyDefinitions",
+"dashPattern",
+"documentationLinks",
+"effects",
+"exportSettings",
+"fills",
+"guides",
+"height",
+"id",
+"key",
+"layoutGrids",
+"overlayBackground",
+"overlayBackgroundInteraction",
+"overlayPositionType",
+"parent",
+"reactions",
+"remote",
+"removed",
+"strokes",
+"stuckNodes",
+"variantProperties",
+"width",
+"type",
+"_textSegments"
+] as const;
+
+const attrBlackList = new Set<string>(attrBlackListRaw)
+
+type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number]
+type WriteableSceneNode =Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>
+type WriteableSceneNodeKeys = keyof WriteableSceneNode
+type NonResizableNodes = StickyNode | ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | SectionNode
+type NonFillNodes = SliceNode | GroupNode| ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode
+type SceneNodeResizable = Exclude<SceneNode,NonResizableNodes>
+type NodesWithFillsProperty =Exclude<SceneNode,NonFillNodes>
+
+export function resizeNode(node:SceneNodeResizable,nodeConfig:SceneNodeResizable) {
+  node.resize(nodeConfig.width,nodeConfig.height)
+}
+
+export function setFills(node:NodesWithFillsProperty, nodeConfig:NodesWithFillsProperty) {
+  if (nodeConfig.fills) {
+    node.fills = nodeConfig.fills;
+  } else {
+    node.fills = [];
+  }
+}
+
+export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode,) {
+  // generic loop for most writable objects.
+  for (const [attr, val] of Object.entries(childConfig)) {
+    const attrTyped = attr as WriteableSceneNodeKeys;
+    if (childConfig[attrTyped] && !attrBlackList.has(attr) ) {
+      (newChild as any)[attrTyped] = val;
+    }
+  }
+}
+
+export async function generateFrameNode(node:  FrameNode) {
+  const frame = figma.createFrame();
+  hydrateNewNode(frame, node)
+  resizeNode(frame,node)
+  setFills(frame,node)
+  return frame;
+}
+
+export async function generateTextNode(node: textNode2) {
+  let text;
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
-  element = figma.createText();
-  element.name = child.name;
-  element.strokeAlign = child.strokeAlign;
-  element.relativeTransform = child.relativeTransform;
-  element.x = child.x;
-  element.y = child.y;
-  element.textAlignHorizontal = child.textAlignHorizontal;
-  element.textAlignVertical = child.textAlignVertical;
-  element.textAutoResize = child.textAutoResize;
-  element.resize(child.width, child.height);
-  for (const textSegment of child._textSegments) {
+  text = figma.createText();
+  hydrateNewNode(text, node)
+  resizeNode(text,node)
+  setFills(text,node)
+
+  for (const textSegment of node._textSegments) {
     await ensureFontIsLoaded(textSegment.fontName);
     const start = textSegment.start;
     const end = textSegment.end;
-    element.insertCharacters(start, textSegment.characters);
-    element.setRangeFontSize(start, end, textSegment.fontSize);
-    element.setRangeFontName(start, end, textSegment.fontName);
-    element.setRangeTextCase(start, end, textSegment.textCase);
-    element.setRangeTextDecoration(start, end, textSegment.textDecoration);
-    element.setRangeLetterSpacing(start, end, textSegment.letterSpacing);
-    element.setRangeLineHeight(start, end, textSegment.lineHeight);
-    element.setRangeHyperlink(start, end, textSegment.hyperlink);
-    element.setRangeFills(start, end, textSegment.fills);
-    element.setRangeTextStyleId(start, end, textSegment.textStyleId);
-    element.setRangeFillStyleId(start, end, textSegment.fillStyleId);
-    element.setRangeListOptions(start, end, textSegment.listOptions);
-    element.setRangeIndentation(start, end, textSegment.indentation);
+    text.insertCharacters(start, textSegment.characters);
+    text.setRangeFontSize(start, end, textSegment.fontSize);
+    text.setRangeFontName(start, end, textSegment.fontName);
+    text.setRangeTextCase(start, end, textSegment.textCase);
+    text.setRangeTextDecoration(start, end, textSegment.textDecoration);
+    text.setRangeLetterSpacing(start, end, textSegment.letterSpacing);
+    text.setRangeLineHeight(start, end, textSegment.lineHeight);
+    text.setRangeHyperlink(start, end, textSegment.hyperlink);
+    text.setRangeFills(start, end, textSegment.fills);
+    text.setRangeTextStyleId(start, end, textSegment.textStyleId);
+    text.setRangeFillStyleId(start, end, textSegment.fillStyleId);
+    text.setRangeListOptions(start, end, textSegment.listOptions);
+    text.setRangeIndentation(start, end, textSegment.indentation);
   }
-  return element;
+  return text;
 }
 
-async function generateRectancle(child: RectangleNode) {
-  let element;
-  element = figma.createRectangle();
-  element.name = child.name;
-  element.fills = child.fills;
-  if (child.x) element.x = child.x;
-  if (child.y) element.y = child.y;
-  element.relativeTransform = child.relativeTransform;
-  element.resize(child.width, child.height);
-
-  return element;
-}
-
-export async function generateChildNode(page: PageNode, child: any) {
-  let element;
-  switch (child.type) {
-    case 'RECTANGLE':
-      element = await generateRectancle(child);
-      page.appendChild(element);
-      break;
-    case 'TEXT':
-      element = await generateTextNode(child);
-      page.appendChild(element);
-      break;
-    case 'FRAME':
-      element = await generateParentNode(page, child);
-
-      break;
-    case 'GROUP':
-      element = await generateParentNode(page, child);
-      break;
-  }
-  return element;
+export async function generateRectancle(node: RectangleNode) {
+  let rectangle;
+  rectangle = figma.createRectangle();
+  resizeNode(rectangle,node)
+  hydrateNewNode(rectangle ,node)
+  setFills(rectangle,node)
+  return rectangle;
 }
