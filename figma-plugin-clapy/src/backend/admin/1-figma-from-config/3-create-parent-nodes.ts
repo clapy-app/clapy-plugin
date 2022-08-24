@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------node generation function implementation--------------------------------
 
-import { generateFrameNode, generateRectancle, generateTextNode } from './4-create-child-nodes.js';
+import { generateFrameNode, generateRectancle, generateTextNode, hydrateNewNode } from './4-create-child-nodes.js';
 
 //-------------------------------------------------------------------------------------------------------------
 export async function generateNode(page: PageNode, figmaConfig: any) {
@@ -37,7 +37,7 @@ export async function generateNode(page: PageNode, figmaConfig: any) {
           if (element) groupElements.push(element);
         }
         const group = figma.group(groupElements, page);
-        group.name = root!.name;
+        hydrateNewNode(group, root);
         return group;
       }
       break;

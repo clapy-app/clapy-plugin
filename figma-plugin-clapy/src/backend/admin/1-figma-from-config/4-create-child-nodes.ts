@@ -76,7 +76,7 @@ export function setStrokes(node:NodesWithStrokesProperty,nodeConfig:NodesWithStr
   }
 }
  export function setEffects(node: NodesWithEffectsProprety, nodeConfig:NodesWithEffectsProprety) {
-  if (nodeConfig) {
+  if (nodeConfig.effects) {
     node.effects = nodeConfig.effects;
   }
  }
