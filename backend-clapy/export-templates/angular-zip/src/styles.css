@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 app-root {
   font-family: sans-serif;
-  background-color: #e5e5e5;
+  background-color: __backgroundColor__;
   overflow-y: auto;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
 }

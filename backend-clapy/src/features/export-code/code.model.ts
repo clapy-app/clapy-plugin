@@ -7,6 +7,7 @@ import type {
   ExportImageMap2,
   ExtraConfig,
   FigmaStyles,
+  PageConfig,
   SVGsExtracted,
 } from '../sb-serialize-preview/sb-serialize.model.js';
 import type {
@@ -56,6 +57,7 @@ export interface ProjectContext {
   readonly newDependencies: Dict<string>;
   readonly newDevDependencies: Dict<string>;
   readonly fwConnector: FrameworkConnector;
+  readonly page: PageConfig;
 
   // State in the code generation progress
   wasScssRenamed?: boolean;

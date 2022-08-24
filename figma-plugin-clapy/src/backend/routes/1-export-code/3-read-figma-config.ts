@@ -1,6 +1,6 @@
 import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils';
-import type { ComponentNode2, LayoutTypes } from '../../../common/sb-serialize.model';
+import type { ComponentNode2, LayoutTypes, PageConfig } from '../../../common/sb-serialize.model';
 import { nodeDefaults } from '../../../common/sb-serialize.model';
 import {
   isBlendMixin,
@@ -17,6 +17,11 @@ import { exportNodeTokens2 } from './9-extract-tokens.js';
 import { nodeAttributes, rangeProps } from './node-attributes';
 import type { AnyNode3, AnyNodeOriginal, AnyParent, ExtractBatchContext } from './read-figma-config-utils.js';
 import { customCssPluginKey, isProcessableInstance2, shouldGroupAsSVG } from './read-figma-config-utils.js';
+
+export function readPageConfig(page: PageNode) {
+  const page2: PageConfig = { backgrounds: page.backgrounds };
+  return page2;
+}
 
 export function readParentNodeConfig<T extends AnyNodeOriginal>(nodeOriginal: T) {
   // Possible optimization: only extract the fields that are useful for the parent. Some of the fields I've listed from the webservice:

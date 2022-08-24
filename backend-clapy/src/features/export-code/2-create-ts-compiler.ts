@@ -41,7 +41,7 @@ function getCSSVariablesFileName(cssExt: string) {
 const enableMUIInDev = false;
 
 export async function exportCode(
-  { root, components, svgs, images, styles, extraConfig, tokens }: ExportCodePayload,
+  { root, components, svgs, images, styles, extraConfig, tokens, page }: ExportCodePayload,
   uploadToCsb = true,
   user: AccessTokenDecoded,
 ) {
@@ -111,6 +111,7 @@ export async function exportCode(
     newDependencies: {},
     newDevDependencies: {},
     fwConnector,
+    page,
   };
 
   cssFiles[getResetsCssModulePath(projectContext)] = await readTemplateFile(getResetsCssModuleSrcPath(projectContext));

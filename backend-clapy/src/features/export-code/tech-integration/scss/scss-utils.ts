@@ -61,9 +61,3 @@ function replaceScssReferences(tsFiles: CodeDict, cssFiles: CodeDict, resources:
     }
   }
 }
-
-export function getCssResetsPath(projectContext: ProjectContext, postExtensionChange = true) {
-  if (!postExtensionChange) return `src/resets.css`;
-  const cssExt = getCSSExtension(projectContext);
-  return `src/resets.${cssExt}`;
-}

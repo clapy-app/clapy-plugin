@@ -17,3 +17,7 @@ export function getResetsCssModulePath(projectContext: ProjectContext) {
 export function getResetsCssModuleSrcPath(projectContext: ProjectContext) {
   return `${resetsCssModuleSrcPath}.${getCSSExtension(projectContext)}`;
 }
+
+export function getCssResetsPath(projectContext: ProjectContext) {
+  return `src/resets.${getCSSExtension(projectContext)}`;
+}
