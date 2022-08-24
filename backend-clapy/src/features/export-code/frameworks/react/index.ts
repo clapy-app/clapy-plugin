@@ -170,7 +170,7 @@ export const reactConnector: FrameworkConnector = {
     // If the parent node is vertical, add a flex-direction: column to the root.
     if ((parent as FlexNode | undefined)?.layoutMode === 'VERTICAL') {
       const { cssFiles } = projectContext;
-      if (!cssFiles[appCssPath]) throw new Error(`App CSS not found at ${appCssPath}`);
+      if (!cssFiles[appCssPath]) throw new Error(`BUG App CSS not found at ${appCssPath}`);
       cssFiles[appCssPath] = cssFiles[appCssPath].replace(/(\.root\s*\{[^\}]*)\}/, '$1;flex-direction:column}');
     }
   },

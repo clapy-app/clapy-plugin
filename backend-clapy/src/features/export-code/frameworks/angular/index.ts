@@ -175,14 +175,14 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
   const { angularPrefix } = extraConfig;
   if (angularPrefix !== 'app') {
     proj.prefix = angularPrefix;
-    if (!resources[indexHtmlPath]) throw new Error(`index.html not found at ${indexHtmlPath}`);
+    if (!resources[indexHtmlPath]) throw new Error(`BUG index.html not found at ${indexHtmlPath}`);
     resources[indexHtmlPath] = resources[indexHtmlPath].replace(
       '<app-root></app-root>',
       `<${angularPrefix}-root></${angularPrefix}-root>`,
     );
-    if (!cssFiles[resetsCssPath]) throw new Error(`CSS resets not found at ${resetsCssPath}`);
+    if (!cssFiles[resetsCssPath]) throw new Error(`BUG CSS resets not found at ${resetsCssPath}`);
     cssFiles[resetsCssPath] = cssFiles[resetsCssPath].replaceAll('app-root', `${angularPrefix}-root`);
-    if (!cssFiles[stylesCssPath]) throw new Error(`CSS resets not found at ${stylesCssPath}`);
+    if (!cssFiles[stylesCssPath]) throw new Error(`BUG CSS resets not found at ${stylesCssPath}`);
     cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${angularPrefix}-root`);
   }
 
