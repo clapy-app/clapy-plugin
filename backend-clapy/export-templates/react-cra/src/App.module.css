@@ -1,8 +1,9 @@
 .root {
   height: 100%;
   font-family: sans-serif;
-  background-color: #e5e5e5;
+  background-color: __backgroundColor__;
   flex-basis: 100%;
   overflow-y: auto;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
 }

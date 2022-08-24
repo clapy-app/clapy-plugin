@@ -7,9 +7,10 @@ import { exportTemplatesDir } from '../../../../root.js';
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
+import { replaceBgColor } from '../../css-gen/addRulesToAppCss.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
-import { getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
+import { getCssResetsPath, getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
 import {
   dashCaseToPascalCase,
   genIconComponentImportName,
@@ -18,7 +19,7 @@ import {
 } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
-import { getCSSExtension, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
+import { getCSSExtension } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr, FwNode } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
@@ -185,6 +186,8 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     if (!cssFiles[stylesCssPath]) throw new Error(`BUG CSS resets not found at ${stylesCssPath}`);
     cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${angularPrefix}-root`);
   }
+
+  cssFiles[stylesCssPath] = replaceBgColor(projectContext, cssFiles[stylesCssPath]);
 
   if (env.isDev) {
     // Disable the analytics prompt locally, to avoid blocking the preview task.

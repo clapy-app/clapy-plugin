@@ -3,9 +3,10 @@ import type { Block, BlockPlain, Declaration, DeclarationPlain, List } from 'css
 import type { Nil } from '../../../common/general-utils.js';
 import { warnOrThrow } from '../../../utils.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
-import type { ModuleContext, NodeContext, ParentNode } from '../code.model.js';
+import type { ModuleContext, NodeContext, ParentNode, ProjectContext } from '../code.model.js';
 import { isValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { csstree } from '../create-ts-compiler/csstree.js';
+import { figmaColorToCssHex } from '../gen-node-utils/utils-and-reset.js';
 import { addStyle } from './css-factories-high.js';
 import {
   mkBlockCss,
@@ -24,13 +25,23 @@ import {
   stylesToList,
 } from './css-type-utils.js';
 
+export function replaceBgColor(projectContext: ProjectContext, appCss: string) {
+  const { page } = projectContext;
+  const bg = page?.backgrounds?.[0]?.type === 'SOLID' ? page?.backgrounds?.[0] : undefined;
+  return appCss?.replaceAll('__backgroundColor__', bg ? figmaColorToCssHex(bg.color, bg.opacity) : '#e5e5e5');
+}
+
 export function addRulesToAppCss(context: ModuleContext, appCss: string, parentNode: ParentNode | Nil) {
+  const { projectContext } = context;
+  const { extraConfig } = projectContext;
   const styles: Dict<DeclarationPlain> = {};
 
   // Let's wait a bit until we're sure we don't want position absolute here
   // positionAbsoluteFigmaToCode(context, parentNode, styles);
 
   // TODO skip if styles is not filled? Always skip now? We don't apply flex?
+
+  appCss = replaceBgColor(projectContext, appCss);
 
   const node = csstree.parse(appCss);
   if (!isStyleSheet(node)) {
@@ -52,7 +63,7 @@ export function addRulesToAppCss(context: ModuleContext, appCss: string, parentN
   assertStyleSheet(cssRulesAsList);
   node.children.appendList(cssRulesAsList.children);
 
-  if (context.projectContext.extraConfig.isFTD) {
+  if (extraConfig.isFTD) {
     // Add demo patch
     const figmaNode = isValidNode(parentNode) ? parentNode : context.node;
     const styles2: Dict<DeclarationPlain> = {};

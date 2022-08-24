@@ -286,6 +286,7 @@ export interface ExportCodePayload {
   styles: FigmaStyles;
   extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
+  page: PageConfig;
 }
 
 export interface FigmaStyles {
@@ -305,6 +306,10 @@ export type TextExtender = {
   _textSegments?: TextSegment2[];
   listSpacing: number; // Temporary workaround, to remove once Figma API includes it.
 };
+
+export interface PageConfig {
+  backgrounds: ReadonlyArray<Paint>;
+}
 
 type ClapifyNode<T> = Omit<OmitMethods<T>, FrameNodeBlackList> & GlobalExtender;
 
@@ -353,7 +358,8 @@ type ComponentPropertiesMixin2 = ClapifyNode<ComponentPropertiesMixin>;
 type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
 
 export type BaseNode2 = ClapifyNode<BaseNode>;
-export type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2;
+// Add PageConfig to get extra properties from the page
+export type PageNode2 = ClapifyNode<PageNode> & ChildrenMixin2 /* & PageConfig */;
 export type SliceNode2 = ClapifyNode<SliceNode>;
 export type FrameNode2 = ClapifyNode<FrameNode> & ChildrenMixin2;
 export type GroupNode2 = ClapifyNode<GroupNode> & ChildrenMixin2;

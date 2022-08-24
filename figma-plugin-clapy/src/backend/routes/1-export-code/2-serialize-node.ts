@@ -5,7 +5,12 @@ import { env } from '../../../environment/env.js';
 import { isComponentSet } from '../../common/node-type-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
 import { getFigmaSelectionOrThrow } from '../../common/selection-utils';
-import { linkInstancesToComponents, readFigmaNodesConfig, readParentNodeConfig } from './3-read-figma-config.js';
+import {
+  linkInstancesToComponents,
+  readFigmaNodesConfig,
+  readPageConfig,
+  readParentNodeConfig,
+} from './3-read-figma-config.js';
 import { optimizeConfig } from './4-optimize-config.js';
 import { extractFigmaTokens } from './9-extract-tokens.js';
 import type { AnyNode3, AnyNodeOriginal, ExtractBatchContext } from './read-figma-config-utils.js';
@@ -65,6 +70,8 @@ export async function serializeSelectedNode() {
     perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
   }
 
+  const page = readPageConfig(figma.currentPage);
+
   await notifyProgress({ stepId: 'optimizeConfig', stepNumber: 3 });
   linkInstancesToComponents(extractBatchContext);
   perfMeasure('End linkInstancesToComponents');
@@ -104,6 +111,7 @@ export async function serializeSelectedNode() {
     // imagesExtracted: undefined,
     styles,
     tokens,
+    page,
   } as const;
 
   // TODO test that the extracted config is ready, then:

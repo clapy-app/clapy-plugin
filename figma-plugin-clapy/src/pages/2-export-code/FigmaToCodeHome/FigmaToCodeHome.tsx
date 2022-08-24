@@ -154,7 +154,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       });
 
       setProgress({ stepId: 'init', stepNumber: 1 });
-      const { extraConfig, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens } =
+      const { extraConfig, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens, page } =
         await fetchPlugin('serializeSelectedNode');
       unsubscribe?.();
       perfMeasure(`Figma configuration extracted in`);
@@ -183,6 +183,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             ...userSettings,
           },
           tokens,
+          page,
         };
 
         // Upload assets to a CDN before generating the code
