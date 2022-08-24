@@ -9,6 +9,7 @@ import type { ModuleContext, NodeContext, ProjectContext } from '../../code.mode
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
+import { getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
 import {
   dashCaseToPascalCase,
   genIconComponentImportName,
@@ -17,8 +18,8 @@ import {
 } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { mkHtmlAttribute, mkHtmlElement, mkHtmlText, serializeHtml } from '../../html-gen/html-gen.js';
-import { getCSSExtension, getCssResetsModulePath, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
-import type { FrameworkConnector, FwAttr } from '../framework-connectors.js';
+import { getCSSExtension, getCssResetsPath } from '../../tech-integration/scss/scss-utils.js';
+import type { FrameworkConnector, FwAttr, FwNode } from '../framework-connectors.js';
 import { getComponentTsAst } from './component-ts-ast.js';
 import { getModuleTsAst } from './module-ts-ast.js';
 
@@ -78,8 +79,13 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlAttribute('target', '_blank'),
     mkHtmlAttribute('rel', 'noreferrer'),
   ],
-  wrapNode: (node, tagName, attributes) =>
-    mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]),
+  wrapNode: (context, node, tagName, attributes, isNodeTag) => {
+    const { isRootInComponent } = context;
+    if (isNodeTag && isRootInComponent && !context.hasExtraAttributes) {
+      return node as FwNode;
+    }
+    return mkHtmlElement(tagName, attributes as Attribute[], node as ChildNode | ChildNode[]);
+  },
   writeFileCode: (ast, moduleContext) => {
     const { projectContext, compDir, baseCompName, imports } = moduleContext;
     const { cssFiles, extraConfig } = projectContext;
@@ -90,7 +96,7 @@ export const angularConnector: FrameworkConnector = {
     const htmlStr = tsx ? serializeHtml(tsx as Node) : '';
     projectContext.resources[path] = htmlStr;
 
-    const resetsCssModulePath = getCssResetsModulePath(extraConfig);
+    const resetsCssModulePath = getResetsCssModulePath(projectContext);
 
     if (!cssFiles[resetsCssModulePath]) throw new Error(`CSS resets module not found at ${resetsCssModulePath}`);
     let cssStr = cssFiles[resetsCssModulePath]
@@ -103,7 +109,7 @@ export const angularConnector: FrameworkConnector = {
     if (hasCss) {
       cssStr += `\n${cssAstToString(css)}`;
     }
-    const cssExt = getCSSExtension(projectContext.extraConfig);
+    const cssExt = getCSSExtension(projectContext);
     const cssFileName = `${baseCompName}.component.${cssExt}`;
     cssFiles[`${compDir}/${cssFileName}`] = cssStr;
 
@@ -139,8 +145,8 @@ export const angularConnector: FrameworkConnector = {
   },
   writeSVGReactComponents: async () => {},
   cleanUpProject: projectContext => {
-    const { cssFiles, extraConfig } = projectContext;
-    const resetsCssModulePath = getCssResetsModulePath(extraConfig);
+    const { cssFiles } = projectContext;
+    const resetsCssModulePath = getResetsCssModulePath(projectContext);
 
     // In Angular, always delete the CSS module file.
     delete cssFiles[resetsCssModulePath];
@@ -161,7 +167,7 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     proj.architect.test.options.inlineStyleLanguage = 'scss';
   }
 
-  const resetsCssPath = getCssResetsPath(extraConfig);
+  const resetsCssPath = getCssResetsPath(projectContext);
   const stylesCssPath = getStylesCssPath(projectContext);
   proj.architect.build.options.styles.push(resetsCssPath);
   proj.architect.test.options.styles.push(resetsCssPath);
@@ -238,8 +244,7 @@ function createSvgTag(svgPathVarName: string, svgAttributes?: FwAttr[]) {
 }
 
 function getStylesCssPath(projectContext: ProjectContext) {
-  const { extraConfig } = projectContext;
-  const cssExt = getCSSExtension(extraConfig);
+  const cssExt = getCSSExtension(projectContext);
   return `src/styles.${cssExt}`;
 }
 

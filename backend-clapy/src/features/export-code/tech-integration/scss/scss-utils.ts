@@ -1,8 +1,6 @@
 import { basename } from 'path';
 
-import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, ProjectContext } from '../../code.model.js';
-import { resetsCssModulePath, resetsCssModulePathAsScss } from '../../create-ts-compiler/load-file-utils-and-paths.js';
 
 export const scssDevDependencies = {
   sass: '^1.53.0',
@@ -15,15 +13,17 @@ export function addScssPackage(projectContext: ProjectContext) {
   }
 }
 
-export function getCSSExtension(extraConfig: ExtraConfig) {
-  return extraConfig.scss ? 'scss' : 'css';
+export function getCSSExtension(projectContext: ProjectContext) {
+  const { extraConfig } = projectContext;
+  return extraConfig.scss && projectContext.wasScssRenamed ? 'scss' : 'css';
 }
 
-export function updateFilesAndContentForScss(extraConfig: ExtraConfig, projectContext: ProjectContext) {
-  const { tsFiles, cssFiles, resources } = projectContext;
+export function updateFilesAndContentForScss(projectContext: ProjectContext) {
+  const { extraConfig, tsFiles, cssFiles, resources } = projectContext;
   if (extraConfig.scss) {
     replaceScssReferences(tsFiles, cssFiles, resources);
     renameTemplateSCSSFiles(cssFiles);
+    projectContext.wasScssRenamed = true;
   }
 }
 
@@ -62,13 +62,8 @@ function replaceScssReferences(tsFiles: CodeDict, cssFiles: CodeDict, resources:
   }
 }
 
-export function getCssResetsPath(extraConfig: ExtraConfig, postExtensionChange = true) {
+export function getCssResetsPath(projectContext: ProjectContext, postExtensionChange = true) {
   if (!postExtensionChange) return `src/resets.css`;
-  const cssExt = getCSSExtension(extraConfig);
+  const cssExt = getCSSExtension(projectContext);
   return `src/resets.${cssExt}`;
-}
-
-export function getCssResetsModulePath(extraConfig: ExtraConfig, postExtensionChange = true) {
-  if (!postExtensionChange) return resetsCssModulePath;
-  return extraConfig.scss ? resetsCssModulePathAsScss : resetsCssModulePath;
 }

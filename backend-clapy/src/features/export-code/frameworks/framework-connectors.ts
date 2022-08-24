@@ -55,7 +55,13 @@ export interface FrameworkConnector {
     : FwNodeOneOrMore | undefined;
   createText: (text: string) => FwNodeOneOrMore;
   createLinkAttributes: (href: string) => FwAttr[];
-  wrapNode: (node: FwNodeOneOrMore, tagName: string, attributes: FwAttr[]) => FwNode;
+  wrapNode: (
+    context: NodeContext,
+    node: FwNodeOneOrMore,
+    tagName: string,
+    attributes: FwAttr[],
+    isNodeTag?: boolean,
+  ) => FwNode;
   writeFileCode: (ast: ReturnType<typeof genAstFromRootNode>, moduleContext: ModuleContext) => void;
   genCompUsage: (
     projectContext: ProjectContext,

@@ -58,7 +58,7 @@ export function createSvgAst<T extends boolean>(
   if (isJsxContext) {
     ast = fwConnector.mkSwapInstanceAlone(context, ast, node)!;
   }
-  const ast2 = ast && attributes.length ? fwConnector.wrapNode(ast, 'div', attributes) : ast;
+  const ast2 = ast && attributes.length ? fwConnector.wrapNode(context, ast, 'div', attributes) : ast;
   return fwConnector.wrapHideAndTextOverride(context, ast2, node, !isJsxContext);
 }
 
