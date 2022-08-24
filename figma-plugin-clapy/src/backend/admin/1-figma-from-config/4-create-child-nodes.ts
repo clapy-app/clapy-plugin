@@ -45,12 +45,19 @@ const attrBlackListRaw = ['absoluteBoundingBox',
 const attrBlackList = new Set<string>(attrBlackListRaw)
 
 type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number]
-type WriteableSceneNode =Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>
 type WriteableSceneNodeKeys = keyof WriteableSceneNode
+
 type NonResizableNodes = StickyNode | ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | SectionNode
 type NonFillNodes = SliceNode | GroupNode| ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode
+type NonStrokeNodes = SliceNode | GroupNode | StickyNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode | SectionNode
+type NonEffectsNodes = StickyNode | SliceNode | ConnectorNode | ShapeWithTextNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode | SectionNode
+
+type WriteableSceneNode =Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>
 type SceneNodeResizable = Exclude<SceneNode,NonResizableNodes>
 type NodesWithFillsProperty =Exclude<SceneNode,NonFillNodes>
+type NodesWithStrokesProperty = Exclude<SceneNode, NonStrokeNodes>
+type NodesWithEffectsProprety = Exclude<SceneNode,NonEffectsNodes>
+
 
 export function resizeNode(node:SceneNodeResizable,nodeConfig:SceneNodeResizable) {
   node.resize(nodeConfig.width,nodeConfig.height)
@@ -63,9 +70,17 @@ export function setFills(node:NodesWithFillsProperty, nodeConfig:NodesWithFillsP
     node.fills = [];
   }
 }
-
+export function setStrokes(node:NodesWithStrokesProperty,nodeConfig:NodesWithStrokesProperty) {
+  if (nodeConfig.strokes) {
+    node.strokes = nodeConfig.strokes;
+  }
+}
+ export function setEffects(node: NodesWithEffectsProprety, nodeConfig:NodesWithEffectsProprety) {
+  if (nodeConfig) {
+    node.effects = nodeConfig.effects;
+  }
+ }
 export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode,) {
-  // generic loop for most writable objects.
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
     if (childConfig[attrTyped] && !attrBlackList.has(attr) ) {
@@ -76,9 +91,11 @@ export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode,) {
 
 export async function generateFrameNode(node:  FrameNode) {
   const frame = figma.createFrame();
-  hydrateNewNode(frame, node)
-  resizeNode(frame,node)
-  setFills(frame,node)
+  resizeNode(frame,node);
+  hydrateNewNode(frame, node);
+  setFills(frame,node);
+  setStrokes(frame,node);
+  setEffects(frame,node);
   return frame;
 }
 
@@ -86,10 +103,11 @@ export async function generateTextNode(node: textNode2) {
   let text;
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
   text = figma.createText();
-  hydrateNewNode(text, node)
-  resizeNode(text,node)
-  setFills(text,node)
-
+  hydrateNewNode(text, node);
+  resizeNode(text,node);
+  setFills(text,node);
+  setStrokes(text,node);
+  setEffects(text,node);
   for (const textSegment of node._textSegments) {
     await ensureFontIsLoaded(textSegment.fontName);
     const start = textSegment.start;
@@ -114,8 +132,10 @@ export async function generateTextNode(node: textNode2) {
 export async function generateRectancle(node: RectangleNode) {
   let rectangle;
   rectangle = figma.createRectangle();
-  resizeNode(rectangle,node)
-  hydrateNewNode(rectangle ,node)
-  setFills(rectangle,node)
+  resizeNode(rectangle,node);
+  hydrateNewNode(rectangle ,node);
+  setFills(rectangle,node);
+  setStrokes(rectangle,node);
+  setEffects(rectangle,node);
   return rectangle;
 }

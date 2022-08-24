@@ -41,9 +41,6 @@ export async function generateNode(page: PageNode, figmaConfig: any) {
         return group;
       }
       break;
-    case 'COMPONENT':
-      //todo
-      break;
     default:
       break;
   }
