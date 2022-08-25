@@ -70,7 +70,7 @@ export async function serializeSelectedNode() {
     perfMeasure(`End readFigmaNodesConfig for node ${compToProcess.name}`);
   }
 
-  const page = readPageConfig(figma.currentPage);
+  const page = readPageConfig();
 
   await notifyProgress({ stepId: 'optimizeConfig', stepNumber: 3 });
   linkInstancesToComponents(extractBatchContext);

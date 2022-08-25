@@ -1,28 +1,26 @@
-import type { NextFn } from '../../../common/app-models';
+import type { NextFn, PreviewResp } from '../../../common/app-models';
 import { isBlendMixin } from '../../common/node-type-utils';
 import { getFigmaSelection } from '../../common/selection-utils';
+import { readPageConfig } from './3-read-figma-config.js';
 import { customCssPluginKey } from './read-figma-config-utils.js';
 
 export let sendSelectionPreview: (() => void) | undefined;
 
-export async function getSelectionPreview() {
-  sendSelectionPreview?.();
-}
-
-export function selectionPreview(next: NextFn<string | undefined | false>) {
+export function selectionPreview(next: NextFn<PreviewResp>) {
   sendSelectionPreview = async () => next(await generatePreview());
   figma.on('selectionchange', sendSelectionPreview);
   // Initial emit, for dev, when the figma plugin is open after the webapp.
   setTimeout(sendSelectionPreview);
 }
 
-async function generatePreview() {
+async function generatePreview(): Promise<PreviewResp> {
   const selection = getFigmaSelection();
+  const page = readPageConfig();
   if (!selection) {
-    return undefined;
+    return { preview: undefined, page };
   }
   if (isBlendMixin(selection) && selection.isMask) {
-    return false;
+    return { preview: false, page };
   }
   try {
     const preview = figma.base64Encode(
@@ -34,10 +32,10 @@ async function generatePreview() {
         },
       }),
     );
-    return preview;
+    return { preview, page };
   } catch (error) {
     // Preview impossible, ignore it.
-    return false;
+    return { preview: false, page };
   }
 }
 

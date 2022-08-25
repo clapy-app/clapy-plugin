@@ -68,8 +68,15 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   useEffect(() => {
     const dispose = subscribePlugin('selectionPreview', (error, prev) => {
-      const previewUrl = prev ? `data:image/jpeg;base64,${prev}` : prev;
-      dispatch(setSelection(previewUrl));
+      if (error) {
+        handleError(error);
+        return;
+      }
+      const { preview, page } = prev;
+      if (prev.preview) {
+        prev.preview = `data:image/jpeg;base64,${prev.preview}`;
+      }
+      dispatch(setSelection(prev));
     });
 
     fetchPluginNoResponse('notifyReady');

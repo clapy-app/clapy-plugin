@@ -1,7 +1,6 @@
 import { generateConfig } from './admin/1-figma-from-config/1-read-figma-config.js';
 import {
   getSelectionCustomCss,
-  getSelectionPreview,
   saveCustomCssInFigmaNode,
   selectionCustomCss,
   selectionPreview,
@@ -43,7 +42,6 @@ export const routes = {
   setGithubCachedToken,
 
   // Design to code: generate code
-  getSelectionPreview,
   saveCustomCssInFigmaNode,
   getSelectionCustomCss,
   serializeSelectedNode,
