@@ -116,6 +116,9 @@ export async function generateLineNode(node: LineNode) {
 }
 
 export async function generateVectorNode(node: VectorNode, ctx: FigmaConfigContext) {
+  if (ctx.svgs == null) {
+    throw new Error('Problem with this config, found vectorNode to render but svgs array is empty.');
+  }
   const vector = figma.createNodeFromSvg(ctx.svgs[node.id]['svg']);
 
   hydrateNewNode(vector, node);

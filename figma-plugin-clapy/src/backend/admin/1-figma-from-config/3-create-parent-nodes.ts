@@ -1,3 +1,5 @@
+import type { Nil } from '../../../common/app-models.js';
+import type { ExportCodePayload } from '../../../common/sb-serialize.model.js';
 import {
   generateFrameNode,
   generateLineNode,
@@ -6,12 +8,22 @@ import {
   generateVectorNode,
   hydrateNewNode,
 } from './4-create-child-nodes.js';
-import type { FigmaConfigContext } from './utils.js';
+import type { FigmaConfigContext, textNode2 } from './utils.js';
 
-export async function generateNode(page: PageNode, figmaConfig: any, ctx: FigmaConfigContext) {
-  const root = (figmaConfig.root || figmaConfig) as SceneNode;
+function checkIfRoot(node: ExportCodePayload | SceneNode): node is ExportCodePayload {
+  return Object.keys(node).includes('root');
+}
 
-  let element;
+export async function generateNode(
+  page: PageNode,
+  figmaConfig: ExportCodePayload | SceneNode,
+  ctx: FigmaConfigContext,
+) {
+  const root = checkIfRoot(figmaConfig) ? (figmaConfig.root as SceneNode) : figmaConfig;
+
+  if (!root) return;
+
+  let element: SceneNode | Nil = null;
   switch (root.type) {
     case 'FRAME':
       {
@@ -43,7 +55,7 @@ export async function generateNode(page: PageNode, figmaConfig: any, ctx: FigmaC
       page.appendChild(element);
       break;
     case 'TEXT':
-      element = await generateTextNode(root);
+      element = await generateTextNode(root as textNode2);
       page.appendChild(element);
       break;
     case 'LINE':

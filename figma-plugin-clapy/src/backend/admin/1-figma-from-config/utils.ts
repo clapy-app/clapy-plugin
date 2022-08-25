@@ -1,20 +1,13 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation--------------------------------
 
-import type { Dict, OmitMethods } from '../../../common/sb-serialize.model.js';
+import type { OmitMethods, SVGsExtracted } from '../../../common/sb-serialize.model.js';
 
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
 
-interface Svg {
-  svg: string;
-  name: string;
-}
-
-type Svgs = Dict<Svg>;
-
 export interface FigmaConfigContext {
-  svgs: Svgs;
+  svgs?: SVGsExtracted;
 }
 
 export interface textNode2 extends TextNode {
