@@ -42,7 +42,7 @@ import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
-import { selectSelection } from '../export-code-slice.js';
+import { selectSelectionPreview } from '../export-code-slice.js';
 import { downloadFile } from '../export-code-utils.js';
 import { AddCssOption } from './AddCssOption/AddCssOption.js';
 import classes2 from './AddCssOption/AddCssOption.module.css';
@@ -80,7 +80,7 @@ const userSettings = { ...defaultSettings };
 const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework']);
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
-  const selectionPreview = useSelector(selectSelection);
+  const selectionPreview = useSelector(selectSelectionPreview);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();

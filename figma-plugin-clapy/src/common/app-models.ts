@@ -1,6 +1,6 @@
 import type { _Routes, _Subscriptions } from '../backend/routes';
 import type { extractionStepsLabels } from './app-config.js';
-import type { Args, ArgTypes } from './sb-serialize.model';
+import type { Args, ArgTypes, PageConfig } from './sb-serialize.model';
 
 export type ObjKey = string | number | symbol;
 
@@ -102,3 +102,8 @@ export interface UserMetaUsage {
 }
 
 export type UserProfileState = UserMetadata | true | undefined;
+
+export interface PreviewResp {
+  preview: string | false | undefined;
+  page: PageConfig;
+}

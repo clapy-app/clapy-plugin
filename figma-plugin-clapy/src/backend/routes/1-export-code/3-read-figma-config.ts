@@ -18,8 +18,8 @@ import { nodeAttributes, rangeProps } from './node-attributes';
 import type { AnyNode3, AnyNodeOriginal, AnyParent, ExtractBatchContext } from './read-figma-config-utils.js';
 import { customCssPluginKey, isProcessableInstance2, shouldGroupAsSVG } from './read-figma-config-utils.js';
 
-export function readPageConfig(page: PageNode) {
-  const page2: PageConfig = { backgrounds: page.backgrounds };
+export function readPageConfig() {
+  const page2: PageConfig = { backgrounds: figma.currentPage.backgrounds };
   return page2;
 }
 

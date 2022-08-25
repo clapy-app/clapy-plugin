@@ -1,7 +1,7 @@
 import type Stripe from 'stripe';
 
 export const appConfig = {
-  codeGenFreeQuota: 3,
+  codeGenFreeQuota: 10,
   codeGenQualifiedQuota: 15,
   stripeConfig: {
     apiVersion: '2022-08-01',
