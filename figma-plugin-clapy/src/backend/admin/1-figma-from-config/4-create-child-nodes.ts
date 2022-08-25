@@ -1,113 +1,118 @@
-/* eslint-disable prettier/prettier */
-//-------------------------------------------------------------------------------------------------------------
-//-------------------------------child Node generation functions implementation--------------------------------
+import type { OmitMethods } from '../../../common/sb-serialize.model.js';
+import type { FigmaConfigContext } from './1-read-figma-config.js';
+import { ensureFontIsLoaded, supportsEffects, supportsFills, supportsResize, supportsStrokes } from './utils.js';
 
-import type { OmitMethods} from '../../../common/sb-serialize.model.js';
-import { ensureFontIsLoaded } from './utils.js';
-
-//-------------------------------------------------------------------------------------------------------------
 interface textNode2 extends TextNode {
   _textSegments: StyledTextSegment[];
 }
 // attribute black list [readonly]
-const attrBlackListRaw = ['absoluteBoundingBox',
-'absoluteRenderBounds',
-'absoluteTransform',
-"attachedConnectors",
-"backgrounds",
-"children",
-"componentPropertyDefinitions",
-"dashPattern",
-"documentationLinks",
-"effects",
-"exportSettings",
-"fills",
-"guides",
-"height",
-"id",
-"key",
-"layoutGrids",
-"overlayBackground",
-"overlayBackgroundInteraction",
-"overlayPositionType",
-"parent",
-"reactions",
-"remote",
-"removed",
-"strokes",
-"stuckNodes",
-"variantProperties",
-"width",
-"type",
-"_textSegments"
+const attrBlackListRaw = [
+  'absoluteBoundingBox',
+  'absoluteRenderBounds',
+  'absoluteTransform',
+  'attachedConnectors',
+  'backgrounds',
+  'children',
+  'componentPropertyDefinitions',
+  'dashPattern',
+  'documentationLinks',
+  'effects',
+  'exportSettings',
+  'fills',
+  'guides',
+  'height',
+  'id',
+  'key',
+  'layoutGrids',
+  'overlayBackground',
+  'overlayBackgroundInteraction',
+  'overlayPositionType',
+  'parent',
+  'reactions',
+  'remote',
+  'removed',
+  'strokes',
+  'stuckNodes',
+  'variantProperties',
+  'width',
+  'type',
+  '_textSegments',
+  'pointCount',
+  'exportAsSvg',
+  'strokeCap',
+  'innerRadius',
 ] as const;
 
-const attrBlackList = new Set<string>(attrBlackListRaw)
+const attrBlackList = new Set<string>(attrBlackListRaw);
 
-type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number]
-type WriteableSceneNodeKeys = keyof WriteableSceneNode
+type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number];
+type WriteableSceneNodeKeys = keyof WriteableSceneNode;
+type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
 
-type NonResizableNodes = StickyNode | ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | SectionNode
-type NonFillNodes = SliceNode | GroupNode| ConnectorNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode
-type NonStrokeNodes = SliceNode | GroupNode | StickyNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode | SectionNode
-type NonEffectsNodes = StickyNode | SliceNode | ConnectorNode | ShapeWithTextNode | CodeBlockNode | WidgetNode | EmbedNode | LinkUnfurlNode | MediaNode | SectionNode
-
-type WriteableSceneNode =Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>
-type SceneNodeResizable = Exclude<SceneNode,NonResizableNodes>
-type NodesWithFillsProperty =Exclude<SceneNode,NonFillNodes>
-type NodesWithStrokesProperty = Exclude<SceneNode, NonStrokeNodes>
-type NodesWithEffectsProprety = Exclude<SceneNode,NonEffectsNodes>
-
-
-export function resizeNode(node:SceneNodeResizable,nodeConfig:SceneNodeResizable) {
-  node.resize(nodeConfig.width,nodeConfig.height)
-}
-
-export function setFills(node:NodesWithFillsProperty, nodeConfig:NodesWithFillsProperty) {
-  if (nodeConfig.fills) {
-    node.fills = nodeConfig.fills;
-  } else {
-    node.fills = [];
+export function resizeNode(node: SceneNode, nodeConfig: SceneNode) {
+  if (supportsResize(node) && supportsResize(nodeConfig)) {
+    if (node.type === 'LINE') {
+      node.resize(nodeConfig.width || 0, nodeConfig.height || 0);
+      return;
+    }
+    node.resize(nodeConfig.width, nodeConfig.height);
   }
 }
-export function setStrokes(node:NodesWithStrokesProperty,nodeConfig:NodesWithStrokesProperty) {
-  if (nodeConfig.strokes) {
-    node.strokes = nodeConfig.strokes;
+
+export function setFills(node: SceneNode, nodeConfig: SceneNode) {
+  if (supportsFills(node) && supportsFills(nodeConfig)) {
+    if (nodeConfig.fills) {
+      node.fills = nodeConfig.fills;
+    } else {
+      node.fills = [];
+    }
   }
 }
- export function setEffects(node: NodesWithEffectsProprety, nodeConfig:NodesWithEffectsProprety) {
-  if (nodeConfig.effects) {
-    node.effects = nodeConfig.effects;
+
+export function setStrokes(node: SceneNode, nodeConfig: SceneNode) {
+  if (supportsStrokes(node) && supportsStrokes(nodeConfig)) {
+    if (nodeConfig.strokes) {
+      node.strokes = nodeConfig.strokes;
+    }
   }
- }
-export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode,) {
+}
+
+export function setEffects(node: SceneNode, nodeConfig: SceneNode) {
+  if (supportsEffects(node) && supportsEffects(nodeConfig)) {
+    if (nodeConfig.effects) {
+      node.effects = nodeConfig.effects;
+    }
+  }
+}
+
+export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
-    if (childConfig[attrTyped] && !attrBlackList.has(attr) ) {
+    if (childConfig[attrTyped] && !attrBlackList.has(attr)) {
       (newChild as any)[attrTyped] = val;
     }
   }
 }
 
-export async function generateFrameNode(node:  FrameNode) {
+export async function generateFrameNode(node: FrameNode) {
   const frame = figma.createFrame();
-  resizeNode(frame,node);
+  resizeNode(frame, node);
   hydrateNewNode(frame, node);
-  setFills(frame,node);
-  setStrokes(frame,node);
-  setEffects(frame,node);
+  setFills(frame, node);
+  setStrokes(frame, node);
+  setEffects(frame, node);
   return frame;
 }
 
 export async function generateTextNode(node: textNode2) {
-  let text;
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
-  text = figma.createText();
+  const text = figma.createText();
   hydrateNewNode(text, node);
-  resizeNode(text,node);
-  setFills(text,node);
-  setStrokes(text,node);
-  setEffects(text,node);
+
+  resizeNode(text, node);
+  setFills(text, node);
+  setStrokes(text, node);
+  setEffects(text, node);
   for (const textSegment of node._textSegments) {
     await ensureFontIsLoaded(textSegment.fontName);
     const start = textSegment.start;
@@ -130,12 +135,32 @@ export async function generateTextNode(node: textNode2) {
 }
 
 export async function generateRectancle(node: RectangleNode) {
-  let rectangle;
-  rectangle = figma.createRectangle();
-  resizeNode(rectangle,node);
-  hydrateNewNode(rectangle ,node);
-  setFills(rectangle,node);
-  setStrokes(rectangle,node);
-  setEffects(rectangle,node);
+  const rectangle = figma.createRectangle();
+  hydrateNewNode(rectangle, node);
+
+  resizeNode(rectangle, node);
+  setFills(rectangle, node);
+  setStrokes(rectangle, node);
+  setEffects(rectangle, node);
   return rectangle;
+}
+
+export async function generateLineNode(node: LineNode) {
+  const line = figma.createLine();
+  hydrateNewNode(line, node);
+
+  resizeNode(line, node);
+  setFills(line, node);
+  setStrokes(line, node);
+  setEffects(line, node);
+  return line;
+}
+
+export async function generateVectorNode(node: VectorNode, ctx: FigmaConfigContext) {
+  const vector = figma.createNodeFromSvg(ctx.svgs[node.id]['svg']);
+
+  hydrateNewNode(vector, node);
+  vector.rotation = 0;
+  setEffects(vector, node);
+  return vector;
 }
