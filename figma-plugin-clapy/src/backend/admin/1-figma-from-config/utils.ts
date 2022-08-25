@@ -1,7 +1,68 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation--------------------------------
+
+import type { Dict, OmitMethods } from '../../../common/sb-serialize.model.js';
+
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
+
+interface Svg {
+  svg: string;
+  name: string;
+}
+
+type Svgs = Dict<Svg>;
+
+export interface FigmaConfigContext {
+  svgs: Svgs;
+}
+
+export interface textNode2 extends TextNode {
+  _textSegments: StyledTextSegment[];
+}
+// attribute black list [readonly]
+const attrBlackListRaw = [
+  'absoluteBoundingBox',
+  'absoluteRenderBounds',
+  'absoluteTransform',
+  'attachedConnectors',
+  'backgrounds',
+  'children',
+  'componentPropertyDefinitions',
+  'dashPattern',
+  'documentationLinks',
+  'effects',
+  'exportSettings',
+  'fills',
+  'guides',
+  'height',
+  'id',
+  'key',
+  'layoutGrids',
+  'overlayBackground',
+  'overlayBackgroundInteraction',
+  'overlayPositionType',
+  'parent',
+  'reactions',
+  'remote',
+  'removed',
+  'strokes',
+  'stuckNodes',
+  'variantProperties',
+  'width',
+  'type',
+  '_textSegments',
+  'pointCount',
+  'exportAsSvg',
+  'strokeCap',
+  'innerRadius',
+] as const;
+
+export const attrBlackList = new Set<string>(attrBlackListRaw);
+
+type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number];
+type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
+export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
 
 export async function ensureFontIsLoaded(font: FontName) {
   const fontCacheKey = `${font.family}_${font.style}`;

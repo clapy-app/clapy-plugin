@@ -1,53 +1,12 @@
-import type { OmitMethods } from '../../../common/sb-serialize.model.js';
-import type { FigmaConfigContext } from './1-read-figma-config.js';
-import { ensureFontIsLoaded, supportsEffects, supportsFills, supportsResize, supportsStrokes } from './utils.js';
-
-interface textNode2 extends TextNode {
-  _textSegments: StyledTextSegment[];
-}
-// attribute black list [readonly]
-const attrBlackListRaw = [
-  'absoluteBoundingBox',
-  'absoluteRenderBounds',
-  'absoluteTransform',
-  'attachedConnectors',
-  'backgrounds',
-  'children',
-  'componentPropertyDefinitions',
-  'dashPattern',
-  'documentationLinks',
-  'effects',
-  'exportSettings',
-  'fills',
-  'guides',
-  'height',
-  'id',
-  'key',
-  'layoutGrids',
-  'overlayBackground',
-  'overlayBackgroundInteraction',
-  'overlayPositionType',
-  'parent',
-  'reactions',
-  'remote',
-  'removed',
-  'strokes',
-  'stuckNodes',
-  'variantProperties',
-  'width',
-  'type',
-  '_textSegments',
-  'pointCount',
-  'exportAsSvg',
-  'strokeCap',
-  'innerRadius',
-] as const;
-
-const attrBlackList = new Set<string>(attrBlackListRaw);
-
-type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number];
-type WriteableSceneNodeKeys = keyof WriteableSceneNode;
-type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
+import type { FigmaConfigContext, textNode2, WriteableSceneNodeKeys } from './utils.js';
+import {
+  attrBlackList,
+  ensureFontIsLoaded,
+  supportsEffects,
+  supportsFills,
+  supportsResize,
+  supportsStrokes,
+} from './utils.js';
 
 export function resizeNode(node: SceneNode, nodeConfig: SceneNode) {
   if (supportsResize(node) && supportsResize(nodeConfig)) {

@@ -1,4 +1,3 @@
-import type { FigmaConfigContext } from './1-read-figma-config.js';
 import {
   generateFrameNode,
   generateLineNode,
@@ -7,6 +6,7 @@ import {
   generateVectorNode,
   hydrateNewNode,
 } from './4-create-child-nodes.js';
+import type { FigmaConfigContext } from './utils.js';
 
 export async function generateNode(page: PageNode, figmaConfig: any, ctx: FigmaConfigContext) {
   const root = (figmaConfig.root || figmaConfig) as SceneNode;
