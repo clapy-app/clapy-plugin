@@ -1,7 +1,60 @@
 //-------------------------------------------------------------------------------------------------------------
-//-------------------------------utils functions implementation--------------------------------
+//-------------------------------utils functions implementation------------------------------------------------
+import type { OmitMethods, SVGsExtracted, TextNodeNoMethod } from '../../../common/sb-serialize.model.js';
+
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
+
+export interface FigmaConfigContext {
+  svgs?: SVGsExtracted;
+}
+
+export interface TextNode2 extends TextNodeNoMethod {
+  _textSegments: StyledTextSegment[];
+}
+
+const readOnlyAttributes = [
+  'absoluteBoundingBox',
+  'absoluteRenderBounds',
+  'absoluteTransform',
+  'attachedConnectors',
+  'backgrounds',
+  'children',
+  'componentPropertyDefinitions',
+  'dashPattern',
+  'documentationLinks',
+  'effects',
+  'exportSettings',
+  'fills',
+  'guides',
+  'height',
+  'id',
+  'key',
+  'layoutGrids',
+  'overlayBackground',
+  'overlayBackgroundInteraction',
+  'overlayPositionType',
+  'parent',
+  'reactions',
+  'remote',
+  'removed',
+  'strokes',
+  'stuckNodes',
+  'variantProperties',
+  'width',
+  'type',
+  '_textSegments',
+  'pointCount',
+  'exportAsSvg',
+  'strokeCap',
+  'innerRadius',
+] as const;
+
+export const ignoredAttributes = new Set<string>(readOnlyAttributes);
+
+type ReadOnlySceneNodeFields = typeof readOnlyAttributes[number];
+type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
+export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
 
 export async function ensureFontIsLoaded(font: FontName) {
   const fontCacheKey = `${font.family}_${font.style}`;
@@ -21,4 +74,7 @@ export function cleanUpLastLaunch() {
       page.remove();
     }
   }
+}
+export function appendChild(node: ChildrenMixin, child: SceneNode) {
+  node.appendChild(child);
 }

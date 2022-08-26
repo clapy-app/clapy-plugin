@@ -7,7 +7,7 @@ import { DataSource, Not } from 'typeorm';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
-import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { CSBResponse, ExportCodePayload, GenerationHistory } from '../sb-serialize-preview/sb-serialize.model.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import type { AccessTokenDecoded } from './user.utils.js';
 import { hasRoleIncreasedQuota, hasRoleNoCodeSandbox } from './user.utils.js';
@@ -17,7 +17,7 @@ export class UserService {
   constructor(
     @Inject(StripeService) private stripeService: StripeService,
     @Inject(DataSource) private dataSource: DataSource,
-    @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
+    @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistory>,
   ) {}
 
   async checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(

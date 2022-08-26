@@ -432,6 +432,15 @@ export interface CSBResponse {
   isLicenseExpired?: boolean;
 }
 
+export type GenerationHistory = {
+  id: string;
+  auth0id: string;
+  createdAt?: Date;
+  generatedLink?: string;
+  isFreeUser?: boolean;
+  figmaConfig?: ExportCodePayload;
+};
+
 // From magic-bytes.js, for portability with the backend that doesn't have the lib
 type Info = {
   mime?: string;
