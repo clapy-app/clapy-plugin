@@ -2,17 +2,13 @@
 :where(.clapyResets) * {
   box-sizing: border-box;
   margin: 0;
+  padding: 0;
   background: none;
   border: none;
   flex-shrink: 0;
   text-decoration: none;
   min-width: 0;
   overflow-wrap: anywhere;
-}
-
-:where(.clapyResets),
-:where(.clapyResets) * {
-  padding: 0;
 }
 
 :where(.clapyResets),

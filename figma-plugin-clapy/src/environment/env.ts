@@ -17,14 +17,17 @@ export const isFigmaPlugin = !isBack && window.location.origin === 'null';
 const dev = {
   apiBaseUrl: 'http://localhost:4141',
   // apiBaseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
+  githubOAuthAppUrl: 'https://github.com/settings/connections/applications/793511a7b2d41b3cfe5a',
 };
 
 const staging = {
   apiBaseUrl: 'todo',
+  githubOAuthAppUrl: 'todo',
 };
 
 const prod = {
   apiBaseUrl: 'https://clapy-backend-loitgf2s5q-ew.a.run.app',
+  githubOAuthAppUrl: 'https://github.com/settings/connections/applications/517bbefccc493f4e427c',
 };
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;

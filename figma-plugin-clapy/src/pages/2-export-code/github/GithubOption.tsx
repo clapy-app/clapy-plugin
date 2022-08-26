@@ -13,8 +13,8 @@ import { appConfig } from '../../../common/app-config.js';
 import { fetchPlugin } from '../../../common/plugin-utils.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
-import { requestAdditionalScopes } from '../../../core/auth/auth-service.js';
 import { selectGithubEnabled, selectTokenDecoded } from '../../../core/auth/auth-slice.js';
+import { env } from '../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { apiPost } from '../../../front-utils/http.utils.js';
 import type { UserSettingsValues } from '../FigmaToCodeHome/figmaToCode-model.js';
@@ -68,11 +68,10 @@ const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(props) {
   // console.log('token:', token);
   const requestRepoScope = useCallbackAsync2(async () => {
     // Later, for other operations with github:
-    // let githubAccessToken = await fetchPlugin('getGithubCachedToken');
-    let githubAccessToken: string | undefined;
-    await requestAdditionalScopes(['repo', 'user:email']);
+    let githubAccessToken = await fetchPlugin('getGithubCachedToken');
+    // await requestAdditionalScopes(['repo', 'user:email']);
     const { data } = await apiPost<ListReposResp>('github/list-repos', {
-      githubAccessToken: undefined,
+      githubAccessToken,
     } as ListReposReq);
     let repositories: GHRepo[];
     ({ githubAccessToken, repositories } = data);
@@ -85,7 +84,7 @@ const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(props) {
       <FormControl disabled={isLoading}>
         <RadioGroup row name='target' onChange={updateTargetState} defaultValue={defaultSettings.target}>
           <Tooltip
-            title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code.'
+            title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code. Please note that CodeSandbox projects are public.'
             disableInteractive
             placement={appConfig.tooltipPosition}
           >
@@ -107,7 +106,17 @@ const GithubOptionInner: FC<Props> = memo(function GithubOptionInner(props) {
           </Tooltip>
         </RadioGroup>
       </FormControl>
-      {target === UserSettingsTarget.github && <Button onClick={requestRepoScope}>Add scopes</Button>}
+      {target === UserSettingsTarget.github && (
+        <>
+          <Button onClick={requestRepoScope}>Add scopes</Button>
+          <p>
+            Your organization repository is not in the list? You may need to{' '}
+            <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>
+              grant access to the Clapy OAuth app here.
+            </a>
+          </p>
+        </>
+      )}
     </div>
   );
 });

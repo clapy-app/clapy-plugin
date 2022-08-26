@@ -6,10 +6,14 @@ export function toCSBFiles(...files: CodeDict[]) {
     for (const [path, content] of Object.entries(resource)) {
       csbFiles[path] = { content };
 
-      if (content.startsWith('https://')) {
+      if (isBinaryUrl(content)) {
         csbFiles[path].isBinary = true;
       }
     }
   }
   return csbFiles;
+}
+
+export function isBinaryUrl(content: string) {
+  return content.startsWith('https://');
 }

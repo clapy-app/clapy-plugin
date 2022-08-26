@@ -150,6 +150,9 @@ export type VectorNodeDerived = ExtendNodeType<VectorNode | BooleanOperationNode
 export type TextNode2 = ExtendNodeType<TextNode, TextExtender2>;
 export type FrameNode2 = ExtendNodeType<FrameNode> & ChildrenMixin2;
 export type ComponentNode2 = ExtendNodeType<ComponentNode> & ChildrenMixin2;
+export type ComponentSetNode2 = ExtendNodeType<ComponentSetNode> &
+  // Adding overflowDirection as a workaround to fix a bug in Figma plugin API typings. The prop is actually there in Figma.
+  ChildrenMixin2 & { overflowDirection: OverflowDirection };
 export type InstanceNode2 = ExtendNodeType<InstanceNode> & ChildrenMixin2;
 export type RectangleNode2 = ExtendNodeType<RectangleNode>;
 export type GroupNode2 = ExtendNodeType<GroupNode> & ChildrenMixin2;
@@ -292,7 +295,7 @@ export function isStyledTextSegment(node: BaseNode2 | SceneNode2 | StyledTextSeg
 }
 
 // ComponentSetNode is not included in FlexNode.
-export type FlexNode = FrameNode2 | ComponentNode2 | InstanceNode2;
+export type FlexNode = FrameNode2 | ComponentNode2 | ComponentSetNode2 | InstanceNode2;
 
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
   return (isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node)) && !isVector(node);
