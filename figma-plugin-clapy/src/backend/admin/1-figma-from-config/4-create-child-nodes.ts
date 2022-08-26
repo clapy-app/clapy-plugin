@@ -1,63 +1,71 @@
+import type {
+  BaseNode2,
+  FrameNode2,
+  GroupNode2,
+  LineNode2,
+  RectangleNode2,
+  SceneNode2,
+  VectorNode2,
+} from '../../../common/sb-serialize.model.js';
+import {
+  isBlendMixin,
+  isChildrenMixin2,
+  isFrame2,
+  isLayout,
+  isMinimalFillsMixin,
+  isMinimalStrokesMixin,
+} from '../../common/node-type-utils.js';
 import { generateNode } from './3-create-parent-nodes.js';
 import type { FigmaConfigContext, TextNode2, WriteableSceneNodeKeys } from './utils.js';
-import { ignoredAttributes, ensureFontIsLoaded } from './utils.js';
+import { appendChild, ignoredAttributes, ensureFontIsLoaded } from './utils.js';
 
-export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode, isSvg?: boolean) {
+export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSvg?: boolean) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
-    if (childConfig[attrTyped] && !ignoredAttributes.has(attr)) {
+    if ((childConfig as any)[attrTyped] && !ignoredAttributes.has(attr)) {
       (newChild as any)[attrTyped] = val;
     }
-    if ('resize' in newChild) {
-      let nodeToResize: typeof newChild;
-      // if statement to handle svg case
-      if (isSvg && newChild.type === 'FRAME' && newChild.children[0].type === 'VECTOR') {
-        nodeToResize = newChild.children[0];
-      } else {
-        nodeToResize = newChild;
-      }
-      nodeToResize.resize(childConfig.width || 0, childConfig.height || 0);
+    //! update backend to store full configs with defaults that way this isLayout doesn't break.
+    if (isLayout(newChild) && isLayout(childConfig)) {
+      newChild.resize(childConfig.width || 0, childConfig.height || 0);
     }
-    if ('fills' in newChild && 'fills' in childConfig && !isSvg) {
+
+    if (isMinimalFillsMixin(newChild) && isMinimalFillsMixin(childConfig)) {
       newChild.fills = childConfig.fills || [];
     }
-    if ('strokes' in newChild && 'strokes' in childConfig && !isSvg) {
+    if (isMinimalStrokesMixin(newChild) && isMinimalStrokesMixin(childConfig)) {
       newChild.strokes = childConfig.strokes || [];
     }
-    if ('effects' in newChild && 'effects' in childConfig) {
+    if (isBlendMixin(newChild) && isBlendMixin(childConfig)) {
       newChild.effects = childConfig.effects || [];
     }
   }
 }
 
-export async function generateFrameNode(page: PageNode, node: FrameNode, ctx: FigmaConfigContext) {
+export async function generateGroupNode(
+  parentNode: BaseNode & ChildrenMixin,
+  node: GroupNode2,
+  ctx: FigmaConfigContext,
+) {
+  return await generateGroupChildNodes(parentNode, node, ctx);
+}
+
+export async function generateFrameNode(
+  parentNode: BaseNode & ChildrenMixin,
+  node: FrameNode2,
+  ctx: FigmaConfigContext,
+) {
   const frame = figma.createFrame();
-  page.appendChild(frame);
+  appendChild(parentNode, frame);
   hydrateNewNode(frame, node);
-  for (let child of node.children) {
-    const element = await generateNode(page, child, ctx);
-    if (element) {
-      frame.appendChild(element);
-    }
-  }
+  await generateChildNodes(frame, node, ctx);
   return frame;
 }
 
-export async function generateGroupNode(page: PageNode, node: GroupNode, ctx: FigmaConfigContext) {
-  let groupElements: BaseNode[] = [];
-  for (let child of node.children) {
-    const element = await generateNode(page, child, ctx);
-    if (element) groupElements.push(element);
-  }
-  const group = figma.group(groupElements, page);
-  hydrateNewNode(group, node);
-  return group;
-}
-
-export async function generateTextNode(page: PageNode, node: TextNode2) {
+export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode2) {
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
   const text = figma.createText();
-  page.appendChild(text);
+  parentNode.appendChild(text);
 
   hydrateNewNode(text, node);
 
@@ -82,35 +90,64 @@ export async function generateTextNode(page: PageNode, node: TextNode2) {
   return text;
 }
 
-export async function generateRectancle(page: PageNode, node: RectangleNode) {
+export async function generateRectancle(parentNode: ChildrenMixin, node: RectangleNode2) {
   const rectangle = figma.createRectangle();
-  page.appendChild(rectangle);
+  parentNode.appendChild(rectangle);
   hydrateNewNode(rectangle, node);
-
-  // setFills(rectangle, node);
-  // setStrokes(rectangle, node);
-  // setEffects(rectangle, node);
   return rectangle;
 }
 
-export async function generateLineNode(page: PageNode, node: LineNode) {
+export async function generateLineNode(parentNode: ChildrenMixin, node: LineNode2) {
   const line = figma.createLine();
-  page.appendChild(line);
+  parentNode.appendChild(line);
   hydrateNewNode(line, node);
 
   return line;
 }
 
-export async function generateVectorNode(page: PageNode, node: VectorNode, ctx: FigmaConfigContext) {
+export async function generateVectorNode(parentNode: ChildrenMixin, node: VectorNode2, ctx: FigmaConfigContext) {
   if (ctx.svgs == null) {
     throw new Error('Problem with this config, found vectorNode to render but svgs array is empty.');
   }
 
   const vector = figma.createNodeFromSvg(ctx.svgs[node.id]['svg']);
-  page.appendChild(vector);
+  parentNode.appendChild(vector);
   hydrateNewNode(vector, node, true);
 
   // resizeNode(vector.children[0], node);
   vector.rotation = 0;
   return vector;
+}
+async function generateChildNodes(
+  parentNode: BaseNode & ChildrenMixin,
+  nodeConfig: SceneNode2,
+  ctx: FigmaConfigContext,
+) {
+  if (isFrame2(nodeConfig)) {
+    for (let child of nodeConfig.children) {
+      const element = await generateNode(parentNode, child, ctx);
+      if (element) {
+        appendChild(parentNode, element);
+      }
+    }
+  }
+}
+
+async function generateGroupChildNodes(
+  parentNode: BaseNode & ChildrenMixin,
+  nodeConfig: SceneNode2,
+  ctx: FigmaConfigContext,
+) {
+  let groupElements: BaseNode[] = [];
+
+  if (isChildrenMixin2(nodeConfig)) {
+    for (let child of nodeConfig.children) {
+      const element = await generateNode(parentNode, child, ctx);
+      if (element) groupElements.push(element);
+    }
+  }
+
+  const group = figma.group(groupElements, parentNode);
+  hydrateNewNode(group, nodeConfig);
+  return group;
 }
