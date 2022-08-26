@@ -12,5 +12,5 @@ export async function createPage(GenerationHistoryEntry: GenerationHistory, ctx:
   if (!GenerationHistoryEntry.figmaConfig || !GenerationHistoryEntry.figmaConfig.root) {
     throw new Error('config or root of config are falsy, there was probably a problem during the config generation.');
   }
-  generateNode(newPage, GenerationHistoryEntry.figmaConfig.root as SceneNode, ctx);
+  generateNode(newPage, GenerationHistoryEntry.figmaConfig.root, ctx);
 }

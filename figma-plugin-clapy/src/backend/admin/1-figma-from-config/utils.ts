@@ -1,6 +1,6 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation------------------------------------------------
-import type { OmitMethods, SVGsExtracted } from '../../../common/sb-serialize.model.js';
+import type { OmitMethods, SVGsExtracted, TextNodeNoMethod } from '../../../common/sb-serialize.model.js';
 
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
@@ -9,11 +9,11 @@ export interface FigmaConfigContext {
   svgs?: SVGsExtracted;
 }
 
-export interface TextNode2 extends TextNode {
+export interface TextNode2 extends TextNodeNoMethod {
   _textSegments: StyledTextSegment[];
 }
-// attribute black list [readonly]
-const ignoredAttributesRaw = [
+
+const readOnlyAttributes = [
   'absoluteBoundingBox',
   'absoluteRenderBounds',
   'absoluteTransform',
@@ -50,9 +50,9 @@ const ignoredAttributesRaw = [
   'innerRadius',
 ] as const;
 
-export const ignoredAttributes = new Set<string>(ignoredAttributesRaw);
+export const ignoredAttributes = new Set<string>(readOnlyAttributes);
 
-type ReadOnlySceneNodeFields = typeof ignoredAttributesRaw[number];
+type ReadOnlySceneNodeFields = typeof readOnlyAttributes[number];
 type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
 export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
 
@@ -74,4 +74,7 @@ export function cleanUpLastLaunch() {
       page.remove();
     }
   }
+}
+export function appendChild(node: ChildrenMixin, child: SceneNode) {
+  node.appendChild(child);
 }
