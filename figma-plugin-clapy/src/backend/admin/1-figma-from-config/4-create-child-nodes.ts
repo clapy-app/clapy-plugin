@@ -1,11 +1,11 @@
 import { generateNode } from './3-create-parent-nodes.js';
 import type { FigmaConfigContext, TextNode2, WriteableSceneNodeKeys } from './utils.js';
-import { attrBlackList, ensureFontIsLoaded } from './utils.js';
+import { ignoredAttributes, ensureFontIsLoaded } from './utils.js';
 
 export function hydrateNewNode(newChild: SceneNode, childConfig: SceneNode, isSvg?: boolean) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
-    if (childConfig[attrTyped] && !attrBlackList.has(attr)) {
+    if (childConfig[attrTyped] && !ignoredAttributes.has(attr)) {
       (newChild as any)[attrTyped] = val;
     }
     if ('resize' in newChild) {

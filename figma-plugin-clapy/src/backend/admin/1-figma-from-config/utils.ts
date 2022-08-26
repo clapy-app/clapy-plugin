@@ -13,7 +13,7 @@ export interface TextNode2 extends TextNode {
   _textSegments: StyledTextSegment[];
 }
 // attribute black list [readonly]
-const attrBlackListRaw = [
+const ignoredAttributesRaw = [
   'absoluteBoundingBox',
   'absoluteRenderBounds',
   'absoluteTransform',
@@ -50,9 +50,9 @@ const attrBlackListRaw = [
   'innerRadius',
 ] as const;
 
-export const attrBlackList = new Set<string>(attrBlackListRaw);
+export const ignoredAttributes = new Set<string>(ignoredAttributesRaw);
 
-type ReadOnlySceneNodeFields = typeof attrBlackListRaw[number];
+type ReadOnlySceneNodeFields = typeof ignoredAttributesRaw[number];
 type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
 export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
 
