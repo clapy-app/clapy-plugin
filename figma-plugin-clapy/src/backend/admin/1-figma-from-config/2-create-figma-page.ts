@@ -8,9 +8,9 @@ import type { FigmaConfigContext } from './utils.js';
 //-------------------------------------------------------------------------------------------------------------
 export async function createPage(GenerationHistoryEntry: GenerationHistory, ctx: FigmaConfigContext) {
   const newPage = figma.createPage();
-  newPage.name = GenerationHistoryEntry.auth0id + ' ' + Math.floor(Math.random() * 100);
-  if (!GenerationHistoryEntry.figmaConfig) {
-    return;
+  newPage.name = `${GenerationHistoryEntry.auth0id} ${Math.floor(Math.random() * 100)}`;
+  if (!GenerationHistoryEntry.figmaConfig || !GenerationHistoryEntry.figmaConfig.root) {
+    throw new Error('config or root of config are falsy, there was probably a problem during the config generation.');
   }
-  generateNode(newPage, GenerationHistoryEntry.figmaConfig, ctx);
+  generateNode(newPage, GenerationHistoryEntry.figmaConfig.root as SceneNode, ctx);
 }
