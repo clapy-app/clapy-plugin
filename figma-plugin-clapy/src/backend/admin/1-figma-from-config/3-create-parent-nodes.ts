@@ -10,19 +10,19 @@ import {
 } from './4-create-child-nodes.js';
 import type { FigmaConfigContext, TextNode2 } from './utils.js';
 
-export async function generateNode(page: BaseNode & ChildrenMixin, root: SceneNode2, ctx: FigmaConfigContext) {
+export async function generateNode(parentNode: BaseNode & ChildrenMixin, root: SceneNode2, ctx: FigmaConfigContext) {
   if (isFrame2(root)) {
-    return await generateFrameNode(page, root, ctx);
+    return await generateFrameNode(parentNode, root, ctx);
   } else if (isGroup2(root)) {
-    return await generateGroupNode(page, root, ctx);
+    return await generateGroupNode(parentNode, root, ctx);
   } else if (isRectangle2(root)) {
-    return await generateRectancle(page, root, ctx);
+    return await generateRectancle(parentNode, root, ctx);
   } else if (isText2(root)) {
-    return await generateTextNode(page, root as TextNode2, ctx);
+    return await generateTextNode(parentNode, root as TextNode2, ctx);
   } else if (isLine(root)) {
-    return await generateLineNode(page, root, ctx);
+    return await generateLineNode(parentNode, root, ctx);
   } else if (isVector2(root)) {
-    return await generateVectorNode(page, root, ctx);
+    return await generateVectorNode(parentNode, root, ctx);
   } else {
     return undefined;
   }
