@@ -62,7 +62,7 @@ export async function generateFrameNode(
   return frame;
 }
 
-export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode2) {
+export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode2, ctx: FigmaConfigContext) {
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
   const text = figma.createText();
   parentNode.appendChild(text);
@@ -90,14 +90,14 @@ export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode
   return text;
 }
 
-export async function generateRectancle(parentNode: ChildrenMixin, node: RectangleNode2) {
+export async function generateRectancle(parentNode: ChildrenMixin, node: RectangleNode2, ctx: FigmaConfigContext) {
   const rectangle = figma.createRectangle();
   parentNode.appendChild(rectangle);
   hydrateNewNode(rectangle, node);
   return rectangle;
 }
 
-export async function generateLineNode(parentNode: ChildrenMixin, node: LineNode2) {
+export async function generateLineNode(parentNode: ChildrenMixin, node: LineNode2, ctx: FigmaConfigContext) {
   const line = figma.createLine();
   parentNode.appendChild(line);
   hydrateNewNode(line, node);

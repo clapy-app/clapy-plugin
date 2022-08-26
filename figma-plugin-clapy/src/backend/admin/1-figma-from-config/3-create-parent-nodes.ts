@@ -16,11 +16,11 @@ export async function generateNode(page: BaseNode & ChildrenMixin, root: SceneNo
   } else if (isGroup2(root)) {
     return await generateGroupNode(page, root, ctx);
   } else if (isRectangle2(root)) {
-    return await generateRectancle(page, root);
+    return await generateRectancle(page, root, ctx);
   } else if (isText2(root)) {
-    return await generateTextNode(page, root as TextNode2);
+    return await generateTextNode(page, root as TextNode2, ctx);
   } else if (isLine(root)) {
-    return await generateLineNode(page, root);
+    return await generateLineNode(page, root, ctx);
   } else if (isVector2(root)) {
     return await generateVectorNode(page, root, ctx);
   } else {
