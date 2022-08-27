@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import type { RestEndpointMethodTypes } from '@octokit/rest';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
-import type { CodeDict } from '../export-code/code.model.js';
-import { ensureAccessTokenDefined, fetchGithubAccessToken } from './github-api-fetch.js';
+import { fetchGithubAccessToken } from './github-api-fetch.js';
 import type { GHContext } from './github-service.js';
 import { fetchUser, listRepos } from './github-service.js';
 import { getOctokit } from './octokit.js';
@@ -12,8 +11,8 @@ interface FetchGithubCredentialsResp {
   hasPermission: boolean;
 }
 
-interface ListReposReq {
-  githubAccessToken?: string;
+interface TokenPayload {
+  githubAccessToken: string;
 }
 
 interface ListReposResp {
@@ -25,21 +24,20 @@ interface ListReposResp {
 export class GithubController {
   constructor() {}
 
-  @Get('gh-token')
+  @Post('token')
   async fetchGithubCredentials(@Req() req: RequestPrivate) {
-    const userId = req.auth.sub;
-    const accessToken = await fetchGithubAccessToken(userId);
+    const auth0UserId = req.auth.sub;
+    const accessToken = await fetchGithubAccessToken(auth0UserId);
     if (!accessToken) {
       const resp: FetchGithubCredentialsResp = { accessToken: undefined, hasPermission: false };
       return resp;
     }
     const context: GHContext = {
       accessToken,
-      auth0UserId: userId,
+      auth0UserId: auth0UserId,
       octokit: getOctokit(accessToken),
     };
     const { headers, data } = await fetchUser(context);
-    console.log(`scope: '${headers['x-oauth-scopes']}'`);
     const hasPermission = !!headers['x-oauth-scopes']
       ?.split(',')
       .map(scope => scope.trim())
@@ -49,36 +47,23 @@ export class GithubController {
   }
 
   @Post('list-repos')
-  async listRepos(@Body() body: ListReposReq, @Req() req: RequestPrivate) {
+  async listRepos(@Req() req: RequestPrivate, @Body() body: TokenPayload) {
     const auth0UserId = req.auth.sub;
     let { githubAccessToken: accessToken } = body;
-    accessToken = await ensureAccessTokenDefined(auth0UserId, accessToken);
     const octokit = getOctokit(accessToken);
     const context: GHContext = { accessToken, auth0UserId, octokit };
 
-    const files: CodeDict = {
-      'codegen/foo.ts': "console.log('Hello world!');\n",
-    };
+    return listRepos(context);
 
-    const { data, headers } = await listRepos(context);
+    // const files: CodeDict = {
+    //   'codegen/foo.ts': "console.log('Hello world!');\n",
+    // };
+    //
     // const { data } = await listBranches(context);
     // const data = await getCommit(context);
     // const { data } = await createBranch(context, 'gencode');
     // const data = await commitChanges(context, files, 'Auto-commit powered by Clapy');
     // console.log(data);
-
-    console.log(
-      'scopes:',
-      headers['x-oauth-scopes'],
-      '- scopes accepted:',
-      `\`${headers['x-accepted-oauth-scopes']}\``,
-    );
-    // console.log(data.map(({ name }) => ({ name })));
-
-    // githubAccessToken = context.octokit.auth
-
-    // const repositories = data;
-    // const res: ListReposResp = { githubAccessToken, repositories };
-    // return res;
+    // return data;
   }
 }

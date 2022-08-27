@@ -1,19 +1,32 @@
 import { Octokit } from '@octokit/rest';
 import type { RequestError } from '@octokit/types';
+import { retry } from '@octokit/plugin-retry';
+import { throttling } from '@octokit/plugin-throttling';
 
 export type MyGithubError = (RequestError | Error) & {
   isGithub: true;
 };
 
+const OctokitWithPlugins = Octokit.plugin(throttling, retry);
+
 export function getOctokit(githubAccessToken: string) {
-  const octo = new Octokit({
+  const octokit = new OctokitWithPlugins({
     auth: githubAccessToken,
     // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required
     userAgent: 'Clapy',
+
+    throttle: {
+      onRateLimit: (retryAfter: any, options: any, octokit: any) => options.request.retryCount < 2,
+      onSecondaryRateLimit: (retryAfter: any, options: any, octokit: any) => options.request.retryCount < 2,
+    },
   });
-  octo.hook.error('request', async (error, options) => {
+  octokit.hook.error('request', async (error, options) => {
     (error as MyGithubError).isGithub = true;
     throw error;
   });
-  return octo;
+  // octokit.hook.wrap('request', async (request, options) => {
+  //   // add logic before, after, catch errors or replace the request altogether
+  //   return request(options);
+  // });
+  return octokit;
 }

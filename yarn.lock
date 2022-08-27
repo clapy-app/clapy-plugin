@@ -2292,6 +2292,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/openapi-types@npm:^12.11.0":
+  version: 12.11.0
+  resolution: "@octokit/openapi-types@npm:12.11.0"
+  checksum: 8a7d4bd6288cc4085cabe0ca9af2b87c875c303af932cb138aa1b2290eb69d32407759ac23707bb02776466e671244a902e9857896903443a69aff4b6b2b0e3b
+  languageName: node
+  linkType: hard
+
 "@octokit/openapi-types@npm:^13.4.0":
   version: 13.4.0
   resolution: "@octokit/openapi-types@npm:13.4.0"
@@ -2331,6 +2338,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/plugin-retry@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "@octokit/plugin-retry@npm:3.0.9"
+  dependencies:
+    "@octokit/types": ^6.0.3
+    bottleneck: ^2.15.3
+  checksum: 5744780d308dd2f2b8174264604a9f8ea977374256f5eaf0314e5181c32f96ec53a3cfcee67bf1b48dc7eed401ebefebd2fa744b41cf03103affac92f397a874
+  languageName: node
+  linkType: hard
+
+"@octokit/plugin-throttling@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "@octokit/plugin-throttling@npm:4.2.0"
+  dependencies:
+    "@octokit/types": ^7.0.0
+    bottleneck: ^2.15.3
+  peerDependencies:
+    "@octokit/core": ^4.0.0
+  checksum: 427872ff202dcc57a6fb9f6a44ba4d8004c10d18f562bdace84b87b7651b74863713142f4c161cc56d6d09d28cb61597f805d3828695ce15ba6e8fbc2fc700c6
+  languageName: node
+  linkType: hard
+
 "@octokit/request-error@npm:^3.0.0":
   version: 3.0.1
   resolution: "@octokit/request-error@npm:3.0.1"
@@ -2365,6 +2394,15 @@ __metadata:
     "@octokit/plugin-request-log": ^1.0.4
     "@octokit/plugin-rest-endpoint-methods": ^6.0.0
   checksum: 7eba9148b707c713705ba8d75c25fbb22488f30abef7967ce92884a51e411e709b90ff56b0e6fa5521b261f343a7fd33b8ad5d0b87cab4bc2e178002b2566cf2
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^6.0.3":
+  version: 6.41.0
+  resolution: "@octokit/types@npm:6.41.0"
+  dependencies:
+    "@octokit/openapi-types": ^12.11.0
+  checksum: fd6f75e0b19b90d1a3d244d2b0c323ed8f2f05e474a281f60a321986683548ef2e0ec2b3a946aa9405d6092e055344455f69f58957c60f58368c8bdda5b7d2ab
   languageName: node
   linkType: hard
 
@@ -4118,6 +4156,8 @@ __metadata:
     "@nestjs/core": ^9.0.11
     "@nestjs/platform-express": ^9.0.11
     "@nestjs/typeorm": ^9.0.1
+    "@octokit/plugin-retry": ^3.0.9
+    "@octokit/plugin-throttling": ^4.2.0
     "@octokit/rest": ^19.0.4
     "@octokit/types": ^7.1.1
     "@svgr/core": ^6.3.1
@@ -4274,6 +4314,13 @@ __metadata:
   version: 1.0.0
   resolution: "boolbase@npm:1.0.0"
   checksum: 3e25c80ef626c3a3487c73dbfc70ac322ec830666c9ad915d11b701142fab25ec1e63eff2c450c74347acfd2de854ccde865cd79ef4db1683f7c7b046ea43bb0
+  languageName: node
+  linkType: hard
+
+"bottleneck@npm:^2.15.3":
+  version: 2.19.5
+  resolution: "bottleneck@npm:2.19.5"
+  checksum: c5eef1bbea12cef1f1405e7306e7d24860568b0f7ac5eeab706a86762b3fc65ef6d1c641c8a166e4db90f412fc5c948fc5ce8008a8cd3d28c7212ef9c3482bda
   languageName: node
   linkType: hard
 

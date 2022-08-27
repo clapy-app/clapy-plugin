@@ -15,9 +15,12 @@ async function main() {
     );
   }
   const githubAccessToken = process.env.GITHUB_ACCESS_TOKEN;
-  await new GithubController().listRepos({ githubAccessToken }, {
-    auth: { sub: 'google-oauth2|105573232794317486965' },
-  } as RequestPrivate);
+  await new GithubController().listRepos(
+    {
+      auth: { sub: 'google-oauth2|105573232794317486965' },
+    } as RequestPrivate,
+    { githubAccessToken },
+  );
 
   // Send to codesandbox
   // TODO restore. Find the syntax to instantiate the controller with the right dependencies

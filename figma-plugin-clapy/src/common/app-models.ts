@@ -112,3 +112,9 @@ export interface FetchGithubCredentialsResp {
   accessToken: string | undefined;
   hasPermission: boolean;
 }
+
+export interface GithubCredentials {
+  // same as FetchGithubCredentialsResp, but all defined
+  accessToken: string;
+  hasPermission: boolean;
+}

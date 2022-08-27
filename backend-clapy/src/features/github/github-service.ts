@@ -23,113 +23,17 @@ export function fetchUser(context: GHContext) {
   return octokit.request('/user');
 }
 
-export function listRepos(context: GHContext) {
+export async function listRepos(
+  context: GHContext,
+): Promise<RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data']> {
   const { octokit } = context;
-  return octokit.repos.listForAuthenticatedUser({
-    visibility: 'all',
-    per_page: 100,
-  });
+  return (
+    await octokit.repos.listForAuthenticatedUser({
+      visibility: 'all',
+      per_page: 100,
+    })
+  ).data;
 }
-// id: 447298535, node_id: 'R_kgDOGqk75w', name: 'clapy-plugin', full_name: 'clapy-app/clapy-plugin'
-
-// allow_forking: false
-// archive_url: "https://api.github.com/repos/clapy-app/clapy-plugin/{archive_format}{/ref}"
-// archived: false
-// assignees_url: "https://api.github.com/repos/clapy-app/clapy-plugin/assignees{/user}"
-// blobs_url: "https://api.github.com/repos/clapy-app/clapy-plugin/git/blobs{/sha}"
-// branches_url: "https://api.github.com/repos/clapy-app/clapy-plugin/branches{/branch}"
-// clone_url: "https://github.com/clapy-app/clapy-plugin.git"
-// collaborators_url: "https://api.github.com/repos/clapy-app/clapy-plugin/collaborators{/collaborator}"
-// comments_url: "https://api.github.com/repos/clapy-app/clapy-plugin/comments{/number}"
-// commits_url: "https://api.github.com/repos/clapy-app/clapy-plugin/commits{/sha}"
-// compare_url: "https://api.github.com/repos/clapy-app/clapy-plugin/compare/{base}...{head}"
-// contents_url: "https://api.github.com/repos/clapy-app/clapy-plugin/contents/{+path}"
-// contributors_url: "https://api.github.com/repos/clapy-app/clapy-plugin/contributors"
-// created_at: "2022-01-12T16:52:41Z"
-// default_branch: "master"
-// deployments_url: "https://api.github.com/repos/clapy-app/clapy-plugin/deployments"
-// description: null
-// disabled: false
-// downloads_url: "https://api.github.com/repos/clapy-app/clapy-plugin/downloads"
-// events_url: "https://api.github.com/repos/clapy-app/clapy-plugin/events"
-// fork: false
-// forks: 0
-// forks_count: 0
-// forks_url: "https://api.github.com/repos/clapy-app/clapy-plugin/forks"
-// full_name: "clapy-app/clapy-plugin"
-// git_commits_url: "https://api.github.com/repos/clapy-app/clapy-plugin/git/commits{/sha}"
-// git_refs_url: "https://api.github.com/repos/clapy-app/clapy-plugin/git/refs{/sha}"
-// git_tags_url: "https://api.github.com/repos/clapy-app/clapy-plugin/git/tags{/sha}"
-// git_url: "git://github.com/clapy-app/clapy-plugin.git"
-// has_downloads: true
-// has_issues: true
-// has_pages: false
-// has_projects: true
-// has_wiki: true
-// homepage: null
-// hooks_url: "https://api.github.com/repos/clapy-app/clapy-plugin/hooks"
-// html_url: "https://github.com/clapy-app/clapy-plugin"
-// id: 447298535
-// is_template: false
-// issue_comment_url: "https://api.github.com/repos/clapy-app/clapy-plugin/issues/comments{/number}"
-// issue_events_url: "https://api.github.com/repos/clapy-app/clapy-plugin/issues/events{/number}"
-// issues_url: "https://api.github.com/repos/clapy-app/clapy-plugin/issues{/number}"
-// keys_url: "https://api.github.com/repos/clapy-app/clapy-plugin/keys{/key_id}"
-// labels_url: "https://api.github.com/repos/clapy-app/clapy-plugin/labels{/name}"
-// language: "TypeScript"
-// languages_url: "https://api.github.com/repos/clapy-app/clapy-plugin/languages"
-// license: null
-// merges_url: "https://api.github.com/repos/clapy-app/clapy-plugin/merges"
-// milestones_url: "https://api.github.com/repos/clapy-app/clapy-plugin/milestones{/number}"
-// mirror_url: null
-// name: "clapy-plugin"
-// node_id: "R_kgDOGqk75w"
-// notifications_url: "https://api.github.com/repos/clapy-app/clapy-plugin/notifications{?since,all,participating}"
-// open_issues: 1
-// open_issues_count: 1
-// owner:
-// 	avatar_url: "https://avatars.githubusercontent.com/u/105816859?v=4"
-// 	events_url: "https://api.github.com/users/clapy-app/events{/privacy}"
-// 	followers_url: "https://api.github.com/users/clapy-app/followers"
-// 	following_url: "https://api.github.com/users/clapy-app/following{/other_user}"
-// 	gists_url: "https://api.github.com/users/clapy-app/gists{/gist_id}"
-// 	gravatar_id: ""
-// 	html_url: "https://github.com/clapy-app"
-// 	id: 105816859
-// 	login: "clapy-app"
-// 	node_id: "O_kgDOBk6jGw"
-// 	organizations_url: "https://api.github.com/users/clapy-app/orgs"
-// 	received_events_url: "https://api.github.com/users/clapy-app/received_events"
-// 	repos_url: "https://api.github.com/users/clapy-app/repos"
-// 	site_admin: false
-// 	starred_url: "https://api.github.com/users/clapy-app/starred{/owner}{/repo}"
-// 	subscriptions_url: "https://api.github.com/users/clapy-app/subscriptions"
-// 	type: "Organization"
-// 	url: "https://api.github.com/users/clapy-app"
-// 	[[Prototype]]: Object
-// permissions: {admin: true, maintain: true, push: true, triage: true, pull: true}
-// private: true
-// pulls_url: "https://api.github.com/repos/clapy-app/clapy-plugin/pulls{/number}"
-// pushed_at: "2022-08-25T14:25:01Z"
-// releases_url: "https://api.github.com/repos/clapy-app/clapy-plugin/releases{/id}"
-// size: 292021
-// ssh_url: "git@github.com:clapy-app/clapy-plugin.git"
-// stargazers_count: 0
-// stargazers_url: "https://api.github.com/repos/clapy-app/clapy-plugin/stargazers"
-// statuses_url: "https://api.github.com/repos/clapy-app/clapy-plugin/statuses/{sha}"
-// subscribers_url: "https://api.github.com/repos/clapy-app/clapy-plugin/subscribers"
-// subscription_url: "https://api.github.com/repos/clapy-app/clapy-plugin/subscription"
-// svn_url: "https://github.com/clapy-app/clapy-plugin"
-// tags_url: "https://api.github.com/repos/clapy-app/clapy-plugin/tags"
-// teams_url: "https://api.github.com/repos/clapy-app/clapy-plugin/teams"
-// topics: []
-// trees_url: "https://api.github.com/repos/clapy-app/clapy-plugin/git/trees{/sha}"
-// updated_at: "2022-05-18T18:53:32Z"
-// url: "https://api.github.com/repos/clapy-app/clapy-plugin"
-// visibility: "private"
-// watchers: 0
-// watchers_count: 0
-// web_commit_signoff_required: false
 
 export async function listBranches(context: GHContext) {
   const { octokit } = context;
