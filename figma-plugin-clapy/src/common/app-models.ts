@@ -107,3 +107,8 @@ export interface PreviewResp {
   preview: string | false | undefined;
   page: PageConfig;
 }
+
+export interface FetchGithubCredentialsResp {
+  accessToken: string | undefined;
+  hasPermission: boolean;
+}

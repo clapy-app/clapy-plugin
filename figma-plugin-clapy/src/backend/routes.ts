@@ -12,11 +12,11 @@ import {
   clearCachedTokens,
   getCachedIsFirstLogin,
   getCachedToken,
-  getGithubCachedToken,
+  getGithubCachedCredentials,
   getRefreshToken,
   setCachedIsFirstLogin,
   setCachedToken,
-  setGithubCachedToken,
+  setGithubCachedCredentials,
 } from './routes/2-user/getCachedToken';
 import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
@@ -38,8 +38,8 @@ export const routes = {
   getUserMetadata,
   setUserMetadata,
   setUserMetaUsage,
-  getGithubCachedToken,
-  setGithubCachedToken,
+  getGithubCachedCredentials,
+  setGithubCachedCredentials,
 
   // Design to code: generate code
   saveCustomCssInFigmaNode,

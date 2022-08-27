@@ -9,10 +9,18 @@ import { isBinaryUrl } from '../export-code/create-ts-compiler/9-to-csb-files.js
 // Github API doc: https://docs.github.com/en/rest/git/commits
 // Octokit doc: https://octokit.github.io/rest.js/v18#git-create-ref
 
+// An example of equivalent directly using the REST API: https://stackoverflow.com/questions/11801983/how-to-create-a-commit-and-push-into-repo-with-github-api-v3/63461333#63461333
+// But not sure I want to move to the REST API. I would loose the typings.
+
 export interface GHContext {
   auth0UserId: string;
   accessToken: string;
   octokit: Octokit;
+}
+
+export function fetchUser(context: GHContext) {
+  const { octokit } = context;
+  return octokit.request('/user');
 }
 
 export function listRepos(context: GHContext) {

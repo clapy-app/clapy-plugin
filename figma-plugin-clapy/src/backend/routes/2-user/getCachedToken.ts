@@ -1,3 +1,5 @@
+import type { FetchGithubCredentialsResp } from '../../../common/app-models.js';
+
 // todo: A modifier dans une semaine retirer hasClosedUpdateToast.
 export async function getCachedToken() {
   const [accessToken, tokenType]: [string | null, string | null] = await Promise.all([
@@ -34,14 +36,16 @@ export async function clearCachedTokens() {
   ]);
 }
 
-export async function getGithubCachedToken() {
-  return figma.clientStorage.getAsync('githubAccessToken') as Promise<string | undefined>;
+export async function getGithubCachedCredentials() {
+  await figma.clientStorage.deleteAsync('githubAccessToken');
+  return figma.clientStorage.getAsync('githubCachedCredentials') as Promise<FetchGithubCredentialsResp | undefined>;
 }
 
-export async function setGithubCachedToken(githubAccessToken: string | undefined) {
-  if (!githubAccessToken) {
-    await figma.clientStorage.deleteAsync('githubAccessToken');
+export async function setGithubCachedCredentials(githubCachedCredentials: FetchGithubCredentialsResp | undefined) {
+  await figma.clientStorage.deleteAsync('githubAccessToken');
+  if (!githubCachedCredentials) {
+    await figma.clientStorage.deleteAsync('githubCachedCredentials');
   } else {
-    await figma.clientStorage.setAsync('githubAccessToken', githubAccessToken);
+    await figma.clientStorage.setAsync('githubCachedCredentials', githubCachedCredentials);
   }
 }

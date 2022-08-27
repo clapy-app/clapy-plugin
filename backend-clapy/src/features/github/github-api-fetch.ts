@@ -73,17 +73,21 @@ async function fetchGithub<GithubResp>(path: string, context: GHContext) {
   return { ...response, accessToken };
 }
 
-let firstTokenFetch = false;
+// let firstTokenFetch = false;
 
 export async function fetchGithubAccessTokenOrThrow(auth0UserId: string) {
-  if (firstTokenFetch) {
-    firstTokenFetch = false;
-    return 'faketoken';
-  }
-  const auth0User = await getAuth0User(auth0UserId);
-  const accessToken = auth0User.identities?.find(idp => idp.provider === 'github')?.access_token;
+  // if (firstTokenFetch) {
+  //   firstTokenFetch = false;
+  //   return 'faketoken';
+  // }
+  const accessToken = await fetchGithubAccessToken(auth0UserId);
   if (!accessToken) {
     throw new Error(`BUG missing github access token in Auth0 identities`);
   }
   return accessToken;
+}
+
+export async function fetchGithubAccessToken(auth0UserId: string) {
+  const auth0User = await getAuth0User(auth0UserId);
+  return auth0User.identities?.find(idp => idp.provider === 'github')?.access_token;
 }

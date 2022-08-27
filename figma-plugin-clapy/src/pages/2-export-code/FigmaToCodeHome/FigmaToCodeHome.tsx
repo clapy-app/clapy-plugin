@@ -50,10 +50,10 @@ import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
 import classes from './FigmaToCodeHome.module.css';
-import { GithubOption } from '../github/GithubOption.js';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
+import { GenTargetOptions } from '../GenTargetOptions.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -304,7 +304,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               />
             </FormControl>
           </Tooltip>
-          <GithubOption
+          <GenTargetOptions
             className={state === 'generated' ? classes.hide : undefined}
             isLoading={isLoading}
             defaultSettings={defaultSettings}
