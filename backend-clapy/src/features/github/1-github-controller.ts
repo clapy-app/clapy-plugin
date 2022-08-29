@@ -3,11 +3,12 @@ import type { RestEndpointMethodTypes } from '@octokit/rest';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { fetchGithubAccessToken } from './github-api-fetch.js';
 import type { GHContext } from './github-service.js';
-import { fetchUser, listRepos } from './github-service.js';
+import { searchRepos, fetchUser, listRepos } from './github-service.js';
 import { getOctokit } from './octokit.js';
 
-interface FetchGithubCredentialsResp {
+interface GithubCredentials {
   accessToken: string | undefined;
+  user: string | undefined;
   hasPermission: boolean;
 }
 
@@ -29,7 +30,7 @@ export class GithubController {
     const auth0UserId = req.auth.sub;
     const accessToken = await fetchGithubAccessToken(auth0UserId);
     if (!accessToken) {
-      const resp: FetchGithubCredentialsResp = { accessToken: undefined, hasPermission: false };
+      const resp: GithubCredentials = { accessToken: undefined, user: undefined, hasPermission: false };
       return resp;
     }
     const context: GHContext = {
@@ -42,7 +43,7 @@ export class GithubController {
       ?.split(',')
       .map(scope => scope.trim())
       .includes('repo');
-    const resp: FetchGithubCredentialsResp = { accessToken, hasPermission };
+    const resp: GithubCredentials = { accessToken, user: data.login, hasPermission };
     return resp;
   }
 
@@ -65,5 +66,15 @@ export class GithubController {
     // const data = await commitChanges(context, files, 'Auto-commit powered by Clapy');
     // console.log(data);
     // return data;
+  }
+
+  @Post('search-repos')
+  async searchRepos(@Req() req: RequestPrivate, @Body() body: TokenPayload) {
+    const auth0UserId = req.auth.sub;
+    let { githubAccessToken: accessToken } = body;
+    const octokit = getOctokit(accessToken);
+    const context: GHContext = { accessToken, auth0UserId, octokit };
+
+    return searchRepos(context);
   }
 }

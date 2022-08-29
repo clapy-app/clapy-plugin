@@ -108,13 +108,21 @@ export interface PreviewResp {
   page: PageConfig;
 }
 
-export interface FetchGithubCredentialsResp {
+export interface GithubCredentials {
   accessToken: string | undefined;
+  user: string | undefined;
   hasPermission: boolean;
 }
 
-export interface GithubCredentials {
-  // same as FetchGithubCredentialsResp, but all defined
+export interface GithubCredentialsDef {
+  // same as GithubCredentials, but all defined
   accessToken: string;
+  user: string;
   hasPermission: boolean;
+}
+
+export interface GithubSettings {
+  repository?: string;
+  codegenBranch?: string;
+  mergeToBranch?: string;
 }

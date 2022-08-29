@@ -16,6 +16,7 @@
 }
 .previewPluginWrapper {
   position: relative;
+  contain: content;
   /* Must match src/backend/backend.ts */
   height: 600px;
   width: 404px;

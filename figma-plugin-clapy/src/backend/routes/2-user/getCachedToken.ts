@@ -1,4 +1,4 @@
-import type { FetchGithubCredentialsResp } from '../../../common/app-models.js';
+import type { GithubCredentials } from '../../../common/app-models.js';
 
 // todo: A modifier dans une semaine retirer hasClosedUpdateToast.
 export async function getCachedToken() {
@@ -37,12 +37,10 @@ export async function clearCachedTokens() {
 }
 
 export async function getGithubCachedCredentials() {
-  await figma.clientStorage.deleteAsync('githubAccessToken');
-  return figma.clientStorage.getAsync('githubCachedCredentials') as Promise<FetchGithubCredentialsResp | undefined>;
+  return figma.clientStorage.getAsync('githubCachedCredentials') as Promise<GithubCredentials | undefined>;
 }
 
-export async function setGithubCachedCredentials(githubCachedCredentials: FetchGithubCredentialsResp | undefined) {
-  await figma.clientStorage.deleteAsync('githubAccessToken');
+export async function setGithubCachedCredentials(githubCachedCredentials: GithubCredentials | undefined) {
   if (!githubCachedCredentials) {
     await figma.clientStorage.deleteAsync('githubCachedCredentials');
   } else {

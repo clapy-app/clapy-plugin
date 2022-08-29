@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import type { FetchGithubCredentialsResp, Nil } from '../../../common/app-models.js';
+import type { GithubCredentials, GithubSettings, Nil } from '../../../common/app-models.js';
 import type { RootState } from '../../../core/redux/store.js';
 
 export interface Repo {
@@ -28,15 +28,20 @@ export interface Repo {
 }
 
 export interface ExportCodeState {
-  credentials?: FetchGithubCredentialsResp;
+  // Initial credentials
+  loadingSettings: boolean;
+  credentials?: GithubCredentials;
+  settings?: GithubSettings;
+  // Sign in
   signInLoading?: boolean;
   signInAborter?: () => void;
-  loadingRepos: boolean;
+  // Repo
+  loadingRepos?: boolean;
   repositories?: Repo[];
 }
 
 const initialState: ExportCodeState = {
-  loadingRepos: true, // useLoadGHRepos starts loading immediately
+  loadingSettings: true, // useLoadGHSettingsAndCredentials starts loading immediately
 };
 
 // To add to src/core/redux/store.ts
@@ -44,12 +49,23 @@ export const githubSlice = createSlice({
   name: 'github',
   initialState,
   reducers: {
-    setGHInitialCredentials: (state, { payload }: PayloadAction<FetchGithubCredentialsResp | undefined>) => {
+    // Load initial credentials
+    startLoadingGHSettingsAndCredentials: state => {
+      state.loadingSettings = true;
+    },
+    endLoadingGHSettingsAndCredentials: state => {
+      state.loadingSettings = false;
+    },
+    setGHInitialCredentials: (state, { payload }: PayloadAction<GithubCredentials | undefined>) => {
       state.credentials = payload;
     },
     setGHAuthError: state => {
       state.credentials = undefined;
     },
+    setGHSettings: (state, { payload }: PayloadAction<GithubSettings | undefined>) => {
+      state.settings = payload;
+    },
+    // Sign in if required
     startGHSignIn: (state, { payload }: PayloadAction<{ signInAborter: AbortController }>) => {
       state.signInLoading = true;
       state.signInAborter = payload.signInAborter.abort.bind(payload.signInAborter);
@@ -58,6 +74,7 @@ export const githubSlice = createSlice({
       state.signInLoading = false;
       state.signInAborter = undefined;
     },
+    // Load repositories
     startLoadingGHRepos: state => {
       state.loadingRepos = true;
       state.repositories = undefined;
@@ -66,22 +83,36 @@ export const githubSlice = createSlice({
       state.loadingRepos = false;
       state.repositories = payload;
     },
+    setSelectedRepo: (state, { payload }: PayloadAction<string | Nil>) => {
+      if (!state.settings) state.settings = {};
+      state.settings.repository = payload || undefined;
+    },
   },
 });
 
 export const {
+  // Load initial credentials
+  startLoadingGHSettingsAndCredentials,
+  endLoadingGHSettingsAndCredentials,
   setGHInitialCredentials,
   setGHAuthError,
+  setGHSettings,
+  // Sign in if required
   startGHSignIn,
   endGHSignIn,
+  // Load repositories
   startLoadingGHRepos,
   setGHRepositories,
+  setSelectedRepo,
 } = githubSlice.actions;
 
+export const selectIsLoadingGHSettings = (state: RootState) => state.github.loadingSettings;
 export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
 export const selectGHCredentials = (state: RootState) => state.github.credentials;
 export const selectGHAccessToken = (state: RootState) => state.github.credentials?.accessToken;
 export const selectGHHasPermission = (state: RootState) => state.github.credentials?.hasPermission;
 export const selectGHSignInLoading = (state: RootState) => state.github.signInLoading;
 export const selectGHSignInAborter = (state: RootState) => state.github.signInAborter;
-export const selectGHRepos = (state: RootState) => state.github.repositories;
+export const selectGHRepos = (state: RootState) => state.github.repositories?.map(repo => repo.full_name);
+export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
+export const selectGHSelectedRepo = (state: RootState) => state.github.settings?.repository;

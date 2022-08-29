@@ -18,6 +18,7 @@ import {
   setCachedToken,
   setGithubCachedCredentials,
 } from './routes/2-user/getCachedToken';
+import { addRepoToSettings, getGithubSettings } from './routes/2-user/github-settings.js';
 import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
@@ -40,6 +41,9 @@ export const routes = {
   setUserMetaUsage,
   getGithubCachedCredentials,
   setGithubCachedCredentials,
+  // Github
+  getGithubSettings,
+  addRepoToSettings,
 
   // Design to code: generate code
   saveCustomCssInFigmaNode,

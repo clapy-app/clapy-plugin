@@ -1,4 +1,5 @@
-import type { FetchGithubCredentialsResp, GithubCredentials } from '../common/app-models.js';
+import type { GithubCredentials, GithubCredentialsDef } from '../common/app-models.js';
+import { toConcurrencySafeAsyncFn } from '../common/general-utils.js';
 import { fetchPlugin } from '../common/plugin-utils.js';
 import { dispatchOther, readSelectorOnce } from '../core/redux/redux.utils.js';
 import {
@@ -26,7 +27,7 @@ async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Pro
         throw err;
       }
 
-      const githubCredentials = await fetchGithubToken();
+      const githubCredentials = await fetchGithubCredentials();
       if (invalidGHCredentials(githubCredentials)) {
         throw new Error(noGithubTokenError);
       }
@@ -54,9 +55,9 @@ async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Pro
   }
 }
 
-async function fetchGithubToken() {
-  return (await apiPost<FetchGithubCredentialsResp>('github/token')).data;
-}
+const fetchGithubCredentials = toConcurrencySafeAsyncFn(async () => {
+  return (await apiPost<GithubCredentials>('github/token')).data;
+});
 
 async function addAuthBody<T>(body: T): Promise<T> {
   const githubCredentials = await getGithubCredentials();
@@ -68,7 +69,7 @@ export async function getGithubCredentials() {
   if (invalidGHCredentials(githubCredentials)) {
     githubCredentials = await fetchPlugin('getGithubCachedCredentials');
     if (invalidGHCredentials(githubCredentials)) {
-      githubCredentials = await fetchGithubToken();
+      githubCredentials = await fetchGithubCredentials();
       // Save in plugin cache
       await fetchPlugin('setGithubCachedCredentials', githubCredentials);
     }
@@ -78,9 +79,9 @@ export async function getGithubCredentials() {
   if (invalidGHCredentials(githubCredentials)) {
     throw new Error(noGithubTokenError);
   }
-  return githubCredentials as GithubCredentials;
+  return githubCredentials as GithubCredentialsDef;
 }
 
-export function invalidGHCredentials(credentials: FetchGithubCredentialsResp | undefined): credentials is undefined {
-  return !credentials?.accessToken || !credentials?.hasPermission;
+export function invalidGHCredentials(credentials: GithubCredentials | undefined): credentials is undefined {
+  return !credentials?.accessToken || !credentials?.user || !credentials?.hasPermission;
 }

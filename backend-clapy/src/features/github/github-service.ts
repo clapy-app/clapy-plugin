@@ -27,9 +27,28 @@ export async function listRepos(
   context: GHContext,
 ): Promise<RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data']> {
   const { octokit } = context;
+  const resp = await octokit.paginate(octokit.repos.listForAuthenticatedUser, {
+    visibility: 'all',
+    sort: 'updated',
+  });
+  return resp;
+  // The normal way to load a single page.
+  // Issue: we need to handle pagination. The total number of pages can be deduced from a special header containing "links", that we need to parse to have the page number.
+  // const resp2 = await octokit.repos.listForAuthenticatedUser({
+  //   visibility: 'all',
+  //   per_page: 10,
+  //   sort: 'updated',
+  // });
+  // return resp.data;
+}
+
+export async function searchRepos(
+  context: GHContext,
+): Promise<RestEndpointMethodTypes['search']['repos']['response']['data']> {
+  const { octokit } = context;
   return (
-    await octokit.repos.listForAuthenticatedUser({
-      visibility: 'all',
+    await octokit.search.repos({
+      q: 'user:antoineol org:clapy-app',
       per_page: 100,
     })
   ).data;

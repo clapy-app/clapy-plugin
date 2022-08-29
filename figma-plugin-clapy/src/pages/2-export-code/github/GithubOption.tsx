@@ -2,25 +2,25 @@ import type { FC } from 'react';
 import { useCallback, memo } from 'react';
 import { useSelector } from 'react-redux';
 import { Loading } from '../../../components-used/Loading/Loading.js';
-import { env } from '../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { AbortableButton } from './components/AbortableButton.js';
-import { signInToGithubWithScope, useLoadGHRepos } from './github-service.js';
+import { signInToGithubWithScope, useLoadGHSettingsAndCredentials } from './github-service.js';
 import {
   selectGHAccessToken,
   selectGHHasPermission,
-  selectGHLoadingRepos,
-  selectGHRepos,
   selectGHSignInAborter,
   selectGHSignInLoading,
+  selectIsLoadingGHSettings,
 } from './github-slice.js';
+import { ChooseRepoAutocomplete } from './ChooseRepoAutocomplete.js';
 
 interface Props {}
 
 export const GithubOption: FC<Props> = memo(function GithubOption(props) {
-  // useLoadGithubInitialState();
+  // 1. Fetch the settings and credentials. If unavailable, the selectors below will prompt the user to sign in with GitHub.
+  useLoadGHSettingsAndCredentials();
 
-  const loadingRepos = useSelector(selectGHLoadingRepos);
+  const isLoadingGHSettings = useSelector(selectIsLoadingGHSettings);
   const token = useSelector(selectGHAccessToken);
   const hasPermission = useSelector(selectGHHasPermission);
 
@@ -29,11 +29,8 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
   const ghSignIn = useCallbackAsync2(() => signInToGithubWithScope(), []);
   const cancel = useCallback(() => signInAborter?.(), [signInAborter]);
 
-  // 1. Fetch the list of repositories. It automatically fetches the token if required. If unavailable, the selectors below will prompt the user to sign in with GitHub.
-  useLoadGHRepos();
-
   // 1.b if the initial token is missing, prompt to sign in.
-  if (loadingRepos) {
+  if (isLoadingGHSettings) {
     return <Loading />;
   }
   if (!token) {
@@ -54,25 +51,11 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
       </>
     );
   }
+  // 2. Github settings form
   return (
     <>
       {/* List the repositories. The user should pick one. */}
-      <ChooseRepo />
-      <p>
-        Your organization repository is not in the list? You may need to{' '}
-        <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>
-          grant access to the Clapy OAuth app here.
-        </a>
-      </p>
+      <ChooseRepoAutocomplete />
     </>
   );
-});
-
-export const ChooseRepo: FC<Props> = memo(function ChooseRepo(props) {
-  const repos = useSelector(selectGHRepos);
-  if (!repos?.length) {
-    return null;
-  }
-  // TODO: pick a repository
-  return <>{repos.length} repositories</>;
 });

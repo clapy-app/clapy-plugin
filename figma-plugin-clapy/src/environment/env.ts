@@ -32,6 +32,8 @@ const prod = {
 
 const nonConfidentialEnv = isDev ? dev : isStaging ? staging : prod;
 
+const previewEnv = process.env.PREVIEW_ENV;
+
 // cast as string because we check them below and throw if undefined. So it's safe in the rest of the app.
 const auth0Domain = process.env.VITE_AUTH0_DOMAIN as string;
 const auth0ClientId = process.env.VITE_AUTH0_CLIENT_ID as string;
@@ -53,6 +55,9 @@ export const env = {
   isProd,
   isJest: typeof process !== 'undefined' && process.env.JEST_WORKER_ID !== undefined,
   isFigmaPlugin,
+  previewEnv,
+  isPreviewInBrowser: previewEnv === 'browser',
+  isPreviewInFigma: previewEnv === 'figma',
   nodeEnv,
   isNodeProduction,
   auth0Audience: 'clapy',
