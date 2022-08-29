@@ -1,5 +1,5 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 import type { GithubCredentials, GithubSettings, Nil } from '../../../common/app-models.js';
 import type { RootState } from '../../../core/redux/store.js';
 
@@ -113,6 +113,12 @@ export const selectGHAccessToken = (state: RootState) => state.github.credential
 export const selectGHHasPermission = (state: RootState) => state.github.credentials?.hasPermission;
 export const selectGHSignInLoading = (state: RootState) => state.github.signInLoading;
 export const selectGHSignInAborter = (state: RootState) => state.github.signInAborter;
-export const selectGHRepos = (state: RootState) => state.github.repositories?.map(repo => repo.full_name);
 export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
+export const selectGHRepos = (state: RootState) => state.github.repositories?.map(repo => repo.full_name);
 export const selectGHSelectedRepo = (state: RootState) => state.github.settings?.repository;
+export const selectGHReposOrJustSelection = createSelector(
+  selectGHSelectedRepo,
+  (state: RootState) => state.github.repositories,
+  (selectedRepo, repositories) =>
+    repositories?.map(repo => repo.full_name) || (selectedRepo ? [selectedRepo] : undefined),
+);

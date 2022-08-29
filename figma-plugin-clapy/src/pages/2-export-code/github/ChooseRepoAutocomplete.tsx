@@ -5,11 +5,16 @@ import { useSelector } from 'react-redux';
 import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
-import { selectGHHasRepoSelected, selectGHLoadingRepos, selectGHRepos, selectGHSelectedRepo } from './github-slice.js';
+import {
+  selectGHHasRepoSelected,
+  selectGHLoadingRepos,
+  selectGHReposOrJustSelection,
+  selectGHSelectedRepo,
+} from './github-slice.js';
 import TextField from '@mui/material/TextField/TextField.js';
 import { env } from '../../../environment/env.js';
 import { selectRepoInGHWizard, useLoadGHReposIfEditable } from './github-service.js';
-import { Loading } from '../../../components-used/Loading/Loading.js';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
 
 interface Props {}
 
@@ -17,12 +22,11 @@ interface Props {}
 const newRepoKey = '&new_repo';
 
 export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocomplete(props) {
-  const repos = useSelector(selectGHRepos);
+  const repos = useSelector(selectGHReposOrJustSelection);
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
   const selectedRepo = useSelector(selectGHSelectedRepo);
   const autocompleteValueRef = useRef(selectedRepo);
   const [edit, setEdit] = useState(!hasRepoSelected);
-  // const repoSelectionRef = useRef<string | null>(null);
 
   const startEdit = useCallbackAsync2(() => {
     setEdit(true);
@@ -36,22 +40,10 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
 
   const loadingRepos = useSelector(selectGHLoadingRepos);
 
-  if (loadingRepos) {
-    return (
-      <>
-        <Loading />
-        repo
-      </>
-    );
-  }
-
-  if (!repos?.length) {
-    // TODO after loading the github settings, when the selected repo is filled, initialize the list of repos with a special value containing only the selection.
-    // When editing it, it should start loading the repos, and show somewhat it is loading in the Autocomplete.
+  if (!repos?.length && !loadingRepos) {
     if (env.isDev) {
       throw new Error('BUG ChooseRepoAutocomplete - Repositories should be defined here.');
     }
-    return null;
   }
 
   return (
@@ -62,9 +54,23 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
           loading={true /* loadingRepos */}
           size='small'
           className={classes.repoAutocomplete}
-          options={repos}
+          options={repos && !loadingRepos ? repos : []}
           getOptionLabel={repo => repo}
-          renderInput={params => <TextField {...params} label='Repository' />}
+          renderInput={params => (
+            <TextField
+              {...params}
+              label='Repository'
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingRepos ? <CircularProgress color='inherit' size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
           onChange={selectRepo}
           onClose={endEdit}
           disabled={!edit && hasRepoSelected}

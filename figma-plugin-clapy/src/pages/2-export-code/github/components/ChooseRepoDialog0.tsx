@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import type { FC } from 'react';
 import { useCallback, useMemo, useRef, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectGHHasRepoSelected, selectGHRepos } from '../github-slice.js';
+import { selectGHHasRepoSelected, selectGHReposOrJustSelection } from '../github-slice.js';
 import classes from '../GithubOption.module.css';
 import List from '@mui/material/List/List.js';
 import ListItem from '@mui/material/ListItem/ListItem.js';
@@ -29,7 +29,7 @@ export const ChooseRepoDialog0: FC<Props> = memo(function ChooseRepoDialog0(prop
   const [open, setOpen] = useState(false);
   const repoSelectionRef = useRef<string | null>(null);
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
-  const repos = useSelector(selectGHRepos);
+  const repos = useSelector(selectGHReposOrJustSelection);
 
   const handleClickOpen = useCallback(() => setOpen(true), []);
   const handleClose = useCallback(() => setOpen(false), []);

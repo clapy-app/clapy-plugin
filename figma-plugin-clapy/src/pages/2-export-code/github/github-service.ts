@@ -7,8 +7,8 @@ import { handleError, toastError } from '../../../front-utils/front-utils.js';
 import { getGithubCredentials, githubPost } from '../../../front-utils/http-github-utils.js';
 import type { Repo } from './github-slice.js';
 import {
-  setGHSettings,
   selectGHRepos,
+  setGHSettings,
   endLoadingGHSettingsAndCredentials,
   startLoadingGHSettingsAndCredentials,
   setSelectedRepo,
