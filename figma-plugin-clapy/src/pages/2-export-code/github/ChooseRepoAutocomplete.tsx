@@ -18,8 +18,9 @@ import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js
 
 interface Props {}
 
+// Later, if we want to add new repositories.
 // We add a '&' because it's a forbidden character in github, so it won't collide with other entries.
-const newRepoKey = '&new_repo';
+// const newRepoKey = '&new_repo';
 
 export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocomplete(props) {
   const repos = useSelector(selectGHReposOrJustSelection);
@@ -79,12 +80,14 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
           clearOnBlur
           handleHomeEndKeys
         />
-        <Button variant='outlined' onClick={startEdit}>
-          {hasRepoSelected ? 'Change' : 'Choose'}
-        </Button>
+        {!edit && (
+          <Button variant='outlined' onClick={startEdit}>
+            {hasRepoSelected ? 'Change' : 'Choose'}
+          </Button>
+        )}
       </div>
       <p>
-        Your organization repository is not in the list? You may need to{' '}
+        Your organization&apos;s repositories are not in the list? You may need to{' '}
         <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>
           grant access to the Clapy OAuth app here.
         </a>

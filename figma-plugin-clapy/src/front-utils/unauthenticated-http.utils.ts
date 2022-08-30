@@ -192,6 +192,10 @@ async function httpReqUnauthenticated<T>(
     if (status === 403 || data2?.error?.error === 'invalid_grant') {
       console.warn('Logout because getting 403 on request. Not authorized, not an authentication issue.');
       if (!noLogout) {
+        if (env.isDev) {
+          console.error('Logout following this error:');
+          console.error(data2);
+        }
         logout(true);
       }
     }
