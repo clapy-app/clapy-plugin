@@ -16,6 +16,8 @@ export interface GHContext {
   auth0UserId: string;
   accessToken: string;
   octokit: Octokit;
+  owner?: string;
+  repo?: string;
 }
 
 export function fetchUser(context: GHContext) {
@@ -42,24 +44,26 @@ export async function listRepos(
   // return resp.data;
 }
 
-export async function searchRepos(
-  context: GHContext,
-): Promise<RestEndpointMethodTypes['search']['repos']['response']['data']> {
-  const { octokit } = context;
-  return (
-    await octokit.search.repos({
-      q: 'user:antoineol org:clapy-app',
-      per_page: 100,
-    })
-  ).data;
-}
+// export async function searchRepos(
+//   context: GHContext,
+// ): Promise<RestEndpointMethodTypes['search']['repos']['response']['data']> {
+//   const { octokit } = context;
+//   return (
+//     await octokit.search.repos({
+//       q: 'user:antoineol org:clapy-app',
+//       per_page: 100,
+//     })
+//   ).data;
+// }
 
 export async function listBranches(context: GHContext) {
-  const { octokit } = context;
+  const { octokit, owner, repo } = context;
+  if (!owner) throw new Error(`BUG Missing owner in GHContext, cannot list branches.`);
+  if (!repo) throw new Error(`BUG Missing repo in GHContext, cannot list branches.`);
   return (
     await octokit.repos.listBranches({
-      owner: 'clapy-app',
-      repo: 'clapy-plugin',
+      owner,
+      repo,
     })
   ).data;
 }

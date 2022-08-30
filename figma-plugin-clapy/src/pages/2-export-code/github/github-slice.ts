@@ -1,6 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import type { GithubCredentials, GithubSettings, Nil } from '../../../common/app-models.js';
+import type { GithubCredentials, GithubSettings, Nil, SelectedRepo } from '../../../common/app-models.js';
+import { setRepoInSettings } from '../../../common/github-shared-utils.js';
 import type { RootState } from '../../../core/redux/store.js';
 
 export interface Repo {
@@ -27,6 +28,10 @@ export interface Repo {
   visibility: string | Nil;
 }
 
+export interface Branch {
+  full_name: string;
+}
+
 export interface ExportCodeState {
   // Initial credentials
   loadingSettings: boolean;
@@ -38,6 +43,9 @@ export interface ExportCodeState {
   // Repo
   loadingRepos?: boolean;
   repositories?: Repo[];
+  // Branches
+  loadingBranches?: boolean;
+  branches?: Branch[];
 }
 
 const initialState: ExportCodeState = {
@@ -77,15 +85,30 @@ export const githubSlice = createSlice({
     // Load repositories
     startLoadingGHRepos: state => {
       state.loadingRepos = true;
-      state.repositories = undefined;
+      // state.repositories = undefined;
     },
     setGHRepositories: (state, { payload }: PayloadAction<Repo[] | undefined>) => {
       state.loadingRepos = false;
       state.repositories = payload;
     },
-    setSelectedRepo: (state, { payload }: PayloadAction<string | Nil>) => {
+    setSelectedRepo: (state, { payload }: PayloadAction<SelectedRepo | undefined>) => {
       if (!state.settings) state.settings = {};
-      state.settings.repository = payload || undefined;
+      const newRepo = payload || undefined;
+
+      state.settings = setRepoInSettings(state.settings, newRepo);
+    },
+    // Branches
+    startLoadingGHBranches: state => {
+      state.loadingBranches = true;
+      // state.branches = undefined;
+    },
+    setGHBranches: (state, { payload }: PayloadAction<Branch[] | undefined>) => {
+      state.loadingBranches = false;
+      state.branches = payload;
+    },
+    setSelectedTargetBranch: (state, { payload }: PayloadAction<string | Nil>) => {
+      if (!state.settings) state.settings = {};
+      state.settings.mergeToBranch = payload || undefined;
     },
   },
 });
@@ -104,21 +127,55 @@ export const {
   startLoadingGHRepos,
   setGHRepositories,
   setSelectedRepo,
+  // Branches
+  startLoadingGHBranches,
+  setGHBranches,
+  setSelectedTargetBranch,
 } = githubSlice.actions;
 
+// Load initial credentials
 export const selectIsLoadingGHSettings = (state: RootState) => state.github.loadingSettings;
-export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
 export const selectGHCredentials = (state: RootState) => state.github.credentials;
 export const selectGHAccessToken = (state: RootState) => state.github.credentials?.accessToken;
 export const selectGHHasPermission = (state: RootState) => state.github.credentials?.hasPermission;
+// Sign in if required
 export const selectGHSignInLoading = (state: RootState) => state.github.signInLoading;
 export const selectGHSignInAborter = (state: RootState) => state.github.signInAborter;
+// Load repositories
+export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
+export const selectGHRepos = (state: RootState) => state.github.repositories; /* ?.map(repo => repo.full_name) */
 export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
-export const selectGHRepos = (state: RootState) => state.github.repositories?.map(repo => repo.full_name);
-export const selectGHSelectedRepo = (state: RootState) => state.github.settings?.repository;
+export const selectGHSelectedRepo = (state: RootState) => {
+  if (state.github.repositories) {
+    return state.github.repositories.find(repo => repo.full_name === state.github.settings?.repository?.fullName);
+  } else if (!state.github.settings?.repository) {
+    return undefined;
+  } else {
+    const repo = {
+      full_name: state.github.settings.repository.fullName,
+      name: state.github.settings.repository.repo,
+      owner: {
+        login: state.github.settings.repository.owner,
+      } as Repo['owner'],
+    } as Repo;
+    return repo;
+  }
+};
 export const selectGHReposOrJustSelection = createSelector(
   selectGHSelectedRepo,
   (state: RootState) => state.github.repositories,
   (selectedRepo, repositories) =>
-    repositories?.map(repo => repo.full_name) || (selectedRepo ? [selectedRepo] : undefined),
+    repositories /* ?.map(repo => repo.full_name) */ ||
+    (selectedRepo ? [selectedRepo /* as unknown as Repo */] : undefined),
+);
+// Load branches
+export const selectGHLoadingBranches = (state: RootState) => state.github.loadingBranches;
+export const selectGHBranches = (state: RootState) => state.github.branches?.map(branch => branch.full_name);
+export const selectGHHasTargetBranchSelected = (state: RootState) => !!state.github.settings?.mergeToBranch;
+export const selectGHSelectedTargetBranch = (state: RootState) => state.github.settings?.mergeToBranch;
+export const selectGHBranchesOrJustSelection = createSelector(
+  selectGHSelectedTargetBranch,
+  (state: RootState) => state.github.branches,
+  (selectedBranch, branches) =>
+    branches?.map(branch => branch.full_name) || (selectedBranch ? [selectedBranch] : undefined),
 );

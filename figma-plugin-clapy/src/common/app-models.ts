@@ -121,8 +121,14 @@ export interface GithubCredentialsDef {
   hasPermission: boolean;
 }
 
+export interface SelectedRepo {
+  fullName: string;
+  owner: string;
+  repo: string;
+}
+
 export interface GithubSettings {
-  repository?: string;
+  repository?: SelectedRepo;
   codegenBranch?: string;
   mergeToBranch?: string;
 }

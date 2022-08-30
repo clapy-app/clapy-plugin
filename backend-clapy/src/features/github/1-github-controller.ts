@@ -3,7 +3,7 @@ import type { RestEndpointMethodTypes } from '@octokit/rest';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { fetchGithubAccessToken } from './github-api-fetch.js';
 import type { GHContext } from './github-service.js';
-import { searchRepos, fetchUser, listRepos } from './github-service.js';
+import { listBranches, fetchUser, listRepos } from './github-service.js';
 import { getOctokit } from './octokit.js';
 
 interface GithubCredentials {
@@ -14,6 +14,11 @@ interface GithubCredentials {
 
 interface TokenPayload {
   githubAccessToken: string;
+}
+
+interface ListBranchesReq extends TokenPayload {
+  owner: string;
+  repo: string;
 }
 
 interface ListReposResp {
@@ -68,13 +73,36 @@ export class GithubController {
     // return data;
   }
 
-  @Post('search-repos')
-  async searchRepos(@Req() req: RequestPrivate, @Body() body: TokenPayload) {
+  @Post('list-branches')
+  async listBranches(@Req() req: RequestPrivate, @Body() body: ListBranchesReq) {
     const auth0UserId = req.auth.sub;
-    let { githubAccessToken: accessToken } = body;
+    let { githubAccessToken: accessToken, owner, repo } = body;
+    if (!owner) throw new Error('Missing `owner` in body, cannot list branches.');
+    if (!repo) throw new Error('Missing `repo` in body, cannot list branches.');
     const octokit = getOctokit(accessToken);
-    const context: GHContext = { accessToken, auth0UserId, octokit };
+    const context: GHContext = { accessToken, auth0UserId, octokit, owner, repo };
 
-    return searchRepos(context);
+    return listBranches(context);
+
+    // const files: CodeDict = {
+    //   'codegen/foo.ts': "console.log('Hello world!');\n",
+    // };
+    //
+    // const { data } = await listBranches(context);
+    // const data = await getCommit(context);
+    // const { data } = await createBranch(context, 'gencode');
+    // const data = await commitChanges(context, files, 'Auto-commit powered by Clapy');
+    // console.log(data);
+    // return data;
   }
+
+  //   @Post('search-repos')
+  //   async searchRepos(@Req() req: RequestPrivate, @Body() body: TokenPayload) {
+  //     const auth0UserId = req.auth.sub;
+  //     let { githubAccessToken: accessToken } = body;
+  //     const octokit = getOctokit(accessToken);
+  //     const context: GHContext = { accessToken, auth0UserId, octokit };
+  //
+  //     return searchRepos(context);
+  //   }
 }

@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.50.0",
-    "@mui/material": "^5.10.1",
+    "@mui/material": "^5.10.3",
     "@octokit/types": "^7.1.1",
     "@swc/cli": "^0.1.57",
     "@swc/core": "^1.2.241",

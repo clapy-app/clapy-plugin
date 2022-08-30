@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import type { SelectedRepo } from '../../../common/app-models.js';
 import { toConcurrencySafeAsyncFn } from '../../../common/general-utils.js';
 import { fetchPlugin } from '../../../common/plugin-utils.js';
 import { requestAdditionalScopes } from '../../../core/auth/auth-service.js';
@@ -7,6 +8,11 @@ import { handleError, toastError } from '../../../front-utils/front-utils.js';
 import { getGithubCredentials, githubPost } from '../../../front-utils/http-github-utils.js';
 import type { Repo } from './github-slice.js';
 import {
+  selectGHSelectedRepo,
+  setGHBranches,
+  selectGHBranches,
+  startLoadingGHBranches,
+  setSelectedTargetBranch,
   selectGHRepos,
   setGHSettings,
   endLoadingGHSettingsAndCredentials,
@@ -92,7 +98,61 @@ export const loadGHRepos = toConcurrencySafeAsyncFn(async (force?: boolean) => {
   }
 });
 
-export async function selectRepoInGHWizard(repo: string | null) {
-  dispatchOther(setSelectedRepo(repo));
-  await fetchPlugin('addRepoToSettings', repo);
+export async function selectRepoInGHWizard(repo: Repo | null) {
+  const selectedRepo: SelectedRepo | undefined = repo
+    ? {
+        fullName: repo.full_name,
+        owner: repo.owner.login,
+        repo: repo.name,
+      }
+    : undefined;
+  dispatchOther(setSelectedRepo(selectedRepo));
+  await fetchPlugin('addRepoToSettings', selectedRepo);
+}
+
+// Branches
+
+export function useLoadGHBranchesIfEditable(edit: boolean) {
+  useEffect(() => {
+    if (edit) {
+      loadGHBranches().catch(err => {
+        handleError(err);
+        toastError(err);
+      });
+    }
+  }, [edit]);
+}
+
+interface ListBranchesReq {
+  owner: string;
+  repo: string;
+}
+
+export const loadGHBranches = toConcurrencySafeAsyncFn(async (force?: boolean) => {
+  try {
+    const branches = readSelectorOnce(selectGHBranches);
+
+    // Load the branches only once, unless we force reload.
+    if (branches && !force) return;
+
+    dispatchOther(startLoadingGHBranches());
+    const selectedRepo = readSelectorOnce(selectGHSelectedRepo);
+    if (!selectedRepo)
+      throw new Error('BUG cannot fetch branches because because the selected repository is undefined.');
+    const body: ListBranchesReq = {
+      owner: selectedRepo.owner.login,
+      repo: selectedRepo.name,
+    };
+    const { data } = await githubPost<Repo[]>('github/list-branches', body);
+    dispatchOther(setGHBranches(data));
+  } catch (err) {
+    handleError(err);
+    toastError(err);
+    dispatchOther(setGHBranches(undefined));
+  }
+});
+
+export async function selectBranchInGHWizard(branch: string | null) {
+  dispatchOther(setSelectedTargetBranch(branch));
+  await fetchPlugin('addBranchToSettings', branch || undefined);
 }

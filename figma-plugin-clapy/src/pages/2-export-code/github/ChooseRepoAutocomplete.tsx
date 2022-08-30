@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
+import type { Repo } from './github-slice.js';
 import {
   selectGHHasRepoSelected,
   selectGHLoadingRepos,
@@ -33,30 +34,26 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
     setEdit(true);
   }, []);
   const endEdit = useCallback(() => setEdit(false), []);
-  const selectRepo = useCallbackAsync2(async (_, repo: string | null) => {
+  const selectRepo = useCallbackAsync2(async (_, repo: Repo | null) => {
     selectRepoInGHWizard(repo);
   }, []);
 
   useLoadGHReposIfEditable(edit);
 
-  const loadingRepos = useSelector(selectGHLoadingRepos);
+  const showEdit = edit || !hasRepoSelected;
 
-  if (!repos?.length && !loadingRepos) {
-    if (env.isDev) {
-      throw new Error('BUG ChooseRepoAutocomplete - Repositories should be defined here.');
-    }
-  }
+  const loadingRepos = useSelector(selectGHLoadingRepos);
 
   return (
     <>
       <div className={classes.repoSelector}>
-        <Autocomplete<string>
+        <Autocomplete<Repo>
           defaultValue={autocompleteValueRef.current}
-          loading={true /* loadingRepos */}
+          loading={loadingRepos}
           size='small'
           className={classes.repoAutocomplete}
-          options={repos && !loadingRepos ? repos : []}
-          getOptionLabel={repo => repo}
+          options={repos /* && !loadingRepos */ ? repos : []}
+          getOptionLabel={repo => repo.full_name}
           renderInput={params => (
             <TextField
               {...params}
@@ -74,24 +71,26 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
           )}
           onChange={selectRepo}
           onClose={endEdit}
-          disabled={!edit && hasRepoSelected}
+          disabled={!showEdit}
           blurOnSelect
           selectOnFocus
           clearOnBlur
           handleHomeEndKeys
         />
-        {!edit && (
+        {!showEdit && (
           <Button variant='outlined' onClick={startEdit}>
             {hasRepoSelected ? 'Change' : 'Choose'}
           </Button>
         )}
       </div>
-      <p>
-        Your organization&apos;s repositories are not in the list? You may need to{' '}
-        <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>
-          grant access to the Clapy OAuth app here.
-        </a>
-      </p>
+      {showEdit && (
+        <p>
+          Your organization&apos;s repositories are not in the list? You may need to{' '}
+          <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>
+            grant access to the Clapy OAuth app here.
+          </a>
+        </p>
+      )}
     </>
   );
 });

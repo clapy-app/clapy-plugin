@@ -46,11 +46,11 @@
     "killbyport": "sudo kill -9 `sudo lsof -t -i:9001`"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.0",
-    "@emotion/styled": "^11.10.0",
-    "@mui/icons-material": "^5.8.4",
-    "@mui/lab": "^5.0.0-alpha.95",
-    "@mui/material": "^5.10.1",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@mui/icons-material": "^5.10.3",
+    "@mui/lab": "^5.0.0-alpha.97",
+    "@mui/material": "^5.10.3",
     "@reduxjs/toolkit": "^1.8.4",
     "@urql/exchange-auth": "^1.0.0",
     "@urql/exchange-retry": "^1.0.0",
