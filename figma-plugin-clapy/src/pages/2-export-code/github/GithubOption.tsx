@@ -14,6 +14,7 @@ import {
 } from './github-slice.js';
 import { ChooseRepoAutocomplete } from './ChooseRepoAutocomplete.js';
 import { ChooseBranchAutocomplete } from './ChooseBranchAutocomplete.js';
+import { ChooseClapyBranch } from './ChooseClapyBranch.js';
 
 interface Props {}
 
@@ -58,6 +59,7 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
       {/* List the repositories. The user should pick one. */}
       <ChooseRepoAutocomplete />
       <ChooseBranchAutocomplete />
+      <ChooseClapyBranch />
     </>
   );
 });

@@ -6,7 +6,7 @@ import { requestAdditionalScopes } from '../../../core/auth/auth-service.js';
 import { dispatchOther, readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { handleError, toastError } from '../../../front-utils/front-utils.js';
 import { getGithubCredentials, githubPost } from '../../../front-utils/http-github-utils.js';
-import type { Repo } from './github-slice.js';
+import type { Branch, Repo } from './github-slice.js';
 import {
   selectGHSelectedRepo,
   setGHBranches,
@@ -143,7 +143,7 @@ export const loadGHBranches = toConcurrencySafeAsyncFn(async (force?: boolean) =
       owner: selectedRepo.owner.login,
       repo: selectedRepo.name,
     };
-    const { data } = await githubPost<Repo[]>('github/list-branches', body);
+    const { data } = await githubPost<Branch[]>('github/list-branches', body);
     dispatchOther(setGHBranches(data));
   } catch (err) {
     handleError(err);

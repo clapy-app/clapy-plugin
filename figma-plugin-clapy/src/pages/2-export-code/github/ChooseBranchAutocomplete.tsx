@@ -1,6 +1,6 @@
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
-import { useRef, useCallback, memo, useState } from 'react';
+import { useCallback, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
@@ -30,8 +30,8 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
   const branches = useSelector(selectGHBranchesOrJustSelection);
   const hasTargetBranchSelected = useSelector(selectGHHasTargetBranchSelected);
   const selectedTargetBranch = useSelector(selectGHSelectedTargetBranch);
-  const autocompleteValueRef = useRef(selectedTargetBranch);
-  const [edit, setEdit] = useState(!hasTargetBranchSelected);
+  const [_edit, setEdit] = useState(!hasTargetBranchSelected);
+  const edit = _edit || !hasTargetBranchSelected;
 
   const startEdit = useCallbackAsync2(() => {
     setEdit(true);
@@ -43,15 +43,13 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
 
   useLoadGHBranchesIfEditable(edit);
 
-  const showEdit = edit || !hasTargetBranchSelected;
-
   const loadingBranches = useSelector(selectGHLoadingBranches);
 
   return (
     <>
       <div className={classes.repoSelector}>
         <Autocomplete<string>
-          defaultValue={autocompleteValueRef.current}
+          value={selectedTargetBranch || null}
           loading={loadingBranches}
           size='small'
           className={classes.repoAutocomplete}
@@ -60,7 +58,7 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
           renderInput={params => (
             <TextField
               {...params}
-              label='Branch'
+              label='Target branch for the PR'
               InputProps={{
                 ...params.InputProps,
                 endAdornment: (
@@ -74,13 +72,13 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
           )}
           onChange={selectBranch}
           onClose={endEdit}
-          disabled={!showEdit}
+          disabled={!edit}
           blurOnSelect
           selectOnFocus
           clearOnBlur
           handleHomeEndKeys
         />
-        {!showEdit && (
+        {!edit && (
           <Button variant='outlined' onClick={startEdit}>
             {hasTargetBranchSelected ? 'Change' : 'Choose'}
           </Button>

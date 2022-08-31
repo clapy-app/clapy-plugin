@@ -29,7 +29,12 @@ export interface Repo {
 }
 
 export interface Branch {
-  full_name: string;
+  commit: {
+    sha: string;
+    url: string;
+  };
+  name: string;
+  protected: boolean;
 }
 
 export interface ExportCodeState {
@@ -95,6 +100,11 @@ export const githubSlice = createSlice({
       if (!state.settings) state.settings = {};
       const newRepo = payload || undefined;
 
+      // Clear list of branches
+      const prevRepo = state.settings.repository;
+      if (newRepo !== prevRepo) {
+        state.branches = undefined;
+      }
       state.settings = setRepoInSettings(state.settings, newRepo);
     },
     // Branches
@@ -145,22 +155,27 @@ export const selectGHSignInAborter = (state: RootState) => state.github.signInAb
 export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
 export const selectGHRepos = (state: RootState) => state.github.repositories; /* ?.map(repo => repo.full_name) */
 export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
-export const selectGHSelectedRepo = (state: RootState) => {
-  if (state.github.repositories) {
-    return state.github.repositories.find(repo => repo.full_name === state.github.settings?.repository?.fullName);
-  } else if (!state.github.settings?.repository) {
-    return undefined;
-  } else {
-    const repo = {
-      full_name: state.github.settings.repository.fullName,
-      name: state.github.settings.repository.repo,
-      owner: {
-        login: state.github.settings.repository.owner,
-      } as Repo['owner'],
-    } as Repo;
-    return repo;
-  }
-};
+const selectGHSelectedRepoFromCache = (state: RootState) => state.github.settings?.repository;
+export const selectGHSelectedRepo = createSelector(
+  selectGHRepos,
+  selectGHSelectedRepoFromCache,
+  (repos, selectedRepoFromCache) => {
+    if (repos) {
+      return repos.find(repo => repo.full_name === selectedRepoFromCache?.fullName);
+    } else if (!selectedRepoFromCache) {
+      return undefined;
+    } else {
+      const repo = {
+        full_name: selectedRepoFromCache.fullName,
+        name: selectedRepoFromCache.repo,
+        owner: {
+          login: selectedRepoFromCache.owner,
+        } as Repo['owner'],
+      } as Repo;
+      return repo;
+    }
+  },
+);
 export const selectGHReposOrJustSelection = createSelector(
   selectGHSelectedRepo,
   (state: RootState) => state.github.repositories,
@@ -170,12 +185,11 @@ export const selectGHReposOrJustSelection = createSelector(
 );
 // Load branches
 export const selectGHLoadingBranches = (state: RootState) => state.github.loadingBranches;
-export const selectGHBranches = (state: RootState) => state.github.branches?.map(branch => branch.full_name);
+export const selectGHBranches = (state: RootState) => state.github.branches?.map(branch => branch.name);
 export const selectGHHasTargetBranchSelected = (state: RootState) => !!state.github.settings?.mergeToBranch;
 export const selectGHSelectedTargetBranch = (state: RootState) => state.github.settings?.mergeToBranch;
 export const selectGHBranchesOrJustSelection = createSelector(
   selectGHSelectedTargetBranch,
   (state: RootState) => state.github.branches,
-  (selectedBranch, branches) =>
-    branches?.map(branch => branch.full_name) || (selectedBranch ? [selectedBranch] : undefined),
+  (selectedBranch, branches) => branches?.map(branch => branch.name) || (selectedBranch ? [selectedBranch] : undefined),
 );

@@ -2,6 +2,8 @@
 
 - Use nvm to install NodeJS (makes it much easier to switch versions)
 - NodeJS >= 16 required
+- If you're on Windows, 16 GB of RAM
+  - you may want to cap the memory consumption of WSL2 to 4.5 or 5 GB. https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261
 
 In a terminal, run:
 

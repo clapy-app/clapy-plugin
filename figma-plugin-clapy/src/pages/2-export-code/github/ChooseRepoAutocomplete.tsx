@@ -1,6 +1,6 @@
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
-import { useRef, useCallback, memo, useState } from 'react';
+import { useCallback, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
@@ -27,7 +27,6 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
   const repos = useSelector(selectGHReposOrJustSelection);
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
   const selectedRepo = useSelector(selectGHSelectedRepo);
-  const autocompleteValueRef = useRef(selectedRepo);
   const [edit, setEdit] = useState(!hasRepoSelected);
 
   const startEdit = useCallbackAsync2(() => {
@@ -48,7 +47,7 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
     <>
       <div className={classes.repoSelector}>
         <Autocomplete<Repo>
-          defaultValue={autocompleteValueRef.current}
+          value={selectedRepo || null}
           loading={loadingRepos}
           size='small'
           className={classes.repoAutocomplete}
