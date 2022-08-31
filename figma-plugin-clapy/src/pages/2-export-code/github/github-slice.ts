@@ -193,3 +193,4 @@ export const selectGHBranchesOrJustSelection = createSelector(
   (state: RootState) => state.github.branches,
   (selectedBranch, branches) => branches?.map(branch => branch.name) || (selectedBranch ? [selectedBranch] : undefined),
 );
+export const selectGHCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
