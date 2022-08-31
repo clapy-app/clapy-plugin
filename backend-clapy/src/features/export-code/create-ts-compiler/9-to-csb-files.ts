@@ -14,6 +14,6 @@ export function toCSBFiles(...files: CodeDict[]) {
   return csbFiles;
 }
 
-export function isBinaryUrl(content: string) {
+function isBinaryUrl(content: string) {
   return content.startsWith('https://');
 }

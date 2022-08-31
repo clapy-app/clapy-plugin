@@ -13,20 +13,24 @@ import {
   selectGHSelectedTargetBranch,
 } from './github-slice.js';
 import TextField from '@mui/material/TextField/TextField.js';
-import { selectBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
+import { selectTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
 
-interface Props {}
+interface Props {
+  isLoading: boolean;
+}
 
 export const ChooseBranchAutocomplete: FC<Props> = memo(function ChooseBranchAutocomplete(props) {
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
   if (!hasRepoSelected) {
     return null;
   }
-  return <ChooseBranchAutocompleteInner />;
+  return <ChooseBranchAutocompleteInner {...props} />;
 });
 
 const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutocompleteInner(props) {
+  const { isLoading } = props;
+
   const branches = useSelector(selectGHBranchesOrJustSelection);
   const hasTargetBranchSelected = useSelector(selectGHHasTargetBranchSelected);
   const selectedTargetBranch = useSelector(selectGHSelectedTargetBranch);
@@ -38,7 +42,7 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
   }, []);
   const endEdit = useCallback(() => setEdit(false), []);
   const selectBranch = useCallbackAsync2(async (_, branch: string | null) => {
-    selectBranchInGHWizard(branch);
+    selectTargetBranchInGHWizard(branch);
   }, []);
 
   useLoadGHBranchesIfEditable(edit);
@@ -72,14 +76,14 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
           )}
           onChange={selectBranch}
           onClose={endEdit}
-          disabled={!edit}
+          disabled={!edit || isLoading}
           blurOnSelect
           selectOnFocus
           clearOnBlur
           handleHomeEndKeys
         />
         {!edit && (
-          <Button variant='outlined' onClick={startEdit}>
+          <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
             {hasTargetBranchSelected ? 'Change' : 'Choose'}
           </Button>
         )}

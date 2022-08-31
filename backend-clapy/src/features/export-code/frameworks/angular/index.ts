@@ -194,7 +194,7 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     angularJson.cli.analytics = false;
   }
 
-  if (extraConfig.output !== 'csb') {
+  if (extraConfig.target !== 'csb') {
     // Legacy config that is required on CodeSandbox.
     delete angularJson.defaultProject;
   }

@@ -1,10 +1,10 @@
-import type { ButtonHTMLAttributes, FC } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, FC } from 'react';
 import { memo } from 'react';
 
 import { Loading } from '../../../../components-used/Loading/Loading';
 import classes from './_ButtonBase.module.css';
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+type Props = (ButtonHTMLAttributes<HTMLButtonElement> | AnchorHTMLAttributes<HTMLAnchorElement>) & {
   disabled?: boolean;
   loading?: boolean;
   variant?: 'text';

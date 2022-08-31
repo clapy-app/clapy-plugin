@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import type { SelectedRepo } from '../../../common/app-models.js';
 import { toConcurrencySafeAsyncFn } from '../../../common/general-utils.js';
 import { fetchPlugin } from '../../../common/plugin-utils.js';
+import type { SelectedRepo } from '../../../common/sb-serialize.model.js';
 import { requestAdditionalScopes } from '../../../core/auth/auth-service.js';
 import { dispatchOther, readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { handleError, toastError } from '../../../front-utils/front-utils.js';
@@ -39,10 +39,10 @@ export async function useLoadGHSettingsAndCredentials() {
   }, []);
 }
 
-async function loadGHSettingsAndCredentials() {
+export async function loadGHSettingsAndCredentials() {
   try {
     dispatchOther(startLoadingGHSettingsAndCredentials());
-    await Promise.all([getGithubCredentials(), loadGHSettings()]);
+    return await Promise.all([getGithubCredentials(), loadGHSettings()]);
   } finally {
     dispatchOther(endLoadingGHSettingsAndCredentials());
   }
@@ -51,6 +51,7 @@ async function loadGHSettingsAndCredentials() {
 async function loadGHSettings() {
   const settings = await fetchPlugin('getGithubSettings');
   dispatchOther(setGHSettings(settings));
+  return settings;
 }
 
 // Sign in if required
@@ -152,7 +153,7 @@ export const loadGHBranches = toConcurrencySafeAsyncFn(async (force?: boolean) =
   }
 });
 
-export async function selectBranchInGHWizard(branch: string | null) {
+export async function selectTargetBranchInGHWizard(branch: string | null) {
   dispatchOther(setSelectedTargetBranch(branch));
   await fetchPlugin('addBranchToSettings', branch || undefined);
 }

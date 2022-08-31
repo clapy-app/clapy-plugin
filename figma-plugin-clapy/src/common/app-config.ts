@@ -25,6 +25,7 @@ export const extractionStepsLabels = {
   extractSVGs: 'extracting SVGs',
   extractImages: 'extracting images',
   uploadAsset: 'uploading assets',
+  readGhSettings: 'reading github settings',
   generateCode: 'generating code',
 };
 

@@ -9,8 +9,11 @@ import { promisify } from 'util';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { dockerPluginCompDir, localGenClapyDir } from '../../root.js';
-import type { CSBResponse } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { CodeDict, CsbDict, ModuleContext, ProjectContext } from './code.model.js';
+
+export interface CSBResponse {
+  sandbox_id: string;
+}
 
 export async function uploadToCSB(files: CsbDict) {
   const { data } = await axios.post<CSBResponse>('https://codesandbox.io/api/v1/sandboxes/define?json=1', {

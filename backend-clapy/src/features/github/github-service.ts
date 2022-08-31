@@ -1,7 +1,8 @@
 import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import axios from 'axios';
-import type { CodeDict } from '../export-code/code.model.js';
-import { isBinaryUrl } from '../export-code/create-ts-compiler/9-to-csb-files.js';
+import type { CsbDict, ProjectContext } from '../export-code/code.model.js';
+import type { AccessTokenDecoded } from '../user/user.utils.js';
+import { getOctokit } from './octokit.js';
 
 // Good sources of inspiration:
 // https://github.com/mheap/octokit-commit-multiple-files/blob/main/create-or-update-files.js
@@ -82,7 +83,45 @@ export async function listBranches(context: GHContext) {
 //   ).data;
 // }
 
-export async function commitChanges(context: GHContext, files: CodeDict) {
+export interface GitHubResponse {
+  url: string;
+}
+
+export async function sendCodeToGithub(
+  projectContext: ProjectContext,
+  githubAccessToken: string | undefined,
+  user: AccessTokenDecoded,
+  files: CsbDict,
+) {
+  if (!githubAccessToken) throw new Error('BUG Missing `githubAccessToken` to send code to github.');
+  const auth0UserId = user.sub;
+  const { githubSettings } = projectContext.extraConfig;
+  if (!githubSettings) throw new Error('BUG Missing `githubSettings` to send code to github.');
+  const { repository, codegenBranch, mergeToBranch } = githubSettings;
+  if (!repository) throw new Error('BUG Missing `repository` to send code to github.');
+  const { owner, repo } = repository;
+  if (!owner) throw new Error('Missing `owner` in body, cannot generate code.');
+  if (!repo) throw new Error('Missing `repo` in body, cannot generate code.');
+  if (!codegenBranch) throw new Error('Missing `codegenBranch` in body, cannot generate code.');
+  if (!mergeToBranch) throw new Error('Missing `mergeToBranch` in body, cannot generate code.');
+
+  const octokit = getOctokit(githubAccessToken);
+  const context: GHContext = {
+    accessToken: githubAccessToken,
+    auth0UserId,
+    octokit,
+    owner,
+    repo,
+    codegenBranch,
+    mergeToBranch,
+  };
+
+  const githubResp = await commitChanges(context, files);
+  const res: GitHubResponse = { url: githubResp.html_url };
+  return res;
+}
+
+export async function commitChanges(context: GHContext, files: CsbDict) {
   const message = 'Clapy generated code 2';
 
   const branchCommitSha = await getBranchCommitSha(context);
@@ -112,13 +151,13 @@ async function getBranchCommitSha(context: GHContext) {
   ).data.object.sha;
 }
 
-async function codeDictToTree(context: GHContext, files: CodeDict) {
-  const promises = Object.entries(files).map(async ([path, content]) => {
+async function codeDictToTree(context: GHContext, files: CsbDict) {
+  const promises = Object.entries(files).map(async ([path, { content, isBinary }]) => {
     if (!content) {
       throw new Error(`No file content provided for ${path}`);
     }
     let treeItem: GitTreeItem;
-    if (isBinaryUrl(content)) {
+    if (isBinary) {
       const { data } = await axios.get(content, { responseType: 'arraybuffer' });
       const contentBase64 = Buffer.from(data, 'binary').toString('base64');
       const blob = await createBlobBase64(context, contentBase64);

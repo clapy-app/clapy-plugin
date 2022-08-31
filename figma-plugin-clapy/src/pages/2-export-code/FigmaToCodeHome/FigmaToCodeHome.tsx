@@ -27,7 +27,7 @@ import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type {
-  CSBResponse,
+  GenCodeResponse,
   ExportCodePayload,
   ExportImageMap2,
   UserSettings,
@@ -54,6 +54,9 @@ import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 import { GenTargetOptions } from '../GenTargetOptions.js';
+import { loadGHSettingsAndCredentials } from '../github/github-service.js';
+import { githubPost } from '../../../front-utils/http-github-utils.js';
+import { codegenBranchDefaultValue } from '../github/ChooseClapyBranch.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -82,6 +85,7 @@ const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework']);
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const selectionPreview = useSelector(selectSelectionPreview);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
+  const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const [renderableSettings, setRenderableSettings] = useState<UserSettings>(defaultSettings);
@@ -103,7 +107,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
   const state: MyStates = isLoading
     ? 'loading'
-    : sandboxId
+    : sandboxId || githubPRUrl
     ? 'generated'
     : selectionPreview
     ? 'selection'
@@ -178,8 +182,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            // output: to remove later. It's defined in the webservice.
-            output: userSettings.zip || isNoCodeSandboxUser ? 'zip' : 'csb',
             ...userSettings,
           },
           tokens,
@@ -223,15 +225,33 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           console.log(JSON.stringify(nodes));
         }
         if (!env.isDev || sendToApi) {
-          setProgress({ stepId: 'generateCode', stepNumber: 8 });
-
-          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
-          if (isNoCodeSandboxUser) {
-            nodes.extraConfig.zip = true;
-            nodes.extraConfig.output = 'zip';
+          if (!nodes.extraConfig.target) {
+            nodes.extraConfig.target === nodes.extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
           }
 
-          const { data } = await apiPost<CSBResponse>('code/export', nodes);
+          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
+          if (isNoCodeSandboxUser && nodes.extraConfig.target === 'csb') {
+            nodes.extraConfig.target = UserSettingsTarget.zip;
+          }
+
+          // Get the github settings
+          let fetchApiMethod: typeof apiPost;
+          if (nodes.extraConfig.target === UserSettingsTarget.github) {
+            setProgress({ stepId: 'readGhSettings', stepNumber: 8 });
+            let [ghCredentials, githubSettings] = await loadGHSettingsAndCredentials();
+            if (!githubSettings) {
+              throw new Error('No github settings found although GitHub has been selected as target');
+            }
+            githubSettings = { ...githubSettings, codegenBranch: codegenBranchDefaultValue };
+            nodes.extraConfig.githubSettings = githubSettings;
+            fetchApiMethod = githubPost;
+          } else {
+            fetchApiMethod = apiPost;
+          }
+
+          setProgress({ stepId: 'generateCode', stepNumber: 9 });
+
+          const { data } = await fetchApiMethod<GenCodeResponse>('code/export', nodes);
           if (!data.quotas) {
             const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
             dispatch(setStripeData(data));
@@ -249,6 +269,12 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             // window.open(url, '_blank', 'noopener');
             setSandboxId(data.sandbox_id);
             track('gen-code', 'completed', { url: `https://${data.sandbox_id}.csb.app/`, durationInS });
+            return;
+          } else if (data?.url) {
+            if (env.isDev) {
+              console.log('sandbox preview:', `https://${data.url}.csb.app/`, `(in ${durationInS} seconds)`);
+            }
+            track('gen-code', 'completed', { url: `https://${data.url}.csb.app/`, durationInS, github: true });
             return;
           } else {
             track('gen-code', 'completed-no-data', { durationInS });
@@ -367,7 +393,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                         <Switch
                           name='zip'
                           onChange={updateAdvancedOption}
-                          defaultChecked={!!defaultSettings.zip || isNoCodeSandboxUser}
+                          defaultChecked={defaultSettings.target === UserSettingsTarget.zip || isNoCodeSandboxUser}
                         />
                       }
                       label='Download as zip'
@@ -472,15 +498,24 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           for unlimited access.
         </div>
       ) : null}
-      {state === 'generated' && (
-        <>
-          <div className={classes.openResult}>
-            <LivePreviewButton url={`https://${sandboxId}.csb.app/`} />
-            <EditCodeButton url={`https://codesandbox.io/s/${sandboxId}`} />
-          </div>
-          <BackToCodeGen onClick={backToSelection} />
-        </>
-      )}
+      {state === 'generated' &&
+        (githubPRUrl ? (
+          <>
+            <div className={classes.openResult}>
+              <LivePreviewButton url={githubPRUrl} />
+              <Button href={githubPRUrl}></Button>
+            </div>
+            <BackToCodeGen onClick={backToSelection} />
+          </>
+        ) : (
+          <>
+            <div className={classes.openResult}>
+              <LivePreviewButton url={`https://${sandboxId}.csb.app/`} />
+              <EditCodeButton url={`https://codesandbox.io/s/${sandboxId}`} />
+            </div>
+            <BackToCodeGen onClick={backToSelection} />
+          </>
+        ))}
     </div>
   );
 });

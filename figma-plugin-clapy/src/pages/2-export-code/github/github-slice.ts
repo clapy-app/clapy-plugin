@@ -1,7 +1,8 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import type { GithubCredentials, GithubSettings, Nil, SelectedRepo } from '../../../common/app-models.js';
+import type { GithubCredentials, Nil } from '../../../common/app-models.js';
 import { setRepoInSettings } from '../../../common/github-shared-utils.js';
+import type { GithubSettings, SelectedRepo } from '../../../common/sb-serialize.model.js';
 import type { RootState } from '../../../core/redux/store.js';
 
 export interface Repo {

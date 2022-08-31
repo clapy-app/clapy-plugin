@@ -1,4 +1,4 @@
-import type { GithubSettings, SelectedRepo } from './app-models.js';
+import type { GithubSettings, SelectedRepo } from './sb-serialize.model.js';
 
 // Centralize the logic to update the repository selection, both in redux state and in Figma storage.
 export function setRepoInSettings(settings: GithubSettings, repo: SelectedRepo | undefined) {

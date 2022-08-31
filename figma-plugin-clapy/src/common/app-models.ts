@@ -120,15 +120,3 @@ export interface GithubCredentialsDef {
   user: string;
   hasPermission: boolean;
 }
-
-export interface SelectedRepo {
-  fullName: string;
-  owner: string;
-  repo: string;
-}
-
-export interface GithubSettings {
-  repository?: SelectedRepo;
-  codegenBranch?: string;
-  mergeToBranch?: string;
-}

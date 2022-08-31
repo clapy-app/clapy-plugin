@@ -1,5 +1,5 @@
-import type { GithubSettings, SelectedRepo } from '../../../common/app-models.js';
 import { setRepoInSettings } from '../../../common/github-shared-utils.js';
+import type { GithubSettings, SelectedRepo } from '../../../common/sb-serialize.model.js';
 
 export async function getGithubSettings() {
   return figma.clientStorage.getAsync('githubSettings') as Promise<GithubSettings | undefined>;

@@ -17,17 +17,22 @@ import { env } from '../../../environment/env.js';
 import { selectRepoInGHWizard, useLoadGHReposIfEditable } from './github-service.js';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
 
-interface Props {}
+interface Props {
+  isLoading: boolean;
+}
 
 // Later, if we want to add new repositories.
 // We add a '&' because it's a forbidden character in github, so it won't collide with other entries.
 // const newRepoKey = '&new_repo';
 
 export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocomplete(props) {
+  const { isLoading } = props;
+
   const repos = useSelector(selectGHReposOrJustSelection);
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
   const selectedRepo = useSelector(selectGHSelectedRepo);
-  const [edit, setEdit] = useState(!hasRepoSelected);
+  const [_edit, setEdit] = useState(!hasRepoSelected);
+  const edit = _edit || !hasRepoSelected;
 
   const startEdit = useCallbackAsync2(() => {
     setEdit(true);
@@ -38,8 +43,6 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
   }, []);
 
   useLoadGHReposIfEditable(edit);
-
-  const showEdit = edit || !hasRepoSelected;
 
   const loadingRepos = useSelector(selectGHLoadingRepos);
 
@@ -70,19 +73,19 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
           )}
           onChange={selectRepo}
           onClose={endEdit}
-          disabled={!showEdit}
+          disabled={!edit || isLoading}
           blurOnSelect
           selectOnFocus
           clearOnBlur
           handleHomeEndKeys
         />
-        {!showEdit && (
-          <Button variant='outlined' onClick={startEdit}>
+        {!edit && (
+          <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
             {hasRepoSelected ? 'Change' : 'Choose'}
           </Button>
         )}
       </div>
-      {showEdit && (
+      {edit && (
         <p>
           Your organization&apos;s repositories are not in the list? You may need to{' '}
           <a href={env.githubOAuthAppUrl} target={'_blank'} rel='noreferrer'>

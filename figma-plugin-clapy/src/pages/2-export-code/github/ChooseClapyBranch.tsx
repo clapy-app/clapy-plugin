@@ -1,18 +1,18 @@
-import { Button } from '@mui/material';
 import TextField from '@mui/material/TextField/TextField.js';
 import type { FC } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
-import { readSelectorOnce } from '../../../core/redux/redux.utils.js';
-import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
-import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { selectGHHasRepoSelected, selectGHSelectedRepo, selectGHSelectedTargetBranch } from './github-slice.js';
+import { selectGHHasRepoSelected } from './github-slice.js';
 
-const codegenBranchDefaultValue = 'gencode';
+export const codegenBranchDefaultValue = 'gencode';
 
-interface Props {}
+interface Props {
+  isLoading: boolean;
+}
 
 export const ChooseClapyBranch: FC<Props> = memo(function ChooseClapyBranch(props) {
+  // const { isLoading } = props;
+
   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
   if (!hasRepoSelected) {
     return null;
@@ -27,32 +27,36 @@ interface GenCodeReq {
   mergeToBranch: string;
 }
 
-export const SendToGithub: FC<Props> = memo(function SendToGithub(props) {
-  const sendCodeToGithub = useCallbackAsync2(async () => {
-    const selectedRepo = readSelectorOnce(selectGHSelectedRepo);
-    const codegenBranch = codegenBranchDefaultValue; /* readSelectorOnce(selectGHCodegenBranch) */
-    const mergeToBranch = readSelectorOnce(selectGHSelectedTargetBranch);
-    if (!selectedRepo) throw new Error('BUG selectedRepo is undefined.');
-    if (!codegenBranch) throw new Error('BUG codegenBranch is undefined.');
-    if (!mergeToBranch) throw new Error('BUG mergeToBranch is undefined.');
-    const body: GenCodeReq = {
-      owner: selectedRepo.owner.login,
-      repo: selectedRepo.name,
-      codegenBranch,
-      mergeToBranch,
-    };
-    const res = await githubPost<any>('github/gencode-tmp', body);
-    console.log('codegen res:', res);
-  }, []);
+interface PR {
+  html_url: string;
+}
 
-  const hasRepoSelected = useSelector(selectGHHasRepoSelected);
-  if (!hasRepoSelected) {
-    return null;
-  }
-
-  return (
-    <Button onClick={sendCodeToGithub} variant='outlined'>
-      Send to github
-    </Button>
-  );
-});
+// export const SendToGithub: FC<Props> = memo(function SendToGithub(props) {
+//   const sendCodeToGithub = useCallbackAsync2(async () => {
+//     const selectedRepo = readSelectorOnce(selectGHSelectedRepo);
+//     const codegenBranch = codegenBranchDefaultValue; /* readSelectorOnce(selectGHCodegenBranch) */
+//     const mergeToBranch = readSelectorOnce(selectGHSelectedTargetBranch);
+//     if (!selectedRepo) throw new Error('BUG selectedRepo is undefined.');
+//     if (!codegenBranch) throw new Error('BUG codegenBranch is undefined.');
+//     if (!mergeToBranch) throw new Error('BUG mergeToBranch is undefined.');
+//     const body: GenCodeReq = {
+//       owner: selectedRepo.owner.login,
+//       repo: selectedRepo.name,
+//       codegenBranch,
+//       mergeToBranch,
+//     };
+//     const { data } = await githubPost<PR>('github/gencode-tmp', body);
+//     console.log('PR url:', data.html_url);
+//   }, []);
+//
+//   const hasRepoSelected = useSelector(selectGHHasRepoSelected);
+//   if (!hasRepoSelected) {
+//     return null;
+//   }
+//
+//   return (
+//     <Button onClick={sendCodeToGithub} variant='outlined'>
+//       Send to github
+//     </Button>
+//   );
+// });

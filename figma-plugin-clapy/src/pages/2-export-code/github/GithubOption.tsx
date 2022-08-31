@@ -14,11 +14,15 @@ import {
 } from './github-slice.js';
 import { ChooseRepoAutocomplete } from './ChooseRepoAutocomplete.js';
 import { ChooseBranchAutocomplete } from './ChooseBranchAutocomplete.js';
-import { ChooseClapyBranch, SendToGithub } from './ChooseClapyBranch.js';
+import { ChooseClapyBranch } from './ChooseClapyBranch.js';
 
-interface Props {}
+interface Props {
+  isLoading: boolean;
+}
 
 export const GithubOption: FC<Props> = memo(function GithubOption(props) {
+  const { isLoading } = props;
+
   // 1. Fetch the settings and credentials. If unavailable, the selectors below will prompt the user to sign in with GitHub.
   useLoadGHSettingsAndCredentials();
 
@@ -37,7 +41,7 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
   }
   if (!token) {
     return (
-      <AbortableButton onClick={ghSignIn} onCancel={cancel} loading={signInLoading}>
+      <AbortableButton onClick={ghSignIn} onCancel={cancel} loading={signInLoading} disabled={isLoading}>
         Sign in with Github
       </AbortableButton>
     );
@@ -47,7 +51,7 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
     return (
       <>
         <p>Clapy needs extra GitHub permissions to push the generated code to your repository.</p>
-        <AbortableButton onClick={ghSignIn} onCancel={cancel}>
+        <AbortableButton onClick={ghSignIn} onCancel={cancel} disabled={isLoading}>
           Add GitHub permissions
         </AbortableButton>
       </>
@@ -57,10 +61,10 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
   return (
     <>
       {/* List the repositories. The user should pick one. */}
-      <ChooseRepoAutocomplete />
-      <ChooseBranchAutocomplete />
-      <ChooseClapyBranch />
-      <SendToGithub />
+      <ChooseRepoAutocomplete isLoading={isLoading} />
+      <ChooseBranchAutocomplete isLoading={isLoading} />
+      <ChooseClapyBranch isLoading={isLoading} />
+      {/* <SendToGithub /> */}
     </>
   );
 });

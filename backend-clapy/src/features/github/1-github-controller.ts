@@ -1,10 +1,9 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import type { RestEndpointMethodTypes } from '@octokit/rest';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
-import type { CodeDict } from '../export-code/code.model.js';
 import { fetchGithubAccessToken } from './github-api-fetch.js';
 import type { GHContext } from './github-service.js';
-import { commitChanges, listBranches, fetchUser, listRepos } from './github-service.js';
+import { listBranches, fetchUser, listRepos } from './github-service.js';
 import { getOctokit } from './octokit.js';
 
 interface GithubCredentials {
@@ -87,24 +86,24 @@ export class GithubController {
     return listBranches(context);
   }
 
-  @Post('gencode-tmp')
-  async genCodeTmp(@Req() req: RequestPrivate, @Body() body: GenCodeReq) {
-    const auth0UserId = req.auth.sub;
-    let { githubAccessToken: accessToken, owner, repo, codegenBranch, mergeToBranch } = body;
-    if (!owner) throw new Error('Missing `owner` in body, cannot generate code.');
-    if (!repo) throw new Error('Missing `repo` in body, cannot generate code.');
-    if (!codegenBranch) throw new Error('Missing `codegenBranch` in body, cannot generate code.');
-    if (!mergeToBranch) throw new Error('Missing `mergeToBranch` in body, cannot generate code.');
-
-    const octokit = getOctokit(accessToken);
-    const context: GHContext = { accessToken, auth0UserId, octokit, owner, repo, codegenBranch, mergeToBranch };
-
-    const files: CodeDict = {
-      'codegen/foo.ts': "console.log('Hello world!');\n",
-    };
-
-    return commitChanges(context, files);
-  }
+  //   @Post('gencode-tmp')
+  //   async genCodeTmp(@Req() req: RequestPrivate, @Body() body: GenCodeReq) {
+  //     const auth0UserId = req.auth.sub;
+  //     let { githubAccessToken: accessToken, owner, repo, codegenBranch, mergeToBranch } = body;
+  //     if (!owner) throw new Error('Missing `owner` in body, cannot generate code.');
+  //     if (!repo) throw new Error('Missing `repo` in body, cannot generate code.');
+  //     if (!codegenBranch) throw new Error('Missing `codegenBranch` in body, cannot generate code.');
+  //     if (!mergeToBranch) throw new Error('Missing `mergeToBranch` in body, cannot generate code.');
+  //
+  //     const octokit = getOctokit(accessToken);
+  //     const context: GHContext = { accessToken, auth0UserId, octokit, owner, repo, codegenBranch, mergeToBranch };
+  //
+  //     const files: CsbDict = {
+  //       'codegen/foo.ts': { content: "console.log('Hello world!');\n" },
+  //     };
+  //
+  //     return commitChanges(context, files);
+  //   }
 
   //   @Post('search-repos')
   //   async searchRepos(@Req() req: RequestPrivate, @Body() body: TokenPayload) {

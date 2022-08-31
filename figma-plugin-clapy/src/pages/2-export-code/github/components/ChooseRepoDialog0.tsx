@@ -52,9 +52,9 @@ export const ChooseRepoDialog0: FC<Props> = memo(function ChooseRepoDialog0(prop
           <>
             <Divider />
             {repos.map(repo => (
-              <ListItem key={repo} disablePadding>
+              <ListItem key={repo.full_name} disablePadding>
                 <ListItemButton disableRipple={true}>
-                  <ListItemText primary={repo} />
+                  <ListItemText primary={repo.full_name} />
                 </ListItemButton>
               </ListItem>
             ))}

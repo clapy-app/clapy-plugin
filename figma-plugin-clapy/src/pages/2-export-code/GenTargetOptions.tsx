@@ -36,11 +36,6 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
       const value = value0 as UserSettingsTarget;
       setTarget(value);
       updateAdvancedOption(event, value);
-      // Match the legacy zip setting until the API is updated
-      updateAdvancedOption(
-        { target: { name: 'zip' } } as React.ChangeEvent<HTMLInputElement>,
-        value === UserSettingsTarget.zip,
-      );
     },
     [updateAdvancedOption],
   );
@@ -72,7 +67,7 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
           </Tooltip>
         </RadioGroup>
       </FormControl>
-      {target === UserSettingsTarget.github && <GithubOption />}
+      {target === UserSettingsTarget.github && <GithubOption isLoading={isLoading} />}
     </div>
   );
 });
