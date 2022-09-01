@@ -20,7 +20,7 @@ type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   variant?: 'text';
   size?: 'medium';
   href: string;
-  target?: string;
+  target?: '_blank';
 };
 
 type Props = ButtonProps | AnchorProps;
@@ -30,7 +30,13 @@ export const Button: FC<Props> = memo(function Button(props) {
     const { href, target, ...buttonProps } = props;
     const { loading, className, ...otherWrapperProps } = buttonProps;
     return (
-      <a href={href} target={target} className={`${classes.root} ${className}`} {...otherWrapperProps}>
+      <a
+        href={href}
+        target={target}
+        rel={target === '_blank' ? 'noreferrer' : undefined}
+        className={`${classes.root} ${className}`}
+        {...otherWrapperProps}
+      >
         <_ButtonBase {...buttonProps} />
       </a>
     );

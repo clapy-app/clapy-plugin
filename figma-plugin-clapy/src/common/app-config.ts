@@ -11,7 +11,7 @@ export const flags = {
   verbose: false,
   measurePerf: false,
   alphaFeature: env.isDev,
-  logWebsocketRequests: true,
+  logWebsocketRequests: false,
   fixSvgStrokePositionBug: true,
   extractInstanceSVG: true,
   groupSvgInCompInstance: false,

@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField/TextField.js';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
@@ -67,7 +67,7 @@ export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' |
 
 interface Props {}
 
-let defaultSettings: UserSettings = {
+let settingsBackup: UserSettings = {
   // framework: 'angular',
   framework: 'react',
   target: UserSettingsTarget.csb,
@@ -75,8 +75,6 @@ let defaultSettings: UserSettings = {
   // bem: env.isDev,
   angularPrefix: 'cl',
 };
-
-const userSettings = { ...defaultSettings };
 
 // Listed keys will re-render the component when the setting change. List the ones that are needed for the UI, e.g. when activating an option shows another option.
 // Don't list settings that don't impact the UI.
@@ -88,7 +86,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
-  const [renderableSettings, setRenderableSettings] = useState<UserSettings>(defaultSettings);
+  const userSettingsRef = useRef(settingsBackup);
+  const initialSettingsRef = useRef(userSettingsRef.current);
+  const [renderableSettings, setRenderableSettings] = useState<UserSettings>(userSettingsRef.current);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
@@ -100,7 +100,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     () => () => {
       // When the component is unloaded (e.g. navigate to another view), the user settings are backed up in the defaultSettings object.
       // When the component will be re-mounted, those default settings will be used to pre-fill the form inputs (using the default value attributes).
-      defaultSettings = { ...userSettings };
+      settingsBackup = { ...userSettingsRef.current };
     },
     [],
   );
@@ -123,7 +123,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       );
       return;
     }
-    (userSettings as any)[name] = settingValue;
+    userSettingsRef.current = { ...userSettingsRef.current, [name]: settingValue };
 
     // Specific state updates for the UI
     if (renderableSettingsKeys.has(name)) {
@@ -142,7 +142,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     try {
       setIsLoading(true);
       setSandboxId('loading');
-      track('gen-code', 'start', userSettings);
+      track('gen-code', 'start', userSettingsRef.current);
       perfReset();
 
       // Extract the Figma configuration
@@ -182,7 +182,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            ...userSettings,
+            ...userSettingsRef.current,
           },
           tokens,
           page,
@@ -274,6 +274,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             if (env.isDev) {
               console.log('sandbox preview:', `https://${data.url}.csb.app/`, `(in ${durationInS} seconds)`);
             }
+            setGithubPRUrl(data.url);
             track('gen-code', 'completed', { url: `https://${data.url}.csb.app/`, durationInS, github: true });
             return;
           } else {
@@ -304,6 +305,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
+    setGithubPRUrl(undefined);
   }, []);
   return (
     <div className={classes.root}>
@@ -324,7 +326,13 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           >
             <FormControl disabled={isLoading} className={classes.outerOption}>
               <FormControlLabel
-                control={<Switch name='page' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.page} />}
+                control={
+                  <Switch
+                    name='page'
+                    onChange={updateAdvancedOption}
+                    defaultChecked={!!initialSettingsRef.current.page}
+                  />
+                }
                 label='Full width/height (for pages)'
                 disabled={isLoading}
               />
@@ -333,7 +341,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           <GenTargetOptions
             className={state === 'generated' ? classes.hide : undefined}
             isLoading={isLoading}
-            defaultSettings={defaultSettings}
+            defaultSettings={initialSettingsRef.current}
             updateAdvancedOption={updateAdvancedOption}
           />
           <Accordion
@@ -355,7 +363,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     row
                     name='framework'
                     onChange={updateAdvancedOption as RadioGroupProps['onChange']}
-                    defaultValue={defaultSettings.framework}
+                    defaultValue={initialSettingsRef.current.framework}
                   >
                     <Tooltip title='Generates React code.' disableInteractive placement={appConfig.tooltipPosition}>
                       <FormControlLabel value='react' control={<Radio />} label='React' />
@@ -393,7 +401,9 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                         <Switch
                           name='zip'
                           onChange={updateAdvancedOption}
-                          defaultChecked={defaultSettings.target === UserSettingsTarget.zip || isNoCodeSandboxUser}
+                          defaultChecked={
+                            initialSettingsRef.current.target === UserSettingsTarget.zip || isNoCodeSandboxUser
+                          }
                         />
                       }
                       label='Download as zip'
@@ -408,7 +418,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 >
                   <FormControlLabel
                     control={
-                      <Switch name='scss' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.scss} />
+                      <Switch
+                        name='scss'
+                        onChange={updateAdvancedOption}
+                        defaultChecked={!!initialSettingsRef.current.scss}
+                      />
                     }
                     label='SCSS instead of CSS (alpha)'
                     disabled={isLoading}
@@ -422,7 +436,11 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                   >
                     <FormControlLabel
                       control={
-                        <Switch name='bem' onChange={updateAdvancedOption} defaultChecked={!!defaultSettings.bem} />
+                        <Switch
+                          name='bem'
+                          onChange={updateAdvancedOption}
+                          defaultChecked={!!initialSettingsRef.current.bem}
+                        />
                       }
                       label='Indent classes with BEM convention'
                       disabled={isLoading}
@@ -433,7 +451,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 <AddCssOption
                   className={state === 'generated' ? classes.hide : undefined}
                   isLoading={isLoading}
-                  defaultSettings={defaultSettings}
+                  defaultSettings={initialSettingsRef.current}
                   updateAdvancedOption={updateAdvancedOption}
                 />
 
@@ -446,7 +464,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                       variant='outlined'
                       size='small'
                       disabled={isLoading}
-                      defaultValue={defaultSettings.angularPrefix}
+                      defaultValue={initialSettingsRef.current.angularPrefix}
                       name='angularPrefix'
                       onChange={updateSettingFromTextField}
                     />
@@ -502,8 +520,10 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
         (githubPRUrl ? (
           <>
             <div className={classes.openResult}>
-              <LivePreviewButton url={githubPRUrl} />
-              <Button href={githubPRUrl}></Button>
+              {/* <LivePreviewButton url={githubPRUrl} /> */}
+              <Button href={githubPRUrl} target='_blank' size='medium' className={classes.resultButton}>
+                View PR on GitHub
+              </Button>
             </div>
             <BackToCodeGen onClick={backToSelection} />
           </>

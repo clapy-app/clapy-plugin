@@ -25,6 +25,10 @@
   gap: 16px;
 }
 
+.resultButton {
+  flex: 1;
+}
+
 .accordionRoot.accordionRoot.accordionRoot {
   align-self: stretch;
   display: block;

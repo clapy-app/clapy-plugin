@@ -152,30 +152,32 @@ async function getBranchCommitSha(context: GHContext) {
 }
 
 async function codeDictToTree(context: GHContext, files: CsbDict) {
-  const promises = Object.entries(files).map(async ([path, { content, isBinary }]) => {
-    if (!content) {
-      throw new Error(`No file content provided for ${path}`);
-    }
-    let treeItem: GitTreeItem;
-    if (isBinary) {
-      const { data } = await axios.get(content, { responseType: 'arraybuffer' });
-      const contentBase64 = Buffer.from(data, 'binary').toString('base64');
-      const blob = await createBlobBase64(context, contentBase64);
-      treeItem = {
-        path: path,
-        mode: '100644',
-        type: 'blob',
-        sha: blob,
-      };
-    } else {
-      treeItem = {
-        path: path,
-        mode: '100644',
-        content,
-      };
-    }
-    return treeItem;
-  });
+  const promises = Object.entries(files)
+    .filter(([path, _]) => path.startsWith('src/components'))
+    .map(async ([path, { content, isBinary }]) => {
+      if (!content) {
+        throw new Error(`No file content provided for ${path}`);
+      }
+      let treeItem: GitTreeItem;
+      if (isBinary) {
+        const { data } = await axios.get(content, { responseType: 'arraybuffer' });
+        const contentBase64 = Buffer.from(data, 'binary').toString('base64');
+        const blob = await createBlobBase64(context, contentBase64);
+        treeItem = {
+          path: path,
+          mode: '100644',
+          type: 'blob',
+          sha: blob,
+        };
+      } else {
+        treeItem = {
+          path: path,
+          mode: '100644',
+          content,
+        };
+      }
+      return treeItem;
+    });
   const res: GitTree = await Promise.all(promises);
   return res;
 }
