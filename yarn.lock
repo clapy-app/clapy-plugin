@@ -4744,13 +4744,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"classnames@npm:^2.2.6":
-  version: 2.3.1
-  resolution: "classnames@npm:2.3.1"
-  checksum: 14db8889d56c267a591f08b0834989fe542d47fac659af5a539e110cc4266694e8de86e4e3bbd271157dbd831361310a8293e0167141e80b0f03a0f175c80960
-  languageName: node
-  linkType: hard
-
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -6749,7 +6742,6 @@ __metadata:
     prismjs: ^1.29.0
     react: 18.2.0
     react-dom: 18.2.0
-    react-phone-input-material-ui: ^2.17.4
     react-redux: ^8.0.2
     react-simple-code-editor: ^0.13.0
     react-toastify: ^9.0.8
@@ -8870,13 +8862,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.debounce@npm:^4.0.8":
-  version: 4.0.8
-  resolution: "lodash.debounce@npm:4.0.8"
-  checksum: a3f527d22c548f43ae31c861ada88b2637eb48ac6aa3eb56e82d44917971b8aa96fbb37aa60efea674dc4ee8c42074f90f7b1f772e9db375435f6c83a19b3bc6
-  languageName: node
-  linkType: hard
-
 "lodash.defaults@npm:^4.2.0":
   version: 4.2.0
   resolution: "lodash.defaults@npm:4.2.0"
@@ -8947,7 +8932,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.memoize@npm:4.x, lodash.memoize@npm:^4.1.2":
+"lodash.memoize@npm:4.x":
   version: 4.1.2
   resolution: "lodash.memoize@npm:4.1.2"
   checksum: 9ff3942feeccffa4f1fafa88d32f0d24fdc62fd15ded5a74a5f950ff5f0c6f61916157246744c620173dddf38d37095a92327d5fd3861e2063e736a5c207d089
@@ -8965,20 +8950,6 @@ __metadata:
   version: 4.1.1
   resolution: "lodash.once@npm:4.1.1"
   checksum: d768fa9f9b4e1dc6453be99b753906f58990e0c45e7b2ca5a3b40a33111e5d17f6edf2f768786e2716af90a8e78f8f91431ab8435f761fef00f9b0c256f6d245
-  languageName: node
-  linkType: hard
-
-"lodash.reduce@npm:^4.6.0":
-  version: 4.6.0
-  resolution: "lodash.reduce@npm:4.6.0"
-  checksum: 81f2a1045440554f8427f895ef479f1de5c141edd7852dde85a894879312801efae0295116e5cf830c531c1a51cdab8f3628c3ad39fa21a9874bb9158d9ea075
-  languageName: node
-  linkType: hard
-
-"lodash.startswith@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "lodash.startswith@npm:4.2.1"
-  checksum: 1847371cbf6f32c4125a555847aff8a1ff1a977f40882b0ad4e2656a32e364793cfa7602915c9165cc0bba61fbd802e561888126d242faadcf3fc77215bab19b
   languageName: node
   linkType: hard
 
@@ -10531,7 +10502,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -10670,36 +10641,6 @@ __metadata:
   version: 18.2.0
   resolution: "react-is@npm:18.2.0"
   checksum: e72d0ba81b5922759e4aff17e0252bd29988f9642ed817f56b25a3e217e13eea8a7f2322af99a06edb779da12d5d636e9fda473d620df9a3da0df2a74141d53e
-  languageName: node
-  linkType: hard
-
-"react-phone-input-material-ui@npm:^2.17.4":
-  version: 2.17.4
-  resolution: "react-phone-input-material-ui@npm:2.17.4"
-  dependencies:
-    classnames: ^2.2.6
-    lodash.debounce: ^4.0.8
-    lodash.memoize: ^4.1.2
-    lodash.reduce: ^4.6.0
-    lodash.startswith: ^4.2.1
-    prop-types: ^15.7.2
-  peerDependencies:
-    "@emotion/react": ^11.7.1
-    "@emotion/styled": ^11.6.0
-    "@material-ui/core": ^4.12.3
-    "@mui/material": ^5.4.1
-    react: ^16.12.0 || ^17.0.0
-    react-dom: ^16.12.0 || ^17.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@material-ui/core":
-      optional: true
-    "@mui/material":
-      optional: true
-  checksum: 52d93ae51138a26a19c5a30d692365054a08bec46a62ef4dc454dd37d3dd5a9abc51eb7d7bdba5e79f7e57df4adf4ae064dad08d2141b810533fe6520dc92b11
   languageName: node
   linkType: hard
 

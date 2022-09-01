@@ -78,6 +78,7 @@ export interface ExtractionProgress {
 export interface UserMetadata {
   firstName?: string;
   lastName?: string;
+  /** @deprecated */
   companyName?: string;
   phone?: string;
   jobRole?: string;
@@ -91,6 +92,9 @@ export interface UserMetadata {
   quotasMax?: number;
   isLicenseExpired?: boolean;
   limitedUser?: boolean;
+
+  // UI-only field
+  phoneIsValid?: boolean;
 }
 
 export interface UserMetaUsage {

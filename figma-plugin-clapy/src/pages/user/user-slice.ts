@@ -4,7 +4,7 @@ import { createSelector, createSlice } from '@reduxjs/toolkit';
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import { selectIsStripeEnabled } from '../../core/auth/auth-slice.js';
 import type { RootState } from '../../core/redux/store';
-import { hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
+import { formatPartialPhone, hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
 export interface UserState {
   userMetadata?: UserProfileState;
@@ -74,7 +74,17 @@ export const selectHasMissingMetaUsage = (state: RootState) =>
  * filtered earlier in Layout.tsx with the above selectors. And assumes it's not undefined, which
  * should have been filtered by the FillUserProfile wrapper.
  */
-export const selectUserMetadata = (state: RootState) => state.user.userMetadata as UserMetadata;
+export const selectUserMetadata = (state: RootState) => {
+  let metadata = state.user.userMetadata as UserMetadata;
+  // Special case: format the phone number for the initial rendering.
+  const [newPhone, isValid] = formatPartialPhone(metadata?.phone);
+  if (newPhone !== metadata?.phone) {
+    metadata = { ...metadata, phone: newPhone, phoneIsValid: isValid };
+  } else {
+    metadata = { ...metadata, phoneIsValid: isValid };
+  }
+  return metadata;
+};
 export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadata as UserMetadata)?.usage;
 
 export const selectIsUserMaxQuotaReached = createSelector(
