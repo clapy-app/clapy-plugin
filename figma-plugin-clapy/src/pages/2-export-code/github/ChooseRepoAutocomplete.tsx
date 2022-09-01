@@ -1,4 +1,3 @@
-import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { useCallback, memo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -16,6 +15,7 @@ import TextField from '@mui/material/TextField/TextField.js';
 import { env } from '../../../environment/env.js';
 import { selectRepoInGHWizard, useLoadGHReposIfEditable } from './github-service.js';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
+import Button from '@mui/material/Button/Button.js';
 
 interface Props {
   isLoading: boolean;
