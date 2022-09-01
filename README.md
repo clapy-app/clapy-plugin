@@ -24,7 +24,7 @@ First usage of git? Also run (replace with your name/email):
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 - Alternatively, to develop on the webservice only:
-  - `yarn up` through command-line to start all docker containers
+  - `yarn dup` through command-line to start all docker containers
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 
 (1) Alternative: `yarn dev` through command-line to start everything
@@ -54,6 +54,7 @@ TODO Yacine
 ### Update yarn
 
 - `yarn set version stable`
+- `yarn dlx @yarnpkg/sdks vscode` may be required when upgrading typescript, so that VSCode typescript workspace version is also updated.
 - `yarn install` in the root (and the back and the front?) directories.
 
 ### Update libraries

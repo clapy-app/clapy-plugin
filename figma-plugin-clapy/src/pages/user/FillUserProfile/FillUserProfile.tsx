@@ -2,7 +2,7 @@ import LoadingButton from '@mui/lab/LoadingButton/LoadingButton.js';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import type { CountryCode } from 'libphonenumber-js';
-import { parsePhoneNumber } from 'libphonenumber-js';
+import { parsePhoneNumber, AsYouType } from 'libphonenumber-js';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { CountryData } from 'react-phone-input-material-ui';
@@ -18,6 +18,8 @@ import { hasMissingMetaProfile, updateUserMetadata } from '../user-service';
 import { selectUserMetadata, selectUserProfileState } from '../user-slice';
 import classes from './FillUserProfile.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
+
+const phoneFormatter = new AsYouType();
 
 const roles = {
   ux_ui_designer: 'UX/UI Designer',
@@ -214,6 +216,15 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
             >
               {teamSizesTsx}
             </TextField>
+            {/* <TextField
+              className={classes.textField}
+              name='phone'
+              label='Phone'
+              variant='outlined'
+              size='small'
+              defaultValue={defaultValuesRef.current.phone}
+              onChange={handleChange}
+            /> */}
             <ReactPhoneInput
               value={phoneValue}
               country={'fr'}

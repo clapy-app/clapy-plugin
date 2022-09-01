@@ -36,8 +36,8 @@
     "cSpell.words": ["clapy", "metabase", "pipedrive"],
 
     // To enable for Yarn Plug'n'Play:
-    "eslint.nodePath": ".yarn/sdks",
-    "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+    "eslint.nodePath": "ROOT/.yarn/sdks",
+    "prettier.prettierPath": "ROOT/.yarn/sdks/prettier/index.js",
     "typescript.tsdk": "ROOT/.yarn/sdks/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
 
