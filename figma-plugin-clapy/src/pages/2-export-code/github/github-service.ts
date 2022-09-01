@@ -5,7 +5,7 @@ import type { SelectedRepo } from '../../../common/sb-serialize.model.js';
 import { requestAdditionalScopes } from '../../../core/auth/auth-service.js';
 import { dispatchOther, readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { handleError, toastError } from '../../../front-utils/front-utils.js';
-import { getGithubCredentials, githubPost } from '../../../front-utils/http-github-utils.js';
+import { getGithubCredentials, githubPost, isNoGHTokenError } from '../../../front-utils/http-github-utils.js';
 import type { Branch, Repo } from './github-slice.js';
 import {
   selectGHSelectedRepo,
@@ -32,8 +32,10 @@ export async function useLoadGHSettingsAndCredentials() {
       try {
         await loadGHSettingsAndCredentials();
       } catch (err) {
-        handleError(err);
-        toastError(err);
+        if (!isNoGHTokenError(err)) {
+          handleError(err);
+          toastError(err);
+        }
       }
     })();
   }, []);

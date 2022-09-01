@@ -16,6 +16,10 @@ export async function githubPost<T>(url: string, body?: any, config?: ApiRequest
 
 export const noGithubTokenError = 'no_github_token';
 
+export function isNoGHTokenError(error: any) {
+  return error?.message === noGithubTokenError;
+}
+
 async function withAuthRetry<T>(sendRequest: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T>> {
   try {
     let resp: ApiResponse<T> | undefined;
