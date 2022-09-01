@@ -120,6 +120,7 @@ export class UserService {
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
       await this.generationHistoryRepository.save(generationHistory);
+      return res;
     } else {
       throw new Error('Unsupported output format');
     }

@@ -51,9 +51,15 @@ export async function exportCode(
   if (env.localPreviewInsteadOfCsb) {
     uploadToCsb = false;
   }
-  if (!extraConfig.target) {
+
+  // Legacy zip setting
+  if (extraConfig.zip) {
+    extraConfig.target = UserSettingsTarget.zip;
+  } else if (!extraConfig.target) {
     extraConfig.target = extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
   }
+  // /Legacy
+
   extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
@@ -206,6 +212,7 @@ export async function exportCode(
   if (!env.isDev || uploadToCsb || extraConfig.target !== UserSettingsTarget.csb) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (extraConfig.target === UserSettingsTarget.zip) {
+      console.log('ZIP');
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
     } else if (extraConfig.target === UserSettingsTarget.github) {
