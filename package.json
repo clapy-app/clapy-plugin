@@ -34,6 +34,7 @@
     "migrate:staging": "npm run hasura:server -- deploy --endpoint updateme",
     "migrate:prod": "npm run hasura:server -- deploy --endpoint https://hasura-loitgf2s5q-ew.a.run.app/",
     "________________ implementation details ________________": "",
+    "postinstall": "mkdir -p ../local-gen-clapy",
     "upwait": "yarn dup && sleep 5",
     "install:backend": "cd backend-clapy && yarn",
     "install:plugin": "cd figma-plugin-clapy && yarn",
@@ -43,7 +44,8 @@
     "hasura": "$(yarn bin hasura) --project db/hasura --envfile ../../.env --skip-update-check",
     "hasura:server": "$(yarn bin hasura) --project db/hasura --skip-update-check",
     "pinggit": "ssh -T git@github.com",
-    "kill": "sudo kill -9 `sudo lsof -t -i:9001`; sudo kill -9 `sudo lsof -t -i:9000`; sudo kill -9 `sudo lsof -t -i:3000`; sudo kill -9 `sudo lsof -t -i:9229`; echo Done"
+    "kill": "sudo kill -9 `sudo lsof -t -i:9001`; sudo kill -9 `sudo lsof -t -i:9000`; sudo kill -9 `sudo lsof -t -i:3000`; sudo kill -9 `sudo lsof -t -i:9230`; echo Done",
+    "free": "sudo ./scripts/cleanram.sh"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.11.6",

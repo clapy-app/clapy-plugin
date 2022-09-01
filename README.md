@@ -10,6 +10,11 @@ In a terminal, run:
 - `git config --global core.editor "code --wait"` - It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
 - `corepack enable` ([explanation](https://yarnpkg.com/getting-started/install))
 
+First usage of git? Also run (replace with your name/email):
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
 ## Usage
 
 - With VSCode, `Open Workspace from File...`, select the file `clapy.code-workspace`. **Don't** open the root directory.
