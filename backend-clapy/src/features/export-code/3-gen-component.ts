@@ -11,6 +11,7 @@ import type { ModuleContext, NodeContext, ParentNode, ProjectContext } from './c
 import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { isPage, isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
+import { getComponentsDirPath } from './gen-node-utils/3-gen-comp-utils.js';
 import { mkNamedImportsDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { warnNode } from './gen-node-utils/utils-and-reset.js';
 
@@ -158,9 +159,8 @@ function createModuleContextForNode(
   const compName = fwConnector.getCompName(projectContext, node, baseCompName);
   const compDirName = fwConnector.getCompDirName(baseCompName);
   // const compFileName = fwConnector.getCompFileName(compDirName);
-  const compDir = pageDir
-    ? `${fwConnector.appCompDir}/components/${pageDir}/${compDirName}`
-    : `${fwConnector.appCompDir}/components/${compDirName}`;
+  const compDirPath = getComponentsDirPath(projectContext);
+  const compDir = pageDir ? `${compDirPath}${pageDir}/${compDirName}` : `${compDirPath}${compDirName}`;
 
   const moduleContext = mkModuleContext(
     projectContext,

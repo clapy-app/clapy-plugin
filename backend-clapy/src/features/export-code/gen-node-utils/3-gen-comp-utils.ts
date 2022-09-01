@@ -1,6 +1,6 @@
 import { getOrGenComponent } from '../3-gen-component.js';
 import { genInstanceOverrides } from '../5-instance-overrides.js';
-import type { InstanceContext, NodeContext } from '../code.model.js';
+import type { InstanceContext, NodeContext, ProjectContext } from '../code.model.js';
 import type { ComponentNode2, InstanceNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../create-ts-compiler/canvas-utils.js';
 
@@ -38,4 +38,9 @@ export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneN
   genInstanceOverrides(instanceContext, node);
 
   return componentContext;
+}
+
+export function getComponentsDirPath(projectContext: ProjectContext) {
+  const { fwConnector } = projectContext;
+  return `${fwConnector.appCompDir}/components/`;
 }

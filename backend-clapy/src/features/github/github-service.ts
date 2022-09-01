@@ -1,7 +1,7 @@
 import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import axios from 'axios';
-import { srcCompPrefix } from '../export-code/9-upload-to-csb.js';
 import type { CsbDict, ProjectContext } from '../export-code/code.model.js';
+import { getComponentsDirPath } from '../export-code/gen-node-utils/3-gen-comp-utils.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { getOctokit } from './octokit.js';
 
@@ -107,7 +107,7 @@ export async function sendCodeToGithub(
   if (!mergeToBranch) throw new Error('Missing `mergeToBranch` in body, cannot generate code.');
 
   const octokit = getOctokit(githubAccessToken);
-  const context: GHContext = {
+  const ghContext: GHContext = {
     accessToken: githubAccessToken,
     auth0UserId,
     octokit,
@@ -117,24 +117,24 @@ export async function sendCodeToGithub(
     mergeToBranch,
   };
 
-  const githubResp = await commitChanges(context, files);
+  const githubResp = await commitChanges(projectContext, ghContext, files);
   const res: GitHubResponse = { url: githubResp.html_url };
   return res;
 }
 
-export async function commitChanges(context: GHContext, files: CsbDict) {
+export async function commitChanges(projectContext: ProjectContext, ghContext: GHContext, files: CsbDict) {
   const message = 'Clapy generated code 2';
 
-  const branchCommitSha = await getBranchCommitSha(context);
+  const branchCommitSha = await getBranchCommitSha(ghContext);
 
-  const treeItems = await codeDictToTree(context, files);
+  const treeItems = await codeDictToTree(projectContext, ghContext, files);
 
-  const newCommitTree = await createNewTree(context, treeItems, branchCommitSha);
+  const newCommitTree = await createNewTree(ghContext, treeItems, branchCommitSha);
   const newCommitTreeSha = newCommitTree.sha;
-  const commit = await createCommit(context, message, newCommitTreeSha, branchCommitSha);
+  const commit = await createCommit(ghContext, message, newCommitTreeSha, branchCommitSha);
   const commitSha = commit.sha;
-  await setBranchToCommit(context, commitSha);
-  const prRes = await getOrCreatePullRequest(context);
+  await setBranchToCommit(ghContext, commitSha);
+  const prRes = await getOrCreatePullRequest(ghContext);
   return prRes;
 }
 
@@ -152,18 +152,22 @@ async function getBranchCommitSha(context: GHContext) {
   ).data.object.sha;
 }
 
-async function codeDictToTree(context: GHContext, files: CsbDict) {
+async function codeDictToTree(projectContext: ProjectContext, ghContext: GHContext, files: CsbDict) {
+  const { fwConnector } = projectContext;
+  const compDirPath = getComponentsDirPath(projectContext);
+  const allowedPathPrefixes = [compDirPath, fwConnector.assetsResourceDir];
   const promises = Object.entries(files)
-    .filter(([path, _]) => path.startsWith(srcCompPrefix))
+    .filter(([path, _]) => allowedPathPrefixes.some(allowedPrefix => path.startsWith(allowedPrefix)))
     .map(async ([path, { content, isBinary }]) => {
-      if (!content) {
-        throw new Error(`No file content provided for ${path}`);
-      }
+      content = content || '';
       let treeItem: GitTreeItem;
       if (isBinary) {
+        if (!content) {
+          throw new Error(`No file content provided for binary ${path}`);
+        }
         const { data } = await axios.get(content, { responseType: 'arraybuffer' });
         const contentBase64 = Buffer.from(data, 'binary').toString('base64');
-        const blob = await createBlobBase64(context, contentBase64);
+        const blob = await createBlobBase64(ghContext, contentBase64);
         treeItem = {
           path: path,
           mode: '100644',

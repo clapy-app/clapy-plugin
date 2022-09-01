@@ -10,6 +10,7 @@ import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { dockerPluginCompDir, localGenClapyDir } from '../../root.js';
 import type { CodeDict, CsbDict, ModuleContext, ProjectContext } from './code.model.js';
+import { getComponentsDirPath } from './gen-node-utils/3-gen-comp-utils.js';
 
 export interface CSBResponse {
   sandbox_id: string;
@@ -53,8 +54,6 @@ export async function makeZip(files: CsbDict) {
   return content;
 }
 
-export const srcCompPrefix = 'src/components/';
-
 export async function writeToDisk(
   files: CsbDict,
   moduleContext: ModuleContext | undefined,
@@ -62,15 +61,19 @@ export async function writeToDisk(
 ) {
   const glob = (await import('glob')).default;
   const globPromise = promisify(glob);
-  const { compName } = moduleContext || {};
+  if (!moduleContext) {
+    throw new Error('No moduleContext in writeToDisk');
+  }
+  const { compName, projectContext } = moduleContext;
+  const compDirPath = getComponentsDirPath(projectContext);
 
   const filePaths: string[] = [];
   const filesToWrite: CodeDict = {};
   await Promise.all(
     Object.entries(files).map(async ([path, { content, isBinary }]) => {
       const files = [`${localGenClapyDir}/${path}`];
-      if (flags.writeClapyFiles && isClapyFile && path.startsWith(srcCompPrefix)) {
-        const file = `${dockerPluginCompDir}/${path.substring(srcCompPrefix.length)}`;
+      if (flags.writeClapyFiles && isClapyFile && path.startsWith(compDirPath)) {
+        const file = `${dockerPluginCompDir}/${path.substring(compDirPath.length)}`;
         const dir = resolve(dirname(file));
         await mkdir(dir, { recursive: true });
         files.push(file);
