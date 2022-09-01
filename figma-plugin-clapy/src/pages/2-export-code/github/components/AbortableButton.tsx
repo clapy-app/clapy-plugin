@@ -14,7 +14,7 @@ export const AbortableButton: FC<AbortableButtonProps> = memo(function Abortable
   const { onCancel, ...btnProps } = props;
   return (
     <div>
-      <LoadingButton className={classes.btn} {...btnProps} />
+      <LoadingButton className={classes.btn} variant='contained' {...btnProps} />
       {btnProps.loading && (
         <Tooltip title='Cancel'>
           <IconButton aria-label='cancel' onClick={onCancel}>
