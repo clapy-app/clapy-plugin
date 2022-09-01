@@ -1,5 +1,6 @@
 import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import axios from 'axios';
+import { srcCompPrefix } from '../export-code/9-upload-to-csb.js';
 import type { CsbDict, ProjectContext } from '../export-code/code.model.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { getOctokit } from './octokit.js';
@@ -153,7 +154,7 @@ async function getBranchCommitSha(context: GHContext) {
 
 async function codeDictToTree(context: GHContext, files: CsbDict) {
   const promises = Object.entries(files)
-    .filter(([path, _]) => path.startsWith('src/components'))
+    .filter(([path, _]) => path.startsWith(srcCompPrefix))
     .map(async ([path, { content, isBinary }]) => {
       if (!content) {
         throw new Error(`No file content provided for ${path}`);

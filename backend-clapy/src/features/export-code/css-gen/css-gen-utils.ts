@@ -1,9 +1,10 @@
 import { exportTemplatesDir } from '../../../root.js';
+import { srcCompPrefix } from '../9-upload-to-csb.js';
 import type { ProjectContext } from '../code.model.js';
 import { getCSSExtension } from '../tech-integration/scss/scss-utils.js';
 
 const resetsModuleBase = '_resets.module';
-const resetsCssModulePath = `src/${resetsModuleBase}`;
+const resetsCssModulePath = `${srcCompPrefix}${resetsModuleBase}`;
 export const resetsCssModuleSrcPath = `${exportTemplatesDir}/${resetsModuleBase}`;
 
 export function getResetsModuleBase(projectContext: ProjectContext) {

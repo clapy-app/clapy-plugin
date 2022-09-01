@@ -2,9 +2,10 @@ import { randomBytes } from 'crypto';
 
 import { flags } from './env-and-config/app-config.js';
 import { env } from './env-and-config/env.js';
+import type { Dict } from './features/sb-serialize-preview/sb-serialize.model.js';
 
 type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
-export function entries<T>(o: T): Entry<T>[] {
+export function entries<T extends Dict>(o: T): Entry<T>[] {
   return Object.entries(o) as unknown as Entry<T>[];
 }
 

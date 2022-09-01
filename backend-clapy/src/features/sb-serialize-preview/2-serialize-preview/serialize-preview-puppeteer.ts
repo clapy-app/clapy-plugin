@@ -574,7 +574,7 @@ export async function serializePreviewPuppeteer(cssDefaults: CssDefaults) {
   }
 
   type Entry<T> = { [K in keyof T]: [K, T[K]] }[keyof T] & Iterable<any>;
-  function entries<T>(o: T): Entry<T>[] {
+  function entries<T extends Dict>(o: T): Entry<T>[] {
     return Object.entries(o) as unknown as Entry<T>[];
   }
 

@@ -82,7 +82,10 @@ export function addStyle<T extends keyof PropertiesHyphen>(
   } else {
     values = values.filter(val => {
       if (Array.isArray(val)) val = val[0];
-      return val != null && (typeof val !== 'number' || !isNaN(val));
+      // Workaround to avoid a typescript error:
+      // Expression produces a union type that is too complex to represent.
+      const v: any = val;
+      return v != null && (typeof v !== 'number' || !isNaN(v));
     });
     if (!values.length) {
       return;
@@ -243,7 +246,10 @@ function intermediateNodesDefinedThisStyle<T extends keyof PropertiesHyphen>(
   if (style) {
     const inheritedValue = ((style.value as ValuePlain)?.children?.[0] as Raw)?.value;
     const isCSSReset = inheritedValue === defaultValue;
-    return !isCSSReset && (value == null || inheritedValue === value);
+    // Workaround to avoid a typescript error:
+    // Expression produces a union type that is too complex to represent.
+    const v: any = value;
+    return !isCSSReset && (v == null || inheritedValue === v);
   }
   return false;
 }

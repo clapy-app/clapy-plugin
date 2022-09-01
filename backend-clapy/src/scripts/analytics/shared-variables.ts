@@ -42,7 +42,7 @@ export async function firstJsonFile(directory: string) {
   throw new Error(`No JSON file in ${directory}`);
 }
 
-export function sortObjectByKey<T = any>(unordered: T): T {
+export function sortObjectByKey<T extends Dict = any>(unordered: T): T {
   const sortedKeys = Object.keys(unordered).sort();
   const ordered = sortedKeys.reduce<T>((obj: T, key) => {
     const k = key as unknown as keyof T;

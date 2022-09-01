@@ -189,8 +189,8 @@ export async function exportCode(
     }
 
     // Useful for the dev in watch mode. Uncomment when needed.
-    // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-    // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+    // console.log(csbFiles[`${srcCompPrefix}${compName}/${compName}.module.css`].content);
+    // console.log(csbFiles[`${srcCompPrefix}${compName}/${compName}.tsx`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     perfMeasure('k');

@@ -53,7 +53,7 @@ export async function makeZip(files: CsbDict) {
   return content;
 }
 
-const srcCompPrefix = 'src/components/';
+export const srcCompPrefix = 'src/components/';
 
 export async function writeToDisk(
   files: CsbDict,
