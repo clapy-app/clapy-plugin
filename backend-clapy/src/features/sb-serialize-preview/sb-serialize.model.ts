@@ -256,6 +256,18 @@ export enum UserSettingsTarget {
   github = 'github',
 }
 
+export interface SelectedRepo {
+  fullName: string;
+  owner: string;
+  repo: string;
+}
+
+export interface GithubSettings {
+  repository?: SelectedRepo;
+  codegenBranch?: string;
+  mergeToBranch?: string;
+}
+
 export interface UserSettings extends AngularConfig, ReactConfig {
   page?: boolean;
   zip?: boolean;
@@ -265,6 +277,7 @@ export interface UserSettings extends AngularConfig, ReactConfig {
   target: UserSettingsTarget;
   // Unused for now, only shows/hides the CSS block
   customCss?: boolean;
+  githubSettings?: GithubSettings;
 }
 
 export type ExtraConfig = {
@@ -272,7 +285,6 @@ export type ExtraConfig = {
   isFTD?: boolean;
   enableMUIFramework?: boolean;
   // Next props are derived from user settings
-  output?: 'csb' | 'zip';
   useZipProjectTemplate?: boolean;
 } & UserSettings;
 
@@ -287,6 +299,7 @@ export interface ExportCodePayload {
   extraConfig: ExtraConfig;
   tokens?: Dict; // TODO better typing
   page: PageConfig;
+  githubAccessToken?: string;
 }
 
 export interface FigmaStyles {
@@ -425,12 +438,22 @@ export const extractionBlacklist = [
 
 export type FrameNodeBlackList = Exclude<typeof extractionBlacklist[number], 'mainComponent' /* | 'children' */>;
 
-export interface CSBResponse {
-  sandbox_id: string;
+export interface GenCodeResponse {
+  sandbox_id?: string;
+  url?: string;
   quotas: number;
   quotasMax: number;
   isLicenseExpired?: boolean;
 }
+
+export type GenerationHistory = {
+  id: string;
+  auth0id: string;
+  createdAt?: Date;
+  generatedLink?: string;
+  isFreeUser?: boolean;
+  figmaConfig?: ExportCodePayload;
+};
 
 // From magic-bytes.js, for portability with the backend that doesn't have the lib
 type Info = {

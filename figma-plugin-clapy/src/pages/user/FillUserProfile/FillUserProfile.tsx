@@ -5,8 +5,6 @@ import type { CountryCode } from 'libphonenumber-js';
 import { parsePhoneNumber } from 'libphonenumber-js';
 import type { ChangeEvent, FC, MouseEvent } from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import type { CountryData } from 'react-phone-input-material-ui';
-import ReactPhoneInput from 'react-phone-input-material-ui';
 import { useDispatch, useSelector } from 'react-redux';
 
 import type { UserMetadata } from '../../../common/app-models.js';
@@ -14,7 +12,7 @@ import type { Dict } from '../../../common/sb-serialize.model';
 import { Loading } from '../../../components-used/Loading/Loading.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { LogoutButton } from '../../Layout/LogoutButton/LogoutButton';
-import { hasMissingMetaProfile, updateUserMetadata } from '../user-service';
+import { formatPartialPhone, hasMissingMetaProfile, updateUserMetadata } from '../user-service';
 import { selectUserMetadata, selectUserProfileState } from '../user-slice';
 import classes from './FillUserProfile.module.css';
 import { ProgressStepsProgressTextWithL } from './ProgressStepsProgressTextWithL/ProgressStepsProgressTextWithL';
@@ -78,9 +76,6 @@ export const FillUserProfile: FC<Props> = memo(function FillUserProfile(props = 
 });
 
 export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInner(props = {}) {
-  const [phoneValue, setPhoneValue] = useState('');
-  const [isPhoneValid, setIsPhoneValid] = useState<boolean>();
-
   const dispatch = useDispatch();
   const userMetadata = useSelector(selectUserMetadata);
   const modelRef = useRef<UserMetadata>();
@@ -113,8 +108,8 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     }
     // Initialize when the value is available
     if (!modelRef.current) {
-      const { firstName, lastName, companyName, jobRole, techTeamSize } = userMetadata;
-      modelRef.current = { firstName, lastName, companyName, jobRole, techTeamSize };
+      const { firstName, lastName, phone, jobRole, techTeamSize } = userMetadata;
+      modelRef.current = { firstName, lastName, phone, jobRole, techTeamSize };
       updateAllFilled(modelRef.current, allFilled, setAllFilled);
     }
   }, [allFilled, userMetadata]);
@@ -138,16 +133,7 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
     },
     [allFilled],
   );
-  const handleChangePhoneInput = useCallback(
-    (value: string, data: CountryData | {}) => {
-      setPhoneValue(value);
-      setIsPhoneValid(checkIsPhoneValid(value, (data as CountryData)?.countryCode));
-      const name = 'phone';
-      handleChange({ target: { name, value } } as any);
-    },
-    [handleChange],
-  );
-  const { firstName, lastName, phone, jobRole, techTeamSize } = userMetadata;
+  const { firstName, lastName, phone, jobRole, techTeamSize, phoneIsValid } = userMetadata;
 
   // Fill default values
   if (defaultValuesRef.current.firstName == undefined) defaultValuesRef.current.firstName = firstName || '';
@@ -155,6 +141,22 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
   if (defaultValuesRef.current.phone == undefined) defaultValuesRef.current.phone = phone || '';
   if (defaultValuesRef.current.jobRole == undefined) defaultValuesRef.current.jobRole = jobRole || '';
   if (defaultValuesRef.current.techTeamSize == undefined) defaultValuesRef.current.techTeamSize = techTeamSize || '';
+
+  const [phoneValue, setPhoneValue] = useState(defaultValuesRef.current.phone || '+33');
+  const [isPhoneValid, setIsPhoneValid] = useState<boolean>(!!phoneIsValid);
+
+  const handleChangePhoneInput = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      const [phone, isValid, phoneRaw] = formatPartialPhone(value);
+      // state because it's a controller component.
+      setPhoneValue(phone);
+      // state: is valid or not (to show red borders)
+      setIsPhoneValid(isValid);
+      handleChange({ target: { name, value: phoneRaw } } as any);
+    },
+    [handleChange],
+  );
 
   return (
     <div className={`${classes.root} ${props.className || ''}`}>
@@ -214,13 +216,15 @@ export const FillUserProfileInner: FC<Props> = memo(function FillUserProfileInne
             >
               {teamSizesTsx}
             </TextField>
-            <ReactPhoneInput
+            <TextField
+              className={classes.textField}
+              name='phone'
+              label='Phone'
+              variant='outlined'
+              size='small'
               value={phoneValue}
-              country={'fr'}
               onChange={handleChangePhoneInput}
-              containerClass={classes.textField}
-              component={TextField}
-              isValid={isPhoneValid}
+              error={!isPhoneValid}
             />
           </div>
           <LoadingButton

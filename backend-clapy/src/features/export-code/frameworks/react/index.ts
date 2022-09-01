@@ -3,7 +3,7 @@ import type { JsxChild, Statement } from 'typescript';
 import ts from 'typescript';
 
 import { writeSVGReactComponents } from '../../7-write-svgr.js';
-import { countOccurences, isNonEmptyObject } from '../../../../common/general-utils.js';
+import { isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
 import type { Dict, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type {
@@ -48,7 +48,8 @@ import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension, scssDevDependencies } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr, FwNodeOneOrMore } from '../framework-connectors.js';
-import { getResetsCssModulePath, getResetsModuleBase } from '../../css-gen/css-gen-utils.js';
+import { getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
+import { relative } from 'path';
 
 const { factory } = ts;
 
@@ -453,11 +454,13 @@ function mkSwitchThemeHandler() {
 
 function addCssResetsModuleImport(moduleContext: ModuleContext) {
   const { projectContext, compDir, imports } = moduleContext;
-  const cssResetsFileName = getResetsModuleBase(projectContext);
-  // Count the number of times we should add '../' in the module specifier based on the component depth (number of '/' in its path).
-  const nbOfCdToParent = countOccurences(compDir, '/'); /* - 1 */
-  // Generate the '../../'...
-  const moduleSpecPrefix = new Array(nbOfCdToParent).fill('../').join('');
-  const cssResetsModuleSpecifier = `${moduleSpecPrefix || './'}${cssResetsFileName}`;
+  const cssResetsFilePath = getResetsCssModulePath(projectContext);
+
+  // builds the relative path between the current component and the imported CSS file.
+  let cssResetsModuleSpecifier = relative(compDir, cssResetsFilePath);
+  if (!cssResetsModuleSpecifier.startsWith('.')) {
+    cssResetsModuleSpecifier = `./${cssResetsModuleSpecifier}`;
+  }
+
   imports[cssResetsModuleSpecifier] = mkDefaultImportDeclaration('resets', cssResetsModuleSpecifier);
 }

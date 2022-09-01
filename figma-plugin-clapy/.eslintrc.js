@@ -29,7 +29,7 @@ module.exports = {
     'react-hooks/exhaustive-deps': [
       'warn',
       {
-        additionalHooks: '(useCallbackAsync)', // additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)"
+        additionalHooks: '(useCallbackAsync|useCallbackAsync2)', // additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)"
       },
     ],
   },

@@ -1,13 +1,10 @@
 import type { FC, MutableRefObject, ReactNode } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
+import { env } from '../../environment/env.js';
 
 import styles from './PreviewMode.module.css';
 
 type WSRef = MutableRefObject<WebSocket | undefined>;
-
-const previewEnv = process.env.PREVIEW_ENV;
-const isPreviewInBrowser = previewEnv === 'browser';
-const isPreviewInFigma = previewEnv === 'figma';
 
 export let wsReady = false;
 
@@ -38,7 +35,7 @@ export const PreviewMode: FC<Props> = memo(function PreviewMode({ children }) {
   const ws = useRef<WebSocket>();
 
   useEffect(() => {
-    if (previewEnv) {
+    if (env.previewEnv) {
       const closeWebsocket = startWebSocket(ws, setIsConnected);
       const stopListeningMsg = listenToPluginBackMessage(ws);
       return () => {
@@ -48,7 +45,7 @@ export const PreviewMode: FC<Props> = memo(function PreviewMode({ children }) {
     }
   }, []);
 
-  if (!previewEnv) return <>{children}</>;
+  if (!env.previewEnv) return <>{children}</>;
 
   return (
     <div className={styles.previewApp}>
@@ -58,7 +55,11 @@ export const PreviewMode: FC<Props> = memo(function PreviewMode({ children }) {
         <div className={`${styles.previewConnectionStatus} ${isConnected ? styles.statusGreen : ''}`} />
       </div>
 
-      {isPreviewInBrowser && /* setIsConnected && */ <div className={styles.previewPluginWrapper}>{children}</div>}
+      {env.isPreviewInBrowser && (
+        /* setIsConnected && */ <div id='clapy-devpreview-wrapper' className={styles.previewPluginWrapper}>
+          {children}
+        </div>
+      )}
     </div>
   );
 });
@@ -73,12 +74,12 @@ function listenToPluginBackMessage(ws: WSRef) {
 function onMsgReceivedInFigma(ws: WSRef, msg: MessageEvent) {
   const { pluginMessage, __source } = msg.data;
   if (!pluginMessage) return;
-  if (isPreviewInBrowser && __source === 'figma') return;
+  if (env.isPreviewInBrowser && __source === 'figma') return;
 
   if (ws.current?.readyState === 1) {
     const message = JSON.stringify({
       ...msg.data.pluginMessage,
-      __source: previewEnv,
+      __source: env.previewEnv,
     });
     ws.current.send(message);
   } else {
@@ -93,7 +94,7 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
   ws.current.onopen = () => {
     setIsConnected(true);
     wsReady = true;
-    if (isPreviewInFigma) {
+    if (env.isPreviewInFigma) {
       window.parent.postMessage(
         {
           pluginMessage: {
@@ -122,19 +123,19 @@ function startWebSocket(ws: WSRef, setIsConnected: (connected: boolean) => void)
       const data = event.data instanceof Blob ? await event.data.text() : event.data;
       const { __source, ...msg } = JSON.parse(data);
 
-      if (__source === 'figma' && !isPreviewInBrowser) {
+      if (__source === 'figma' && !env.isPreviewInBrowser) {
         console.warn('Source is figma, but we are not in browser! Something is wrong.');
         return;
       }
-      if (__source === 'browser' && !isPreviewInFigma) {
+      if (__source === 'browser' && !env.isPreviewInFigma) {
         console.warn('Source is browser, but we are not in figma! Something is wrong.');
         return;
       }
 
-      if (isPreviewInBrowser) {
+      if (env.isPreviewInBrowser) {
         // console.log('PreviewMode transfers Figma response to front');
         window.postMessage({ pluginMessage: msg, __source }, '*');
-      } else if (isPreviewInFigma) {
+      } else if (env.isPreviewInFigma) {
         // console.log('PreviewMode transfers front request to Figma');
         window.parent.postMessage({ pluginMessage: msg }, '*');
       }

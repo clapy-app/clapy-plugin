@@ -25,6 +25,7 @@ export function handleError(error: any) {
   }
 }
 
+// dependencies are linted with the rule in .eslintrc.js, to complete with custom hooks that have dependencies.
 /** Same as useCallback, but accepting async functions. @see useCallback */
 export function useCallbackAsync<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T {
   return useCallback<T>(
@@ -33,7 +34,7 @@ export function useCallbackAsync<T extends (...args: any[]) => any>(callback: T,
       return callback(...args);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [callback, ...deps],
+    [...deps],
   );
 }
 
@@ -50,7 +51,7 @@ export function useCallbackAsync2<T extends (...args: any[]) => any>(callback: T
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [callback, ...deps],
+    [...deps],
   );
 }
 

@@ -1,48 +1,29 @@
-//-------------------------------------------------------------------------------------------------------------
-//-------------------------------node generation function implementation--------------------------------
+import type { SceneNode2 } from '../../../common/sb-serialize.model.js';
+import { isFrame2, isGroup2, isLine, isRectangle2, isText2, isVector2 } from '../../common/node-type-utils.js';
+import {
+  generateFrameNode,
+  generateGroupNode,
+  generateLineNode,
+  generateRectancle,
+  generateTextNode,
+  generateVectorNode,
+} from './4-create-child-nodes.js';
+import type { FigmaConfigContext, TextNode2 } from './utils.js';
 
-import { generateFrameNode, generateRectancle, generateTextNode, hydrateNewNode } from './4-create-child-nodes.js';
-
-//-------------------------------------------------------------------------------------------------------------
-export async function generateNode(page: PageNode, figmaConfig: any) {
-  const root = figmaConfig.root || figmaConfig;
-  let element;
-  switch (root.type) {
-    case 'RECTANGLE':
-      element = await generateRectancle(root);
-      page.appendChild(element);
-      break;
-    case 'TEXT':
-      element = await generateTextNode(root);
-      page.appendChild(element);
-      break;
-    case 'FRAME':
-      {
-        const frame = await generateFrameNode(root);
-        page.appendChild(frame);
-        for (let child of root.children) {
-          const element = await generateNode(page, child);
-          if (element) {
-            frame.appendChild(element);
-          }
-        }
-        return frame;
-      }
-      break;
-    case 'GROUP':
-      {
-        let groupElements: BaseNode[] = [];
-        for (let child of root.children) {
-          const element = await generateNode(page, child);
-          if (element) groupElements.push(element);
-        }
-        const group = figma.group(groupElements, page);
-        hydrateNewNode(group, root);
-        return group;
-      }
-      break;
-    default:
-      break;
+export async function generateNode(parentNode: BaseNode & ChildrenMixin, root: SceneNode2, ctx: FigmaConfigContext) {
+  if (isFrame2(root)) {
+    return await generateFrameNode(parentNode, root, ctx);
+  } else if (isGroup2(root)) {
+    return await generateGroupNode(parentNode, root, ctx);
+  } else if (isRectangle2(root)) {
+    return await generateRectancle(parentNode, root, ctx);
+  } else if (isText2(root)) {
+    return await generateTextNode(parentNode, root as TextNode2, ctx);
+  } else if (isLine(root)) {
+    return await generateLineNode(parentNode, root, ctx);
+  } else if (isVector2(root)) {
+    return await generateVectorNode(parentNode, root, ctx);
+  } else {
+    return undefined;
   }
-  return element;
 }

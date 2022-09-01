@@ -11,7 +11,7 @@ export const flags = {
   verbose: false,
   measurePerf: false,
   alphaFeature: env.isDev,
-  logWebsocketRequests: true,
+  logWebsocketRequests: false,
   fixSvgStrokePositionBug: true,
   extractInstanceSVG: true,
   groupSvgInCompInstance: false,
@@ -25,6 +25,7 @@ export const extractionStepsLabels = {
   extractSVGs: 'extracting SVGs',
   extractImages: 'extracting images',
   uploadAsset: 'uploading assets',
+  readGhSettings: 'reading github settings',
   generateCode: 'generating code',
 };
 

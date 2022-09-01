@@ -90,39 +90,26 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
 // Then Github API:
 // - https://github.com/octokit/rest.js
 // - https://octokit.github.io/rest.js/v18
-export const requestAdditionalScopes = toConcurrencySafeAsyncFn(async (extraScopes?: string | string[]) => {
-  let readToken: string | undefined = undefined,
-    writeToken: string | undefined = undefined;
-  try {
-    const verifier = createVerifier();
-    const challenge = createChallenge(verifier);
-    ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, { extraScopes, provider: 'github' });
-    console.log('requestAdditionalScopes authUrl', authUrl);
-    openNewTab(authUrl);
-    const authoCode = await waitForAuthorizationCode(readToken);
-    const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
-    deleteReadToken(readToken);
-    if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
-    console.log(accessToken);
-    setAccessToken(accessToken);
-    _tokenType = tokenType;
-    await Promise.all([
-      fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken),
-      fetchPlugin('setGithubCachedToken', undefined),
-    ]);
-
-    // console.log('----------- accessToken');
-    // console.log(accessToken);
-    // console.log('-----------');
-  } catch (err) {
-    if (readToken) {
-      deleteReadToken(readToken);
+export const requestAdditionalScopes = toConcurrencySafeAsyncFn(
+  async (abortController: AbortController, extraScopes?: string | string[]) => {
+    let readToken: string | undefined = undefined,
+      writeToken: string | undefined = undefined;
+    try {
+      const verifier = createVerifier();
+      const challenge = createChallenge(verifier);
+      ({ readToken, writeToken } = await fetchReadWriteKeys());
+      const authUrl = getAuthenticationURL(writeToken, challenge, { extraScopes, provider: 'github' });
+      openNewTab(authUrl);
+      const authoCode = await waitForAuthorizationCode(readToken, abortController);
+      const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
+      if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+    } finally {
+      if (readToken) {
+        deleteReadToken(readToken);
+      }
     }
-    handleError(err);
-    toastError(err);
-  }
-});
+  },
+);
 
 export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
   let readToken: string | undefined = undefined,
@@ -356,13 +343,30 @@ async function fetchAuthorizationCode(readToken: string) {
   return data?.code;
 }
 
-async function waitForAuthorizationCode(readToken: string) {
+async function waitForAuthorizationCode(readToken: string, abortController?: AbortController) {
+  let cancelled = false;
+  if (abortController) {
+    abortController.signal.onabort = () => {
+      abortController.signal.onabort = null;
+      cancelled = true;
+    };
+    if (abortController.signal.aborted) {
+      cancelled = true;
+    }
+  }
   while (true) {
+    if (cancelled) {
+      throw new Error('cancelled');
+    }
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       if (authoCode.startsWith('error|')) {
         const [_, errorMsg, errorDescription] = authoCode.split('|');
-        throw new Error(`${errorMsg} - ${errorDescription}`);
+        const msg =
+          errorMsg === 'access_denied' && errorDescription === 'The user has denied your application access.'
+            ? 'cancelled'
+            : `${errorMsg} - ${errorDescription}`;
+        throw new Error(msg);
       }
       return authoCode;
     }

@@ -1,4 +1,18 @@
-.root {
-  flex-direction: column;
-  gap: 4px;
+.repoSelector {
+  gap: 8px;
 }
+.repoAutocomplete {
+  flex: 1;
+}
+
+/* Dialog */
+.selectionPreview {
+  flex: 1;
+}
+.repoList {
+  flex: 1;
+}
+.repoPagination {
+  margin-bottom: 8px;
+}
+/* /Dialog */

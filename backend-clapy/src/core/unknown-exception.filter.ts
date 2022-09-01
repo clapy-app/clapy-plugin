@@ -1,6 +1,7 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import type { Request } from 'express';
+import type { MyGithubError } from '../features/github/octokit.js';
 
 import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 
@@ -15,7 +16,21 @@ export function cleanErrorMessage(error: any, response: any = null, exception: a
   return errorMessage;
 }
 
+function isGithubError(error: any) {
+  return !!(error as MyGithubError).isGithub;
+}
+
 export function handleException(exception: any, response: any, user: AccessTokenDecoded | undefined): any {
+  if (isGithubError(exception)) {
+    return {
+      error: exception,
+      errors: undefined,
+      status: 400,
+      message: exception.message,
+      githubStatus: exception.status || 500,
+    };
+  }
+
   const resp = exception?.response || exception;
   const error = resp?.data || resp?.error || exception?.message || exception;
   const userId = user?.sub;
@@ -70,7 +85,7 @@ export function handleException(exception: any, response: any, user: AccessToken
     }
   }
 
-  return { error, errors, status, message: errorMessage };
+  return { error, errors, status, message: errorMessage, githubStatus: undefined };
 }
 
 @Catch()
@@ -82,7 +97,7 @@ export class UnknownExceptionFilter implements ExceptionFilter {
       const req = ctx.getRequest<Request>();
       const user: AccessTokenDecoded | undefined = req.auth;
 
-      const { error, errors, status, message } = handleException(exception, response, user);
+      const { error, errors, status, message, githubStatus } = handleException(exception, response, user);
 
       response.status(status).json({
         statusCode: status,
@@ -90,6 +105,7 @@ export class UnknownExceptionFilter implements ExceptionFilter {
         error: error?.message || error,
         errors,
         message,
+        githubStatus,
       });
     } catch (error) {
       console.error('Error while trying to send an error response. There is something wrong out there.');

@@ -30,7 +30,7 @@ export function getPageAndNode(pageId: string, figmaNodeId: string, storyId: str
     f.y = node.y;
     f.name = node.name;
     const parent = node.parent || page;
-    const i = parent.children.indexOf(node);
+    const i = parent.children.indexOf(node as SceneNode);
 
     removeNode(node);
     node = f;

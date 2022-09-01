@@ -41,7 +41,8 @@ export interface UserMetaUsage {
 }
 
 export async function getAuth0User(userId: string | undefined) {
-  if (!userId) throw new UnauthorizedException();
+  const message = 'The Auth0 user ID is missing in the request.';
+  if (!userId) throw new UnauthorizedException({ message }, message);
   return await auth0Management.getUser({ id: userId });
 }
 

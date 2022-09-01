@@ -57,6 +57,8 @@ export function isArrayOf<T>(node: any): node is T[] {
   return Array.isArray(node);
 }
 
+// See npm library 'bottleneck' to see how we can improve it.
+// https://github.com/SGrondin/bottleneck
 /**
  * Ensure the provided function is only called once at a time. A concurrent call gets the promise of the previous
  * call that is not resolved/rejected yet. Once resolved/rejected, subsequent calls will call the provided function

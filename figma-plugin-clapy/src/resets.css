@@ -16,7 +16,7 @@ body,
 }
 
 /* Using this selector instead of #root or .something is important to let components override them. It keeps a lower selector specificity than classes. */
-body > :where(#react-page) :not(style, script, pre, textarea, span, a) {
+/* body > :where(#react-page) :not(style, script, pre, textarea, span, a) {
   display: flex;
 }
 body > :where(#react-page) :not(style, script, pre, textarea) {
@@ -25,11 +25,11 @@ body > :where(#react-page) :not(style, script, pre, textarea) {
   padding: 0;
   background: none;
   border: none;
-  /* New rule from Clapy generated code, to test carefully: */
-  /* flex-shrink: 0; */
+  /# New rule from Clapy generated code, to test carefully: #/
+  /# flex-shrink: 0; #/
   text-decoration: none;
   min-width: 0;
-}
+} */
 
 body button:not(:disabled) {
   cursor: pointer;
@@ -42,10 +42,44 @@ body label {
   cursor: pointer;
 }
 
-body span, body a {
+/* body span, body a {
   display: inline;
 }
 
 img {
+  object-fit: contain;
+} */
+
+:where(.clapyResets),
+:where(.clapyResets) * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  /* New rule from Clapy generated code, to test carefully: */
+  /* flex-shrink: 0; */
+  text-decoration: none;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* style, script, pre, textarea: addition for Clapy plugin */
+:where(.clapyResets),
+:where(.clapyResets) :not(style, script, pre, textarea, span, a, ul, ol, li, p) {
+  display: flex;
+}
+
+:where(.clapyResets) ul, :where(.clapyResets) ol {
+  text-indent: 0;
+  padding-inline-start: 1.5em;
+}
+
+:where(.clapyResets) p:empty::before {
+  content: '';
+  display: inline-block;
+}
+
+:where(.clapyResets) img {
   object-fit: contain;
 }

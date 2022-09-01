@@ -2,11 +2,18 @@
 
 - Use nvm to install NodeJS (makes it much easier to switch versions)
 - NodeJS >= 16 required
+- If you're on Windows, 16 GB of RAM
+  - you may want to cap the memory consumption of WSL2 to 4.5 or 5 GB. https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261
 
 In a terminal, run:
 
 - `git config --global core.editor "code --wait"` - It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
 - `corepack enable` ([explanation](https://yarnpkg.com/getting-started/install))
+
+First usage of git? Also run (replace with your name/email):
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
 
 ## Usage
 
@@ -17,7 +24,7 @@ In a terminal, run:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 - Alternatively, to develop on the webservice only:
-  - `yarn up` through command-line to start all docker containers
+  - `yarn dup` through command-line to start all docker containers
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 
 (1) Alternative: `yarn dev` through command-line to start everything
@@ -47,6 +54,7 @@ TODO Yacine
 ### Update yarn
 
 - `yarn set version stable`
+- `yarn dlx @yarnpkg/sdks vscode` may be required when upgrading typescript, so that VSCode typescript workspace version is also updated.
 - `yarn install` in the root (and the back and the front?) directories.
 
 ### Update libraries

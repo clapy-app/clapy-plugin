@@ -78,6 +78,7 @@ export interface ExtractionProgress {
 export interface UserMetadata {
   firstName?: string;
   lastName?: string;
+  /** @deprecated */
   companyName?: string;
   phone?: string;
   jobRole?: string;
@@ -91,6 +92,9 @@ export interface UserMetadata {
   quotasMax?: number;
   isLicenseExpired?: boolean;
   limitedUser?: boolean;
+
+  // UI-only field
+  phoneIsValid?: boolean;
 }
 
 export interface UserMetaUsage {
@@ -106,4 +110,17 @@ export type UserProfileState = UserMetadata | true | undefined;
 export interface PreviewResp {
   preview: string | false | undefined;
   page: PageConfig;
+}
+
+export interface GithubCredentials {
+  accessToken: string | undefined;
+  user: string | undefined;
+  hasPermission: boolean;
+}
+
+export interface GithubCredentialsDef {
+  // same as GithubCredentials, but all defined
+  accessToken: string;
+  user: string;
+  hasPermission: boolean;
 }

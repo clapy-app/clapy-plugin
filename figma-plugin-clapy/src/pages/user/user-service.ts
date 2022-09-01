@@ -1,5 +1,6 @@
 import type { Dispatch } from '@reduxjs/toolkit';
 import equal from 'fast-deep-equal';
+import { AsYouType } from 'libphonenumber-js';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
 import { fetchPlugin } from '../../common/plugin-utils.js';
@@ -57,6 +58,8 @@ export function clearLocalUserMetadata() {
 export function hasMissingMetaProfile(
   { firstName, lastName, companyName, jobRole, phone, techTeamSize } = {} as UserMetadata,
 ) {
+  // if the company name is provided, we don't ask for the phone number.
+  // This could change in the future, if we always want a phone number.
   return !firstName || !lastName || (!phone && !companyName) || !jobRole || !techTeamSize;
 }
 
@@ -64,4 +67,28 @@ export function hasMissingMetaProfile(
 export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
   const { components, designSystem, landingPages, other, otherDetail } = userMetaUsage || {};
   return !components && !designSystem && !landingPages && !(other && otherDetail);
+}
+
+const phoneFormatter = new AsYouType();
+
+export function formatPartialPhone<T extends string | undefined>(phone: T) {
+  phone = prefixPhone(phone);
+  let isValid = false;
+  let phoneRaw = phone;
+  if (phone) {
+    // For a full formatting, we could use parsePhoneNumber(phone).formatInternational() instead.
+    // But the formatting is not accurate for partial phones.
+    phoneFormatter.reset();
+    phone = phoneFormatter.input(phone) as T;
+    phoneRaw = phoneFormatter.getNumberValue()?.toString() as T;
+    isValid = phoneFormatter.isValid();
+  }
+  return [phone, isValid, phoneRaw] as const;
+}
+
+function prefixPhone<T extends string | undefined>(phone: T) {
+  if (phone && !phone.startsWith('+')) {
+    phone = `+${phone}` as T;
+  }
+  return phone;
 }

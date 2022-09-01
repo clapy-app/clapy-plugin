@@ -8,11 +8,14 @@ import { perfMeasure } from '../../common/perf-utils.js';
 import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { warnOrThrow } from '../../utils.js';
-import type { CSBResponse, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import { sendCodeToGithub } from '../github/github-service.js';
+import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import { UserSettingsTarget } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
 import { createNodeContext, generateAllComponents, mkModuleContext } from './3-gen-component.js';
 import { formatTsFiles, prepareCssFiles, prepareHtmlFiles } from './8-format-ts-files.js';
+import type { CSBResponse } from './9-upload-to-csb.js';
 import { makeZip, patchViteJSConfigForDev, uploadToCSB, writeToDisk } from './9-upload-to-csb.js';
 import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
 import { readTemplateFile, readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
@@ -41,17 +44,17 @@ function getCSSVariablesFileName(cssExt: string) {
 const enableMUIInDev = false;
 
 export async function exportCode(
-  { root, components, svgs, images, styles, extraConfig, tokens, page }: ExportCodePayload,
+  { root, components, svgs, images, styles, extraConfig, tokens, page, githubAccessToken }: ExportCodePayload,
   uploadToCsb = true,
   user: AccessTokenDecoded,
 ) {
   if (env.localPreviewInsteadOfCsb) {
     uploadToCsb = false;
   }
-  if (!extraConfig.output) {
-    extraConfig.output = extraConfig.zip ? 'zip' : 'csb';
+  if (!extraConfig.target) {
+    extraConfig.target = extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
   }
-  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.output === 'zip';
+  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
     extraConfig.angularPrefix = 'cl';
@@ -186,8 +189,8 @@ export async function exportCode(
     }
 
     // Useful for the dev in watch mode. Uncomment when needed.
-    // console.log(csbFiles[`src/components/${compName}/${compName}.module.css`].content);
-    // console.log(csbFiles[`src/components/${compName}/${compName}.tsx`].content);
+    // console.log(csbFiles[`${srcCompPrefix}${compName}/${compName}.module.css`].content);
+    // console.log(csbFiles[`${srcCompPrefix}${compName}/${compName}.tsx`].content);
     //
     // console.log(project.getSourceFile('/src/App.tsx')?.getFullText());
     perfMeasure('k');
@@ -200,12 +203,13 @@ export async function exportCode(
       400,
     );
   }
-  const isZip = extraConfig.output === 'zip';
-  if (!env.isDev || uploadToCsb || isZip) {
+  if (!env.isDev || uploadToCsb || extraConfig.target !== UserSettingsTarget.csb) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
-    if (isZip) {
+    if (extraConfig.target === UserSettingsTarget.zip) {
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
+    } else if (extraConfig.target === UserSettingsTarget.github) {
+      return sendCodeToGithub(projectContext, githubAccessToken, user, csbFiles);
     } else {
       if (isNoCodesandboxUser) {
         throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");

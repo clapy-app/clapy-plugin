@@ -7,17 +7,24 @@ import { DataSource, Not } from 'typeorm';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
-import type { CSBResponse, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import { UserSettingsTarget } from '../sb-serialize-preview/sb-serialize.model.js';
+import type {
+  ExportCodePayload,
+  GenerationHistory,
+  GenCodeResponse,
+} from '../sb-serialize-preview/sb-serialize.model.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import type { AccessTokenDecoded } from './user.utils.js';
 import { hasRoleIncreasedQuota, hasRoleNoCodeSandbox } from './user.utils.js';
+import type { CSBResponse } from '../export-code/9-upload-to-csb.js';
+import type { GitHubResponse } from '../github/github-service.js';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(StripeService) private stripeService: StripeService,
     @Inject(DataSource) private dataSource: DataSource,
-    @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistoryEntity>,
+    @InjectRepository(GenerationHistoryEntity) private generationHistoryRepository: Repository<GenerationHistory>,
   ) {}
 
   async checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(
@@ -25,7 +32,7 @@ export class UserService {
     user: AccessTokenDecoded,
   ) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
-    if (isNoCodesandboxUser && (figmaNode.extraConfig.output === 'csb' || !figmaNode.extraConfig.zip)) {
+    if (isNoCodesandboxUser && figmaNode.extraConfig.target === 'csb') {
       throw new Error("You don't have the permission to upload the generated code to CodeSandbox.");
     }
   }
@@ -93,9 +100,9 @@ export class UserService {
   }
 
   async updateUserCodeGeneration(
-    res: StreamableFile | CSBResponse | undefined,
+    res: StreamableFile | CSBResponse | GitHubResponse | undefined,
     user: AccessTokenDecoded,
-    genType: 'csb' | 'zip' | undefined,
+    genType: UserSettingsTarget | undefined,
     generationHistoryId: string | undefined,
   ) {
     if (!res) {
@@ -103,11 +110,12 @@ export class UserService {
     }
     const generationHistory = new GenerationHistoryEntity();
     generationHistory.id = generationHistoryId;
-    if (genType === 'csb') {
-      res = res as CSBResponse;
-      generationHistory.generatedLink = res.sandbox_id;
+    if (genType === UserSettingsTarget.csb || genType === UserSettingsTarget.github) {
+      const genLink = 'sandbox_id' in res ? res.sandbox_id : 'url' in res ? res.url : undefined;
+      generationHistory.generatedLink = genLink;
       await this.generationHistoryRepository.save(generationHistory);
-      res = Object.assign(res, this.getUserSubscriptionData(user));
+      const res2: GenCodeResponse = Object.assign({}, res, await this.getUserSubscriptionData(user));
+      return res2;
       // TODO: si une erreur survient, ne pas bloquer l'exécution du code et envoyer la réponse à l'utilisateur dans ce cas.
     } else if (genType === 'zip') {
       generationHistory.generatedLink = '_zip';
