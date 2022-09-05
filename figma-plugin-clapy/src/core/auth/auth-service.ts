@@ -5,7 +5,7 @@ import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { env, isFigmaPlugin } from '../../environment/env';
 import { handleError, openNewTab, toastError } from '../../front-utils/front-utils';
-import { apiGet } from '../../front-utils/http.utils.js';
+import { apiGet, apiPost } from '../../front-utils/http.utils.js';
 import type { ApiResponse } from '../../front-utils/unauthenticated-http.utils.js';
 import { apiGetUnauthenticated, apiPostUnauthenticated } from '../../front-utils/unauthenticated-http.utils.js';
 import { clearLocalUserMetadata, dispatchLocalUserMetadata, fetchUserMetadata } from '../../pages/user/user-service';
@@ -98,11 +98,19 @@ export const requestAdditionalScopes = toConcurrencySafeAsyncFn(
       const verifier = createVerifier();
       const challenge = createChallenge(verifier);
       ({ readToken, writeToken } = await fetchReadWriteKeys());
-      const authUrl = getAuthenticationURL(writeToken, challenge, { extraScopes, provider: 'github' });
+      const authUrl = getAuthenticationURL(writeToken, challenge, {
+        extraScopes,
+        provider: 'github',
+        addProvider: true,
+      });
       openNewTab(authUrl);
       const authoCode = await waitForAuthorizationCode(readToken, abortController);
       const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
       if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+
+      // Link accounts
+      const linkOptions = { link_with: accessToken };
+      await apiPost<ExchangeTokenResponse>('proxy-link-github', linkOptions);
     } finally {
       if (readToken) {
         deleteReadToken(readToken);
@@ -124,7 +132,8 @@ export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraSc
     const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
     openNewTab(authUrl);
     const authoCode = await waitForAuthorizationCode(readToken);
-    const { accessToken, tokenType, refreshToken } = await fetchTokensFromCode(authoCode, verifier, readToken);
+    const fetchTokensResp = await fetchTokensFromCode(authoCode, verifier, readToken);
+    const { accessToken, tokenType, refreshToken } = fetchTokensResp;
     deleteReadToken(readToken);
     if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
 
@@ -274,9 +283,10 @@ function getAuthenticationURL(
     isSignUp?: boolean;
     provider?: 'github';
     extraScopes?: string | string[];
+    addProvider?: boolean;
   } = {},
 ) {
-  const { isSignUp, provider, extraScopes } = options;
+  const { isSignUp, provider, extraScopes, addProvider } = options;
   const data: any = {
     audience: env.auth0Audience,
     // Add openid to get an ID token along with the access token
@@ -299,6 +309,10 @@ function getAuthenticationURL(
   if (extraScopes) {
     // https://auth0.com/docs/authenticate/identity-providers/adding-scopes-for-an-external-idp#pass-scopes-to-authorize-endpoint
     data.connection_scope = Array.isArray(extraScopes) ? extraScopes.join(',') : extraScopes;
+  }
+  if (addProvider) {
+    data.skip_manual_linking = true;
+    data.max_age = 0;
   }
   return mkUrl(`https://${auth0Domain}/authorize`, data);
 }

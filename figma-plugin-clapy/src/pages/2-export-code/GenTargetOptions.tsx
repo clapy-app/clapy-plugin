@@ -49,21 +49,31 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
             disableInteractive
             placement={appConfig.tooltipPosition}
           >
-            <FormControlLabel value={UserSettingsTarget.csb} control={<Radio />} label='CodeSandbox' />
+            <FormControlLabel
+              value={UserSettingsTarget.csb}
+              control={<Radio />}
+              disabled={isLoading}
+              label='CodeSandbox'
+            />
           </Tooltip>
           <Tooltip
             title='Downloads the generated source code as a zip file. You need you unarchive, `yarn install` and `yarn start` to run the application locally.'
             disableInteractive
             placement={appConfig.tooltipPosition}
           >
-            <FormControlLabel value={UserSettingsTarget.zip} control={<Radio />} label='Zip' />
+            <FormControlLabel value={UserSettingsTarget.zip} control={<Radio />} disabled={isLoading} label='Zip' />
           </Tooltip>
           <Tooltip
             title='Sends the generated code to the selected github repository, in a new branch, and creates a pull request to merge it with your main branch.'
             disableInteractive
             placement={appConfig.tooltipPosition}
           >
-            <FormControlLabel value={UserSettingsTarget.github} control={<Radio />} label='Github' />
+            <FormControlLabel
+              value={UserSettingsTarget.github}
+              control={<Radio />}
+              disabled={isLoading}
+              label='Github'
+            />
           </Tooltip>
         </RadioGroup>
       </FormControl>

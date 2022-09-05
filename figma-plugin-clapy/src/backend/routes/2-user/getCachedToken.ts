@@ -1,5 +1,16 @@
 import type { GithubCredentials } from '../../../common/app-models.js';
 
+// Important: on logout, all tokens are cleared here. Update it when more user data are stored.
+export async function clearCachedTokens() {
+  await Promise.all([
+    figma.clientStorage.deleteAsync('accessToken'),
+    figma.clientStorage.deleteAsync('tokenType'),
+    figma.clientStorage.deleteAsync('refreshToken'),
+    figma.clientStorage.deleteAsync('githubCachedCredentials'),
+    figma.clientStorage.deleteAsync('githubSettings'),
+  ]);
+}
+
 // todo: A modifier dans une semaine retirer hasClosedUpdateToast.
 export async function getCachedToken() {
   const [accessToken, tokenType]: [string | null, string | null] = await Promise.all([
@@ -26,14 +37,6 @@ export async function getCachedIsFirstLogin() {
 }
 export async function setCachedIsFirstLogin() {
   await figma.clientStorage.setAsync('isFirstLogin', true);
-}
-
-export async function clearCachedTokens() {
-  await Promise.all([
-    figma.clientStorage.deleteAsync('accessToken'),
-    figma.clientStorage.deleteAsync('tokenType'),
-    figma.clientStorage.deleteAsync('refreshToken'),
-  ]);
 }
 
 export async function getGithubCachedCredentials() {

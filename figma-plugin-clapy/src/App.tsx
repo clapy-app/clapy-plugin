@@ -104,6 +104,9 @@ export const App: FC = memo(function App() {
             alreadyToasted = true;
             toastError(e);
           }
+          // There is at least one case like "invalid parameter" in the error that should trigger a logout, but I don't know how to reproduce.
+          // When codes are identified, they should be used here as a condition to trigger a logout.
+          // logout(true);
           dispatch(setAuthError(e));
         }
       }

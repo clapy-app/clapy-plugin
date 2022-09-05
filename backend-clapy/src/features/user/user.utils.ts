@@ -1,65 +1,7 @@
-import { UnauthorizedException } from '@nestjs/common';
 import type { User } from 'auth0';
-import { ManagementClient } from 'auth0';
 
 import type { Nil } from '../../common/general-utils.js';
-import { env } from '../../env-and-config/env.js';
-
-const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;
-
-var auth0Management = new ManagementClient({
-  domain: auth0Domain,
-  clientId: auth0BackendClientId,
-  clientSecret: auth0BackendClientSecret,
-  scope: 'read:users update:users read:user_idp_tokens',
-});
-
-export interface UserMetadata {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  phone?: string;
-  jobRole?: string;
-  techTeamSize?: string;
-  email?: string;
-  picture?: string;
-  usage?: UserMetaUsage;
-  licenceStartDate?: number | null;
-  licenceExpirationDate?: number | null;
-  quotas?: number;
-  quotasMax?: number;
-  isLicenseExpired?: boolean;
-  limitedUser?: boolean;
-}
-
-export interface UserMetaUsage {
-  components?: boolean;
-  designSystem?: boolean;
-  landingPages?: boolean;
-  other?: boolean;
-  otherDetail?: string;
-}
-
-export async function getAuth0User(userId: string | undefined) {
-  const message = 'The Auth0 user ID is missing in the request.';
-  if (!userId) throw new UnauthorizedException({ message }, message);
-  return await auth0Management.getUser({ id: userId });
-}
-
-export async function updateAuth0UserMetadata(userId: string | undefined, userMetadata: UserMetadata) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.updateUserMetadata({ id: userId }, userMetadata);
-}
-
-export async function updateAuth0UserRoles(userId: string | undefined, roles: string[]) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.assignRolestoUser({ id: userId }, { roles });
-}
-
-export async function removeAuth0UserRoles(userId: string | undefined, roles: string[]) {
-  if (!userId) throw new UnauthorizedException();
-  return auth0Management.removeRolesFromUser({ id: userId }, { roles });
-}
+import type { UserMetadata, UserMetaUsage } from './auth0-management-api.js';
 
 /**
  * @example
