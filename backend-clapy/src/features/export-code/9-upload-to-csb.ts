@@ -38,9 +38,15 @@ export async function makeZip(files: CsbDict) {
     if (isBinary) {
       promises.push(
         // To get all content at once with promise, use 'arraybuffer'
-        axios.get(content, { responseType: 'stream' /* 'arraybuffer' */ }).then(({ data }) => {
-          zip.file(path, data);
-        }),
+        axios
+          .get(content, { responseType: 'stream' /* 'arraybuffer' */ })
+          .then(({ data }) => {
+            zip.file(path, data);
+          })
+          .catch(e => {
+            console.warn('Failed to download and include in the zip, ignoring:', content, ' - error:');
+            console.warn(e);
+          }),
       );
     } else {
       zip.file(path, content);
@@ -88,7 +94,10 @@ export async function writeToDisk(
           if (!isBinary) {
             filesToWrite[file] = content;
           } else {
-            await downloadFile(content, file);
+            await downloadFile(content, file).catch(e => {
+              console.warn('Failed to download and include in the zip, ignoring:', content, ' - error:');
+              console.warn(e);
+            });
           }
         }),
       );
