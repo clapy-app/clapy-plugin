@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { appConfig } from '../../common/app-config.js';
 import type { UserSettings } from '../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../common/sb-serialize.model.js';
-import { selectGithubEnabled } from '../../core/auth/auth-slice.js';
+import { selectGithubEnabled, selectNoCodesandboxUser } from '../../core/auth/auth-slice.js';
 import type { UserSettingsValues } from './FigmaToCodeHome/figmaToCode-model.js';
 import classes from './GenTargetOptions.module.css';
 import { GithubOption } from './github/GithubOption.js';
@@ -31,6 +31,7 @@ export const GenTargetOptions: FC<Props> = memo(function GenTargetOptions(props)
 const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(props) {
   const { className, isLoading, defaultSettings, updateAdvancedOption } = props;
   const [target, setTarget] = useState(defaultSettings.target);
+  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   const updateTargetState = useCallback<NonNullable<RadioGroupProps['onChange']>>(
     (event, value0) => {
       const value = value0 as UserSettingsTarget;
@@ -44,18 +45,20 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
     <div className={`${className} ${classes.root}`}>
       <FormControl disabled={isLoading}>
         <RadioGroup row name='target' onChange={updateTargetState} defaultValue={defaultSettings.target}>
-          <Tooltip
-            title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code. Please note that CodeSandbox projects are public.'
-            disableInteractive
-            placement={appConfig.tooltipPosition}
-          >
-            <FormControlLabel
-              value={UserSettingsTarget.csb}
-              control={<Radio />}
-              disabled={isLoading}
-              label='CodeSandbox'
-            />
-          </Tooltip>
+          {!isNoCodeSandboxUser && (
+            <Tooltip
+              title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code. Please note that CodeSandbox projects are public.'
+              disableInteractive
+              placement={appConfig.tooltipPosition}
+            >
+              <FormControlLabel
+                value={UserSettingsTarget.csb}
+                control={<Radio />}
+                disabled={isLoading}
+                label='CodeSandbox'
+              />
+            </Tooltip>
+          )}
           <Tooltip
             title='Downloads the generated source code as a zip file. You need you unarchive, `yarn install` and `yarn start` to run the application locally.'
             disableInteractive

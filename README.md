@@ -8,7 +8,7 @@
 In a terminal, run:
 
 - `git config --global core.editor "code --wait"` - It allows to use GitLens interactive rebase client when running rebases from Git Graph (or from the terminal).
-- `corepack enable` ([explanation](https://yarnpkg.com/getting-started/install))
+- `corepack enable` then `corepack prepare yarn@stable --activate` to install yarn ([explanation](https://yarnpkg.com/getting-started/install))
 
 First usage of git? Also run (replace with your name/email):
 
