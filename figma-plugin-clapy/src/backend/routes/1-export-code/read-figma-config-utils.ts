@@ -5,7 +5,6 @@ import type {
   ComponentNode2,
   ComponentNodeNoMethod,
   Dict,
-  ExportImagesFigma,
   FrameNode2,
   InstanceNode2,
   LayoutNode,
@@ -41,7 +40,6 @@ export type AnyParent = FrameNode2 | ComponentNode2 | InstanceNode2 | PageNode2;
 
 export interface ExtractBatchContext {
   isRootNodeInComponent: boolean;
-  images: ExportImagesFigma;
   /** @deprecated */
   components: Dict<ComponentNodeNoMethod>;
   // nodesCache: Dict<AnyNode2>;

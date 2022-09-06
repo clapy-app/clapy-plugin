@@ -469,7 +469,6 @@ export type ExportImageEntry = {
   bytes: number[];
 } & Partial<GuessedFile>;
 
-export type ExportImagesFigma = Dict<ExportImageEntry>;
 export type ExportImageMap2 = Dict<{ url: string | undefined } & Partial<GuessedFile>>;
 
 const defaultChildrenMixin: ChildrenMixin2 = {

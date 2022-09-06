@@ -7,7 +7,7 @@ import {
 } from './routes/1-export-code/1-selection-ops';
 import { figmaConfigExtractionProgress, serializeSelectedNode } from './routes/1-export-code/2-serialize-node';
 import { extractSVGs } from './routes/1-export-code/7-extract-svg.js';
-import { extractImages } from './routes/1-export-code/8-extract-images.js';
+import { extractImage } from './routes/1-export-code/8-extract-images.js';
 import {
   clearCachedTokens,
   getCachedIsFirstLogin,
@@ -51,7 +51,7 @@ export const routes = {
   getSelectionCustomCss,
   serializeSelectedNode,
   extractSVGs,
-  extractImages,
+  extractImage,
 
   // admin
   generateConfig,

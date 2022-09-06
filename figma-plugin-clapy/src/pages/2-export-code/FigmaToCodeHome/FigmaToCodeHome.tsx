@@ -169,12 +169,41 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       const svgs = await fetchPlugin('extractSVGs', nodeIdsToExtractAsSVG);
       perfMeasure(`SVGs extracted in`);
 
-      setProgress({ stepId: 'extractImages', stepNumber: 6 });
-      const imagesExtracted = await fetchPlugin('extractImages', imageHashesToExtract);
+      setProgress({ stepId: 'uploadAsset', stepNumber: 6, nodeName: `Preparing...` });
+
+      const images: ExportImageMap2 = {};
+      let i = 0;
+      for (const imageHashToExtract of imageHashesToExtract) {
+        const image = await fetchPlugin('extractImage', imageHashToExtract);
+        if (image) {
+          setProgress({
+            stepId: 'uploadAsset',
+            stepNumber: 6,
+            nodeName: `Asset ${++i} / ${imageHashesToExtract.length}`,
+          });
+          const { bytes, ...imageEntryRest } = image;
+          // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
+          // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
+
+          // Replace Figma asset URL with our own CDN. Benefits:
+          // - Avoid CORS issue in codesandbox when exporting the project as zip
+          // - Allows image compression if useful later, instead of keeping the original HD image.
+          try {
+            let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHashToExtract);
+            if (!url) {
+              handleError(`BUG Failed to upload the image with hash ${imageHashToExtract} on the CDN.`);
+            } else {
+              images[imageHashToExtract] = { ...imageEntryRest, url };
+            }
+          } catch (error) {
+            handleError(error);
+          }
+          perfMeasure(`Image uploaded`);
+        }
+      }
       perfMeasure(`Images extracted in`);
 
-      if (components && styles && imagesExtracted) {
-        const images: ExportImageMap2 = {};
+      if (components && styles) {
         const nodes: ExportCodePayload = {
           root,
           components,
@@ -189,31 +218,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           tokens,
           page,
         };
-
-        // Upload assets to a CDN before generating the code
-        const imagesEntries = Object.entries(imagesExtracted);
-        let i = 0;
-        for (const [imageHash, imageFigmaEntry] of imagesEntries) {
-          setProgress({ stepId: 'uploadAsset', stepNumber: 7, nodeName: `Asset ${++i} / ${imagesEntries.length}` });
-          const { bytes, ...imageEntryRest } = imageFigmaEntry;
-          // If required, I can upload to CDN here. Figma can provide the image hash and the URL.
-          // const assetUrl = await uploadAsset(fileAsUint8ArrayRaw);
-
-          // Replace Figma asset URL with our own CDN. Benefits:
-          // - Avoid CORS issue in codesandbox when exporting the project as zip
-          // - Allows image compression if useful later, instead of keeping the original HD image.
-          try {
-            let url = await uploadAssetFromUintArrayRaw(Uint8Array.from(bytes), imageHash);
-            if (!url) {
-              handleError(`BUG Failed to upload the image with hash ${imageHash} on the CDN.`);
-            } else {
-              images[imageHash] = { ...imageEntryRest, url };
-            }
-          } catch (error) {
-            handleError(error);
-          }
-          perfMeasure(`Image uploaded`);
-        }
 
         // TODO gestion de l'unicité : utiliser le hash de l'image comme ID unique
         // TODO improvements for images
@@ -239,7 +243,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           // Get the github settings
           let fetchApiMethod: typeof apiPost;
           if (nodes.extraConfig.target === UserSettingsTarget.github) {
-            setProgress({ stepId: 'readGhSettings', stepNumber: 8 });
+            setProgress({ stepId: 'readGhSettings', stepNumber: 7 });
             let [ghCredentials, githubSettings] = await loadGHSettingsAndCredentials();
             if (!githubSettings) {
               throw new Error('No github settings found although GitHub has been selected as target');
@@ -251,7 +255,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             fetchApiMethod = apiPost;
           }
 
-          setProgress({ stepId: 'generateCode', stepNumber: 9 });
+          setProgress({ stepId: 'generateCode', stepNumber: 8 });
 
           const { data } = await fetchApiMethod<GenCodeResponse>('code/export', nodes);
           if (!data.quotas) {

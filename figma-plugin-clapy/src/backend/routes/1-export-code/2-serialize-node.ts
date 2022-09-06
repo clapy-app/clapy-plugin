@@ -41,7 +41,6 @@ export async function serializeSelectedNode() {
 
   const extractBatchContext: ExtractBatchContext = {
     isRootNodeInComponent: true,
-    images: {},
     components: {},
     componentsToProcess: [node],
     componentsCache: {},
@@ -94,11 +93,7 @@ export async function serializeSelectedNode() {
   };
   perfMeasure('End prepare extra config');
 
-  // console.log(JSON.stringify(mainNode));
-  // console.log('--------------------');
-  // console.log(JSON.stringify(components3));
-
-  const { images, nodeIdsToExtractAsSVG, imageHashesToExtract } = extractBatchContext;
+  const { nodeIdsToExtractAsSVG, imageHashesToExtract } = extractBatchContext;
   const { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles } = extractBatchContext;
   const styles = { textStyles, fillStyles, strokeStyles, effectStyles, gridStyles };
 
@@ -108,7 +103,6 @@ export async function serializeSelectedNode() {
     components: components3,
     nodeIdsToExtractAsSVG: Array.from(nodeIdsToExtractAsSVG),
     imageHashesToExtract: Array.from(imageHashesToExtract),
-    // imagesExtracted: undefined,
     styles,
     tokens,
     page,
