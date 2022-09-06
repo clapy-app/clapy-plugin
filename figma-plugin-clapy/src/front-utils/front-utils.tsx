@@ -1,5 +1,5 @@
 import type { DependencyList } from 'react';
-import { useCallback } from 'react';
+import { useReducer, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
@@ -101,4 +101,13 @@ export function parseErrorForDisplay(error: any) {
     )}`.substring(0, 1800);
   const errorMsgDisplayed = `Error: ${data ? JSON.stringify(data.error || data) : error?.message || errorStr}`;
   return { emailLink, errorMsgDisplayed };
+}
+
+function incr(x: number) {
+  return x + 1;
+}
+
+// https://reactjs.org/docs/hooks-faq.html#is-there-something-like-forceupdate
+export function useForceUpdate() {
+  return useReducer(incr, 0)[1];
 }

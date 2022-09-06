@@ -2,6 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
 import type { Nil } from '../../common/app-models';
+import { env } from '../../environment/env.js';
 import type { RootState } from '../redux/store';
 import type { AccessTokenDecoded } from './auth-service';
 
@@ -72,7 +73,7 @@ export const selectIncreasedQuotaUser = (state: RootState) =>
 export const selectUserLicenceExpirationDate = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];
 export const selectGithubEnabled = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
+  env.isDev || state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
 
 export const selectCssOptionEnabled = (state: RootState) => true;
 export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);

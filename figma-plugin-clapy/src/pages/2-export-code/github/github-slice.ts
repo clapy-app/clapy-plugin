@@ -195,3 +195,13 @@ export const selectGHBranchesOrJustSelection = createSelector(
   (selectedBranch, branches) => branches?.map(branch => branch.name) || (selectedBranch ? [selectedBranch] : undefined),
 );
 export const selectGHCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
+
+export const selectGitHubReady = (state: RootState) =>
+  !!(
+    state.github.credentials?.accessToken &&
+    state.github.credentials?.hasPermission &&
+    state.github.settings?.repository &&
+    // TODOOOO when adding codegenBranch input
+    // state.github.settings?.codegenBranch &&
+    state.github.settings?.mergeToBranch
+  );

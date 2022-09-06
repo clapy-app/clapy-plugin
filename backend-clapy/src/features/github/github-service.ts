@@ -239,14 +239,17 @@ async function createCommit(context: GHContext, message: string, newCommitTreeSh
 }
 
 async function setBranchToCommit(context: GHContext, commitSha: string) {
-  const { octokit } = context;
+  const { octokit, owner, repo, codegenBranch } = context;
+  if (!owner) throw new Error(`BUG Missing owner in GHContext`);
+  if (!repo) throw new Error(`BUG Missing repo in GHContext`);
+  if (!codegenBranch) throw new Error(`BUG Missing codegenBranch in GHContext`);
   return (
     await octokit.git.updateRef({
       // Contrary to what the TSDoc says, updateRef should NOT prefix `ref` with 'refs/'. But createRef should.
-      ref: 'heads/gencode',
+      ref: `heads/${codegenBranch}`,
       sha: commitSha,
-      owner: 'clapy-app',
-      repo: 'clapy-plugin',
+      owner,
+      repo,
       force: true,
     })
   ).data;
