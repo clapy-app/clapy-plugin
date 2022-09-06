@@ -120,4 +120,6 @@ export class LoginController {
     const url = `https://${auth0Domain}/oauth/token`;
     return this.httpService.post(url, body).pipe(map(response => response.data));
   }
+
+  // Another proxy, which is private (requires auth), is in login-private.controller.ts.
 }

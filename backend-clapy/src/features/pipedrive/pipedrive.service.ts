@@ -2,7 +2,7 @@ import type { User } from 'auth0';
 import pipedrive from 'pipedrive';
 
 import { env } from '../../env-and-config/env.js';
-import type { UserMetadata, UserMetaUsage } from '../user/user.utils.js';
+import type { UserMetadata, UserMetaUsage } from '../user/auth0-management-api.js';
 import { getAuth0FirstLastName } from '../user/user.utils.js';
 
 // Pipedrive client documentation: https://github.com/pipedrive/client-nodejs

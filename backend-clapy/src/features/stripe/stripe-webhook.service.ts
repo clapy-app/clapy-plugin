@@ -3,7 +3,7 @@ import { Stripe } from 'stripe';
 
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
-import { updateAuth0UserMetadata } from '../user/user.utils.js';
+import { updateAuth0UserMetadata } from '../user/auth0-management-api.js';
 import { StripeService } from './stripe.service.js';
 
 @Injectable()

@@ -1,5 +1,6 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import type { AxiosError } from 'axios';
 import type { Request } from 'express';
 import type { MyGithubError } from '../features/github/octokit.js';
 
@@ -65,7 +66,7 @@ export function handleException(exception: any, response: any, user: AccessToken
 
     if (parentStack) {
       // tslint:disable-next-line:no-console
-      console.error(parentStack);
+      console.error(formatError(parentStack));
     }
 
     // Error objects are not well logged by logger.error, so we prefer console.error here.
@@ -78,7 +79,7 @@ export function handleException(exception: any, response: any, user: AccessToken
         console.error(`[userID: ${userId}]`);
       }
     }
-    console.error(errToLog);
+    console.error(formatError(errToLog));
 
     if (errorMessage) {
       logger.error(errorMessage);
@@ -86,6 +87,26 @@ export function handleException(exception: any, response: any, user: AccessToken
   }
 
   return { error, errors, status, message: errorMessage, githubStatus: undefined };
+}
+
+function formatError(error: any) {
+  return isAxiosResponse(error)
+    ? error.response?.data || error
+    : isAxiosRequestTimeout(error)
+    ? `${error.message} - ${error.config.method} ${error.config.url}${
+        error.config.data && typeof error.config.data === 'object'
+          ? ` - data keys: ${Object.keys(error.config.data)}`
+          : ''
+      }`
+    : error;
+}
+
+function isAxiosResponse(error: any): error is AxiosError {
+  return !!(error as AxiosError)?.response?.data;
+}
+
+function isAxiosRequestTimeout(error: any): error is AxiosError {
+  return (error as AxiosError)?.code === 'ETIMEDOUT';
 }
 
 @Catch()

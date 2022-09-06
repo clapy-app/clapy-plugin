@@ -8,14 +8,9 @@ import type { RequestPrivate } from '../../typings/express-jwt.js';
 import { handleError } from '../../utils.js';
 import { upsertPipedrivePersonByAuth0Id } from '../pipedrive/pipedrive.service.js';
 import { UserService } from './user.service.js';
-import type { UserMetadata, UserMetaUsage } from './user.utils.js';
-import {
-  getAuth0FirstLastName,
-  getAuth0User,
-  hasMissingMetaProfile,
-  hasMissingMetaUsage,
-  updateAuth0UserMetadata,
-} from './user.utils.js';
+import type { UserMetadata, UserMetaUsage } from './auth0-management-api';
+import { getAuth0FirstLastName, hasMissingMetaProfile, hasMissingMetaUsage } from './user.utils.js';
+import { getAuth0User, updateAuth0UserMetadata } from './auth0-management-api.js';
 
 @Controller('user')
 export class UserController {

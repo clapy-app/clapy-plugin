@@ -7,6 +7,7 @@ import type { GetVerificationKey } from 'jwks-rsa';
 import jwks from 'jwks-rsa';
 
 import { env } from '../env-and-config/env.js';
+import type { RequestPrivate } from '../typings/express-jwt.js';
 
 const jwtMiddleware = expressjwt({
   secret: jwks.expressJwtSecret({
@@ -46,19 +47,33 @@ export class AuthGuard implements CanActivate {
 
     if (allowUnauthorizedRequest) return true;
 
-    // If not public, the user must be authorized. Let's validate the request using express-jwt:
-    const validationError = await hasValidationError(req, res);
-
-    if (validationError?.status === 401) {
-      throw new UnauthorizedException();
-    }
-
-    // For other unexpected errors, let's log for now. Once identified, we should handle those errors as we do above for 401.
-    // https://docs.nestjs.com/guards#putting-it-all-together
-    if (validationError) {
-      console.error('Validation error:', validationError);
-    }
-
-    return !validationError;
+    return isAuthenticatedRequest(req, res);
   }
+}
+
+async function isAuthenticatedRequest(req: Request, res: Response) {
+  // If not public, the user must be authorized. Let's validate the request using express-jwt:
+  const validationError = await hasValidationError(req, res);
+
+  if (validationError?.status === 401) {
+    throw new UnauthorizedException();
+  }
+
+  // For other unexpected errors, let's log for now. Once identified, we should handle those errors as we do above for 401.
+  // https://docs.nestjs.com/guards#putting-it-all-together
+  if (validationError) {
+    console.error('Validation error:', validationError);
+  }
+
+  return !validationError;
+}
+
+export async function validateJwtGetDecoded(jwt: string) {
+  const req = { headers: { authorization: `Bearer ${jwt}` } } as Request;
+  const res = {} as Response;
+  const isAuth = await isAuthenticatedRequest(req, res);
+  if (!isAuth) {
+    throw new Error('Unknown auth validation error.');
+  }
+  return (req as RequestPrivate).auth;
 }
