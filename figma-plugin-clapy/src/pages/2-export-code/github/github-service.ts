@@ -8,6 +8,7 @@ import { handleError, toastError } from '../../../front-utils/front-utils.js';
 import { getGithubCredentials, githubPost, isNoGHTokenError } from '../../../front-utils/http-github-utils.js';
 import type { Branch, Repo } from './github-slice.js';
 import {
+  setSelectedCodeGenBranch,
   selectGHSelectedRepo,
   setGHBranches,
   selectGHBranches,
@@ -155,7 +156,12 @@ export const loadGHBranches = toConcurrencySafeAsyncFn(async (force?: boolean) =
   }
 });
 
-export async function selectTargetBranchInGHWizard(branch: string | null) {
+export async function setTargetBranchInGHWizard(branch: string | null) {
   dispatchOther(setSelectedTargetBranch(branch));
-  await fetchPlugin('addBranchToSettings', branch || undefined);
+  await fetchPlugin('addTargetBranchToSettings', branch || undefined);
+}
+
+export async function setCodeGenBranchInGHWizard(branch: string | null) {
+  dispatchOther(setSelectedCodeGenBranch(branch));
+  await fetchPlugin('addCodeGenBranchToSettings', branch || undefined);
 }

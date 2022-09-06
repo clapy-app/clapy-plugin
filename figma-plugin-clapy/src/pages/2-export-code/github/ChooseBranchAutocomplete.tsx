@@ -12,7 +12,7 @@ import {
   selectGHSelectedTargetBranch,
 } from './github-slice.js';
 import TextField from '@mui/material/TextField/TextField.js';
-import { selectTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
+import { setTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
 import Button from '@mui/material/Button/Button.js';
 
@@ -37,12 +37,10 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
   const [_edit, setEdit] = useState(!hasTargetBranchSelected);
   const edit = _edit || !hasTargetBranchSelected;
 
-  const startEdit = useCallbackAsync2(() => {
-    setEdit(true);
-  }, []);
+  const startEdit = useCallback(() => setEdit(true), []);
   const endEdit = useCallback(() => setEdit(false), []);
-  const selectBranch = useCallbackAsync2(async (_, branch: string | null) => {
-    selectTargetBranchInGHWizard(branch);
+  const setBranch = useCallbackAsync2(async (_, branch: string | null) => {
+    await setTargetBranchInGHWizard(branch);
   }, []);
 
   useLoadGHBranchesIfEditable(edit);
@@ -50,44 +48,42 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
   const loadingBranches = useSelector(selectGHLoadingBranches);
 
   return (
-    <>
-      <div className={classes.repoSelector}>
-        <Autocomplete<string>
-          value={selectedTargetBranch || null}
-          loading={loadingBranches}
-          size='small'
-          className={classes.repoAutocomplete}
-          options={branches /* && !loadingBranches */ ? branches : []}
-          getOptionLabel={branch => branch}
-          renderInput={params => (
-            <TextField
-              {...params}
-              label='Target branch for the PR'
-              InputProps={{
-                ...params.InputProps,
-                endAdornment: (
-                  <>
-                    {loadingBranches ? <CircularProgress color='inherit' size={20} /> : null}
-                    {params.InputProps.endAdornment}
-                  </>
-                ),
-              }}
-            />
-          )}
-          onChange={selectBranch}
-          onClose={endEdit}
-          disabled={!edit || isLoading}
-          blurOnSelect
-          selectOnFocus
-          clearOnBlur
-          handleHomeEndKeys
-        />
-        {!edit && (
-          <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
-            {hasTargetBranchSelected ? 'Change' : 'Choose'}
-          </Button>
+    <div className={classes.repoSelector}>
+      <Autocomplete<string>
+        value={selectedTargetBranch || null}
+        loading={loadingBranches}
+        size='small'
+        className={classes.repoAutocomplete}
+        options={branches /* && !loadingBranches */ ? branches : []}
+        getOptionLabel={branch => branch}
+        renderInput={params => (
+          <TextField
+            {...params}
+            label='Target branch for the PR'
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loadingBranches ? <CircularProgress color='inherit' size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+          />
         )}
-      </div>
-    </>
+        onChange={setBranch}
+        onClose={endEdit}
+        disabled={!edit || isLoading}
+        blurOnSelect
+        selectOnFocus
+        clearOnBlur
+        handleHomeEndKeys
+      />
+      {!edit && (
+        <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
+          {hasTargetBranchSelected ? 'Change' : 'Choose'}
+        </Button>
+      )}
+    </div>
   );
 });

@@ -56,7 +56,6 @@ import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 import { GenTargetOptions } from '../GenTargetOptions.js';
 import { loadGHSettingsAndCredentials } from '../github/github-service.js';
 import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { codegenBranchDefaultValue } from '../github/ChooseClapyBranch.js';
 import { selectGitHubReady } from '../github/github-slice.js';
 
 // Flag for development only. Will be ignored in production.
@@ -254,7 +253,6 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             if (!githubSettings) {
               throw new Error('No github settings found although GitHub has been selected as target');
             }
-            githubSettings = { ...githubSettings, codegenBranch: codegenBranchDefaultValue };
             nodes.extraConfig.githubSettings = githubSettings;
             fetchApiMethod = githubPost;
           } else {

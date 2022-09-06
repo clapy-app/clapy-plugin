@@ -60,17 +60,6 @@ export class GithubController {
     const context: GHContext = { accessToken, auth0UserId, octokit };
 
     return listRepos(context);
-
-    // const files: CodeDict = {
-    //   'codegen/foo.ts': "console.log('Hello world!');\n",
-    // };
-    //
-    // const { data } = await listBranches(context);
-    // const data = await getCommit(context);
-    // const { data } = await createBranch(context, 'gencode');
-    // const data = await commitChanges(context, files, 'Auto-commit powered by Clapy');
-    // console.log(data);
-    // return data;
   }
 
   @Post('list-branches')
