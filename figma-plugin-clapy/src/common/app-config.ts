@@ -23,7 +23,6 @@ export const extractionStepsLabels = {
   optimizeConfig: 'optimizing configuration',
   extractTokens: 'extracting Figma Tokens',
   extractSVGs: 'extracting SVGs',
-  extractImages: 'extracting images',
   uploadAsset: 'uploading assets',
   readGhSettings: 'reading github settings',
   generateCode: 'generating code',

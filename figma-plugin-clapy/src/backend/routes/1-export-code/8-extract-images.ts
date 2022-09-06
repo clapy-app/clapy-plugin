@@ -1,23 +1,8 @@
 import filetype from 'magic-bytes.js';
 
-import type { ExportImageEntry, ExportImagesFigma } from '../../../common/sb-serialize.model.js';
+import type { ExportImageEntry } from '../../../common/sb-serialize.model.js';
 
-export async function extractImages(imageHashesToExtract: string[]): Promise<ExportImagesFigma | undefined> {
-  const images = await Promise.all(
-    imageHashesToExtract.map(imageHashToExtract =>
-      extractImage(imageHashToExtract).then(image => ({ image, hash: imageHashToExtract })),
-    ),
-  );
-  const imagesDict: ExportImagesFigma = {};
-  for (const { hash, image } of images) {
-    if (image) {
-      imagesDict[hash] = image;
-    }
-  }
-  return imagesDict;
-}
-
-async function extractImage(imageHashToExtract: string) {
+export async function extractImage(imageHashToExtract: string) {
   const image = figma.getImageByHash(imageHashToExtract);
   if (!image) {
     console.warn(

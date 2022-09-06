@@ -212,7 +212,6 @@ export async function exportCode(
   if (!env.isDev || uploadToCsb || extraConfig.target !== UserSettingsTarget.csb) {
     const isNoCodesandboxUser = hasRoleNoCodeSandbox(user);
     if (extraConfig.target === UserSettingsTarget.zip) {
-      console.log('ZIP');
       const zipResponse = await makeZip(csbFiles);
       return new StreamableFile(zipResponse as Readable);
     } else if (extraConfig.target === UserSettingsTarget.github) {
