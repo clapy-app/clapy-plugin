@@ -86,12 +86,14 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
-  const userSettingsRef = useRef(settingsBackup);
+  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
+  const userSettingsRef = useRef(
+    isNoCodeSandboxUser ? { ...settingsBackup, target: UserSettingsTarget.zip } : settingsBackup,
+  );
   const initialSettingsRef = useRef(userSettingsRef.current);
   const [renderableSettings, setRenderableSettings] = useState<UserSettings>(userSettingsRef.current);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
-  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   const { picture } = useSelector(selectUserMetadata);
   const isGithubEnabled = useSelector(selectGithubEnabled);
   const dispatch = useAppDispatch();
@@ -366,7 +368,12 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     defaultValue={initialSettingsRef.current.framework}
                   >
                     <Tooltip title='Generates React code.' disableInteractive placement={appConfig.tooltipPosition}>
-                      <FormControlLabel value='react' control={<Radio />} label='React' />
+                      <FormControlLabel
+                        value='react'
+                        control={<Radio disabled={isLoading} />}
+                        disabled={isLoading}
+                        label='React'
+                      />
                     </Tooltip>
                     <Tooltip
                       title={
@@ -382,7 +389,12 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                       disableInteractive
                       placement={appConfig.tooltipPosition}
                     >
-                      <FormControlLabel value='angular' control={<Radio />} label='Angular (alpha)' />
+                      <FormControlLabel
+                        value='angular'
+                        control={<Radio disabled={isLoading} />}
+                        disabled={isLoading}
+                        label='Angular (alpha)'
+                      />
                     </Tooltip>
                   </RadioGroup>
                 </FormControl>
