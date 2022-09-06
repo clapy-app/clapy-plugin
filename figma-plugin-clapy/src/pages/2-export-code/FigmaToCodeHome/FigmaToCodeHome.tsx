@@ -38,7 +38,7 @@ import { Loading } from '../../../components-used/Loading/Loading.js';
 import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
-import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
+import { handleError, useCallbackAsync2, useForceUpdate } from '../../../front-utils/front-utils';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
@@ -57,6 +57,7 @@ import { GenTargetOptions } from '../GenTargetOptions.js';
 import { loadGHSettingsAndCredentials } from '../github/github-service.js';
 import { githubPost } from '../../../front-utils/http-github-utils.js';
 import { codegenBranchDefaultValue } from '../github/ChooseClapyBranch.js';
+import { selectGitHubReady } from '../github/github-slice.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -78,7 +79,7 @@ let settingsBackup: UserSettings = {
 
 // Listed keys will re-render the component when the setting change. List the ones that are needed for the UI, e.g. when activating an option shows another option.
 // Don't list settings that don't impact the UI.
-const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework']);
+const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework', 'target']);
 
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   const selectionPreview = useSelector(selectSelectionPreview);
@@ -91,11 +92,13 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     isNoCodeSandboxUser ? { ...settingsBackup, target: UserSettingsTarget.zip } : settingsBackup,
   );
   const initialSettingsRef = useRef(userSettingsRef.current);
-  const [renderableSettings, setRenderableSettings] = useState<UserSettings>(userSettingsRef.current);
+  const forceUpdate = useForceUpdate();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const { picture } = useSelector(selectUserMetadata);
   const isGithubEnabled = useSelector(selectGithubEnabled);
+  const isGitHubReady = useSelector(selectGitHubReady);
+  const isCodeGenReady = userSettingsRef.current.target !== UserSettingsTarget.github || isGitHubReady;
   const dispatch = useAppDispatch();
 
   useEffect(
@@ -117,21 +120,24 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'selectionko'
     : 'noselection';
 
-  const updateAdvancedOption = useCallback((event: ChangeEvent<HTMLInputElement>, settingValue: UserSettingsValues) => {
-    const name = event.target.name as UserSettingsKeys;
-    if (!name) {
-      handleError(
-        new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
-      );
-      return;
-    }
-    userSettingsRef.current = { ...userSettingsRef.current, [name]: settingValue };
+  const updateAdvancedOption = useCallback(
+    (event: ChangeEvent<HTMLInputElement>, settingValue: UserSettingsValues) => {
+      const name = event.target.name as UserSettingsKeys;
+      if (!name) {
+        handleError(
+          new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
+        );
+        return;
+      }
+      userSettingsRef.current = { ...userSettingsRef.current, [name]: settingValue };
 
-    // Specific state updates for the UI
-    if (renderableSettingsKeys.has(name)) {
-      setRenderableSettings(settings => ({ ...settings, [name]: settingValue }));
-    }
-  }, []);
+      // Specific state updates for the UI
+      if (renderableSettingsKeys.has(name)) {
+        forceUpdate();
+      }
+    },
+    [forceUpdate],
+  );
 
   const updateSettingFromTextField: OutlinedInputProps['onChange'] = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => updateAdvancedOption(e, e.target.value),
@@ -444,7 +450,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                     disabled={isLoading}
                   />
                 </Tooltip>
-                {renderableSettings.scss && (
+                {userSettingsRef.current.scss && (
                   <Tooltip
                     title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
                     disableInteractive
@@ -472,7 +478,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
                 />
 
                 {/* Angular-specific setting: component prefix */}
-                {renderableSettings.framework === 'angular' && (
+                {userSettingsRef.current.framework === 'angular' && (
                   <>
                     <TextField
                       className={classes.textSetting}
@@ -496,7 +502,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       ) : (
         <Button
           onClick={generateCode}
-          disabled={state === 'loading' || state === 'noselection' || isQuotaReached}
+          disabled={state === 'loading' || state === 'noselection' || isQuotaReached || !isCodeGenReady}
           loading={isLoading}
           className={state === 'generated' ? classes.hide : undefined}
         >
