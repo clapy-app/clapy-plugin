@@ -72,18 +72,6 @@ export async function listBranches(context: GHContext) {
   ).data;
 }
 
-// export async function createBranch(context: GHContext, branch: string) {
-//   const { octokit } = context;
-//   return (
-//     await octokit.git.createRef({
-//       ref: `refs/heads/${branch}`,
-//       sha: 'b1a5835d26ec75bc901bd9d8cd28ffaf783a20d1',
-//       owner: 'clapy-app',
-//       repo: 'clapy-plugin',
-//     })
-//   ).data;
-// }
-
 export interface GitHubResponse {
   url: string;
 }
@@ -243,14 +231,60 @@ async function setBranchToCommit(context: GHContext, commitSha: string) {
   if (!owner) throw new Error(`BUG Missing owner in GHContext`);
   if (!repo) throw new Error(`BUG Missing repo in GHContext`);
   if (!codegenBranch) throw new Error(`BUG Missing codegenBranch in GHContext`);
+
+  try {
+    return (
+      await octokit.git.updateRef({
+        // Contrary to what the TSDoc says, updateRef should NOT prefix `ref` with 'refs/'. But createRef should.
+        ref: `heads/${codegenBranch}`,
+        sha: commitSha,
+        owner,
+        repo,
+        force: true,
+      })
+    ).data;
+  } catch (error: any) {
+    if (error.status === 422) {
+      // The branch does not exist yet, create it instead.
+      return createBranch(context, commitSha);
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function createBranch(context: GHContext, commitSha: string) {
+  const { octokit, owner, repo, codegenBranch } = context;
+  if (!owner) throw new Error(`BUG Missing owner in GHContext`);
+  if (!repo) throw new Error(`BUG Missing repo in GHContext`);
+  if (!codegenBranch) throw new Error(`BUG Missing codegenBranch in GHContext`);
   return (
-    await octokit.git.updateRef({
-      // Contrary to what the TSDoc says, updateRef should NOT prefix `ref` with 'refs/'. But createRef should.
-      ref: `heads/${codegenBranch}`,
+    await octokit.git.createRef({
+      ref: `refs/heads/${codegenBranch}`,
       sha: commitSha,
       owner,
       repo,
-      force: true,
+    })
+  ).data;
+}
+
+async function getOrCreatePullRequest(context: GHContext) {
+  const { octokit, owner, repo, codegenBranch, mergeToBranch } = context;
+  if (!owner) throw new Error(`BUG Missing owner in GHContext`);
+  if (!repo) throw new Error(`BUG Missing repo in GHContext`);
+  if (!codegenBranch) throw new Error(`BUG Missing codegenBranch in GHContext`);
+  if (!mergeToBranch) throw new Error(`BUG Missing mergeToBranch in GHContext`);
+  const branch = await getPullRequestForBranches(context);
+  if (branch) {
+    return branch;
+  }
+  return (
+    await octokit.rest.pulls.create({
+      owner,
+      repo,
+      head: codegenBranch,
+      base: mergeToBranch,
+      title: `Clapy PR - ${new Date().toISOString().slice(0, 10)} - ${new Date().toISOString().slice(11, 19)}`,
     })
   ).data;
 }
@@ -276,27 +310,6 @@ async function getPullRequestForBranches(context: GHContext) {
     );
   }
   return res[0];
-}
-
-async function getOrCreatePullRequest(context: GHContext) {
-  const { octokit, owner, repo, codegenBranch, mergeToBranch } = context;
-  if (!owner) throw new Error(`BUG Missing owner in GHContext`);
-  if (!repo) throw new Error(`BUG Missing repo in GHContext`);
-  if (!codegenBranch) throw new Error(`BUG Missing codegenBranch in GHContext`);
-  if (!mergeToBranch) throw new Error(`BUG Missing mergeToBranch in GHContext`);
-  const branch = await getPullRequestForBranches(context);
-  if (branch) {
-    return branch;
-  }
-  return (
-    await octokit.rest.pulls.create({
-      owner,
-      repo,
-      head: codegenBranch,
-      base: mergeToBranch,
-      title: `Clapy PR - ${new Date().toISOString().slice(0, 10)} - ${new Date().toISOString().slice(11, 19)}`,
-    })
-  ).data;
 }
 
 // async function createRepo(octo: Octokit, org: string, name: string) {
