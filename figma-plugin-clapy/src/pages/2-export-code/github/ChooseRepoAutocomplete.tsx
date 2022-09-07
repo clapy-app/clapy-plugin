@@ -34,12 +34,10 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
   const [_edit, setEdit] = useState(!hasRepoSelected);
   const edit = _edit || !hasRepoSelected;
 
-  const startEdit = useCallbackAsync2(() => {
-    setEdit(true);
-  }, []);
+  const startEdit = useCallback(() => setEdit(true), []);
   const endEdit = useCallback(() => setEdit(false), []);
   const selectRepo = useCallbackAsync2(async (_, repo: Repo | null) => {
-    selectRepoInGHWizard(repo);
+    await selectRepoInGHWizard(repo);
   }, []);
 
   useLoadGHReposIfEditable(edit);

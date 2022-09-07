@@ -6,19 +6,22 @@ export async function getGithubSettings() {
 }
 
 export async function addRepoToSettings(repo: SelectedRepo | undefined) {
-  let settings: GithubSettings | undefined = await figma.clientStorage.getAsync('githubSettings');
-  if (!settings) {
-    settings = {};
-  }
-  settings = setRepoInSettings(settings, repo);
-  await figma.clientStorage.setAsync('githubSettings', settings);
+  await updateSettings(settings => (settings = setRepoInSettings(settings, repo)));
 }
 
-export async function addBranchToSettings(branch: string | undefined) {
+export async function addTargetBranchToSettings(branch: string | undefined) {
+  await updateSettings(settings => (settings.mergeToBranch = branch));
+}
+
+export async function addCodeGenBranchToSettings(branch: string | undefined) {
+  await updateSettings(settings => (settings.codegenBranch = branch));
+}
+
+async function updateSettings(updateSettingsCallback: (settings: GithubSettings) => void) {
   let settings: GithubSettings | undefined = await figma.clientStorage.getAsync('githubSettings');
   if (!settings) {
     settings = {};
   }
-  settings.mergeToBranch = branch;
+  updateSettingsCallback(settings);
   await figma.clientStorage.setAsync('githubSettings', settings);
 }

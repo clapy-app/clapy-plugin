@@ -54,6 +54,8 @@ export interface ExportCodeState {
   branches?: Branch[];
 }
 
+export const codegenBranchDefaultValue = 'gencode';
+
 const initialState: ExportCodeState = {
   loadingSettings: true, // useLoadGHSettingsAndCredentials starts loading immediately
 };
@@ -77,7 +79,11 @@ export const githubSlice = createSlice({
       state.credentials = undefined;
     },
     setGHSettings: (state, { payload }: PayloadAction<GithubSettings | undefined>) => {
-      state.settings = payload;
+      state.settings = payload || {};
+      // Default settings
+      if (!state.settings.codegenBranch) {
+        state.settings.codegenBranch = codegenBranchDefaultValue;
+      }
     },
     // Sign in if required
     startGHSignIn: (state, { payload }: PayloadAction<{ signInAborter: AbortController }>) => {
@@ -121,6 +127,10 @@ export const githubSlice = createSlice({
       if (!state.settings) state.settings = {};
       state.settings.mergeToBranch = payload || undefined;
     },
+    setSelectedCodeGenBranch: (state, { payload }: PayloadAction<string | Nil>) => {
+      if (!state.settings) state.settings = {};
+      state.settings.codegenBranch = payload || undefined;
+    },
   },
 });
 
@@ -142,6 +152,7 @@ export const {
   startLoadingGHBranches,
   setGHBranches,
   setSelectedTargetBranch,
+  setSelectedCodeGenBranch,
 } = githubSlice.actions;
 
 // Load initial credentials
@@ -194,14 +205,14 @@ export const selectGHBranchesOrJustSelection = createSelector(
   (state: RootState) => state.github.branches,
   (selectedBranch, branches) => branches?.map(branch => branch.name) || (selectedBranch ? [selectedBranch] : undefined),
 );
-export const selectGHCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
+export const selectGHHasCodegenBranchSelected = (state: RootState) => !!state.github.settings?.codegenBranch;
+export const selectGHSelectedCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
 
 export const selectGitHubReady = (state: RootState) =>
   !!(
     state.github.credentials?.accessToken &&
     state.github.credentials?.hasPermission &&
     state.github.settings?.repository &&
-    // TODOOOO when adding codegenBranch input
-    // state.github.settings?.codegenBranch &&
+    state.github.settings?.codegenBranch &&
     state.github.settings?.mergeToBranch
   );
