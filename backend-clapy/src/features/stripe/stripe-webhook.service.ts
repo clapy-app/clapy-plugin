@@ -61,7 +61,7 @@ export class StripeWebhookService {
               throw new Error(`User deleted, the payment cannot be marked as completed.`);
             }
           } else {
-            throw new Error(`The Stripe session is not 'active', the payment cannot be marked as completed.`);
+            // Session is not active, for example because the payment attempt failed. Ignore.
           }
         }
         break;
