@@ -1,5 +1,5 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { expressjwt } from 'express-jwt';
@@ -57,6 +57,12 @@ async function isAuthenticatedRequest(req: Request, res: Response) {
 
   if (validationError?.status === 401) {
     throw new UnauthorizedException();
+  }
+
+  if (validationError?.code === 'ECONNRESET') {
+    throw new InternalServerErrorException(
+      'The authentication server is not reachable. It seems the clapy service has network issues. Please retry later.',
+    );
   }
 
   // For other unexpected errors, let's log for now. Once identified, we should handle those errors as we do above for 401.
