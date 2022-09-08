@@ -13,6 +13,8 @@ import {
 import Button from '@mui/material/Button/Button.js';
 import { readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import classes from './GithubOption.module.css';
+import Tooltip from '@mui/material/Tooltip/Tooltip.js';
+import { appConfig } from '../../../common/app-config.js';
 
 interface Props {
   isLoading: boolean;
@@ -43,16 +45,22 @@ export const ChooseClapyBranchInner: FC<Props> = memo(function ChooseClapyBranch
 
   return (
     <div className={classes.repoSelector}>
-      <TextField
-        disabled={!edit || isLoading}
-        className={classes.repoAutocomplete}
-        label='Clapy branch'
-        defaultValue={initialValueRef.current}
-        onChange={changeCodeGenBranch}
-        onBlur={endEdit}
-        size='small'
-        variant='outlined'
-      />
+      <Tooltip
+        title='The created or updated branch where the generated code is committed. The PR will pull this branch into the target branch.'
+        disableInteractive
+        placement={appConfig.tooltipPosition}
+      >
+        <TextField
+          disabled={!edit || isLoading}
+          className={classes.repoAutocomplete}
+          label='Clapy branch'
+          defaultValue={initialValueRef.current}
+          onChange={changeCodeGenBranch}
+          onBlur={endEdit}
+          size='small'
+          variant='outlined'
+        />
+      </Tooltip>
       {!edit && (
         <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
           {hasCodegenBranchSelected ? 'Change' : 'Choose'}

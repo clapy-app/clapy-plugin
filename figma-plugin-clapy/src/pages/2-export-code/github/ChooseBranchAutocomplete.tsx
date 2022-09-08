@@ -15,6 +15,8 @@ import TextField from '@mui/material/TextField/TextField.js';
 import { setTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
 import Button from '@mui/material/Button/Button.js';
+import Tooltip from '@mui/material/Tooltip/Tooltip.js';
+import { appConfig } from '../../../common/app-config.js';
 
 interface Props {
   isLoading: boolean;
@@ -49,36 +51,42 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
 
   return (
     <div className={classes.repoSelector}>
-      <Autocomplete<string>
-        value={selectedTargetBranch || null}
-        loading={loadingBranches}
-        size='small'
-        className={classes.repoAutocomplete}
-        options={branches /* && !loadingBranches */ ? branches : []}
-        getOptionLabel={branch => branch}
-        renderInput={params => (
-          <TextField
-            {...params}
-            label='Target branch for the PR'
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loadingBranches ? <CircularProgress color='inherit' size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
-        onChange={setBranch}
-        onClose={endEdit}
-        disabled={!edit || isLoading}
-        blurOnSelect
-        selectOnFocus
-        clearOnBlur
-        handleHomeEndKeys
-      />
+      <Tooltip
+        title='An existing branch used as starting point for the Clapy branch. The PR will pull the Clapy branch into this branch.'
+        disableInteractive
+        placement={appConfig.tooltipPosition}
+      >
+        <Autocomplete<string>
+          value={selectedTargetBranch || null}
+          loading={loadingBranches}
+          size='small'
+          className={classes.repoAutocomplete}
+          options={branches /* && !loadingBranches */ ? branches : []}
+          getOptionLabel={branch => branch}
+          renderInput={params => (
+            <TextField
+              {...params}
+              label='Target branch for the PR'
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingBranches ? <CircularProgress color='inherit' size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          onChange={setBranch}
+          onClose={endEdit}
+          disabled={!edit || isLoading}
+          blurOnSelect
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
+        />
+      </Tooltip>
       {!edit && (
         <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
           {hasTargetBranchSelected ? 'Change' : 'Choose'}
