@@ -341,18 +341,11 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      {!isQuotaReached && typeof picture !== 'undefined' && (
+      {!isQuotaReached && typeof picture !== 'undefined' && state !== 'generated' && (
         <>
-          {state !== 'generated' && (
-            <>
-              <PageSetting />
-              <GenTargetOptions />
-            </>
-          )}
-          <Accordion
-            classes={{ root: classes.accordionRoot }}
-            className={state === 'generated' ? classes.hide : undefined}
-          >
+          <PageSetting />
+          <GenTargetOptions />
+          <Accordion classes={{ root: classes.accordionRoot }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls='panel1a-content'
@@ -363,17 +356,13 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
-                {state !== 'generated' && (
-                  <>
-                    <FrameworkSetting />
-                    <LegacyZipSetting />
-                    <ScssSetting />
-                    <ScssBemSetting />
-                    <AddCssOption />
-                    {/* Angular-specific setting: component prefix */}
-                    <AngularPrefixSetting />
-                  </>
-                )}
+                <FrameworkSetting />
+                <LegacyZipSetting />
+                <ScssSetting />
+                <ScssBemSetting />
+                <AddCssOption />
+                {/* Angular-specific setting: component prefix */}
+                <AngularPrefixSetting />
               </FormGroup>
             </AccordionDetails>
           </Accordion>
