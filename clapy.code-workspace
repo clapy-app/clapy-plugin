@@ -125,7 +125,9 @@
       "esbenp.prettier-vscode",
       "dbaeumer.vscode-eslint",
       "rangav.vscode-thunder-client",
-      "arcanis.vscode-zipfs"
+      "arcanis.vscode-zipfs",
+      "clinyong.vscode-css-modules",
+      "ecmel.vscode-html-css"
     ]
   }
 }

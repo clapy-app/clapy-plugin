@@ -116,15 +116,16 @@ export async function selectRepoInGHWizard(repo: Repo | null) {
 
 // Branches
 
-export function useLoadGHBranchesIfEditable(edit: boolean) {
+export function useLoadGHBranchesIfEditable(edit: boolean, branches: string[] | undefined) {
+  const hasBranches = !!branches?.length;
   useEffect(() => {
-    if (edit) {
+    if (edit && !hasBranches) {
       loadGHBranches().catch(err => {
         handleError(err);
         toastError(err);
       });
     }
-  }, [edit]);
+  }, [edit, hasBranches]);
 }
 
 interface ListBranchesReq {

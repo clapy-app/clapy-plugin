@@ -62,6 +62,7 @@ export async function readUserSettingsWithDefaults() {
   return settings;
 }
 
+// Provides auto-completion and type-checking in the argument, while returning a const type (e.g. 'page' instead of string if the argument is 'page')
 export function createSettingName<T extends UserSettingsKeys>(name: T): T {
   return name;
 }

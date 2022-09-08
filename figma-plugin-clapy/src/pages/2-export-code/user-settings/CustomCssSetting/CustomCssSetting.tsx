@@ -1,24 +1,23 @@
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel.js';
-import type { SwitchProps } from '@mui/material/Switch/Switch.js';
 import Switch from '@mui/material/Switch/Switch.js';
 import Tooltip from '@mui/material/Tooltip/Tooltip.js';
-import type { FC } from 'react';
-import { memo, useCallback, useState } from 'react';
+import type { ChangeEvent, FC } from 'react';
+import { useRef, memo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { appConfig } from '../../../../common/app-config.js';
 import type { UserSettings } from '../../../../common/sb-serialize.model.js';
 import { selectCssOptionEnabled } from '../../../../core/auth/auth-slice.js';
-import type { UserSettingsValues } from '../figmaToCode-model.js';
-import classes from './AddCssOption.module.css';
+import classes from './CustomCssSetting.module.css';
 import { CssEditor } from './CssEditor.js';
+import { selectCodeGenIsLoading, selectCustomCssSetting } from '../../export-code-slice.js';
+import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
+import { createSettingName, setUserSetting } from '../../export-code-utils.js';
 
-interface Props {
-  className?: string;
-  isLoading: boolean;
-  defaultSettings: UserSettings;
-  updateAdvancedOption: (event: React.ChangeEvent<HTMLInputElement>, checked: UserSettingsValues) => void;
-}
+interface Props {}
+
+const name = createSettingName('customCss');
+type Name = typeof name;
 
 export const AddCssOption: FC<Props> = memo(function AddCssOption(props) {
   const isCssOptionEnabled = useSelector(selectCssOptionEnabled);
@@ -27,19 +26,15 @@ export const AddCssOption: FC<Props> = memo(function AddCssOption(props) {
 });
 
 const AddCssOptionInner: FC<Props> = memo(function AddCssOptionInner(props) {
-  const { className, isLoading, defaultSettings, updateAdvancedOption } = props;
-  const defaultValue = defaultSettings.customCss;
-  const [customCss, setCustomCss] = useState(defaultValue);
-  const updateCustomCssState = useCallback<NonNullable<SwitchProps['onChange']>>(
-    (event, value) => {
-      setCustomCss(value);
-      updateAdvancedOption(event, value);
-    },
-    [updateAdvancedOption],
-  );
+  const customCssSetting = useSelector(selectCustomCssSetting);
+  const initialValue = useRef(customCssSetting).current;
+  const isLoading = useSelector(selectCodeGenIsLoading);
+  const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>, settingValue: boolean) => {
+    await setUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
+  }, []);
 
   return (
-    <div className={className ? `${className} ${classes.root}` : classes.root}>
+    <div className={classes.root}>
       <Tooltip
         title={
           <div className={classes.tooltipWrapper}>
@@ -58,12 +53,12 @@ const AddCssOptionInner: FC<Props> = memo(function AddCssOptionInner(props) {
         placement={appConfig.tooltipPosition}
       >
         <FormControlLabel
-          control={<Switch name='customCss' onChange={updateCustomCssState} defaultChecked={defaultValue} />}
+          control={<Switch name='customCss' onChange={changeSetting} defaultChecked={initialValue} />}
           label={`Show custom CSS (selection - alpha)`}
           disabled={isLoading}
         />
       </Tooltip>
-      {customCss && <CssEditor isLoading={isLoading} />}
+      {customCssSetting && <CssEditor isLoading={isLoading} />}
     </div>
   );
 });

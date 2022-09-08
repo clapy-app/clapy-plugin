@@ -45,7 +45,7 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
     await setTargetBranchInGHWizard(branch);
   }, []);
 
-  useLoadGHBranchesIfEditable(edit);
+  useLoadGHBranchesIfEditable(edit, branches);
 
   const loadingBranches = useSelector(selectGHLoadingBranches);
 
@@ -88,7 +88,7 @@ const ChooseBranchAutocompleteInner: FC<Props> = memo(function ChooseBranchAutoc
         />
       </Tooltip>
       {!edit && (
-        <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
+        <Button variant='text' onClick={startEdit} disabled={isLoading}>
           {hasTargetBranchSelected ? 'Change' : 'Choose'}
         </Button>
       )}

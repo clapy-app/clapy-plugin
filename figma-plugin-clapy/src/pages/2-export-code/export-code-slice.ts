@@ -69,5 +69,13 @@ export const selectSelectionPage = (state: RootState) => state.exportCode.select
 
 export const selectIsLoadingUserSettings = (state: RootState) => state.exportCode.initialLoadingSettings;
 export const selectUserSettings = (state: RootState) => state.exportCode.userSettings;
+export const selectCodeGenIsLoading = (state: RootState) => !!state.exportCode.loading;
+
 export const selectPageSetting = (state: RootState) => state.exportCode.userSettings?.page;
-export const selectCodeGenIsLoading = (state: RootState) => state.exportCode.loading;
+export const selectTargetSetting = (state: RootState) => state.exportCode.userSettings?.target;
+export const selectFrameworkSetting = (state: RootState) => state.exportCode.userSettings?.framework;
+export const selectScssSetting = (state: RootState) => state.exportCode.userSettings?.scss;
+export const selectBemSetting = (state: RootState) => state.exportCode.userSettings?.bem;
+export const selectCustomCssSetting = (state: RootState) => state.exportCode.userSettings?.customCss;
+export const selectAngularPrefixSetting = (state: RootState) => state.exportCode.userSettings?.angularPrefix;
+export const selectIsAngular = (state: RootState) => state.exportCode.userSettings?.framework === 'angular';

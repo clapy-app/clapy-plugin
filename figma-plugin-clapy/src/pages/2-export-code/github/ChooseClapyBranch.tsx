@@ -62,7 +62,7 @@ export const ChooseClapyBranchInner: FC<Props> = memo(function ChooseClapyBranch
         />
       </Tooltip>
       {!edit && (
-        <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
+        <Button variant='text' onClick={startEdit} disabled={isLoading}>
           {hasCodegenBranchSelected ? 'Change' : 'Choose'}
         </Button>
       )}

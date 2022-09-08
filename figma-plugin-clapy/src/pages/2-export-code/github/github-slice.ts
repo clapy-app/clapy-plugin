@@ -178,7 +178,7 @@ export const selectGHSignInAborter = (state: RootState) => state.github.signInAb
 export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
 export const selectGHRepos = (state: RootState) => state.github.repositories; /* ?.map(repo => repo.full_name) */
 export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
-const selectGHSelectedRepoFromCache = (state: RootState) => state.github.settings?.repository;
+export const selectGHSelectedRepoFromCache = (state: RootState) => state.github.settings?.repository;
 export const selectGHSelectedRepo = createSelector(
   selectGHRepos,
   selectGHSelectedRepoFromCache,
