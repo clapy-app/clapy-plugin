@@ -42,8 +42,8 @@ import { handleError, useCallbackAsync2, useForceUpdate } from '../../../front-u
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
-import { selectSelectionPreview } from '../export-code-slice.js';
-import { downloadFile } from '../export-code-utils.js';
+import { selectIsLoadingUserSettings, selectSelectionPreview, setLoading } from '../export-code-slice.js';
+import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
 import { AddCssOption } from './AddCssOption/AddCssOption.js';
 import classes2 from './AddCssOption/AddCssOption.module.css';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
@@ -54,9 +54,10 @@ import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 import { GenTargetOptions } from '../GenTargetOptions.js';
-import { loadGHSettingsAndCredentials } from '../github/github-service.js';
+import { loadGHSettings } from '../github/github-service.js';
 import { githubPost } from '../../../front-utils/http-github-utils.js';
 import { selectGitHubReady } from '../github/github-slice.js';
+import { PageSetting } from '../user-settings/PageSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -80,7 +81,17 @@ let settingsBackup: UserSettings = {
 // Don't list settings that don't impact the UI.
 const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework', 'target']);
 
+// TODO
+// After removing the old/new user, FigmaToCodeHome should be used at one single place.
+// Once done, move this user settings loading one level above, around tabs but after login, so that it doesn't re-run each time the user changes of tab. To avoid a blink when changing of tab.
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
+  useLoadUserSettings();
+  const loadingUserSettings = useSelector(selectIsLoadingUserSettings);
+  if (loadingUserSettings) return <Loading />;
+  return <FigmaToCodeHomeInner />;
+});
+
+export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInner(props) {
   const selectionPreview = useSelector(selectSelectionPreview);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
@@ -147,10 +158,17 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     const timer = performance.now();
     let unsubscribe: Disposer | undefined;
     try {
-      setIsLoading(true);
-      setSandboxId('loading');
-      track('gen-code', 'start', userSettingsRef.current);
       perfReset();
+      setIsLoading(true);
+      dispatch(setLoading(true));
+      setSandboxId('loading');
+
+      // Read user settings
+      let userSettings = await readUserSettingsWithDefaults();
+      // Link to legacy settings
+      userSettings = { ...userSettingsRef.current, ...userSettings };
+
+      track('gen-code', 'start', userSettings);
 
       // Extract the Figma configuration
 
@@ -218,7 +236,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            ...userSettingsRef.current,
+            ...userSettings,
           },
           tokens,
           page,
@@ -249,7 +267,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           let fetchApiMethod: typeof apiPost;
           if (nodes.extraConfig.target === UserSettingsTarget.github) {
             setProgress({ stepId: 'readGhSettings', stepNumber: 7 });
-            let [ghCredentials, githubSettings] = await loadGHSettingsAndCredentials();
+            const githubSettings = await loadGHSettings();
             if (!githubSettings) {
               throw new Error('No github settings found although GitHub has been selected as target');
             }
@@ -309,6 +327,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     } finally {
       unsubscribe?.();
       setIsLoading(false);
+      dispatch(setLoading(false));
       setProgress(undefined);
     }
   }, [dispatch, isAlphaDTCUser, isNoCodeSandboxUser]);
@@ -328,26 +347,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
       {!isQuotaReached && typeof picture !== 'undefined' && (
         <>
-          <Tooltip
-            title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
-            disableInteractive
-            placement={appConfig.tooltipPosition}
-            className={state === 'generated' ? classes.hide : undefined}
-          >
-            <FormControl disabled={isLoading} className={classes.outerOption}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name='page'
-                    onChange={updateAdvancedOption}
-                    defaultChecked={!!initialSettingsRef.current.page}
-                  />
-                }
-                label='Full width/height (for pages)'
-                disabled={isLoading}
-              />
-            </FormControl>
-          </Tooltip>
+          {state !== 'generated' && <PageSetting />}
           <GenTargetOptions
             className={state === 'generated' ? classes.hide : undefined}
             isLoading={isLoading}

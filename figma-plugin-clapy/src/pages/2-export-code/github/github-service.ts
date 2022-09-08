@@ -51,7 +51,7 @@ export async function loadGHSettingsAndCredentials() {
   }
 }
 
-async function loadGHSettings() {
+export async function loadGHSettings() {
   const settings = await fetchPlugin('getGithubSettings');
   dispatchOther(setGHSettings(settings));
   return settings;
