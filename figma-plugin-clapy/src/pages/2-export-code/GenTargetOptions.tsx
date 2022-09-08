@@ -60,14 +60,7 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
             </Tooltip>
           )}
           <Tooltip
-            title='Downloads the generated source code as a zip file. You need you unarchive, `yarn install` and `yarn start` to run the application locally.'
-            disableInteractive
-            placement={appConfig.tooltipPosition}
-          >
-            <FormControlLabel value={UserSettingsTarget.zip} control={<Radio />} disabled={isLoading} label='Zip' />
-          </Tooltip>
-          <Tooltip
-            title='Sends the generated code to the selected github repository, in a new branch, and creates a pull request to merge it with your main branch.'
+            title='Sends the generated code to the selected github repository, in a new branch, and creates a pull request to merge it with the target branch.'
             disableInteractive
             placement={appConfig.tooltipPosition}
           >
@@ -77,6 +70,13 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
               disabled={isLoading}
               label='Github'
             />
+          </Tooltip>
+          <Tooltip
+            title='Downloads the generated source code as a zip file. You need you unarchive, `yarn install` and `yarn start` to run the application locally.'
+            disableInteractive
+            placement={appConfig.tooltipPosition}
+          >
+            <FormControlLabel value={UserSettingsTarget.zip} control={<Radio />} disabled={isLoading} label='Zip' />
           </Tooltip>
         </RadioGroup>
       </FormControl>
