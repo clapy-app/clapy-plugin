@@ -65,6 +65,9 @@ export async function linkUsers(
   secondaryAccountUserId: string,
   secondaryAccountProvider: string,
 ) {
+  if (primaryAccountUserId === secondaryAccountUserId) {
+    throw new Error('Cannot link an Auth0 account to itself');
+  }
   const url = `https://${auth0Domain}/api/v2/users/${primaryAccountUserId}/identities`;
   return (
     await axios.post(

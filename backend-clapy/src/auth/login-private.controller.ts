@@ -37,6 +37,8 @@ export class LoginPrivateController {
     const secondaryUser = await validateJwtGetDecoded(body.link_with);
     const secondaryUserId = secondaryUser.sub;
     const secondaryAccountProvider = 'github';
-    await linkUsers(primaryUserId, secondaryUserId, secondaryAccountProvider);
+    if (primaryUserId !== secondaryUserId) {
+      await linkUsers(primaryUserId, secondaryUserId, secondaryAccountProvider);
+    }
   }
 }
