@@ -55,6 +55,11 @@ export const SelectionPreview: FC<Props> = memo(function SelectionPreview(props)
           before generating its code
         </div>
       )}
+      {state === 'selection_too_many' && (
+        <div className={classes.previewPlaceholderText}>
+          <strong className={classes.previewPlaceholderText}>Please select only one element</strong>
+        </div>
+      )}
       {state === 'selectionko' && <>Preview unavailable for this selection</>}
       {state === 'selection' && (
         <img src={selectionPreview || undefined} alt='' className={classes.previewPlaceholderImage} />

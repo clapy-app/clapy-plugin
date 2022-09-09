@@ -31,6 +31,7 @@ import {
   selectIsCodeGenReady,
   selectIsLoadingUserSettings,
   selectSelectionPreview,
+  selectSelectionPreviewError,
   setLoading,
 } from '../export-code-slice.js';
 import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
@@ -56,7 +57,7 @@ import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;
 
-export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
+export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'selection_too_many' | 'generated';
 
 interface Props {}
 
@@ -72,6 +73,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
 
 export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInner(props) {
   const selectionPreview = useSelector(selectSelectionPreview);
+  const selectionPreviewError = useSelector(selectSelectionPreviewError);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -89,6 +91,8 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
     ? 'generated'
     : selectionPreview
     ? 'selection'
+    : selectionPreviewError === 'too_many_elements'
+    ? 'selection_too_many'
     : selectionPreview === false
     ? 'selectionko'
     : 'noselection';
@@ -277,7 +281,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
   return (
     <div className={classes.root}>
       <div className={classes.previewTitle}>
-        {state === 'noselection' && <>Choose an element to code</>}
+        {(state === 'noselection' || state === 'selection_too_many') && <>Choose an element to code</>}
         {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}

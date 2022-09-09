@@ -65,6 +65,7 @@ export const {
 } = exportCodeSlice.actions;
 
 export const selectSelectionPreview = (state: RootState) => state.exportCode.selection?.preview;
+export const selectSelectionPreviewError = (state: RootState) => state.exportCode.selection?.error;
 export const selectSelectionPage = (state: RootState) => state.exportCode.selection?.page;
 
 export const selectIsLoadingUserSettings = (state: RootState) => state.exportCode.initialLoadingSettings;

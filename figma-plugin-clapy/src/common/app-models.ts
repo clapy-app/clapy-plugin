@@ -112,6 +112,7 @@ export type UserProfileState = UserMetadata | true | undefined;
 export interface PreviewResp {
   preview: string | false | undefined;
   page: PageConfig;
+  error?: 'too_many_elements';
 }
 
 export interface GithubCredentials {

@@ -21,6 +21,7 @@ export function getFigmaSelectionOrThrow() {
 
 export function getFigmaSelection() {
   const selection = getFigmaSelections();
-  if (selection?.length !== 1) return;
+  if (selection?.length === 0) return;
+  if (selection?.length > 1) return 'too_many_elements' as const;
   return selection[0];
 }

@@ -19,6 +19,9 @@ async function generatePreview(): Promise<PreviewResp> {
   if (!selection) {
     return { preview: undefined, page };
   }
+  if (typeof selection === 'string') {
+    return { preview: undefined, page, error: selection };
+  }
   if (isBlendMixin(selection) && selection.isMask) {
     return { preview: false, page };
   }
@@ -61,6 +64,9 @@ export function selectionCustomCss(next: NextFn<{ id: string; css: string } | un
 async function readCustomCssFromNode() {
   const selection = getFigmaSelection();
   if (!selection) {
+    return undefined;
+  }
+  if (typeof selection === 'string') {
     return undefined;
   }
   const customCss = selection.getPluginData(customCssPluginKey);
