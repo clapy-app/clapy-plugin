@@ -6,11 +6,14 @@ import type { UserSettings } from '../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../common/sb-serialize.model.js';
 
 import type { RootState } from '../../core/redux/store';
+import { getDefaultUserSettings } from './export-code-utils.js';
 
 export interface ExportCodeState {
   selection?: PreviewResp;
   initialLoadingSettings: boolean; // Initial loading - don't use for other purposes
   loading?: boolean;
+  // Default user settings are defined in
+  // src/pages/2-export-code/export-code-utils.ts#getDefaultUserSettings
   userSettings?: UserSettings;
 }
 
@@ -18,12 +21,6 @@ export interface UserSettingPayload<T extends keyof UserSettings = keyof UserSet
   name: T;
   value: UserSettings[T];
 }
-
-export const defaultUserSettings: UserSettings = {
-  framework: 'react',
-  target: UserSettingsTarget.csb,
-  angularPrefix: 'cl',
-};
 
 const initialState: ExportCodeState = {
   initialLoadingSettings: true,
@@ -44,7 +41,7 @@ export const exportCodeSlice = createSlice({
       state.initialLoadingSettings = false;
     },
     setUserSettings: (state, { payload }: PayloadAction<UserSettings | undefined>) => {
-      state.userSettings = payload || defaultUserSettings;
+      state.userSettings = payload || getDefaultUserSettings();
     },
     setUserSettingRedux: (state, { payload: { name, value } }: PayloadAction<UserSettingPayload>) => {
       (state.userSettings as any)[name] = value;

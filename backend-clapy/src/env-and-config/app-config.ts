@@ -1,10 +1,11 @@
 import type Stripe from 'stripe';
+import { env } from './env.js';
 
 export const appConfig = {
   // If changing those 2 numbers, also update the wording in
   // src/pages/4-Generator/quotaBar/PluginComponentCounter_License/PluginComponentCounter_License.tsx
-  codeGenFreeQuota: 10,
-  codeGenQualifiedQuota: 15,
+  codeGenFreeQuota: env.isDev ? 9999 : 10,
+  codeGenQualifiedQuota: env.isDev ? 9999 : 15,
   stripeConfig: {
     apiVersion: '2022-08-01',
   } as Stripe.StripeConfig,

@@ -20,7 +20,7 @@ import type { GenCodeResponse, ExportCodePayload, ExportImageMap2 } from '../../
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { Loading } from '../../../components-used/Loading/Loading.js';
-import { selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
 import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
@@ -78,7 +78,6 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
-  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const { picture } = useSelector(selectUserMetadata);
@@ -200,11 +199,6 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
             nodes.extraConfig.target = nodes.extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
           }
 
-          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
-          if (isNoCodeSandboxUser && nodes.extraConfig.target === 'csb') {
-            nodes.extraConfig.target = UserSettingsTarget.zip;
-          }
-
           // Get the github settings
           let fetchApiMethod: typeof apiPost;
           if (nodes.extraConfig.target === UserSettingsTarget.github) {
@@ -272,7 +266,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
       dispatch(setLoading(false));
       setProgress(undefined);
     }
-  }, [dispatch, isAlphaDTCUser, isNoCodeSandboxUser]);
+  }, [dispatch, isAlphaDTCUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);

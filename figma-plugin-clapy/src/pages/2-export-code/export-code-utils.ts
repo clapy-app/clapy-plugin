@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import type { ValueOf } from '../../common/app-models.js';
 import { fetchPlugin } from '../../common/plugin-utils.js';
 import type { GithubSettings, UserSettings } from '../../common/sb-serialize.model.js';
+import { UserSettingsTarget } from '../../common/sb-serialize.model.js';
+import { selectNoCodesandboxUser } from '../../core/auth/auth-slice.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils.js';
 import { handleError, toastError } from '../../front-utils/front-utils.js';
 import {
-  defaultUserSettings,
   endLoadingUserSettings,
   selectUserSettings,
   setUserSettingRedux,
@@ -14,6 +15,29 @@ import {
 } from './export-code-slice.js';
 import type { UserSettingsKeys } from './FigmaToCodeHome/figmaToCode-model.js';
 import { setGitHubSetting } from './github/github-slice.js';
+
+// Default settings, before the user modifies them
+export function getDefaultUserSettings() {
+  const isNoCodeSandboxUser = readSelectorOnce(selectNoCodesandboxUser);
+
+  const defaultUserSettings: UserSettings = {
+    framework: 'react',
+    target: isNoCodeSandboxUser ? UserSettingsTarget.zip : UserSettingsTarget.csb,
+    angularPrefix: 'cl',
+  };
+
+  return defaultUserSettings;
+}
+
+// Overrides after the user changes the settings, e.g. ensure the CodeSandbox target is removed if the user have it disabled in the Auth0 profile (roles).
+// The rules here should also be checked in the API for security.
+export function overrideUserSettings(settings: UserSettings | undefined) {
+  if (!settings) return;
+  const isNoCodeSandboxUser = readSelectorOnce(selectNoCodesandboxUser);
+  if (isNoCodeSandboxUser && settings.target === UserSettingsTarget.csb) {
+    settings.target = UserSettingsTarget.zip;
+  }
+}
 
 export function downloadFile(blob: Blob, fileName: string) {
   const link = document.createElement('a');
@@ -56,8 +80,11 @@ export async function loadUserSettingsWithLoading() {
 export async function readUserSettingsWithDefaults() {
   let settings: UserSettings | undefined = readSelectorOnce(selectUserSettings);
   if (!settings) {
-    settings = { ...defaultUserSettings, ...(await fetchPlugin('getUserSettings')) };
+    settings = { ...getDefaultUserSettings(), ...(await fetchPlugin('getUserSettings')) };
+    overrideUserSettings(settings);
     dispatchOther(setUserSettings(settings));
+  } else {
+    overrideUserSettings(settings);
   }
   return settings;
 }
