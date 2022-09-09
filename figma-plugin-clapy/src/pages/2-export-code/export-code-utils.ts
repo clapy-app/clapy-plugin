@@ -15,8 +15,10 @@ import {
 import type { UserSettingsKeys } from './FigmaToCodeHome/figmaToCode-model.js';
 import { setGitHubSettingRedux } from './github/github-slice.js';
 
-const reactComponentDirDefault = 'src/components';
-const angularComponentDirDefault = 'src/app/components';
+export const componentsDirPerFramework: Record<UserSettingsWithRequired['framework'], string> = {
+  react: 'src/components',
+  angular: 'src/app/components',
+};
 
 // Default settings, before the user modifies them
 export function getDefaultUserSettings() {
@@ -26,7 +28,7 @@ export function getDefaultUserSettings() {
     framework: 'react',
     target: isNoCodeSandboxUser ? UserSettingsTarget.zip : UserSettingsTarget.csb,
     angularPrefix: 'cl',
-    componentsDir: reactComponentDirDefault,
+    componentsDir: componentsDirPerFramework.react,
   };
 
   return defaultUserSettings;

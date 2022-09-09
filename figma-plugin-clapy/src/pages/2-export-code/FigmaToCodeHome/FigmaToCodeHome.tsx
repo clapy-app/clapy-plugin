@@ -51,6 +51,7 @@ import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
 import { ScssSetting } from '../user-settings/ScssSetting.js';
 import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
 import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
+import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -297,6 +298,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
             <AccordionDetails>
               <FormGroup>
                 <FrameworkSetting />
+                <ComponentsDirSetting />
                 <LegacyZipSetting />
                 <ScssSetting />
                 <ScssBemSetting />

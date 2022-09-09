@@ -34,7 +34,7 @@ export const AngularPrefixSettingInner: FC<Props> = memo(function AngularPrefixS
       size='small'
       disabled={isLoading}
       defaultValue={initialValue}
-      name='angularPrefix'
+      name={name}
       onChange={changeSetting}
     />
   );

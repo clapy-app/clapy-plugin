@@ -79,7 +79,11 @@ export const selectIsGitHubReady = (state: RootState) =>
     state.github.settings?.mergeToBranch
   );
 export const selectIsCodeGenReady = (state: RootState) =>
-  state.exportCode.userSettings?.target !== UserSettingsTarget.github || selectIsGitHubReady(state);
+  !!(
+    (state.exportCode.userSettings?.target !== UserSettingsTarget.github || selectIsGitHubReady(state)) &&
+    (!selectIsAngular(state) || state.exportCode.userSettings?.angularPrefix) &&
+    state.exportCode.userSettings?.componentsDir
+  );
 
 export const selectPageSetting = (state: RootState) => state.exportCode.userSettings?.page;
 export const selectTargetSetting = (state: RootState) => state.exportCode.userSettings?.target;
@@ -89,3 +93,4 @@ export const selectBemSetting = (state: RootState) => state.exportCode.userSetti
 export const selectCustomCssSetting = (state: RootState) => state.exportCode.userSettings?.customCss;
 export const selectAngularPrefixSetting = (state: RootState) => state.exportCode.userSettings?.angularPrefix;
 export const selectIsAngular = (state: RootState) => state.exportCode.userSettings?.framework === 'angular';
+export const selectComponentsDirSetting = (state: RootState) => state.exportCode.userSettings?.componentsDir;

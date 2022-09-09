@@ -53,7 +53,7 @@ const AddCssOptionInner: FC<Props> = memo(function AddCssOptionInner(props) {
         placement={appConfig.tooltipPosition}
       >
         <FormControlLabel
-          control={<Switch name='customCss' onChange={changeSetting} defaultChecked={initialValue} />}
+          control={<Switch name={name} onChange={changeSetting} defaultChecked={initialValue} />}
           label={`Show custom CSS (selection - alpha)`}
           disabled={isLoading}
         />

@@ -41,7 +41,7 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
   return (
     <div className={classes.root}>
       <FormControl disabled={isLoading}>
-        <RadioGroup row name='target' onChange={changeSetting} defaultValue={initialValue}>
+        <RadioGroup row name={name} onChange={changeSetting} defaultValue={initialValue}>
           {!isNoCodeSandboxUser && (
             <Tooltip
               title='Uploads the generated code to CodeSandbox. Useful for a super quick preview and review of its source code. Please note that CodeSandbox projects are public.'

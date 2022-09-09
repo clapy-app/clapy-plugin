@@ -5,10 +5,10 @@ import type { ChangeEvent, FC } from 'react';
 import { memo } from 'react';
 import { appConfig } from '../../../common/app-config.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
-import { useSelectorOnce } from '../../../core/redux/redux.utils.js';
-import { selectCodeGenIsLoading, selectFrameworkSetting } from '../export-code-slice.js';
+import { readSelectorOnce, useSelectorOnce } from '../../../core/redux/redux.utils.js';
+import { selectCodeGenIsLoading, selectComponentsDirSetting, selectFrameworkSetting } from '../export-code-slice.js';
 import { useSelector } from 'react-redux';
-import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
+import { componentsDirPerFramework, createSettingName, setUserSetting } from '../export-code-utils.js';
 import RadioGroup from '@mui/material/RadioGroup/RadioGroup.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import Radio from '@mui/material/Radio/Radio.js';
@@ -23,8 +23,20 @@ export const FrameworkSetting: FC<Props> = memo(function FrameworkSetting(props)
   const initialValue = useSelectorOnce(selectFrameworkSetting);
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>, settingValue: string) => {
-    // TODO change componentsDir when changing framework if it is still the default value
-    await setOneUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
+    const newFramework = settingValue as UserSettings[Name];
+    const prevFramework = readSelectorOnce(selectFrameworkSetting);
+    const prevComponentsDir = readSelectorOnce(selectComponentsDirSetting);
+    const newSettings: UserSettings = {
+      [event.target.name as Name]: newFramework,
+    };
+    if (
+      newFramework &&
+      newFramework !== prevFramework &&
+      (!prevFramework || prevComponentsDir === componentsDirPerFramework[prevFramework])
+    ) {
+      newSettings.componentsDir = componentsDirPerFramework[newFramework];
+    }
+    await setUserSetting(newSettings);
   }, []);
   return (
     <FormControl disabled={isLoading}>
