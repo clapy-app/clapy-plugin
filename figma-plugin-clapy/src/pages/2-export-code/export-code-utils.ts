@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import type { ValueOf } from '../../common/app-models.js';
 import { fetchPlugin } from '../../common/plugin-utils.js';
-import type { GithubSettings, UserSettings } from '../../common/sb-serialize.model.js';
+import type { GithubSettings, UserSettings, UserSettingsWithRequired } from '../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../common/sb-serialize.model.js';
 import { selectNoCodesandboxUser } from '../../core/auth/auth-slice.js';
 import { dispatchOther, readSelectorOnce } from '../../core/redux/redux.utils.js';
@@ -14,16 +13,20 @@ import {
   startLoadingUserSettings,
 } from './export-code-slice.js';
 import type { UserSettingsKeys } from './FigmaToCodeHome/figmaToCode-model.js';
-import { setGitHubSetting } from './github/github-slice.js';
+import { setGitHubSettingRedux } from './github/github-slice.js';
+
+const reactComponentDirDefault = 'src/components';
+const angularComponentDirDefault = 'src/app/components';
 
 // Default settings, before the user modifies them
 export function getDefaultUserSettings() {
   const isNoCodeSandboxUser = readSelectorOnce(selectNoCodesandboxUser);
 
-  const defaultUserSettings: UserSettings = {
+  const defaultUserSettings: UserSettingsWithRequired = {
     framework: 'react',
     target: isNoCodeSandboxUser ? UserSettingsTarget.zip : UserSettingsTarget.csb,
     angularPrefix: 'cl',
+    componentsDir: reactComponentDirDefault,
   };
 
   return defaultUserSettings;
@@ -78,7 +81,7 @@ export async function loadUserSettingsWithLoading() {
 }
 
 export async function readUserSettingsWithDefaults() {
-  let settings: UserSettings | undefined = readSelectorOnce(selectUserSettings);
+  let settings = readSelectorOnce(selectUserSettings);
   if (!settings) {
     settings = { ...getDefaultUserSettings(), ...(await fetchPlugin('getUserSettings')) };
     overrideUserSettings(settings);
@@ -94,7 +97,7 @@ export function createSettingName<T extends UserSettingsKeys>(name: T): T {
   return name;
 }
 
-export async function setUserSetting<Name extends keyof UserSettings = keyof UserSettings>(
+export async function setOneUserSetting<Name extends keyof UserSettings = keyof UserSettings>(
   name: Name,
   value: UserSettings[Name],
   isGithub?: boolean,
@@ -106,10 +109,18 @@ export async function setUserSetting<Name extends keyof UserSettings = keyof Use
     return;
   }
   if (isGithub) {
-    dispatchOther(setGitHubSetting({ name: name as keyof GithubSettings, value: value as ValueOf<GithubSettings> }));
-    await fetchPlugin('setUserSubSetting', name, value, 'githubSettings');
+    await setGitHubSetting({ [name]: value });
   } else {
-    dispatchOther(setUserSettingRedux({ name, value }));
-    await fetchPlugin('setUserSetting', name, value);
+    await setUserSetting({ [name]: value });
   }
+}
+
+export async function setUserSetting(settings: UserSettings) {
+  dispatchOther(setUserSettingRedux(settings));
+  await fetchPlugin('setUserSetting', settings);
+}
+
+export async function setGitHubSetting(settings: GithubSettings) {
+  dispatchOther(setGitHubSettingRedux(settings));
+  await fetchPlugin('setUserSubSetting', 'githubSettings', settings);
 }

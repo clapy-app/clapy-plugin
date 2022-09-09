@@ -8,7 +8,7 @@ import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { useSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { selectCodeGenIsLoading, selectFrameworkSetting } from '../export-code-slice.js';
 import { useSelector } from 'react-redux';
-import { createSettingName, setUserSetting } from '../export-code-utils.js';
+import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
 import RadioGroup from '@mui/material/RadioGroup/RadioGroup.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import Radio from '@mui/material/Radio/Radio.js';
@@ -23,7 +23,8 @@ export const FrameworkSetting: FC<Props> = memo(function FrameworkSetting(props)
   const initialValue = useSelectorOnce(selectFrameworkSetting);
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>, settingValue: string) => {
-    await setUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
+    // TODO change componentsDir when changing framework if it is still the default value
+    await setOneUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
   }, []);
   return (
     <FormControl disabled={isLoading}>

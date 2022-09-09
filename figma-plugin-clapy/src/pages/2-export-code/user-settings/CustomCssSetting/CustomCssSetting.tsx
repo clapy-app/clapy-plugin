@@ -12,7 +12,7 @@ import classes from './CustomCssSetting.module.css';
 import { CssEditor } from './CssEditor.js';
 import { selectCodeGenIsLoading, selectCustomCssSetting } from '../../export-code-slice.js';
 import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
-import { createSettingName, setUserSetting } from '../../export-code-utils.js';
+import { createSettingName, setOneUserSetting } from '../../export-code-utils.js';
 
 interface Props {}
 
@@ -30,7 +30,7 @@ const AddCssOptionInner: FC<Props> = memo(function AddCssOptionInner(props) {
   const initialValue = useRef(customCssSetting).current;
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>, settingValue: boolean) => {
-    await setUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
+    await setOneUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
   }, []);
 
   return (

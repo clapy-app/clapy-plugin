@@ -136,10 +136,9 @@ export const githubSlice = createSlice({
       if (!state.settings) state.settings = {};
       state.settings.codegenBranch = payload || undefined;
     },
-    setGitHubSetting: (state, { payload: { name, value } }: PayloadAction<GitHubSettingPayload>) => {
+    setGitHubSettingRedux: (state, { payload }: PayloadAction<GithubSettings>) => {
       if (!state.settings) state.settings = {};
-      state.settings[name] = (value ||
-        undefined) as any /* WritableDraft<GithubSettings[typeof name]> */ /* WritableDraft<UserSettingPayload['value']> */;
+      Object.assign(state.settings, payload);
     },
   },
 });
@@ -163,7 +162,7 @@ export const {
   setGHBranches,
   setSelectedTargetBranch,
   setSelectedCodeGenBranch,
-  setGitHubSetting,
+  setGitHubSettingRedux,
 } = githubSlice.actions;
 
 // Load initial credentials

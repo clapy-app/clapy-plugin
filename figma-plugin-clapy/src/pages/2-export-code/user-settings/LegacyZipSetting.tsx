@@ -8,7 +8,7 @@ import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { useSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { selectCodeGenIsLoading, selectTargetSetting } from '../export-code-slice.js';
 import { useSelector } from 'react-redux';
-import { createSettingName, setUserSetting } from '../export-code-utils.js';
+import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { selectGithubEnabled, selectNoCodesandboxUser } from '../../../core/auth/auth-slice.js';
@@ -19,17 +19,21 @@ const name = createSettingName('zip');
 type Name = typeof name;
 
 export const LegacyZipSetting: FC<Props> = memo(function LegacyZipSetting(props) {
+  const isGithubEnabled = useSelector(selectGithubEnabled);
+  if (isGithubEnabled) return null;
+  return <LegacyZipSettingInner />;
+});
+
+export const LegacyZipSettingInner: FC<Props> = memo(function LegacyZipSettingInner(props) {
   const initialValue = useSelectorOnce(selectTargetSetting);
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(
     async (event: ChangeEvent<HTMLInputElement>, settingValue: UserSettings[Name]) => {
-      await setUserSetting('target', settingValue ? UserSettingsTarget.zip : UserSettingsTarget.csb);
+      await setOneUserSetting('target', settingValue ? UserSettingsTarget.zip : UserSettingsTarget.csb);
     },
     [],
   );
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
-  const isGithubEnabled = useSelector(selectGithubEnabled);
-  if (isGithubEnabled) return null;
   return (
     <Tooltip
       title={

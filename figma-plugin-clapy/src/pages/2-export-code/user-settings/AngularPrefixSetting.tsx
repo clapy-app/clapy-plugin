@@ -5,7 +5,7 @@ import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { useSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { selectAngularPrefixSetting, selectCodeGenIsLoading, selectIsAngular } from '../export-code-slice.js';
 import { useSelector } from 'react-redux';
-import { createSettingName, setUserSetting } from '../export-code-utils.js';
+import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import TextField from '@mui/material/TextField/TextField.js';
 
@@ -16,12 +16,16 @@ type Name = typeof name;
 
 export const AngularPrefixSetting: FC<Props> = memo(function AngularPrefixSetting(props) {
   const isAngular = useSelector(selectIsAngular);
+  if (!isAngular) return null;
+  return <AngularPrefixSettingInner />;
+});
+
+export const AngularPrefixSettingInner: FC<Props> = memo(function AngularPrefixSettingInner(props) {
   const initialValue = useSelectorOnce(selectAngularPrefixSetting);
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>) => {
-    await setUserSetting(event.target.name as Name, event.target.value as UserSettings[Name]);
+    await setOneUserSetting(event.target.name as Name, event.target.value as UserSettings[Name]);
   }, []);
-  if (!isAngular) return null;
   return (
     <TextField
       className={classes.textSetting}

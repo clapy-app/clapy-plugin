@@ -12,7 +12,7 @@ import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { selectGithubEnabled, selectNoCodesandboxUser } from '../../../core/auth/auth-slice.js';
 import classes from './TargetSetting.module.css';
 import { GithubOption } from '../github/GithubOption.js';
-import { createSettingName, setUserSetting } from '../export-code-utils.js';
+import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
 import { selectCodeGenIsLoading, selectTargetSetting } from '../export-code-slice.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 
@@ -32,9 +32,9 @@ const GenTargetOptionsInner: FC<Props> = memo(function GenTargetOptionsInner(pro
   const initialValue = useRef(targetSetting).current;
   const isLoading = useSelector(selectCodeGenIsLoading);
   const changeSetting = useCallbackAsync2(async (event: ChangeEvent<HTMLInputElement>, settingValue: string) => {
-    await setUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
+    await setOneUserSetting(event.target.name as Name, settingValue as UserSettings[Name]);
     // Remove legacy setting
-    await setUserSetting('zip', undefined);
+    await setOneUserSetting('zip', undefined);
   }, []);
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
 

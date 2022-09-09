@@ -43,8 +43,9 @@ export const exportCodeSlice = createSlice({
     setUserSettings: (state, { payload }: PayloadAction<UserSettings | undefined>) => {
       state.userSettings = payload || getDefaultUserSettings();
     },
-    setUserSettingRedux: (state, { payload: { name, value } }: PayloadAction<UserSettingPayload>) => {
-      (state.userSettings as any)[name] = value;
+    setUserSettingRedux: (state, { payload }: PayloadAction<UserSettings>) => {
+      if (!state.userSettings) state.userSettings = {};
+      Object.assign(state.userSettings, payload);
     },
     setLoading: (state, { payload }: PayloadAction<boolean>) => {
       state.loading = payload;
