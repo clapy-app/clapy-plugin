@@ -26,7 +26,7 @@ function showTooltipMessage(isQualified: boolean | undefined, nextMonth: string)
     return (
       <div className={classes.alignCenter}>
         <span>
-          Your quota was increased to 10 monthly exports
+          Your quota was increased to 15 monthly exports
           <br />
           (next reset on September, 1st).
         </span>
@@ -36,7 +36,7 @@ function showTooltipMessage(isQualified: boolean | undefined, nextMonth: string)
   return (
     <div className={classes.alignCenter}>
       <span>
-        Free plan includes 3 monthly exports
+        Free plan includes 10 monthly exports
         <br />
         (next reset on {nextMonth}, 1st).
       </span>

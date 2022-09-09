@@ -3,10 +3,9 @@ import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import FormGroup from '@mui/material/FormGroup';
-import type { OutlinedInputProps } from '@mui/material/OutlinedInput/OutlinedInput.js';
 import Typography from '@mui/material/Typography';
-import type { ChangeEvent, FC } from 'react';
-import { useEffect, useRef, memo, useCallback, useState } from 'react';
+import type { FC } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
@@ -17,28 +16,27 @@ import { getDuration } from '../../../common/general-utils';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
-import type {
-  GenCodeResponse,
-  ExportCodePayload,
-  ExportImageMap2,
-  UserSettings,
-} from '../../../common/sb-serialize.model.js';
+import type { GenCodeResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { Loading } from '../../../components-used/Loading/Loading.js';
-import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
-import { handleError, useCallbackAsync2, useForceUpdate } from '../../../front-utils/front-utils';
+import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
-import { selectIsLoadingUserSettings, selectSelectionPreview, setLoading } from '../export-code-slice.js';
+import {
+  selectIsCodeGenReady,
+  selectIsLoadingUserSettings,
+  selectSelectionPreview,
+  setLoading,
+} from '../export-code-slice.js';
 import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
 import { AddCssOption } from '../user-settings/CustomCssSetting/CustomCssSetting.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
-import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
@@ -46,7 +44,6 @@ import { SelectionPreview } from './SelectionPreview/SelectionPreview';
 import { GenTargetOptions } from '../user-settings/TargetSetting.js';
 import { loadGHSettings } from '../github/github-service.js';
 import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { selectGitHubReady } from '../github/github-slice.js';
 import { PageSetting } from '../user-settings/PageSetting.js';
 import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
 import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
@@ -62,19 +59,6 @@ const sendToApi = true;
 export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
 
 interface Props {}
-
-let settingsBackup: UserSettings = {
-  // framework: 'angular',
-  framework: 'react',
-  target: UserSettingsTarget.csb,
-  // scss: env.isDev,
-  // bem: env.isDev,
-  angularPrefix: 'cl',
-};
-
-// Listed keys will re-render the component when the setting change. List the ones that are needed for the UI, e.g. when activating an option shows another option.
-// Don't list settings that don't impact the UI.
-const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework', 'target']);
 
 // TODO
 // After removing the old/new user, FigmaToCodeHome should be used at one single place.
@@ -93,27 +77,11 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
   const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
-  const userSettingsRef = useRef(
-    isNoCodeSandboxUser ? { ...settingsBackup, target: UserSettingsTarget.zip } : settingsBackup,
-  );
-  const initialSettingsRef = useRef(userSettingsRef.current);
-  const forceUpdate = useForceUpdate();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const { picture } = useSelector(selectUserMetadata);
-  const isGithubEnabled = useSelector(selectGithubEnabled);
-  const isGitHubReady = useSelector(selectGitHubReady);
-  const isCodeGenReady = userSettingsRef.current.target !== UserSettingsTarget.github || isGitHubReady;
+  const isCodeGenReady = useSelector(selectIsCodeGenReady);
   const dispatch = useAppDispatch();
-
-  useEffect(
-    () => () => {
-      // When the component is unloaded (e.g. navigate to another view), the user settings are backed up in the defaultSettings object.
-      // When the component will be re-mounted, those default settings will be used to pre-fill the form inputs (using the default value attributes).
-      settingsBackup = { ...userSettingsRef.current };
-    },
-    [],
-  );
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -124,30 +92,6 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
     : selectionPreview === false
     ? 'selectionko'
     : 'noselection';
-
-  const updateAdvancedOption = useCallback(
-    (event: ChangeEvent<HTMLInputElement>, settingValue: UserSettingsValues) => {
-      const name = event.target.name as UserSettingsKeys;
-      if (!name) {
-        handleError(
-          new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
-        );
-        return;
-      }
-      userSettingsRef.current = { ...userSettingsRef.current, [name]: settingValue };
-
-      // Specific state updates for the UI
-      if (renderableSettingsKeys.has(name)) {
-        forceUpdate();
-      }
-    },
-    [forceUpdate],
-  );
-
-  const updateSettingFromTextField: OutlinedInputProps['onChange'] = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => updateAdvancedOption(e, e.target.value),
-    [updateAdvancedOption],
-  );
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
@@ -160,8 +104,6 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
 
       // Read user settings
       let userSettings = await readUserSettingsWithDefaults();
-      // Link to legacy settings
-      userSettings = { ...userSettingsRef.current, ...userSettings };
 
       track('gen-code', 'start', userSettings);
 

@@ -218,12 +218,3 @@ export const selectGHBranchesOrJustSelection = createSelector(
 );
 export const selectGHHasCodegenBranchSelected = (state: RootState) => !!state.github.settings?.codegenBranch;
 export const selectGHSelectedCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
-
-export const selectGitHubReady = (state: RootState) =>
-  !!(
-    state.github.credentials?.accessToken &&
-    state.github.credentials?.hasPermission &&
-    state.github.settings?.repository &&
-    state.github.settings?.codegenBranch &&
-    state.github.settings?.mergeToBranch
-  );

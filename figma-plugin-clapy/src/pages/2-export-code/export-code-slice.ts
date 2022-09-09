@@ -71,6 +71,17 @@ export const selectIsLoadingUserSettings = (state: RootState) => state.exportCod
 export const selectUserSettings = (state: RootState) => state.exportCode.userSettings;
 export const selectCodeGenIsLoading = (state: RootState) => !!state.exportCode.loading;
 
+export const selectIsGitHubReady = (state: RootState) =>
+  !!(
+    state.github.credentials?.accessToken &&
+    state.github.credentials?.hasPermission &&
+    state.github.settings?.repository &&
+    state.github.settings?.codegenBranch &&
+    state.github.settings?.mergeToBranch
+  );
+export const selectIsCodeGenReady = (state: RootState) =>
+  state.exportCode.userSettings?.target !== UserSettingsTarget.github || selectIsGitHubReady(state);
+
 export const selectPageSetting = (state: RootState) => state.exportCode.userSettings?.page;
 export const selectTargetSetting = (state: RootState) => state.exportCode.userSettings?.target;
 export const selectFrameworkSetting = (state: RootState) => state.exportCode.userSettings?.framework;

@@ -1,6 +1,8 @@
 import type Stripe from 'stripe';
 
 export const appConfig = {
+  // If changing those 2 numbers, also update the wording in
+  // src/pages/4-Generator/quotaBar/PluginComponentCounter_License/PluginComponentCounter_License.tsx
   codeGenFreeQuota: 10,
   codeGenQualifiedQuota: 15,
   stripeConfig: {
