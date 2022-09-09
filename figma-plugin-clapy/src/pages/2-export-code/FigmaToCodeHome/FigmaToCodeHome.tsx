@@ -16,7 +16,13 @@ import { getDuration } from '../../../common/general-utils';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
-import type { GenCodeResponse, ExportCodePayload, ExportImageMap2 } from '../../../common/sb-serialize.model.js';
+import type {
+  GenCodeResponse,
+  ExportCodePayload,
+  ExportImageMap2,
+  GithubSettings,
+  UserSettings,
+} from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { Loading } from '../../../components-used/Loading/Loading.js';
@@ -109,7 +115,19 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
       // Read user settings
       let userSettings = await readUserSettingsWithDefaults();
 
-      track('gen-code', 'start', userSettings);
+      let githubSettings: GithubSettings | undefined = undefined;
+      let trackSettings: UserSettings & GithubSettings;
+      if (userSettings.target === UserSettingsTarget.github) {
+        githubSettings = await loadGHSettings();
+        if (!githubSettings) {
+          throw new Error('No github settings found although GitHub has been selected as target');
+        }
+        trackSettings = { ...userSettings, ...githubSettings };
+      } else {
+        trackSettings = userSettings;
+      }
+
+      track('gen-code', 'start', trackSettings);
 
       // Extract the Figma configuration
 
@@ -204,10 +222,6 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
           let fetchApiMethod: typeof apiPost;
           if (nodes.extraConfig.target === UserSettingsTarget.github) {
             setProgress({ stepId: 'readGhSettings', stepNumber: 7 });
-            const githubSettings = await loadGHSettings();
-            if (!githubSettings) {
-              throw new Error('No github settings found although GitHub has been selected as target');
-            }
             nodes.extraConfig.githubSettings = githubSettings;
             fetchApiMethod = githubPost;
           } else {
@@ -240,7 +254,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
               console.log('sandbox preview:', `https://${data.url}.csb.app/`, `(in ${durationInS} seconds)`);
             }
             setGithubPRUrl(data.url);
-            track('gen-code', 'completed', { url: `https://${data.url}.csb.app/`, durationInS, github: true });
+            track('gen-code', 'completed', { url: data.url, durationInS, github: true });
             return;
           } else {
             track('gen-code', 'completed-no-data', { durationInS });
