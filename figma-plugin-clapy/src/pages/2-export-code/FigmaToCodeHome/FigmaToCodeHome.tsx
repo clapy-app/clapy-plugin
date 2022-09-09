@@ -2,25 +2,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-import type { OutlinedInputProps } from '@mui/material/OutlinedInput/OutlinedInput.js';
-import Radio from '@mui/material/Radio';
-import type { RadioGroupProps } from '@mui/material/RadioGroup';
-import RadioGroup from '@mui/material/RadioGroup';
-import Switch from '@mui/material/Switch';
-import TextField from '@mui/material/TextField/TextField.js';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import type { ChangeEvent, FC } from 'react';
-import { useEffect, useRef, memo, useCallback, useState } from 'react';
+import type { FC } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
 import { Button_SizeSmHierarchyLinkColo } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo/Button_SizeSmHierarchyLinkColo.js';
 import { track } from '../../../common/analytics';
-import { appConfig } from '../../../common/app-config.js';
 import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
 import { getDuration } from '../../../common/general-utils';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
@@ -30,84 +20,76 @@ import type {
   GenCodeResponse,
   ExportCodePayload,
   ExportImageMap2,
+  GithubSettings,
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { Button } from '../../../components-used/Button/Button';
 import { Loading } from '../../../components-used/Loading/Loading.js';
-import { selectGithubEnabled, selectIsAlphaDTCUser, selectNoCodesandboxUser } from '../../../core/auth/auth-slice';
+import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
-import { handleError, useCallbackAsync2, useForceUpdate } from '../../../front-utils/front-utils';
+import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
-import { selectSelectionPreview } from '../export-code-slice.js';
-import { downloadFile } from '../export-code-utils.js';
-import { AddCssOption } from './AddCssOption/AddCssOption.js';
-import classes2 from './AddCssOption/AddCssOption.module.css';
+import {
+  selectIsCodeGenReady,
+  selectIsLoadingUserSettings,
+  selectSelectionPreview,
+  selectSelectionPreviewError,
+  setLoading,
+} from '../export-code-slice.js';
+import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
+import { AddCssOption } from '../user-settings/CustomCssSetting/CustomCssSetting.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
-import type { UserSettingsKeys, UserSettingsValues } from './figmaToCode-model.js';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
-import { GenTargetOptions } from '../GenTargetOptions.js';
-import { loadGHSettingsAndCredentials } from '../github/github-service.js';
+import { GenTargetOptions } from '../user-settings/TargetSetting.js';
+import { loadGHSettings } from '../github/github-service.js';
 import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { selectGitHubReady } from '../github/github-slice.js';
+import { PageSetting } from '../user-settings/PageSetting.js';
+import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
+import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
+import { ScssSetting } from '../user-settings/ScssSetting.js';
+import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
+import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
+import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;
 
-export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'generated';
+export type MyStates = 'loading' | 'noselection' | 'selectionko' | 'selection' | 'selection_too_many' | 'generated';
 
 interface Props {}
 
-let settingsBackup: UserSettings = {
-  // framework: 'angular',
-  framework: 'react',
-  target: UserSettingsTarget.csb,
-  // scss: env.isDev,
-  // bem: env.isDev,
-  angularPrefix: 'cl',
-};
-
-// Listed keys will re-render the component when the setting change. List the ones that are needed for the UI, e.g. when activating an option shows another option.
-// Don't list settings that don't impact the UI.
-const renderableSettingsKeys = new Set<UserSettingsKeys>(['scss', 'framework', 'target']);
-
+// TODO
+// After removing the old/new user, FigmaToCodeHome should be used at one single place.
+// Once done, move this user settings loading one level above, around tabs but after login, so that it doesn't re-run each time the user changes of tab. To avoid a blink when changing of tab.
 export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
+  useLoadUserSettings();
+  const loadingUserSettings = useSelector(selectIsLoadingUserSettings);
+  if (loadingUserSettings) return <Loading />;
+  return <FigmaToCodeHomeInner />;
+});
+
+export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInner(props) {
   const selectionPreview = useSelector(selectSelectionPreview);
+  const selectionPreviewError = useSelector(selectSelectionPreviewError);
   const [sandboxId, setSandboxId] = useState<string | undefined>();
   const [githubPRUrl, setGithubPRUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<ExtractionProgress | undefined>();
-  const isNoCodeSandboxUser = useSelector(selectNoCodesandboxUser);
-  const userSettingsRef = useRef(
-    isNoCodeSandboxUser ? { ...settingsBackup, target: UserSettingsTarget.zip } : settingsBackup,
-  );
-  const initialSettingsRef = useRef(userSettingsRef.current);
-  const forceUpdate = useForceUpdate();
   const isAlphaDTCUser = useSelector(selectIsAlphaDTCUser);
   const isQuotaReached = useSelector(selectIsUserMaxQuotaReached);
   const { picture } = useSelector(selectUserMetadata);
-  const isGithubEnabled = useSelector(selectGithubEnabled);
-  const isGitHubReady = useSelector(selectGitHubReady);
-  const isCodeGenReady = userSettingsRef.current.target !== UserSettingsTarget.github || isGitHubReady;
+  const isCodeGenReady = useSelector(selectIsCodeGenReady);
   const dispatch = useAppDispatch();
-
-  useEffect(
-    () => () => {
-      // When the component is unloaded (e.g. navigate to another view), the user settings are backed up in the defaultSettings object.
-      // When the component will be re-mounted, those default settings will be used to pre-fill the form inputs (using the default value attributes).
-      settingsBackup = { ...userSettingsRef.current };
-    },
-    [],
-  );
 
   const state: MyStates = isLoading
     ? 'loading'
@@ -115,42 +97,37 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     ? 'generated'
     : selectionPreview
     ? 'selection'
+    : selectionPreviewError === 'too_many_elements'
+    ? 'selection_too_many'
     : selectionPreview === false
     ? 'selectionko'
     : 'noselection';
-
-  const updateAdvancedOption = useCallback(
-    (event: ChangeEvent<HTMLInputElement>, settingValue: UserSettingsValues) => {
-      const name = event.target.name as UserSettingsKeys;
-      if (!name) {
-        handleError(
-          new Error('BUG advanced option input must have the name of the corresponding option as `name` attribute.'),
-        );
-        return;
-      }
-      userSettingsRef.current = { ...userSettingsRef.current, [name]: settingValue };
-
-      // Specific state updates for the UI
-      if (renderableSettingsKeys.has(name)) {
-        forceUpdate();
-      }
-    },
-    [forceUpdate],
-  );
-
-  const updateSettingFromTextField: OutlinedInputProps['onChange'] = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => updateAdvancedOption(e, e.target.value),
-    [updateAdvancedOption],
-  );
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
     let unsubscribe: Disposer | undefined;
     try {
-      setIsLoading(true);
-      setSandboxId('loading');
-      track('gen-code', 'start', userSettingsRef.current);
       perfReset();
+      setIsLoading(true);
+      dispatch(setLoading(true));
+      setSandboxId('loading');
+
+      // Read user settings
+      let userSettings = await readUserSettingsWithDefaults();
+
+      let githubSettings: GithubSettings | undefined = undefined;
+      let trackSettings: UserSettings & GithubSettings;
+      if (userSettings.target === UserSettingsTarget.github) {
+        githubSettings = await loadGHSettings();
+        if (!githubSettings) {
+          throw new Error('No github settings found although GitHub has been selected as target');
+        }
+        trackSettings = { ...userSettings, ...githubSettings };
+      } else {
+        trackSettings = userSettings;
+      }
+
+      track('gen-code', 'start', trackSettings);
 
       // Extract the Figma configuration
 
@@ -218,7 +195,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           extraConfig: {
             ...extraConfig,
             enableMUIFramework: isAlphaDTCUser,
-            ...userSettingsRef.current,
+            ...userSettings,
           },
           tokens,
           page,
@@ -236,23 +213,15 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
           console.log(JSON.stringify(nodes));
         }
         if (!env.isDev || sendToApi) {
+          // Fix legacy zip config
           if (!nodes.extraConfig.target) {
-            nodes.extraConfig.target === nodes.extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
-          }
-
-          // /!\ this `if` block is necessary for users with role "noCodesandbox". Don't modify unless you know what you are doing.
-          if (isNoCodeSandboxUser && nodes.extraConfig.target === 'csb') {
-            nodes.extraConfig.target = UserSettingsTarget.zip;
+            nodes.extraConfig.target = nodes.extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
           }
 
           // Get the github settings
           let fetchApiMethod: typeof apiPost;
           if (nodes.extraConfig.target === UserSettingsTarget.github) {
             setProgress({ stepId: 'readGhSettings', stepNumber: 7 });
-            let [ghCredentials, githubSettings] = await loadGHSettingsAndCredentials();
-            if (!githubSettings) {
-              throw new Error('No github settings found although GitHub has been selected as target');
-            }
             nodes.extraConfig.githubSettings = githubSettings;
             fetchApiMethod = githubPost;
           } else {
@@ -285,7 +254,7 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
               console.log('sandbox preview:', `https://${data.url}.csb.app/`, `(in ${durationInS} seconds)`);
             }
             setGithubPRUrl(data.url);
-            track('gen-code', 'completed', { url: `https://${data.url}.csb.app/`, durationInS, github: true });
+            track('gen-code', 'completed', { url: data.url, durationInS, github: true });
             return;
           } else {
             track('gen-code', 'completed-no-data', { durationInS });
@@ -309,9 +278,10 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
     } finally {
       unsubscribe?.();
       setIsLoading(false);
+      dispatch(setLoading(false));
       setProgress(undefined);
     }
-  }, [dispatch, isAlphaDTCUser, isNoCodeSandboxUser]);
+  }, [dispatch, isAlphaDTCUser]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);
@@ -320,44 +290,17 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
   return (
     <div className={classes.root}>
       <div className={classes.previewTitle}>
-        {state === 'noselection' && <>Choose an element to code</>}
+        {(state === 'noselection' || state === 'selection_too_many') && <>Choose an element to code</>}
         {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
         {isLoading && <>Your code is loading...</>}
         {state === 'generated' && <>And... it’s done!</>}
       </div>
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
-      {!isQuotaReached && typeof picture !== 'undefined' && (
+      {!isQuotaReached && typeof picture !== 'undefined' && state !== 'generated' && (
         <>
-          <Tooltip
-            title='If enabled, the selected element will be stretched to use all width and height available, even if "Fill container" is not set. Useful for top-level frames that are pages.'
-            disableInteractive
-            placement={appConfig.tooltipPosition}
-            className={state === 'generated' ? classes.hide : undefined}
-          >
-            <FormControl disabled={isLoading} className={classes.outerOption}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name='page'
-                    onChange={updateAdvancedOption}
-                    defaultChecked={!!initialSettingsRef.current.page}
-                  />
-                }
-                label='Full width/height (for pages)'
-                disabled={isLoading}
-              />
-            </FormControl>
-          </Tooltip>
-          <GenTargetOptions
-            className={state === 'generated' ? classes.hide : undefined}
-            isLoading={isLoading}
-            defaultSettings={initialSettingsRef.current}
-            updateAdvancedOption={updateAdvancedOption}
-          />
-          <Accordion
-            classes={{ root: classes.accordionRoot }}
-            className={state === 'generated' ? classes.hide : undefined}
-          >
+          <PageSetting />
+          <GenTargetOptions />
+          <Accordion classes={{ root: classes.accordionRoot }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls='panel1a-content'
@@ -368,128 +311,14 @@ export const FigmaToCodeHome: FC<Props> = memo(function FigmaToCodeHome(props) {
             </AccordionSummary>
             <AccordionDetails>
               <FormGroup>
-                <FormControl disabled={isLoading}>
-                  <RadioGroup
-                    row
-                    name='framework'
-                    onChange={updateAdvancedOption as RadioGroupProps['onChange']}
-                    defaultValue={initialSettingsRef.current.framework}
-                  >
-                    <Tooltip title='Generates React code.' disableInteractive placement={appConfig.tooltipPosition}>
-                      <FormControlLabel
-                        value='react'
-                        control={<Radio disabled={isLoading} />}
-                        disabled={isLoading}
-                        label='React'
-                      />
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        <div className={classes2.tooltipWrapper}>
-                          <div>Generates Angular code.</div>
-                          <div>
-                            Alpha limitation: only components are supported. All customizations applied on Figma
-                            instances (including custom CSS on instance nodes) are ignored. For this reason, the result
-                            may not exactly match the Figma design. For pixel-perfect, please choose React instead.
-                          </div>
-                        </div>
-                      }
-                      disableInteractive
-                      placement={appConfig.tooltipPosition}
-                    >
-                      <FormControlLabel
-                        value='angular'
-                        control={<Radio disabled={isLoading} />}
-                        disabled={isLoading}
-                        label='Angular (alpha)'
-                      />
-                    </Tooltip>
-                  </RadioGroup>
-                </FormControl>
-                {!isGithubEnabled && (
-                  <Tooltip
-                    title={
-                      isNoCodeSandboxUser
-                        ? 'The code is downloaded as zip file instead of being sent to CodeSandbox for preview. This option is enforced for your account as a security measure.'
-                        : 'If enabled, the code is downloaded as zip file instead of being sent to CodeSandbox for preview. This is the best option for confidentiality.'
-                    }
-                    disableInteractive
-                    placement={appConfig.tooltipPosition}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name='zip'
-                          onChange={updateAdvancedOption}
-                          defaultChecked={
-                            initialSettingsRef.current.target === UserSettingsTarget.zip || isNoCodeSandboxUser
-                          }
-                        />
-                      }
-                      label='Download as zip'
-                      disabled={isLoading || isNoCodeSandboxUser}
-                    />
-                  </Tooltip>
-                )}
-                <Tooltip
-                  title='If enabled, styles will be written in .scss files instead of .css.'
-                  disableInteractive
-                  placement={appConfig.tooltipPosition}
-                >
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        name='scss'
-                        onChange={updateAdvancedOption}
-                        defaultChecked={!!initialSettingsRef.current.scss}
-                      />
-                    }
-                    label='SCSS instead of CSS (alpha)'
-                    disabled={isLoading}
-                  />
-                </Tooltip>
-                {userSettingsRef.current.scss && (
-                  <Tooltip
-                    title='If enabled, the generated SCSS is a tree of classes following the BEM convention instead of top-level classes only. CSS modules make most of BEM obsolete, but it is useful for legacy projects.'
-                    disableInteractive
-                    placement={appConfig.tooltipPosition}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name='bem'
-                          onChange={updateAdvancedOption}
-                          defaultChecked={!!initialSettingsRef.current.bem}
-                        />
-                      }
-                      label='Indent classes with BEM convention'
-                      disabled={isLoading}
-                    />
-                  </Tooltip>
-                )}
-
-                <AddCssOption
-                  className={state === 'generated' ? classes.hide : undefined}
-                  isLoading={isLoading}
-                  defaultSettings={initialSettingsRef.current}
-                  updateAdvancedOption={updateAdvancedOption}
-                />
-
+                <FrameworkSetting />
+                <ComponentsDirSetting />
+                <LegacyZipSetting />
+                <ScssSetting />
+                <ScssBemSetting />
+                <AddCssOption />
                 {/* Angular-specific setting: component prefix */}
-                {userSettingsRef.current.framework === 'angular' && (
-                  <>
-                    <TextField
-                      className={classes.textSetting}
-                      label='Component names prefix'
-                      variant='outlined'
-                      size='small'
-                      disabled={isLoading}
-                      defaultValue={initialSettingsRef.current.angularPrefix}
-                      name='angularPrefix'
-                      onChange={updateSettingFromTextField}
-                    />
-                  </>
-                )}
+                <AngularPrefixSetting />
               </FormGroup>
             </AccordionDetails>
           </Accordion>

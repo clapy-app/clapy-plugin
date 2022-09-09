@@ -53,9 +53,7 @@ export async function exportCode(
   }
 
   // Legacy zip setting
-  if (extraConfig.zip) {
-    extraConfig.target = UserSettingsTarget.zip;
-  } else if (!extraConfig.target) {
+  if (!extraConfig.target) {
     extraConfig.target = extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
   }
   // /Legacy

@@ -51,7 +51,7 @@ export async function loadGHSettingsAndCredentials() {
   }
 }
 
-async function loadGHSettings() {
+export async function loadGHSettings() {
   const settings = await fetchPlugin('getGithubSettings');
   dispatchOther(setGHSettings(settings));
   return settings;
@@ -116,15 +116,16 @@ export async function selectRepoInGHWizard(repo: Repo | null) {
 
 // Branches
 
-export function useLoadGHBranchesIfEditable(edit: boolean) {
+export function useLoadGHBranchesIfEditable(edit: boolean, branches: string[] | undefined) {
+  const hasBranches = !!branches?.length;
   useEffect(() => {
-    if (edit) {
+    if (edit && !hasBranches) {
       loadGHBranches().catch(err => {
         handleError(err);
         toastError(err);
       });
     }
-  }, [edit]);
+  }, [edit, hasBranches]);
 }
 
 interface ListBranchesReq {

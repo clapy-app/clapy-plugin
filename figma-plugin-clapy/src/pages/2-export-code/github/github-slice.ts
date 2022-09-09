@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import type { GithubCredentials, Nil } from '../../../common/app-models.js';
+import type { GithubCredentials, Nil, ValueOf } from '../../../common/app-models.js';
 import { setRepoInSettings } from '../../../common/github-shared-utils.js';
 import type { GithubSettings, SelectedRepo } from '../../../common/sb-serialize.model.js';
 import type { RootState } from '../../../core/redux/store.js';
@@ -52,6 +52,11 @@ export interface ExportCodeState {
   // Branches
   loadingBranches?: boolean;
   branches?: Branch[];
+}
+
+export interface GitHubSettingPayload {
+  name: keyof GithubSettings;
+  value: ValueOf<GithubSettings>;
 }
 
 export const codegenBranchDefaultValue = 'gencode';
@@ -131,6 +136,10 @@ export const githubSlice = createSlice({
       if (!state.settings) state.settings = {};
       state.settings.codegenBranch = payload || undefined;
     },
+    setGitHubSettingRedux: (state, { payload }: PayloadAction<GithubSettings>) => {
+      if (!state.settings) state.settings = {};
+      Object.assign(state.settings, payload);
+    },
   },
 });
 
@@ -153,6 +162,7 @@ export const {
   setGHBranches,
   setSelectedTargetBranch,
   setSelectedCodeGenBranch,
+  setGitHubSettingRedux,
 } = githubSlice.actions;
 
 // Load initial credentials
@@ -167,7 +177,7 @@ export const selectGHSignInAborter = (state: RootState) => state.github.signInAb
 export const selectGHLoadingRepos = (state: RootState) => state.github.loadingRepos;
 export const selectGHRepos = (state: RootState) => state.github.repositories; /* ?.map(repo => repo.full_name) */
 export const selectGHHasRepoSelected = (state: RootState) => !!state.github.settings?.repository;
-const selectGHSelectedRepoFromCache = (state: RootState) => state.github.settings?.repository;
+export const selectGHSelectedRepoFromCache = (state: RootState) => state.github.settings?.repository;
 export const selectGHSelectedRepo = createSelector(
   selectGHRepos,
   selectGHSelectedRepoFromCache,
@@ -207,12 +217,3 @@ export const selectGHBranchesOrJustSelection = createSelector(
 );
 export const selectGHHasCodegenBranchSelected = (state: RootState) => !!state.github.settings?.codegenBranch;
 export const selectGHSelectedCodegenBranch = (state: RootState) => state.github.settings?.codegenBranch;
-
-export const selectGitHubReady = (state: RootState) =>
-  !!(
-    state.github.credentials?.accessToken &&
-    state.github.credentials?.hasPermission &&
-    state.github.settings?.repository &&
-    state.github.settings?.codegenBranch &&
-    state.github.settings?.mergeToBranch
-  );

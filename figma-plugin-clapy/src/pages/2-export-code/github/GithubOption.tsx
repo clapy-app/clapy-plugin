@@ -51,7 +51,7 @@ export const GithubOption: FC<Props> = memo(function GithubOption(props) {
     return (
       <>
         <p>Clapy needs extra GitHub permissions to push the generated code to your repository.</p>
-        <AbortableButton onClick={ghSignIn} onCancel={cancel} disabled={isLoading}>
+        <AbortableButton onClick={ghSignIn} onCancel={cancel} loading={signInLoading} disabled={isLoading}>
           Add GitHub permissions
         </AbortableButton>
       </>

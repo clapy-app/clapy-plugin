@@ -24,7 +24,14 @@ import {
   getGithubSettings,
   addCodeGenBranchToSettings,
 } from './routes/2-user/github-settings.js';
-import { getUserMetadata, setUserMetadata, setUserMetaUsage } from './routes/2-user/user-cache.js';
+import {
+  getUserMetadata,
+  getUserSettings,
+  setUserMetadata,
+  setUserMetaUsage,
+  setUserSetting,
+  setUserSubSetting,
+} from './routes/2-user/user-cache.js';
 import { getCurrentUser } from './routes/9-common/get-current-user';
 import { reloadUI } from './routes/9-common/load-ui';
 import { notifyReady } from './routes/9-common/notify-ready.js';
@@ -51,6 +58,9 @@ export const routes = {
   addRepoToSettings,
   addTargetBranchToSettings,
   addCodeGenBranchToSettings,
+  getUserSettings,
+  setUserSetting,
+  setUserSubSetting,
 
   // Design to code: generate code
   saveCustomCssInFigmaNode,

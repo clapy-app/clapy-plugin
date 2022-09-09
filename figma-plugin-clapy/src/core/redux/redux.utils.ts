@@ -1,4 +1,5 @@
 import type { AnyAction, Selector } from '@reduxjs/toolkit';
+import { useRef } from 'react';
 
 import type { RootState } from './store';
 import { getStore } from './storeIsolated';
@@ -6,6 +7,11 @@ import { getStore } from './storeIsolated';
 export function readSelectorOnce<T>(selector: Selector<RootState, T>): T {
   const state = getStore().getState();
   return selector(state);
+}
+
+export function useSelectorOnce<T>(selector: Selector<RootState, T>): T {
+  const initialValueRef = useRef(readSelectorOnce(selector));
+  return initialValueRef.current;
 }
 
 /**

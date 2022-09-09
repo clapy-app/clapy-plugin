@@ -78,7 +78,7 @@ export const ChooseRepoAutocomplete: FC<Props> = memo(function ChooseRepoAutocom
           handleHomeEndKeys
         />
         {!edit && (
-          <Button variant='outlined' onClick={startEdit} disabled={isLoading}>
+          <Button variant='text' onClick={startEdit} disabled={isLoading}>
             {hasRepoSelected ? 'Change' : 'Choose'}
           </Button>
         )}

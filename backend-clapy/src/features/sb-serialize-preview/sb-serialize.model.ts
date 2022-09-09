@@ -268,7 +268,7 @@ export interface GithubSettings {
   mergeToBranch?: string;
 }
 
-export interface UserSettings extends AngularConfig, ReactConfig {
+export interface UserSettingsWithRequired extends AngularConfig, ReactConfig {
   page?: boolean;
   zip?: boolean;
   scss?: boolean;
@@ -278,7 +278,10 @@ export interface UserSettings extends AngularConfig, ReactConfig {
   // Unused for now, only shows/hides the CSS block
   customCss?: boolean;
   githubSettings?: GithubSettings;
+  componentsDir: string;
 }
+
+export type UserSettings = Partial<UserSettingsWithRequired>;
 
 export type ExtraConfig = {
   isClapyFile?: boolean;

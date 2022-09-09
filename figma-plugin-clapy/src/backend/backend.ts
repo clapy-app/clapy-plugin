@@ -25,6 +25,9 @@ if (env.isDev) {
     if (!selection) {
       return undefined;
     }
+    if (selection === 'too_many_elements') {
+      return undefined;
+    }
     const date = new Date().toISOString().substring(0, 19).replace('T', ' ');
     console.log(date, selection.name, `figma.getNodeById('${selection.id}')`, '=>', selection);
   }
