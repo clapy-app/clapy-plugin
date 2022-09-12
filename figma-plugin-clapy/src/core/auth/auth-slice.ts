@@ -36,6 +36,9 @@ export const authSlice = createSlice({
       state.error = payload;
       state.isSignedIn = false;
     },
+    cancelAuth: state => {
+      state.loading = false;
+    },
     setSignedInState: (state, { payload }: PayloadAction<boolean>) => {
       state.isSignedIn = payload;
       state.loading = false;
@@ -53,6 +56,7 @@ export const {
   startLoadingAuth,
   authSuccess,
   setAuthError,
+  cancelAuth,
   setSignedInState,
   setTokenDecoded,
   setCheckingSessionState,
@@ -77,8 +81,6 @@ export const selectGithubEnabled = (state: RootState) =>
 
 export const selectCssOptionEnabled = (state: RootState) => true;
 export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);
-export const selectIsNewUserTmp = (state: RootState) => isNewUserTmp(state.auth.tokenDecoded);
-export const selectIsStripeEnabled = (state: RootState) => isStripeEnabled(state.auth.tokenDecoded);
 export const selectDevTools = (state: RootState) =>
   state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
 // TODO edit here and in src/features/user/user.utils.ts
@@ -89,11 +91,3 @@ export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
 
 export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
   user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
-
-export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
-  return isNewUserTmp(user);
-};
-
-function isNewUserTmp(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/limited-user'];
-}

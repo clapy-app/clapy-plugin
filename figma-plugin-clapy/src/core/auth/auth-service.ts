@@ -1,6 +1,7 @@
 import jwtDecode from 'jwt-decode';
 
 import type { Nil } from '../../common/app-models.js';
+import { signInCancelledCode } from '../../common/error-utils.js';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { env, isFigmaPlugin } from '../../environment/env';
@@ -13,6 +14,7 @@ import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import {
   authSuccess,
+  cancelAuth,
   setAuthError,
   setCheckingSessionState,
   setSignedInState,
@@ -86,6 +88,46 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
 });
 
+export const login = toConcurrencySafeAsyncFn(
+  async (isSignUp?: boolean, options?: { extraScopes?: string[]; abortController?: AbortController }) => {
+    let readToken: string | undefined = undefined,
+      writeToken: string | undefined = undefined;
+    try {
+      const { extraScopes, abortController } = options || {};
+      dispatchOther(startLoadingAuth());
+
+      const verifier = createVerifier();
+      const challenge = createChallenge(verifier);
+
+      ({ readToken, writeToken } = await fetchReadWriteKeys());
+      const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
+      logoutLogin(authUrl);
+      const authoCode = await waitForAuthorizationCode(readToken, abortController);
+      const fetchTokensResp = await fetchTokensFromCode(authoCode, verifier, readToken);
+      const { accessToken, tokenType, refreshToken } = fetchTokensResp;
+      deleteReadToken(readToken);
+      if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+
+      setAccessToken(accessToken);
+      _tokenType = tokenType;
+      await fetchUserMetadata();
+      await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
+      dispatchOther(authSuccess());
+    } catch (err: any) {
+      if (readToken) {
+        deleteReadToken(readToken);
+      }
+      if (err?.message === signInCancelledCode) {
+        dispatchOther(cancelAuth());
+        return;
+      }
+      handleError(err);
+      dispatchOther(setAuthError(err));
+      toastError(err);
+    }
+  },
+);
+
 // Github scopes: https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
 // Then Github API:
 // - https://github.com/octokit/rest.js
@@ -119,39 +161,6 @@ export const requestAdditionalScopes = toConcurrencySafeAsyncFn(
   },
 );
 
-export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
-  let readToken: string | undefined = undefined,
-    writeToken: string | undefined = undefined;
-  try {
-    dispatchOther(startLoadingAuth());
-
-    const verifier = createVerifier();
-    const challenge = createChallenge(verifier);
-
-    ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
-    openNewTab(authUrl);
-    const authoCode = await waitForAuthorizationCode(readToken);
-    const fetchTokensResp = await fetchTokensFromCode(authoCode, verifier, readToken);
-    const { accessToken, tokenType, refreshToken } = fetchTokensResp;
-    deleteReadToken(readToken);
-    if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
-
-    setAccessToken(accessToken);
-    _tokenType = tokenType;
-    await fetchUserMetadata();
-    await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
-    dispatchOther(authSuccess());
-  } catch (err) {
-    if (readToken) {
-      deleteReadToken(readToken);
-    }
-    handleError(err);
-    dispatchOther(setAuthError(err));
-    toastError(err);
-  }
-});
-
 const interactiveSignInMsg = 'Interactive sign in required';
 
 export const getTokens = toConcurrencySafeAsyncFn(async () => {
@@ -178,7 +187,22 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       dispatchOther(setSignedInState(false));
       return { accessToken: null, tokenType: null, accessTokenDecoded: null };
     } else {
-      dispatchOther(setAuthError(error));
+      if (error.status === 401 || error.status === 403) {
+        logout(true);
+        const msg = "Please reauthenticate. Your session expired and couldn't be refreshed automatically.";
+        error.message = msg;
+        error.error = msg;
+        error.data.error = msg;
+        error.data.message = msg;
+      }
+      if (error?.message?.includes('getaddrinfo EAI_AGAIN')) {
+        const msg =
+          'The Clapy authentication service is not reachable. Please try again later and let us know if the problem persists.';
+        error.message = msg;
+        error.error = msg;
+        error.data.error = msg;
+        error.data.message = msg;
+      }
       toastError(error);
       throw error;
     }
@@ -229,6 +253,18 @@ export function logout(mustReauth?: boolean) {
   }
   fetchPlugin('clearCachedTokens').catch(handleError);
   dispatchOther(setSignedInState(false));
+}
+
+function logoutLogin(loginUrl: string) {
+  setAccessToken(null);
+  _tokenType = null;
+  clearLocalUserMetadata();
+  fetchPlugin('clearCachedTokens').catch(handleError);
+  const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
+    client_id: auth0ClientId,
+    returnTo: loginUrl,
+  });
+  openNewTab(url);
 }
 
 // This function could be used in http.utils.ts to refresh the token before attempting a first request that will surely fail with an auth error.
@@ -357,6 +393,11 @@ async function fetchAuthorizationCode(readToken: string) {
   return data?.code;
 }
 
+const errorDescriptionsUserCancelled = new Set([
+  'The user has denied your application access.',
+  'User did not authorize the request',
+]);
+
 async function waitForAuthorizationCode(readToken: string, abortController?: AbortController) {
   let cancelled = false;
   if (abortController) {
@@ -370,15 +411,15 @@ async function waitForAuthorizationCode(readToken: string, abortController?: Abo
   }
   while (true) {
     if (cancelled) {
-      throw new Error('cancelled');
+      throw new Error(signInCancelledCode);
     }
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       if (authoCode.startsWith('error|')) {
         const [_, errorMsg, errorDescription] = authoCode.split('|');
         const msg =
-          errorMsg === 'access_denied' && errorDescription === 'The user has denied your application access.'
-            ? 'cancelled'
+          errorMsg === 'access_denied' && errorDescriptionsUserCancelled.has(errorDescription)
+            ? signInCancelledCode
             : `${errorMsg} - ${errorDescription}`;
         throw new Error(msg);
       }

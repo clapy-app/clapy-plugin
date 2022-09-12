@@ -91,6 +91,11 @@ export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
 export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
   user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
 
+export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
+  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
+}
+
+// TODO remove after the quota has been enabled for everybody
 export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
   return isNewUserTmp(user);
 };
@@ -98,7 +103,4 @@ export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
   return !!user?.['https://clapy.co/limited-user'];
 }
-
-export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
-}
+// /TODO remove after the quota has been enabled for everybody

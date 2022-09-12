@@ -1,6 +1,7 @@
 import type { DependencyList } from 'react';
 import { useReducer, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { signInCancelledCode } from '../common/error-utils.js';
 
 import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
 import { env } from '../environment/env.js';
@@ -8,7 +9,7 @@ import { apiPost } from './http.utils.js';
 
 // TODO search all usages of handleErrorBack in the front, and replace with handleError
 export function handleError(error: any) {
-  if (error?.message === 'cancelled') {
+  if (error?.message === signInCancelledCode) {
     return;
   }
   console.error('[handleError]', error);
@@ -30,8 +31,8 @@ export function handleError(error: any) {
 export function useCallbackAsync<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T {
   return useCallback<T>(
     // @ts-ignore
-    (...args: any[]) => {
-      return callback(...args);
+    async (...args: any[]) => {
+      return await callback(...args);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [...deps],
@@ -73,7 +74,7 @@ export function toastError(error: any) {
   //   );
   // }
 
-  if (error?.message === 'cancelled') {
+  if (error?.message === signInCancelledCode) {
     return;
   }
 

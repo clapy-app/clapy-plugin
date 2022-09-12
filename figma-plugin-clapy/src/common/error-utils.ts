@@ -1,8 +1,10 @@
 import { isStyledTextSegment } from '../backend/common/node-type-utils';
 
+export const signInCancelledCode = 'cancelled';
+
 // Separate from handleError because it doesn't send HTTP requests. The plugin back is not able to send requests.
 export function handleErrorBack(error: any) {
-  if (error?.message === 'cancelled') {
+  if (error?.message === signInCancelledCode) {
     return;
   }
   console.error('[handleError]', error);

@@ -127,7 +127,9 @@
       "rangav.vscode-thunder-client",
       "arcanis.vscode-zipfs",
       "clinyong.vscode-css-modules",
-      "ecmel.vscode-html-css"
+      "ecmel.vscode-html-css",
+      "mhutchie.git-graph",
+      "eamodio.gitlens"
     ]
   }
 }
