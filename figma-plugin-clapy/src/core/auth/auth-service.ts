@@ -1,6 +1,7 @@
 import jwtDecode from 'jwt-decode';
 
 import type { Nil } from '../../common/app-models.js';
+import { signInCancelledCode } from '../../common/error-utils.js';
 import { toConcurrencySafeAsyncFn, wait } from '../../common/general-utils';
 import { fetchPlugin } from '../../common/plugin-utils';
 import { env, isFigmaPlugin } from '../../environment/env';
@@ -25,8 +26,6 @@ const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
 const redirectUri = `${apiBaseUrl}/login/callback?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 const loggedOutCallbackUrl = `${apiBaseUrl}/logged-out?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
-
-export const signInCancelledCode = 'cancelled';
 
 /** Don't use unless you know what you are doing. Prefer getToken() instead. */
 export let _accessToken: string | null = null;
@@ -118,7 +117,6 @@ export const login = toConcurrencySafeAsyncFn(
       if (readToken) {
         deleteReadToken(readToken);
       }
-      // logout(true);
       if (err?.message === signInCancelledCode) {
         dispatchOther(cancelAuth());
         return;

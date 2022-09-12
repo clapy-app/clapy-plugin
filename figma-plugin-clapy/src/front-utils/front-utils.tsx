@@ -1,9 +1,9 @@
 import type { DependencyList } from 'react';
 import { useReducer, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { signInCancelledCode } from '../common/error-utils.js';
 
 import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
-import { signInCancelledCode } from '../core/auth/auth-service.js';
 import { env } from '../environment/env.js';
 import { apiPost } from './http.utils.js';
 
