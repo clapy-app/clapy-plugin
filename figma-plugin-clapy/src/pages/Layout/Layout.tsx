@@ -4,10 +4,8 @@ import { useSelector } from 'react-redux';
 
 import { LoginHome } from '../0-login/LoginHome/LoginHome';
 import loginHomeClasses from '../0-login/LoginHome/LoginHome.module.css';
-import { CodeToFigma } from '../1-import-sb/CodeToFigma/CodeToFigma.js';
 import { ErrorComp } from '../1-import-sb/detail/ErrorComp';
 import { setSelection } from '../2-export-code/export-code-slice.js';
-import { FigmaToCodeHome } from '../2-export-code/FigmaToCodeHome/FigmaToCodeHome.js';
 import { Account } from '../3-Account/Account.js';
 import { Pricing } from '../3-Account/Pricing/Pricing.js';
 import { selectFeedbackPageState, selectPricingPageState, selectStripeState } from '../3-Account/stripe-slice.js';
@@ -15,18 +13,12 @@ import { Generator } from '../4-Generator/Generator.js';
 import { Feedback } from '../5-Feedback/Feedback';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading.js';
-import {
-  selectAuthError,
-  selectIsStripeEnabled,
-  selectSessionChecking,
-  selectSignedIn,
-} from '../../core/auth/auth-slice';
+import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
 import { Footer } from './Footer/Footer';
-import { Header } from './Header/Header.js';
 import { HeaderGenerator } from './Header/Header_Generator.js';
 import classes from './Layout.module.css';
 
@@ -61,7 +53,6 @@ export const LayoutInner: FC = memo(function LayoutInner() {
   // Show selection
 
   // use this flag after the tests
-  const isStripeEnabled = useSelector(selectIsStripeEnabled);
   const isFeedbackPageActive = useSelector(selectFeedbackPageState);
   const isPricingPageActive = useSelector(selectPricingPageState);
   const dispatch = useAppDispatch();
@@ -127,19 +118,11 @@ export const LayoutInner: FC = memo(function LayoutInner() {
 
   if (isPricingPageActive) return <Pricing />;
 
-  return isStripeEnabled ? (
+  return (
     <>
       <HeaderGenerator activeTab={activeTab} selectTab={setActiveTab} />
       {activeTab === 0 && <Generator />}
       {activeTab === 1 && <Account />}
-    </>
-  ) : (
-    <>
-      <Header activeTab={activeTab} selectTab={setActiveTab} />
-      <div className={classes.content}>
-        {activeTab === 0 && <FigmaToCodeHome />}
-        {activeTab === 1 && <CodeToFigma />}
-      </div>
     </>
   );
 });
