@@ -98,11 +98,17 @@ function formatError(error: any) {
           ? ` - data keys: ${Object.keys(error.config.data)}`
           : ''
       }`
+    : isAxiosErrWithRequest(error)
+    ? `${error.message} - ${error.config.method} ${error.config.url}`
     : error;
 }
 
 function isAxiosResponse(error: any): error is AxiosError {
   return !!(error as AxiosError)?.response?.data;
+}
+
+function isAxiosErrWithRequest(error: any): error is AxiosError {
+  return !!(error as AxiosError)?.request;
 }
 
 function isAxiosRequestTimeout(error: any): error is AxiosError {

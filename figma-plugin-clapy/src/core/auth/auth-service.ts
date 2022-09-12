@@ -187,7 +187,22 @@ export const getTokens = toConcurrencySafeAsyncFn(async () => {
       dispatchOther(setSignedInState(false));
       return { accessToken: null, tokenType: null, accessTokenDecoded: null };
     } else {
-      dispatchOther(setAuthError(error));
+      if (error.status === 401 || error.status === 403) {
+        logout(true);
+        const msg = "Please reauthenticate. Your session expired and couldn't be refreshed automatically.";
+        error.message = msg;
+        error.error = msg;
+        error.data.error = msg;
+        error.data.message = msg;
+      }
+      if (error?.message?.includes('getaddrinfo EAI_AGAIN')) {
+        const msg =
+          'The Clapy authentication service is not reachable. Please try again later and let us know if the problem persists.';
+        error.message = msg;
+        error.error = msg;
+        error.data.error = msg;
+        error.data.message = msg;
+      }
       toastError(error);
       throw error;
     }

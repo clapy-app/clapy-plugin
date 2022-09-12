@@ -156,7 +156,7 @@ async function httpReqUnauthenticated<T>(
     const err: Error = e as any;
     if (err.message === 'Failed to fetch') {
       // Network error. Let's make a fake response to trigger a retry below.
-      resp = { ok: false, status: 0 } as ApiResponse<T>;
+      resp = { ok: false, status: 0, url } as ApiResponse<T>;
     } else {
       throw e;
     }
@@ -200,7 +200,11 @@ async function httpReqUnauthenticated<T>(
       }
     }
     throw Object.assign(
-      new Error(data2?.message || (typeof data2?.error === 'string' && data2.error) || '[http utils] Failed request'),
+      new Error(
+        data2?.message ||
+          (typeof data2?.error === 'string' && data2.error) ||
+          'The Clapy service is not reachable. Either you lost your Internet connection or the service is down.',
+      ),
       { data, headers, status, statusText, type, url },
       data,
     );
