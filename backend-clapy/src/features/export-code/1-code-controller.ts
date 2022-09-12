@@ -16,7 +16,10 @@ export class CodeController {
 
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
 
-    await this.userService.checkUserOrThrow(user);
+    const isStripeOn = isStripeEnabled(user);
+    if (env.isDev || isStripeOn) {
+      await this.userService.checkUserOrThrow(user);
+    }
 
     const generationHistoryId = await this.userService.saveInHistoryUserCodeGeneration(figmaNode, user);
     const res = await exportCode(figmaNode, uploadToCsb, user);
