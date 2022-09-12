@@ -13,6 +13,7 @@ import { dispatchOther, readSelectorOnce } from '../redux/redux.utils';
 import { createChallenge, createVerifier, mkUrl } from './auth-service.utils';
 import {
   authSuccess,
+  cancelAuth,
   setAuthError,
   setCheckingSessionState,
   setSignedInState,
@@ -24,6 +25,8 @@ const { auth0Domain, auth0ClientId, apiBaseUrl } = env;
 
 const redirectUri = `${apiBaseUrl}/login/callback?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
 const loggedOutCallbackUrl = `${apiBaseUrl}/logged-out?from=${isFigmaPlugin ? 'desktop' : 'browser'}`;
+
+export const signInCancelledCode = 'cancelled';
 
 /** Don't use unless you know what you are doing. Prefer getToken() instead. */
 export let _accessToken: string | null = null;
@@ -86,6 +89,47 @@ export const signup = toConcurrencySafeAsyncFn(async () => {
   return login(true);
 });
 
+export const login = toConcurrencySafeAsyncFn(
+  async (isSignUp?: boolean, options?: { extraScopes?: string[]; abortController?: AbortController }) => {
+    let readToken: string | undefined = undefined,
+      writeToken: string | undefined = undefined;
+    try {
+      const { extraScopes, abortController } = options || {};
+      dispatchOther(startLoadingAuth());
+
+      const verifier = createVerifier();
+      const challenge = createChallenge(verifier);
+
+      ({ readToken, writeToken } = await fetchReadWriteKeys());
+      const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
+      logoutLogin(authUrl);
+      const authoCode = await waitForAuthorizationCode(readToken, abortController);
+      const fetchTokensResp = await fetchTokensFromCode(authoCode, verifier, readToken);
+      const { accessToken, tokenType, refreshToken } = fetchTokensResp;
+      deleteReadToken(readToken);
+      if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
+
+      setAccessToken(accessToken);
+      _tokenType = tokenType;
+      await fetchUserMetadata();
+      await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
+      dispatchOther(authSuccess());
+    } catch (err: any) {
+      if (readToken) {
+        deleteReadToken(readToken);
+      }
+      // logout(true);
+      if (err?.message === signInCancelledCode) {
+        dispatchOther(cancelAuth());
+        return;
+      }
+      handleError(err);
+      dispatchOther(setAuthError(err));
+      toastError(err);
+    }
+  },
+);
+
 // Github scopes: https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
 // Then Github API:
 // - https://github.com/octokit/rest.js
@@ -118,39 +162,6 @@ export const requestAdditionalScopes = toConcurrencySafeAsyncFn(
     }
   },
 );
-
-export const login = toConcurrencySafeAsyncFn(async (isSignUp?: boolean, extraScopes?: string[]) => {
-  let readToken: string | undefined = undefined,
-    writeToken: string | undefined = undefined;
-  try {
-    dispatchOther(startLoadingAuth());
-
-    const verifier = createVerifier();
-    const challenge = createChallenge(verifier);
-
-    ({ readToken, writeToken } = await fetchReadWriteKeys());
-    const authUrl = getAuthenticationURL(writeToken, challenge, { isSignUp, extraScopes });
-    openNewTab(authUrl);
-    const authoCode = await waitForAuthorizationCode(readToken);
-    const fetchTokensResp = await fetchTokensFromCode(authoCode, verifier, readToken);
-    const { accessToken, tokenType, refreshToken } = fetchTokensResp;
-    deleteReadToken(readToken);
-    if (!accessToken) throw new Error('Access token obtained is falsy. Something is wrong.');
-
-    setAccessToken(accessToken);
-    _tokenType = tokenType;
-    await fetchUserMetadata();
-    await fetchPlugin('setCachedToken', accessToken, tokenType, refreshToken);
-    dispatchOther(authSuccess());
-  } catch (err) {
-    if (readToken) {
-      deleteReadToken(readToken);
-    }
-    handleError(err);
-    dispatchOther(setAuthError(err));
-    toastError(err);
-  }
-});
 
 const interactiveSignInMsg = 'Interactive sign in required';
 
@@ -229,6 +240,18 @@ export function logout(mustReauth?: boolean) {
   }
   fetchPlugin('clearCachedTokens').catch(handleError);
   dispatchOther(setSignedInState(false));
+}
+
+function logoutLogin(loginUrl: string) {
+  setAccessToken(null);
+  _tokenType = null;
+  clearLocalUserMetadata();
+  fetchPlugin('clearCachedTokens').catch(handleError);
+  const url = mkUrl(`https://${auth0Domain}/v2/logout`, {
+    client_id: auth0ClientId,
+    returnTo: loginUrl,
+  });
+  openNewTab(url);
 }
 
 // This function could be used in http.utils.ts to refresh the token before attempting a first request that will surely fail with an auth error.
@@ -357,6 +380,11 @@ async function fetchAuthorizationCode(readToken: string) {
   return data?.code;
 }
 
+const errorDescriptionsUserCancelled = new Set([
+  'The user has denied your application access.',
+  'User did not authorize the request',
+]);
+
 async function waitForAuthorizationCode(readToken: string, abortController?: AbortController) {
   let cancelled = false;
   if (abortController) {
@@ -370,15 +398,15 @@ async function waitForAuthorizationCode(readToken: string, abortController?: Abo
   }
   while (true) {
     if (cancelled) {
-      throw new Error('cancelled');
+      throw new Error(signInCancelledCode);
     }
     const authoCode = await fetchAuthorizationCode(readToken);
     if (authoCode) {
       if (authoCode.startsWith('error|')) {
         const [_, errorMsg, errorDescription] = authoCode.split('|');
         const msg =
-          errorMsg === 'access_denied' && errorDescription === 'The user has denied your application access.'
-            ? 'cancelled'
+          errorMsg === 'access_denied' && errorDescriptionsUserCancelled.has(errorDescription)
+            ? signInCancelledCode
             : `${errorMsg} - ${errorDescription}`;
         throw new Error(msg);
       }

@@ -1,17 +1,36 @@
 import type { FC } from 'react';
-import { memo, useCallback } from 'react';
+import { useRef, memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
-import { Button } from '../../../components-used/Button/Button';
 import { login, signup } from '../../../core/auth/auth-service';
 import { selectAuthLoading } from '../../../core/auth/auth-slice';
+import { useCallbackAsync } from '../../../front-utils/front-utils.js';
+import { AbortableButton } from '../../2-export-code/github/components/AbortableButton.js';
 import { ClapyLogo2Icon } from './ClapyLogo2Icon/ClapyLogo2Icon';
 import { Decoration } from './Decoration/Decoration';
 import classes from './LoginHome.module.css';
 
 export const LoginHome: FC = memo(function LoginHome() {
-  const loginBtn = useCallback(() => login(), []);
-  const signupBtn = useCallback(() => signup(), []);
+  const abortControllerRef = useRef<AbortController>();
+  const loginBtn = useCallbackAsync(async () => {
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    try {
+      await login(false, { abortController });
+    } finally {
+      abortControllerRef.current = undefined;
+    }
+  }, []);
+  const signupBtn = useCallbackAsync(async () => {
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    try {
+      await signup();
+    } finally {
+      abortControllerRef.current = undefined;
+    }
+  }, []);
+  const cancel = useCallback(() => abortControllerRef.current?.abort(), []);
 
   const authLoading = useSelector(selectAuthLoading);
   return (
@@ -33,13 +52,26 @@ export const LoginHome: FC = memo(function LoginHome() {
           </p>
         </div>
         <div className={classes.buttonsWrapper}>
-          <Button loading={authLoading} disabled={authLoading} onClick={signupBtn} size='medium'>
+          <AbortableButton
+            loading={authLoading}
+            disabled={authLoading}
+            onClick={signupBtn}
+            onCancel={cancel}
+            size='medium'
+          >
             Sign up
-          </Button>
+          </AbortableButton>
           {!authLoading && (
-            <Button loading={authLoading} disabled={authLoading} onClick={loginBtn} variant='text' size='medium'>
+            <AbortableButton
+              loading={authLoading}
+              disabled={authLoading}
+              onClick={loginBtn}
+              onCancel={cancel}
+              variant='text'
+              size='medium'
+            >
               Already have an account? Sign in.
-            </Button>
+            </AbortableButton>
           )}
         </div>
       </div>

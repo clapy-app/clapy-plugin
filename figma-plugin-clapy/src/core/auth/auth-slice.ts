@@ -36,6 +36,9 @@ export const authSlice = createSlice({
       state.error = payload;
       state.isSignedIn = false;
     },
+    cancelAuth: state => {
+      state.loading = false;
+    },
     setSignedInState: (state, { payload }: PayloadAction<boolean>) => {
       state.isSignedIn = payload;
       state.loading = false;
@@ -53,6 +56,7 @@ export const {
   startLoadingAuth,
   authSuccess,
   setAuthError,
+  cancelAuth,
   setSignedInState,
   setTokenDecoded,
   setCheckingSessionState,
