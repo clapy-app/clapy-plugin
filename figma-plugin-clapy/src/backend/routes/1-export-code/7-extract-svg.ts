@@ -69,7 +69,7 @@ async function extractSVG(nodeIdToExtractAsSVG: string) {
     // obj._svg = new TextDecoder().decode(await nodeToExport.exportAsync({ format: 'SVG' }));
 
     try {
-      const svg = utf8ArrayToStr(await svgNode2.exportAsync({ format: 'SVG', useAbsoluteBounds: false /* true */ }));
+      const svg = utf8ArrayToStr(await svgNode2.exportAsync({ format: 'SVG', useAbsoluteBounds: true }));
       return { svg, name: svgNode2.name };
     } catch (error) {
       warnNode(svgNode, 'Failed to export node as SVG, ignoring.');

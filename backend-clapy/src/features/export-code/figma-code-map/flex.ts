@@ -202,7 +202,10 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     ) {
       // use place-content instead of justify-content (+ align-content)
       // If there is a single child, SPACE_BETWEEN centers children. Let's translate to space-around instead.
-      const primaryAxisAlignItems = node.children?.length !== 1 ? node.primaryAxisAlignItems : 'SPACE_BETWEEN_SINGLE';
+      const primaryAxisAlignItems =
+        node.children?.length === 1 && node.primaryAxisAlignItems === 'SPACE_BETWEEN'
+          ? 'SPACE_BETWEEN_SINGLE'
+          : node.primaryAxisAlignItems;
       addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[primaryAxisAlignItems]);
     } else {
       resetStyleIfOverriding(context, node, styles, 'place-content');
