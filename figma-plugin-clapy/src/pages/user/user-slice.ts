@@ -2,7 +2,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 import type { UserMetadata, UserMetaUsage, UserProfileState } from '../../common/app-models.js';
-import { selectIsStripeEnabled } from '../../core/auth/auth-slice.js';
 import type { RootState } from '../../core/redux/store';
 import { formatPartialPhone, hasMissingMetaProfile, hasMissingMetaUsage } from './user-service.js';
 
@@ -90,15 +89,10 @@ export const selectUserMetaUsage = (state: RootState) => (state.user.userMetadat
 export const selectIsUserMaxQuotaReached = createSelector(
   selectIsFreeUser,
   selectUserMetadata,
-  selectIsStripeEnabled,
-  (isFreeUser, userMetadata, isStripeEnabled) => {
-    if (isStripeEnabled) {
-      if (!isFreeUser) return false;
-      const { isLicenseExpired, quotas, quotasMax } = userMetadata;
-      const isMaxQuotaReached = quotas! >= quotasMax!;
-      return isMaxQuotaReached && isLicenseExpired;
-    } else {
-      return false;
-    }
+  (isFreeUser, userMetadata) => {
+    if (!isFreeUser) return false;
+    const { isLicenseExpired, quotas, quotasMax } = userMetadata;
+    const isMaxQuotaReached = quotas! >= quotasMax!;
+    return isMaxQuotaReached && isLicenseExpired;
   },
 );
