@@ -29,3 +29,7 @@
 :where(.clapyResets) img {
   object-fit: contain;
 }
+
+:where(.clapyResets) svg {
+  overflow: visible;
+}
