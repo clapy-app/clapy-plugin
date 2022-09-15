@@ -55,6 +55,7 @@ export interface FrameworkConnector {
     : FwNodeOneOrMore | undefined;
   createText: (text: string) => FwNodeOneOrMore;
   createLinkAttributes: (href: string) => FwAttr[];
+  createInputTypeAttr: (value: string) => FwAttr;
   wrapNode: (
     context: NodeContext,
     node: FwNodeOneOrMore,

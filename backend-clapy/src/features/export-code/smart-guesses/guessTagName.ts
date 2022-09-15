@@ -5,15 +5,15 @@ import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { FlexNode, FrameNode2, SceneNode2 } from '../create-ts-compiler/canvas-utils.js';
 import { isComponentSet, isFlexNode, isText } from '../create-ts-compiler/canvas-utils.js';
+import type { FwAttr } from '../frameworks/framework-connectors.js';
 import { addHugContents, makeDefaultNode } from '../gen-node-utils/default-node.js';
-import { mkInputTypeAttr } from '../gen-node-utils/ts-ast-utils.js';
 
 const { factory } = ts;
 
 export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2, styles: Dict<DeclarationPlain>) {
   const shouldCheckParentName = context.isRootInComponent && isComponentSet(node.parent);
   const name = shouldCheckParentName ? node.parent!.name.toLowerCase() : context.nodeNameLower;
-  const extraAttributes: ts.JsxAttribute[] = [];
+  const extraAttributes: FwAttr[] = [];
   const isWrapper = name.includes('wrapper');
   const isGroup = name.includes('group');
   const isFlex = isFlexNode(node);
@@ -70,7 +70,7 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
     }
     context.moduleContext = { ...context.moduleContext, inInteractiveElement: true };
     context.tagName = 'input';
-    extraAttributes.push(mkInputTypeAttr('checkbox'));
+    extraAttributes.push(context.moduleContext.projectContext.fwConnector.createInputTypeAttr('checkbox'));
     // Padding has no effect on native checkboxes (Windows). Let's disable it and replace with width until we support styled checkboxes.
     node.paddingTop = 0;
     node.paddingRight = 0;

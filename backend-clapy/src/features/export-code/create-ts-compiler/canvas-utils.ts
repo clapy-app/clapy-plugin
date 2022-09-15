@@ -1,5 +1,4 @@
 import type { DeclarationPlain, RulePlain } from 'css-tree';
-import type ts from 'typescript';
 
 import type { Nil } from '../../../common/general-utils.js';
 import type {
@@ -10,6 +9,7 @@ import type {
   TextExtender,
 } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { CompContext, ModuleContext, NodeContext } from '../code.model.js';
+import type { FwAttr } from '../frameworks/framework-connectors.js';
 import { warnNode } from '../gen-node-utils/utils-and-reset.js';
 import type { MUIConfig } from '../tech-integration/mui/mui-config.js';
 
@@ -136,7 +136,7 @@ interface GlobalExtender2 extends GlobalExtender {
   textSkipStyles?: boolean; // For text nodes
   idAttached?: boolean;
   svgPathVarName?: string; // For SVG nodes
-  extraAttributes?: ts.JsxAttribute[];
+  extraAttributes?: FwAttr[];
   rule?: RulePlainExtended;
   htmlClass?: string;
 }
