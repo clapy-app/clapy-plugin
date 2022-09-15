@@ -10,6 +10,7 @@ import type {
   BaseStyleOverride,
   CompContext,
   FigmaOverride,
+  InstanceContext,
   JsxOneOrMore,
   ModuleContext,
   NodeContext,
@@ -97,8 +98,19 @@ export function updateCssRule(
   context.selector = cssAstToString(cssRule.prelude);
 
   if (bem && increaseSpecificity) {
-    // Doubled selector for specificity with scss: https://stackoverflow.com/a/47781599/4053349
-    const sel = mkSelectorListCss([mkSelectorCss([mkRawCss('&#{&}')])]);
+    // if the CSS selector specificity should be increased, the selector is repeated `overrideDepth` times,
+    // using a SCSS hack to repeat the '&' special character: https://stackoverflow.com/a/47781599/4053349
+    // (hack for overrides when using CSS modules)
+    let overrideDepth = context.notOverridingAnotherClass ? 1 : (context as InstanceContext).intermediateNodes?.length;
+    const sel = mkSelectorListCss([
+      mkSelectorCss([
+        mkRawCss(
+          `&${Array(overrideDepth - 1)
+            .fill('#{&}')
+            .join('')}`,
+        ),
+      ]),
+    ]);
     const block = mkBlockCss(styleDeclarations);
     const ruleAsStr = cssAstToString(mkRuleCss(sel, block));
     cssRule.block.children.push(mkRawCss(ruleAsStr));

@@ -80,6 +80,7 @@ export const angularConnector: FrameworkConnector = {
     mkHtmlAttribute('target', '_blank'),
     mkHtmlAttribute('rel', 'noreferrer'),
   ],
+  createInputTypeAttr: (value = 'checkbox') => mkHtmlAttribute('type', value),
   wrapNode: (context, node, tagName, attributes, isNodeTag) => {
     const { isRootInComponent } = context;
     if (isNodeTag && isRootInComponent && !context.hasExtraAttributes) {
