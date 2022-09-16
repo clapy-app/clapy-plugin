@@ -111,7 +111,7 @@ export async function sendCodeToGithub(
 }
 
 export async function commitChanges(projectContext: ProjectContext, ghContext: GHContext, files: CsbDict) {
-  const message = 'Clapy generated code 2';
+  const message = 'Clapy generated code';
 
   const branchCommitSha = await getBranchCommitSha(ghContext);
 
