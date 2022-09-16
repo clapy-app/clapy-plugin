@@ -30,7 +30,7 @@ export interface FrameworkConnector {
   // Both variables must be consistent.
   assetsResourceDir: string;
   // Here, '', '/' or '.' points to the public directory.
-  assetsCssBaseUrl: string;
+  assetsCssBaseUrl: (projectContext: ProjectContext) => string;
   webpackIgnoreInCSS: boolean;
   addScssPackages: (newDevDependencies: Dict<string>) => void;
   registerSvgForWrite: (context: NodeContext, svgContent: string) => string;

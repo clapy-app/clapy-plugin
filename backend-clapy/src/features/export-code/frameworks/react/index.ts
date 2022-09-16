@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { writeSVGReactComponents } from '../../7-write-svgr.js';
 import { isNonEmptyObject } from '../../../../common/general-utils.js';
 import { exportTemplatesDir } from '../../../../root.js';
+import { UserSettingsTarget } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { Dict, ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type {
   BaseStyleOverride,
@@ -82,7 +83,8 @@ export const reactConnector: FrameworkConnector = {
   getCompFileName: compDir => `${compDir}.tsx`,
   cssFileNameMiddlePart: 'module',
   assetsResourceDir: 'public/assets/',
-  assetsCssBaseUrl: 'assets/',
+  assetsCssBaseUrl: projectContext =>
+    `${projectContext.extraConfig.target === UserSettingsTarget.csb ? '' : '/'}assets/`,
   webpackIgnoreInCSS: true,
   addScssPackages: (newDevDependencies: Dict<string>) => {
     Object.assign(newDevDependencies, scssDevDependencies);

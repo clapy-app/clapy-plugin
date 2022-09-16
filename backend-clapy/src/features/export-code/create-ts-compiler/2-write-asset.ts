@@ -16,6 +16,6 @@ export function writeAsset(context: NodeContext, node: BaseNode2, extension: str
   // Write image in public directory - the codesandbox workaround
   projectContext.resources[`${projectContext.fwConnector.assetsResourceDir}${imageFileName}`] = content;
 
-  const assetCssUrl = `${projectContext.fwConnector.assetsCssBaseUrl}${imageFileName}`;
+  const assetCssUrl = `${projectContext.fwConnector.assetsCssBaseUrl(projectContext)}${imageFileName}`;
   return assetCssUrl;
 }

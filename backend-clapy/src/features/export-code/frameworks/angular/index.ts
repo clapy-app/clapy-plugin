@@ -47,7 +47,7 @@ export const angularConnector: FrameworkConnector = {
   getCompFileName: compDir => `${compDir}.component.ts`,
   cssFileNameMiddlePart: 'component',
   assetsResourceDir: 'src/assets/',
-  assetsCssBaseUrl: '/assets/',
+  assetsCssBaseUrl: projectContext => '/assets/',
   webpackIgnoreInCSS: false,
   addScssPackages: () => {},
   registerSvgForWrite,
