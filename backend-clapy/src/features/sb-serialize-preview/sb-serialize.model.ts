@@ -270,6 +270,7 @@ export interface GithubSettings {
 
 export interface UserSettingsWithRequired extends AngularConfig, ReactConfig {
   page?: boolean;
+  viewportSize?: boolean;
   zip?: boolean;
   scss?: boolean;
   bem?: boolean;

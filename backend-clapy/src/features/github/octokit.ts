@@ -2,7 +2,6 @@ import { Octokit } from '@octokit/rest';
 import type { RequestError } from '@octokit/types';
 import { retry } from '@octokit/plugin-retry';
 import { throttling } from '@octokit/plugin-throttling';
-import { env } from '../../env-and-config/env.js';
 
 export type MyGithubError = (RequestError | Error) & {
   isGithub: true;
@@ -23,10 +22,6 @@ export function getOctokit(githubAccessToken: string) {
   });
   octokit.hook.error('request', async (error, options) => {
     (error as MyGithubError).isGithub = true;
-    if (env.isDev) {
-      console.error('octokit error:');
-      console.error(error);
-    }
     throw error;
   });
   // octokit.hook.wrap('request', async (request, options) => {

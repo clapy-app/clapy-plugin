@@ -86,6 +86,7 @@ export const selectIsCodeGenReady = (state: RootState) =>
   );
 
 export const selectPageSetting = (state: RootState) => state.exportCode.userSettings?.page;
+export const selectViewportSizeSetting = (state: RootState) => state.exportCode.userSettings?.viewportSize;
 export const selectTargetSetting = (state: RootState) => state.exportCode.userSettings?.target;
 export const selectFrameworkSetting = (state: RootState) => state.exportCode.userSettings?.framework;
 export const selectScssSetting = (state: RootState) => state.exportCode.userSettings?.scss;

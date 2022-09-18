@@ -58,6 +58,7 @@ import { ScssSetting } from '../user-settings/ScssSetting.js';
 import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
 import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
 import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
+import { ViewportSizeSetting } from '../user-settings/ViewportSizeSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -299,6 +300,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
       {!isQuotaReached && typeof picture !== 'undefined' && state !== 'generated' && (
         <>
           <PageSetting />
+          <ViewportSizeSetting />
           <GenTargetOptions />
           <Accordion classes={{ root: classes.accordionRoot }}>
             <AccordionSummary

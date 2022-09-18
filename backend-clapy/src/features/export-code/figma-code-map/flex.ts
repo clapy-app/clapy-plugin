@@ -108,11 +108,16 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     ? nodePrimaryAxisHugContents
     : nodeCounterAxisHugContents;
   const applySettingFullWidthHeight = isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
+  const viewportSizeFromSetting = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.viewportSize;
   const applySettingHugContents = isRootNode && !context.moduleContext.projectContext.extraConfig.page;
 
   // Flex: 1 if it's a figma rule or it's a top-level component
   if (!outerLayoutOnly && !isLine(node) && (node.layoutGrow === 1 || applySettingFullWidthHeight)) {
-    addStyle(context, node, styles, 'flex', 1);
+    if (applySettingFullWidthHeight && viewportSizeFromSetting) {
+      addStyle(context, node, styles, 'width', '100vw');
+    } else {
+      addStyle(context, node, styles, 'flex', 1);
+    }
   } else {
     resetStyleIfOverriding(context, node, styles, 'flex');
   }
@@ -124,7 +129,11 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // TODO add condition: parent must specify an align-items rule (left/center/right) and it's not stretch.
   // If no parent rule, it means it's already stretch (the default one).
   if ((isParentAutoLayout && node.layoutAlign === 'STRETCH') || applySettingFullWidthHeight) {
-    addStyle(context, node, styles, 'align-self', 'stretch');
+    if (applySettingFullWidthHeight && viewportSizeFromSetting) {
+      addStyle(context, node, styles, 'height', '100vh');
+    } else {
+      addStyle(context, node, styles, 'align-self', 'stretch');
+    }
     resetStyleIfOverriding(context, node, styles, isParentVertical ? 'width' : 'height');
     // Stretch is the default
   } else if (isFlex && nodeCounterAxisHugContents) {
