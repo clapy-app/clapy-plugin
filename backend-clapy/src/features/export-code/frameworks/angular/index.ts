@@ -7,7 +7,7 @@ import { exportTemplatesDir } from '../../../../root.js';
 import type { ExtraConfig } from '../../../sb-serialize-preview/sb-serialize.model.js';
 import type { ModuleContext, NodeContext, ProjectContext } from '../../code.model.js';
 import type { FlexNode, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
-import { replaceBgColor } from '../../css-gen/addRulesToAppCss.js';
+import { replaceGlobalStyles } from '../../css-gen/addRulesToAppCss.js';
 import { addStyle } from '../../css-gen/css-factories-high.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
 import { getCssResetsPath, getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
@@ -188,7 +188,7 @@ function patchProjectConfigFiles(projectContext: ProjectContext, extraConfig: Ex
     cssFiles[stylesCssPath] = cssFiles[stylesCssPath].replaceAll('app-root', `${angularPrefix}-root`);
   }
 
-  cssFiles[stylesCssPath] = replaceBgColor(projectContext, cssFiles[stylesCssPath]);
+  cssFiles[stylesCssPath] = replaceGlobalStyles(projectContext, cssFiles[stylesCssPath]);
 
   if (env.isDev) {
     // Disable the analytics prompt locally, to avoid blocking the preview task.
