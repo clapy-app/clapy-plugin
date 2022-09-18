@@ -59,7 +59,7 @@ export async function formatTsFiles(projectContext: ProjectContext) {
     // }
 
     // Formatting
-    if (flags.formatCode && path.startsWith(componentsDir || 'src')) {
+    if (flags.formatCode && ((componentsDir && path.startsWith(componentsDir)) || path.startsWith('src'))) {
       if (content == null) {
         throw new Error(`Undefined content for file in tsFiles at path ${path}`);
       }
@@ -99,7 +99,7 @@ export async function prepareCssFiles(projectContext: ProjectContext) {
     extraConfig: { componentsDir },
   } = projectContext;
   for (const [path, content] of Object.entries(cssFiles)) {
-    if (flags.formatCode && path.startsWith(componentsDir || 'src')) {
+    if (flags.formatCode && ((componentsDir && path.startsWith(componentsDir)) || path.startsWith('src'))) {
       try {
         if (content == null) {
           throw new Error(`Undefined content for file in cssFiles at path ${path}`);
@@ -131,7 +131,11 @@ export async function prepareHtmlFiles(projectContext: ProjectContext) {
     extraConfig: { componentsDir },
   } = projectContext;
   for (const [path, content] of Object.entries(resources)) {
-    if (flags.formatCode && path.startsWith(componentsDir || 'src') && path.endsWith('.html')) {
+    if (
+      flags.formatCode &&
+      ((componentsDir && path.startsWith(componentsDir)) || path.startsWith('src')) &&
+      path.endsWith('.html')
+    ) {
       try {
         if (content == null) {
           throw new Error(`Undefined content for file in htmlFiles at path ${path}`);
