@@ -167,11 +167,11 @@ export async function exportCode(
 
   fwConnector.cleanUpProject(projectContext);
 
-  tsFiles = await formatTsFiles(tsFiles); // Takes time with many files
+  tsFiles = await formatTsFiles(projectContext); // Takes time with many files
   perfMeasure('g');
-  await prepareCssFiles(cssFiles);
+  await prepareCssFiles(projectContext);
   perfMeasure('h');
-  await prepareHtmlFiles(resources);
+  await prepareHtmlFiles(projectContext);
   perfMeasure('h2');
 
   await addFontsToIndexHtml(projectContext);

@@ -11,7 +11,7 @@ import prettier from 'prettier/standalone.js';
 
 import { flags } from '../../env-and-config/app-config.js';
 import { backendDir } from '../../root.js';
-import type { CodeDict } from './code.model.js';
+import type { CodeDict, ProjectContext } from './code.model.js';
 
 let _prettierConfig: any;
 
@@ -30,7 +30,11 @@ export async function getPrettierConfig() {
 
 const newlineAfterImportRegex = /(import [^\n]+)(\n+)(?!import)/;
 
-export async function formatTsFiles(tsFiles: CodeDict) {
+export async function formatTsFiles(projectContext: ProjectContext) {
+  const {
+    tsFiles,
+    extraConfig: { componentsDir },
+  } = projectContext;
   // Global diagnostic
   // TODO to restore later
   // if (env.isDev && flags.runDiagnostics) {
@@ -55,7 +59,7 @@ export async function formatTsFiles(tsFiles: CodeDict) {
     // }
 
     // Formatting
-    if (flags.formatCode && path.startsWith('src')) {
+    if (flags.formatCode && path.startsWith(componentsDir || 'src')) {
       if (content == null) {
         throw new Error(`Undefined content for file in tsFiles at path ${path}`);
       }
@@ -89,9 +93,13 @@ export async function formatTsFiles(tsFiles: CodeDict) {
   return tsFilesFormatted;
 }
 
-export async function prepareCssFiles(cssFiles: CodeDict) {
+export async function prepareCssFiles(projectContext: ProjectContext) {
+  const {
+    cssFiles,
+    extraConfig: { componentsDir },
+  } = projectContext;
   for (const [path, content] of Object.entries(cssFiles)) {
-    if (flags.formatCode && path.startsWith('src')) {
+    if (flags.formatCode && path.startsWith(componentsDir || 'src')) {
       try {
         if (content == null) {
           throw new Error(`Undefined content for file in cssFiles at path ${path}`);
@@ -117,14 +125,18 @@ export async function formatCssFile(path: string, content: string) {
   });
 }
 
-export async function prepareHtmlFiles(htmlFiles: CodeDict) {
-  for (const [path, content] of Object.entries(htmlFiles)) {
-    if (flags.formatCode && path.startsWith('src') && path.endsWith('.html')) {
+export async function prepareHtmlFiles(projectContext: ProjectContext) {
+  const {
+    resources,
+    extraConfig: { componentsDir },
+  } = projectContext;
+  for (const [path, content] of Object.entries(resources)) {
+    if (flags.formatCode && path.startsWith(componentsDir || 'src') && path.endsWith('.html')) {
       try {
         if (content == null) {
           throw new Error(`Undefined content for file in htmlFiles at path ${path}`);
         }
-        htmlFiles[path] = await formatHtmlFile(path, content);
+        resources[path] = await formatHtmlFile(path, content);
       } catch (error) {
         console.error(error);
         throw error;

@@ -59,6 +59,12 @@ a {
   align-self: start;
 }
 
+.tooltipWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .links {
   color: #004eeb;
   display: inline-block;

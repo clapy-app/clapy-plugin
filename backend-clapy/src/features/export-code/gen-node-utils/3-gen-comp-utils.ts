@@ -41,6 +41,11 @@ export function prepareCompUsageWithOverrides(context: NodeContext, node: SceneN
 }
 
 export function getComponentsDirPath(projectContext: ProjectContext) {
-  const { fwConnector } = projectContext;
-  return `${fwConnector.appCompDir}/components/`;
+  const { fwConnector, extraConfig } = projectContext;
+  // The fallback should be a legacy setting. componentsDir is expected to be always defined (but a guard may be missing).
+  let path = extraConfig.componentsDir || `${fwConnector.appCompDir}/components/`;
+  if (!path.endsWith('/')) {
+    path = `${path}/`;
+  }
+  return path;
 }

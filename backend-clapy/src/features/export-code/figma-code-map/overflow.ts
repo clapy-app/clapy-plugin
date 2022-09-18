@@ -20,6 +20,7 @@ export function overflowFigmaToCode(context: NodeContext, node: ValidNode, style
     return;
   const { x, y } = guessScroll(context, node, styles);
   const fullWidthHeightFromSetting = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.page;
+  const viewportSizeFromSetting = context.isRootNode && !!context.moduleContext.projectContext.extraConfig.viewportSize;
   if (node.overflowDirection === 'BOTH' || (x && y)) {
     addStyle(context, node, styles, 'overflow', 'auto');
     resetStyleIfOverriding(context, node, styles, 'overflow-x');
@@ -32,7 +33,7 @@ export function overflowFigmaToCode(context: NodeContext, node: ValidNode, style
       resetStyleIfOverriding(context, node, styles, 'overflow-y');
     }
     resetStyleIfOverriding(context, node, styles, 'overflow');
-  } else if (node.overflowDirection === 'VERTICAL' || y || fullWidthHeightFromSetting) {
+  } else if (node.overflowDirection === 'VERTICAL' || y || (fullWidthHeightFromSetting && !viewportSizeFromSetting)) {
     addStyle(context, node, styles, 'overflow-y', 'auto');
     if (node.clipsContent) {
       addStyle(context, node, styles, 'overflow-x', 'hidden');
