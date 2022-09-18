@@ -25,10 +25,23 @@ import {
   stylesToList,
 } from './css-type-utils.js';
 
-export function replaceBgColor(projectContext: ProjectContext, appCss: string) {
-  const { page } = projectContext;
+export function replaceGlobalStyles(projectContext: ProjectContext, appCss: string) {
+  const {
+    page,
+    extraConfig: { page: pageModeEnabled },
+  } = projectContext;
+
+  // background color
   const bg = page?.backgrounds?.[0]?.type === 'SOLID' ? page?.backgrounds?.[0] : undefined;
-  return appCss?.replaceAll('__backgroundColor__', bg ? figmaColorToCssHex(bg.color, bg.opacity) : '#e5e5e5');
+  appCss = appCss?.replaceAll('__backgroundColor__', bg ? figmaColorToCssHex(bg.color, bg.opacity) : '#e5e5e5');
+
+  // centering if not in page mode
+  appCss = appCss?.replaceAll(
+    '/* __center__ */',
+    pageModeEnabled ? '' : `align-items: center;\n  justify-content: center;`,
+  );
+
+  return appCss;
 }
 
 export function addRulesToAppCss(context: ModuleContext, appCss: string, parentNode: ParentNode | Nil) {
@@ -41,7 +54,7 @@ export function addRulesToAppCss(context: ModuleContext, appCss: string, parentN
 
   // TODO skip if styles is not filled? Always skip now? We don't apply flex?
 
-  appCss = replaceBgColor(projectContext, appCss);
+  appCss = replaceGlobalStyles(projectContext, appCss);
 
   const node = csstree.parse(appCss);
   if (!isStyleSheet(node)) {

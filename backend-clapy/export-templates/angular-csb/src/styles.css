@@ -3,6 +3,5 @@ app-root {
   font-family: sans-serif;
   background-color: __backgroundColor__;
   overflow-y: auto;
-  align-items: center;
-  justify-content: center;
+  /* __center__ */
 }
