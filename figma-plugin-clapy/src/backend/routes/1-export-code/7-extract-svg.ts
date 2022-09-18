@@ -30,7 +30,9 @@ async function extractSVG(nodeIdToExtractAsSVG: string) {
   if (!svgNode) {
     throw new Error(`Node with ID ${nodeIdToExtractAsSVG} not found, cannot export as SVG.`);
   }
-  if (!isLayout0(svgNode) || svgNode.absoluteRenderBounds == null) {
+  // I can't remember why this absoluteRenderBounds check was added. But it breaks the mask feature (which always has a null absoluteRenderBounds).
+  // If, later, we find when it's useful, ensure it doesn't block the masks.
+  if (!isLayout0(svgNode) /* || svgNode.absoluteRenderBounds == null */) {
     return;
   }
 
