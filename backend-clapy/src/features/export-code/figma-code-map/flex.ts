@@ -153,7 +153,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // nodePrimaryAxisHugContents is not checked because, in the primary axis, hug contents is the default behavior.
 
   if (!outerLayoutOnly && isText(node)) {
-    if (!nodeCounterAxisHugContents && node.textAlignHorizontal !== 'LEFT') {
+    if (node.textAlignHorizontal !== 'LEFT') {
       addStyle(context, node, styles, 'text-align', textAlignHorizontalToCssTextAlign[node.textAlignHorizontal]);
       // Seems useless? short (single line) and long (multi-line) texts should be tested.
       if (node.textAlignHorizontal !== 'JUSTIFIED') {
