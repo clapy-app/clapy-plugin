@@ -23,7 +23,6 @@ export class CodeController {
     if (env.isDev || isStripeOn) {
       await this.userService.checkUserOrThrow(user);
     }
-    // todo: write function prepare config
     const compNodes = prepareConfig(figmaNode);
     const generationHistoryId = await this.userService.saveInHistoryUserCodeGeneration(figmaNode, user);
     const res = await exportCode(figmaNode, uploadToCsb, user, compNodes);
