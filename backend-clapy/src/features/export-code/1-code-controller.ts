@@ -7,6 +7,7 @@ import { UserService } from '../user/user.service.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { isStripeEnabled } from '../user/user.utils.js';
 import { exportCode } from './2-create-ts-compiler.js';
+import { prepareConfig } from './gen-node-utils/prepare-config.js';
 
 @Controller('code')
 export class CodeController {
@@ -22,9 +23,10 @@ export class CodeController {
     if (env.isDev || isStripeOn) {
       await this.userService.checkUserOrThrow(user);
     }
-
+    // todo: write function prepare config
+    const compNodes = prepareConfig(figmaNode);
     const generationHistoryId = await this.userService.saveInHistoryUserCodeGeneration(figmaNode, user);
-    const res = await exportCode(figmaNode, uploadToCsb, user);
+    const res = await exportCode(figmaNode, uploadToCsb, user, compNodes);
     const res2 = await this.userService.updateUserCodeGeneration(
       res,
       user,

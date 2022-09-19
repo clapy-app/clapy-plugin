@@ -22,22 +22,27 @@ import { appendChild, ignoredAttributes, ensureFontIsLoaded } from './utils.js';
 export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSvg?: boolean) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
-    if ((childConfig as any)[attrTyped] && !ignoredAttributes.has(attr)) {
-      (newChild as any)[attrTyped] = val;
-    }
-    //! update backend to store full configs with defaults that way this isLayout doesn't break.
-    if (isLayout(newChild) && isLayout(childConfig)) {
-      newChild.resize(childConfig.width || 0, childConfig.height || 0);
-    }
+    const arr = ['name', 'x', 'y'];
+    const attributeExistsInConfigAndIsntIgnored = (childConfig as any)[attrTyped] && !ignoredAttributes.has(attr);
 
-    if (isMinimalFillsMixin(newChild) && isMinimalFillsMixin(childConfig)) {
-      newChild.fills = childConfig.fills || [];
-    }
-    if (isMinimalStrokesMixin(newChild) && isMinimalStrokesMixin(childConfig)) {
-      newChild.strokes = childConfig.strokes || [];
-    }
-    if (isBlendMixin(newChild) && isBlendMixin(childConfig)) {
-      newChild.effects = childConfig.effects || [];
+    if (attributeExistsInConfigAndIsntIgnored && !isSvg) {
+      (newChild as any)[attrTyped] = val;
+      if (isLayout(newChild) && isLayout(childConfig)) {
+        //! update backend to store full configs with defaults that way this isLayout doesn't break.
+        newChild.resize(childConfig.width || 0, childConfig.height || 0);
+      }
+
+      if (isMinimalFillsMixin(newChild) && isMinimalFillsMixin(childConfig)) {
+        newChild.fills = childConfig.fills || [];
+      }
+      if (isMinimalStrokesMixin(newChild) && isMinimalStrokesMixin(childConfig)) {
+        newChild.strokes = childConfig.strokes || [];
+      }
+      if (isBlendMixin(newChild) && isBlendMixin(childConfig)) {
+        newChild.effects = childConfig.effects || [];
+      }
+    } else if (attributeExistsInConfigAndIsntIgnored && isSvg && arr.includes(attrTyped)) {
+      (newChild as any)[attrTyped] = val;
     }
   }
 }
@@ -64,6 +69,8 @@ export async function generateFrameNode(
 
 export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode2, ctx: FigmaConfigContext) {
   await ensureFontIsLoaded({ family: 'Inter', style: 'Regular' });
+  await ensureFontIsLoaded({ family: 'Inter', style: 'Medium' });
+
   const text = figma.createText();
   parentNode.appendChild(text);
 
@@ -115,9 +122,10 @@ export async function generateVectorNode(parentNode: ChildrenMixin, node: Vector
   hydrateNewNode(vector, node, true);
 
   // resizeNode(vector.children[0], node);
-  vector.rotation = 0;
+  // vector.rotation = 0;
   return vector;
 }
+
 async function generateChildNodes(
   parentNode: BaseNode & ChildrenMixin,
   nodeConfig: SceneNode2,

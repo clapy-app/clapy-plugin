@@ -9,7 +9,7 @@ import { flags } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import { warnOrThrow } from '../../utils.js';
 import { sendCodeToGithub } from '../github/github-service.js';
-import type { Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
+import type { ComponentNode2, Dict, ExportCodePayload } from '../sb-serialize-preview/sb-serialize.model.js';
 import { UserSettingsTarget } from '../sb-serialize-preview/sb-serialize.model.js';
 import type { AccessTokenDecoded } from '../user/user.utils.js';
 import { hasRoleNoCodeSandbox } from '../user/user.utils.js';
@@ -20,7 +20,7 @@ import { makeZip, patchViteJSConfigForDev, uploadToCSB, writeToDisk } from './9-
 import type { ModuleContext, ParentNode, ProjectContext } from './code.model.js';
 import { readTemplateFile, readTemplateFiles } from './create-ts-compiler/0-read-template-files.js';
 import { toCSBFiles } from './create-ts-compiler/9-to-csb-files.js';
-import type { ComponentNode2, InstanceNode2, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
+import type { SceneNode2 } from './create-ts-compiler/canvas-utils.js';
 import { separateTsCssAndResources } from './create-ts-compiler/load-file-utils-and-paths.js';
 import { addRulesToAppCss } from './css-gen/addRulesToAppCss.js';
 import { getResetsCssModulePath, getResetsCssModuleSrcPath } from './css-gen/css-gen-utils.js';
@@ -28,7 +28,6 @@ import { addFontsToIndexHtml } from './figma-code-map/font.js';
 import type { FrameworkConnector } from './frameworks/framework-connectors.js';
 import { frameworkConnectors } from './frameworks/framework-connectors.js';
 import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
-import { fillWithComponent, fillWithDefaults } from './gen-node-utils/default-node.js';
 import { mkDefaultImportDeclaration, mkSimpleImportDeclaration } from './gen-node-utils/ts-ast-utils.js';
 import { addMUIPackages } from './tech-integration/mui/mui-add-packages.js';
 import { addScssPackage, getCSSExtension, updateFilesAndContentForScss } from './tech-integration/scss/scss-utils.js';
@@ -47,38 +46,15 @@ export async function exportCode(
   { root, components, svgs, images, styles, extraConfig, tokens, page, githubAccessToken }: ExportCodePayload,
   uploadToCsb = true,
   user: AccessTokenDecoded,
+  compNodes: Dict<ComponentNode2>,
 ) {
   if (env.localPreviewInsteadOfCsb) {
     uploadToCsb = false;
   }
-
-  // Legacy zip setting
-  if (!extraConfig.target) {
-    extraConfig.target = extraConfig.zip ? UserSettingsTarget.zip : UserSettingsTarget.csb;
-  }
   // /Legacy
-
   extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target === 'zip';
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
-  if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
-    extraConfig.angularPrefix = 'cl';
-  }
-
   const parent = (root as any)?.parent as ParentNode | Nil;
-  const instancesInComp: InstanceNode2[] = [];
-  for (const comp of components) {
-    fillWithDefaults((comp as any)?.parent, instancesInComp, true);
-    fillWithDefaults(comp, instancesInComp);
-  }
-  const compNodes = components.reduce((prev, cur) => {
-    prev[cur.id] = cur;
-    return prev;
-  }, {} as Dict<ComponentNode2>) as unknown as Dict<ComponentNode2>;
-  fillWithDefaults((root as any)?.parent, instancesInComp, true);
-  for (const instance of instancesInComp) {
-    fillWithComponent(instance, compNodes);
-  }
-  fillWithComponent(root, compNodes);
   if (!root) {
     throw new HttpException(
       'Clapy failed to read your selection and is unable to generate code. Please let us know so that we can fix it.',

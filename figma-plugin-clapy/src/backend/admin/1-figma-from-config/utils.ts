@@ -55,7 +55,6 @@ export const ignoredAttributes = new Set<string>(readOnlyAttributes);
 type ReadOnlySceneNodeFields = typeof readOnlyAttributes[number];
 type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
 export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
-
 export async function ensureFontIsLoaded(font: FontName) {
   const fontCacheKey = `${font.family}_${font.style}`;
   if (!loadedFonts.has(fontCacheKey)) {
