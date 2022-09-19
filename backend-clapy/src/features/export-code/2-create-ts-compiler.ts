@@ -58,7 +58,7 @@ export async function exportCode(
   }
   // /Legacy
 
-  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target === 'zip';
+  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target !== UserSettingsTarget.csb;
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   if (extraConfig.framework === 'angular' && !extraConfig.angularPrefix) {
     extraConfig.angularPrefix = 'cl';
