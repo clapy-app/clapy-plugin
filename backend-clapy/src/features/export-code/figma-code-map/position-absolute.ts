@@ -22,7 +22,7 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
   const isGrp = isGroup(node);
   const nodeHasConstraints = isConstraintMixin(node);
 
-  // If we are here, the group was not skipped. It means the parent is a flex node (frame, instance...) with auto-layout. We must treat the group as a wrapper for position absolute, with scale mode.
+  // If we are here, the group was not skipped in 4-gen-node.ts. It means the parent is a flex node (frame, instance...) with auto-layout. We must treat the group as a wrapper for position absolute, with scale mode.
   if (isGrp && shouldApplyPositionRelativeOnGroup(context)) {
     addStyle(context, node, styles, 'position', 'relative');
     return;
