@@ -1,7 +1,9 @@
 import type {
   BaseNode2,
+  ComponentNode2,
   FrameNode2,
   GroupNode2,
+  InstanceNode2,
   LineNode2,
   RectangleNode2,
   SceneNode2,
@@ -10,6 +12,8 @@ import type {
 import {
   isBlendMixin,
   isChildrenMixin2,
+  isComponent,
+  isComponent2,
   isFrame2,
   isLayout,
   isMinimalFillsMixin,
@@ -69,6 +73,35 @@ export async function generateFrameNode(
   hydrateNewNode(frame, node);
   await generateChildNodes(frame, node, ctx);
   return frame;
+}
+
+export async function generateComponent(
+  parentNode: BaseNode & ChildrenMixin,
+  node: ComponentNode2,
+  ctx: FigmaConfigContext,
+) {
+  const component = figma.createComponent();
+  ctx.oldComponentIdsToNewDict[node.id] = component.id;
+  appendChild(parentNode, component);
+  hydrateNewNode(component, node);
+  await generateChildNodes(component, node, ctx);
+  return component;
+}
+
+export async function generateInstance(
+  parentNode: BaseNode & ChildrenMixin,
+  node: InstanceNode2,
+  ctx: FigmaConfigContext,
+  mainComponentId: string,
+) {
+  const mainComponent = figma.currentPage.findOne(n => n.id === mainComponentId);
+  if (isComponent(mainComponent)) {
+    const instance = mainComponent.createInstance();
+    appendChild(parentNode, instance);
+    // hydrateNewNode(instance, node); TODO comparer et hydrater que les valeurs des propriétés qui change entre le composant et l'instance.
+    await generateChildNodes(instance, node, ctx);
+    return instance;
+  }
 }
 
 export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode2, ctx: FigmaConfigContext) {
@@ -135,7 +168,7 @@ async function generateChildNodes(
   nodeConfig: SceneNode2,
   ctx: FigmaConfigContext,
 ) {
-  if (isFrame2(nodeConfig)) {
+  if (isFrame2(nodeConfig) || isComponent2(nodeConfig)) {
     for (let child of nodeConfig.children) {
       const element = await generateNode(parentNode, child, ctx);
       if (element) {
