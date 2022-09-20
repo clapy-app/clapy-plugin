@@ -19,6 +19,10 @@ import { generateNode } from './3-create-parent-nodes.js';
 import type { FigmaConfigContext, TextNode2, WriteableSceneNodeKeys } from './utils.js';
 import { appendChild, ignoredAttributes, ensureFontIsLoaded } from './utils.js';
 
+function isNotMixed(el: readonly Paint[] | typeof figma.mixed | readonly Effect[] | 'Mixed') {
+  return el !== 'Mixed';
+}
+
 export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSvg?: boolean) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
@@ -32,13 +36,13 @@ export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSv
         newChild.resize(childConfig.width || 0, childConfig.height || 0);
       }
 
-      if (isMinimalFillsMixin(newChild) && isMinimalFillsMixin(childConfig)) {
+      if (isMinimalFillsMixin(newChild) && isMinimalFillsMixin(childConfig) && isNotMixed(childConfig.fills)) {
         newChild.fills = childConfig.fills || [];
       }
-      if (isMinimalStrokesMixin(newChild) && isMinimalStrokesMixin(childConfig)) {
+      if (isMinimalStrokesMixin(newChild) && isMinimalStrokesMixin(childConfig) && isNotMixed(childConfig.strokes)) {
         newChild.strokes = childConfig.strokes || [];
       }
-      if (isBlendMixin(newChild) && isBlendMixin(childConfig)) {
+      if (isBlendMixin(newChild) && isBlendMixin(childConfig) && isNotMixed(childConfig.effects)) {
         newChild.effects = childConfig.effects || [];
       }
     } else if (attributeExistsInConfigAndIsntIgnored && isSvg && arr.includes(attrTyped)) {

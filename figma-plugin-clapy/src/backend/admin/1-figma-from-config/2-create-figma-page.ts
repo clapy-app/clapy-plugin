@@ -6,11 +6,16 @@ import { generateNode } from './3-create-parent-nodes.js';
 import type { FigmaConfigContext } from './utils.js';
 
 //-------------------------------------------------------------------------------------------------------------
-export async function createPage(GenerationHistoryEntry: GenerationHistory, ctx: FigmaConfigContext) {
-  const newPage = figma.createPage();
-  newPage.name = `${GenerationHistoryEntry.auth0id} ${Math.floor(Math.random() * 100)}`;
+export async function createPage(GenerationHistoryEntry: GenerationHistory, ctx: FigmaConfigContext, page?: PageNode) {
   if (!GenerationHistoryEntry.figmaConfig || !GenerationHistoryEntry.figmaConfig.root) {
     throw new Error('config or root of config are falsy, there was probably a problem during the config generation.');
   }
-  generateNode(newPage, GenerationHistoryEntry.figmaConfig.root, ctx);
+
+  if (!page) {
+    page = figma.createPage();
+    page.name = GenerationHistoryEntry.id;
+  } else {
+    page.children.forEach(e => e.remove());
+  }
+  generateNode(page, GenerationHistoryEntry.figmaConfig.root, ctx);
 }
