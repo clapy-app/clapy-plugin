@@ -12,7 +12,6 @@ import { env } from '../../../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../../../front-utils/front-utils.js';
 import classes from './Dropdown.module.css';
 import { MoreHorizontalIcon } from './MoreHorizontalIcon';
-import { renderFigmaConfig } from '../../../../../admin/admin-service.js';
 
 interface Props {
   className?: string;
@@ -28,6 +27,7 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -77,11 +77,6 @@ export const Dropdown: FC<Props> = memo(function Dropdown(props = {}) {
         {(env.isDev || devTools) && (
           <MenuItem onClick={throwFrontError} disabled={loading}>
             Throw a front error (dev)
-          </MenuItem>
-        )}
-        {(env.isDev || devTools) && (
-          <MenuItem onClick={renderFigmaConfig} disabled={loading}>
-            Generate two last registred figma Configs (dev)
           </MenuItem>
         )}
       </Menu>

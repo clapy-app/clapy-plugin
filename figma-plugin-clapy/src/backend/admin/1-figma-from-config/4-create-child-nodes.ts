@@ -108,6 +108,7 @@ export async function generateLineNode(parentNode: ChildrenMixin, node: LineNode
   const line = figma.createLine();
   parentNode.appendChild(line);
   hydrateNewNode(line, node);
+  line.resizeWithoutConstraints(node.width, node.height);
 
   return line;
 }
@@ -120,9 +121,8 @@ export async function generateVectorNode(parentNode: ChildrenMixin, node: Vector
   const vector = figma.createNodeFromSvg(ctx.svgs[node.id]['svg']);
   parentNode.appendChild(vector);
   hydrateNewNode(vector, node, true);
+  vector.clipsContent = false;
 
-  // resizeNode(vector.children[0], node);
-  // vector.rotation = 0;
   return vector;
 }
 

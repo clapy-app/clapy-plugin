@@ -33,6 +33,11 @@ const zeroPx = '0px';
 //   display: 'block',
 // };
 
+export interface FigmaConfigGenPayload {
+  auth0id: string;
+  numberOfGeneratedConfigs: number;
+}
+
 export const cssDefaults = makeCssDefaults({
   display: 'block',
   flexDirection: 'row',
