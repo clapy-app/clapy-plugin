@@ -1,6 +1,11 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation------------------------------------------------
-import type { OmitMethods, SVGsExtracted, TextNodeNoMethod } from '../../../common/sb-serialize.model.js';
+import type {
+  GenerationHistory,
+  OmitMethods,
+  SVGsExtracted,
+  TextNodeNoMethod,
+} from '../../../common/sb-serialize.model.js';
 
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
@@ -67,9 +72,9 @@ export async function ensureFontIsLoaded(font: FontName) {
   }
 }
 
-export function cleanUpLastLaunch() {
+export function cleanUpLastLaunch(figmaConfig: GenerationHistory[]) {
   for (const page of figma.root.children) {
-    if (page.id !== figma.currentPage.id) {
+    if (page.id !== figma.currentPage.id && !figmaConfig.find(element => element.id === page.name)) {
       page.remove();
     }
   }
