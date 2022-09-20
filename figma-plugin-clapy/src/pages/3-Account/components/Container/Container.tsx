@@ -1,9 +1,15 @@
-import type { FC } from 'react';
-import { memo } from 'react';
+import Button from '@mui/material/Button/Button.js';
+import Input from '@mui/material/Input/Input.js';
+import TextField from '@mui/material/TextField/TextField.js';
+import type { ChangeEvent, FC } from 'react';
+import { useCallback, useRef, memo } from 'react';
 import { useSelector } from 'react-redux';
+import { renderFigmaConfig } from '../../../../admin/admin-service.js';
+import type { FigmaConfigGenPayload } from '../../../../common/sb-serialize.model.js';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
-import { selectFreeStripeAccess } from '../../../../core/auth/auth-slice.js';
+import { selectDevTools, selectFreeStripeAccess } from '../../../../core/auth/auth-slice.js';
+import { env } from '../../../../environment/env.js';
 import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
 import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
 import { selectPaymentConfirmation } from '../../stripe-slice.js';
@@ -41,6 +47,20 @@ interface Props {
 
 export const Container: FC<Props> = memo(function Container(props = {}) {
   const { firstName, lastName, email, picture } = useSelector(selectUserMetadata);
+  const devTools = useSelector(selectDevTools);
+  const defaultValue = useRef<FigmaConfigGenPayload>({ auth0id: '', numberOfGeneratedConfigs: 1 });
+
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    switch (e.target.name) {
+      case 'authId':
+        defaultValue.current.auth0id = e.target.value;
+        break;
+      case 'numberOfGeneratedConfigs':
+        defaultValue.current.numberOfGeneratedConfigs = Number(e.target.value);
+        break;
+    }
+  }, []);
+
   const isFreeUser = useSelector(selectIsFreeUser);
   const hasRoleFreeStripeAccess = useSelector(selectFreeStripeAccess);
   const isPaymentDone = useSelector(selectPaymentConfirmation);
@@ -103,6 +123,36 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
                 <ButtonContact />
               </div>
               <BtnHistoryExportDisabled />
+            </>
+          )}
+          {(env.isDev || devTools) && (
+            <>
+              <h3>admin</h3>
+              <TextField
+                id='standard-basic'
+                label='authId'
+                name='authId'
+                variant='standard'
+                defaultValue={defaultValue.current.auth0id}
+                onChange={handleChange}
+                helperText={'auth0Id of the user you want to generate figma from his saved configs.'}
+              />
+              <Input
+                type='number'
+                name='numberOfGeneratedConfigs'
+                inputProps={{ min: 1 }}
+                placeholder={'Number of figma configs you want'}
+                defaultValue={defaultValue.current.numberOfGeneratedConfigs}
+                onChange={handleChange}
+              />
+              <Button
+                variant={'contained'}
+                onClick={() => {
+                  renderFigmaConfig(defaultValue.current);
+                }}
+              >
+                Generate
+              </Button>
             </>
           )}
         </div>
