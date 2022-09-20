@@ -52,7 +52,9 @@ export async function exportCode(
     uploadToCsb = false;
   }
   // /Legacy
-  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target === 'zip';
+
+
+  extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target !== UserSettingsTarget.csb;
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   const parent = (root as any)?.parent as ParentNode | Nil;
   if (!root) {
