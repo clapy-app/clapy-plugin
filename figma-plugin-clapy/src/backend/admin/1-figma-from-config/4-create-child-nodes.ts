@@ -1,3 +1,4 @@
+import equal from 'fast-deep-equal';
 import type {
   BaseNode2,
   ComponentNode2,
@@ -55,6 +56,20 @@ export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSv
   }
 }
 
+export function hydrateInstance(instance: BaseNode2, instanceConfig: InstanceNode2, mainComponent: ComponentNode) {
+  for (const [attr, val] of Object.entries(instanceConfig)) {
+    const attrTyped = attr as WriteableSceneNodeKeys;
+    const attributeExistsInConfigAndIsntIgnored = (instanceConfig as any)[attrTyped] && !ignoredAttributes.has(attr);
+
+    if (
+      attributeExistsInConfigAndIsntIgnored &&
+      !equal((instanceConfig as any)[attrTyped], (mainComponent as any)[attrTyped])
+    ) {
+      (instance as any)[attrTyped] = val;
+    }
+  }
+}
+
 export async function generateGroupNode(
   parentNode: BaseNode & ChildrenMixin,
   node: GroupNode2,
@@ -75,17 +90,53 @@ export async function generateFrameNode(
   return frame;
 }
 
+function createComponent(oldComponentId: string, ctx: FigmaConfigContext) {
+  let component;
+  if (oldComponentId in ctx.oldComponentIdsToNewDict) {
+    component = ctx.configPage.findOne(el => el.id === ctx.oldComponentIdsToNewDict[oldComponentId]);
+  } else {
+    component = figma.createComponent();
+    ctx.oldComponentIdsToNewDict[oldComponentId] = component.id;
+  }
+  return component;
+}
+
+function isComponentCreated(oldComponentId: string, ctx: FigmaConfigContext) {
+  return oldComponentId in ctx.oldComponentIdsToNewDict;
+}
+
 export async function generateComponent(
   parentNode: BaseNode & ChildrenMixin,
   node: ComponentNode2,
   ctx: FigmaConfigContext,
+  isConfig?: boolean,
 ) {
-  const component = figma.createComponent();
-  ctx.oldComponentIdsToNewDict[node.id] = component.id;
-  appendChild(parentNode, component);
-  hydrateNewNode(component, node);
-  await generateChildNodes(component, node, ctx);
-  return component;
+  if (isComponentCreated(node.id, ctx)) {
+    return ctx.configPage.findOne(el => el.id === ctx.oldComponentIdsToNewDict[node.id]);
+  }
+  let component = createComponent(node.id, ctx);
+
+  if (isComponent(component)) {
+    hydrateNewNode(component, node);
+    if (isConfig) {
+      parentNode = ctx.configPage;
+      component.x = ctx.componentsCoordinates.x;
+      component.y = ctx.componentsCoordinates.y;
+      ctx.componentsCoordinates.y += ctx.componentsCoordinates.previousComponentHeight + 200;
+      ctx.componentsCoordinates.previousComponentHeight = node.height;
+    }
+    appendChild(parentNode, component);
+    await generateChildNodes(component, node, ctx);
+    return component;
+  }
+}
+
+export async function generateComponents(parentNode: BaseNode & ChildrenMixin, ctx: FigmaConfigContext) {
+  if (ctx.components) {
+    for (const component of ctx.components) {
+      generateComponent(parentNode, component, ctx, true);
+    }
+  }
 }
 
 export async function generateInstance(
@@ -98,7 +149,9 @@ export async function generateInstance(
   if (isComponent(mainComponent)) {
     const instance = mainComponent.createInstance();
     appendChild(parentNode, instance);
-    // hydrateNewNode(instance, node); TODO comparer et hydrater que les valeurs des propriétés qui change entre le composant et l'instance.
+    // TODO comparer et hydrater que les valeurs des propriétés qui change entre le composant et l'instance.
+    // hydrateNewNode(instance, node, true);
+    hydrateInstance(instance, node, mainComponent);
     await generateChildNodes(instance, node, ctx);
     return instance;
   }

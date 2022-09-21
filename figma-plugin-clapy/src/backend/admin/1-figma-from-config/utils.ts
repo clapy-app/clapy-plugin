@@ -1,6 +1,7 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation------------------------------------------------
 import type {
+  ComponentNode2,
   Dict,
   GenerationHistory,
   OmitMethods,
@@ -13,7 +14,14 @@ const loadedFonts = new Map<string, Promise<void>>();
 
 export interface FigmaConfigContext {
   svgs?: SVGsExtracted;
+  components: ComponentNode2[] | undefined;
   oldComponentIdsToNewDict: Dict;
+  configPage: PageNode;
+  componentsCoordinates: {
+    x: number;
+    y: number;
+    previousComponentHeight: number;
+  };
 }
 
 export interface TextNode2 extends TextNodeNoMethod {
@@ -57,6 +65,7 @@ const readOnlyAttributes = [
   'innerRadius',
   'overflowDirection',
   'componentProperties',
+  'mainComponent',
 ] as const;
 
 export const ignoredAttributes = new Set<string>(readOnlyAttributes);
