@@ -28,7 +28,7 @@ function isNotMixed(el: readonly Paint[] | typeof figma.mixed | readonly Effect[
   return el !== 'Mixed';
 }
 
-export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSvg?: boolean) {
+export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, ctx: FigmaConfigContext, isSvg?: boolean) {
   for (const [attr, val] of Object.entries(childConfig)) {
     const attrTyped = attr as WriteableSceneNodeKeys;
     const arr = ['name', 'x', 'y'];
@@ -53,6 +53,11 @@ export function hydrateNewNode(newChild: BaseNode2, childConfig: BaseNode2, isSv
     } else if (attributeExistsInConfigAndIsntIgnored && isSvg && arr.includes(attrTyped)) {
       (newChild as any)[attrTyped] = val;
     }
+  }
+  if (ctx.isRoot) {
+    (newChild as any)['x'] = 0;
+    (newChild as any)['y'] = 0;
+    ctx.isRoot = false;
   }
 }
 
@@ -85,7 +90,7 @@ export async function generateFrameNode(
 ) {
   const frame = figma.createFrame();
   appendChild(parentNode, frame);
-  hydrateNewNode(frame, node);
+  hydrateNewNode(frame, node, ctx);
   await generateChildNodes(frame, node, ctx);
   return frame;
 }
@@ -93,6 +98,9 @@ export async function generateFrameNode(
 function createComponent(oldComponentId: string, ctx: FigmaConfigContext) {
   let component;
   if (oldComponentId in ctx.oldComponentIdsToNewDict) {
+    throw new Error(
+      'Comportement mal defini, bug potentiel. [composant en tant que enfant de la frame + composant dans figmaConfig.components]',
+    );
     component = ctx.configPage.findOne(el => el.id === ctx.oldComponentIdsToNewDict[oldComponentId]);
   } else {
     component = figma.createComponent();
@@ -117,14 +125,15 @@ export async function generateComponent(
   let component = createComponent(node.id, ctx);
 
   if (isComponent(component)) {
-    hydrateNewNode(component, node);
+    hydrateNewNode(component, node, ctx);
     if (isConfig) {
       parentNode = ctx.configPage;
       component.x = ctx.componentsCoordinates.x;
       component.y = ctx.componentsCoordinates.y;
-      ctx.componentsCoordinates.y += ctx.componentsCoordinates.previousComponentHeight + 200;
       ctx.componentsCoordinates.previousComponentHeight = node.height;
+      ctx.componentsCoordinates.y += ctx.componentsCoordinates.previousComponentHeight + 200;
     }
+
     appendChild(parentNode, component);
     await generateChildNodes(component, node, ctx);
     return component;
@@ -162,7 +171,7 @@ export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode
   const text = figma.createText();
   parentNode.appendChild(text);
 
-  hydrateNewNode(text, node);
+  hydrateNewNode(text, node, ctx);
 
   for (const textSegment of node._textSegments) {
     await ensureFontIsLoaded(textSegment.fontName);
@@ -188,14 +197,14 @@ export async function generateTextNode(parentNode: ChildrenMixin, node: TextNode
 export async function generateRectancle(parentNode: ChildrenMixin, node: RectangleNode2, ctx: FigmaConfigContext) {
   const rectangle = figma.createRectangle();
   parentNode.appendChild(rectangle);
-  hydrateNewNode(rectangle, node);
+  hydrateNewNode(rectangle, node, ctx);
   return rectangle;
 }
 
 export async function generateLineNode(parentNode: ChildrenMixin, node: LineNode2, ctx: FigmaConfigContext) {
   const line = figma.createLine();
   parentNode.appendChild(line);
-  hydrateNewNode(line, node);
+  hydrateNewNode(line, node, ctx);
   line.resizeWithoutConstraints(node.width, node.height);
 
   return line;
@@ -208,7 +217,7 @@ export async function generateVectorNode(parentNode: ChildrenMixin, node: Vector
 
   const vector = figma.createNodeFromSvg(ctx.svgs[node.id]['svg']);
   parentNode.appendChild(vector);
-  hydrateNewNode(vector, node, true);
+  hydrateNewNode(vector, node, ctx, true);
   vector.clipsContent = false;
 
   return vector;
@@ -244,6 +253,6 @@ async function generateGroupChildNodes(
   }
 
   const group = figma.group(groupElements, parentNode);
-  hydrateNewNode(group, nodeConfig);
+  hydrateNewNode(group, nodeConfig, ctx);
   return group;
 }

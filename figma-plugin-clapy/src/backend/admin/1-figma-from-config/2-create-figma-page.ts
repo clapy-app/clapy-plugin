@@ -23,5 +23,6 @@ export async function createPage(generationHistoryEntry: GenerationHistory, ctx:
   if (ctx.components && ctx.components.length > 0) {
     generateComponents(page, ctx);
   }
+  ctx.isRoot = true;
   generateNode(page, generationHistoryEntry.figmaConfig.root, ctx);
 }

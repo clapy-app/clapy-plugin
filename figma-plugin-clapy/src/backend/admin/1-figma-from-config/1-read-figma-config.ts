@@ -3,7 +3,6 @@ import { createPage } from './2-create-figma-page.js';
 import type { FigmaConfigContext } from './utils.js';
 
 export function generateConfig(figmaConfig: GenerationHistory[]) {
-
   try {
     for (const config of figmaConfig) {
       const context: FigmaConfigContext = {
@@ -13,9 +12,10 @@ export function generateConfig(figmaConfig: GenerationHistory[]) {
         configPage: figma.currentPage,
         componentsCoordinates: {
           x: Number(config.figmaConfig?.root?.width) + 200,
-          y: config.figmaConfig?.root?.y || 0,
+          y: 0,
           previousComponentHeight: 0,
         },
+        isRoot: false,
       };
 
       const existingPageRelatedToConfig = figma.root.children.find(page => page.name === config.id);
@@ -23,6 +23,5 @@ export function generateConfig(figmaConfig: GenerationHistory[]) {
     }
   } finally {
     figma.commitUndo();
-
   }
 }

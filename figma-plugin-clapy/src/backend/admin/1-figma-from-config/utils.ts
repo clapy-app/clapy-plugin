@@ -22,6 +22,7 @@ export interface FigmaConfigContext {
     y: number;
     previousComponentHeight: number;
   };
+  isRoot: boolean;
 }
 
 export interface TextNode2 extends TextNodeNoMethod {
