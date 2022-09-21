@@ -3,6 +3,7 @@ import { createPage } from './2-create-figma-page.js';
 import type { FigmaConfigContext } from './utils.js';
 
 export function generateConfig(figmaConfig: GenerationHistory[]) {
+
   try {
     for (const config of figmaConfig) {
       const context: FigmaConfigContext = {
@@ -22,5 +23,6 @@ export function generateConfig(figmaConfig: GenerationHistory[]) {
     }
   } finally {
     figma.commitUndo();
+
   }
 }

@@ -84,6 +84,7 @@ export async function ensureFontIsLoaded(font: FontName) {
     await loadedFonts.get(fontCacheKey);
   }
 }
+
 // cette function va servir dans un futur proche pour faire un clean up des pages avec un bouton front
 export function cleanUpLastLaunch(figmaConfig: GenerationHistory[]) {
   for (const page of figma.root.children) {
