@@ -149,8 +149,6 @@ export async function generateInstance(
   if (isComponent(mainComponent)) {
     const instance = mainComponent.createInstance();
     appendChild(parentNode, instance);
-    // TODO comparer et hydrater que les valeurs des propriétés qui change entre le composant et l'instance.
-    // hydrateNewNode(instance, node, true);
     hydrateInstance(instance, node, mainComponent);
     await generateChildNodes(instance, node, ctx);
     return instance;
