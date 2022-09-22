@@ -99,7 +99,7 @@ function createComponent(oldComponentId: string, ctx: FigmaConfigContext) {
   let component;
   if (oldComponentId in ctx.oldComponentIdsToNewDict) {
     throw new Error(
-      'Comportement mal defini, bug potentiel. [composant en tant que enfant de la frame + composant dans figmaConfig.components]',
+      'Misdefined behavior, potential bug. [component as child of frame + same component in figmaConfig.components]',
     );
     component = ctx.configPage.findOne(el => el.id === ctx.oldComponentIdsToNewDict[oldComponentId]);
   } else {
