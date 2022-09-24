@@ -1,16 +1,16 @@
 import type { FC } from 'react';
-import { useMemo, memo } from 'react';
+import { memo, useMemo } from 'react';
+import { useSelector } from 'react-redux/es/hooks/useSelector.js';
 
+import { figmaColorToCssHex } from '../../../../backend/common/figma-utils.js';
 import { extractionStepsLabels, extractionStepsTotal } from '../../../../common/app-config.js';
 import type { ExtractionProgress } from '../../../../common/app-models.js';
+import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieWrapper.js';
 import successLottie from '../../../../lotties/gen-code-success.json';
 import loadingLottie from '../../../../lotties/generating-code.json';
+import { selectSelectionPage } from '../../export-code-slice.js';
 import type { MyStates } from '../FigmaToCodeHome';
 import classes from './SelectionPreview.module.css';
-import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieWrapper.js';
-import { useSelector } from 'react-redux/es/hooks/useSelector.js';
-import { selectSelectionPage } from '../../export-code-slice.js';
-import { figmaColorToCssHex } from '../../../../backend/common/figma-utils.js';
 
 interface Props {
   state: MyStates;

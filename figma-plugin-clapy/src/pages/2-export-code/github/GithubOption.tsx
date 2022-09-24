@@ -1,8 +1,12 @@
 import type { FC } from 'react';
-import { useCallback, memo } from 'react';
+import { memo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+
 import { Loading } from '../../../components-used/Loading/Loading.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
+import { ChooseBranchAutocomplete } from './ChooseBranchAutocomplete.js';
+import { ChooseClapyBranch } from './ChooseClapyBranch.js';
+import { ChooseRepoAutocomplete } from './ChooseRepoAutocomplete.js';
 import { AbortableButton } from './components/AbortableButton.js';
 import { signInToGithubWithScope, useLoadGHSettingsAndCredentials } from './github-service.js';
 import {
@@ -12,9 +16,6 @@ import {
   selectGHSignInLoading,
   selectIsLoadingGHSettings,
 } from './github-slice.js';
-import { ChooseRepoAutocomplete } from './ChooseRepoAutocomplete.js';
-import { ChooseBranchAutocomplete } from './ChooseBranchAutocomplete.js';
-import { ChooseClapyBranch } from './ChooseClapyBranch.js';
 
 interface Props {
   isLoading: boolean;

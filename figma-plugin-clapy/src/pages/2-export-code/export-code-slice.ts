@@ -1,10 +1,10 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 import type { WritableDraft } from 'immer/dist/internal';
+
 import type { PreviewResp } from '../../common/app-models.js';
 import type { UserSettings } from '../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../common/sb-serialize.model.js';
-
 import type { RootState } from '../../core/redux/store';
 import { getDefaultUserSettings } from './export-code-utils.js';
 

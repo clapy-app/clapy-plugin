@@ -2,17 +2,17 @@ import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel.js
 import Switch from '@mui/material/Switch/Switch.js';
 import Tooltip from '@mui/material/Tooltip/Tooltip.js';
 import type { ChangeEvent, FC } from 'react';
-import { useRef, memo } from 'react';
+import { memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { appConfig } from '../../../../common/app-config.js';
 import type { UserSettings } from '../../../../common/sb-serialize.model.js';
 import { selectCssOptionEnabled } from '../../../../core/auth/auth-slice.js';
-import classes from './CustomCssSetting.module.css';
-import { CssEditor } from './CssEditor.js';
-import { selectCodeGenIsLoading, selectCustomCssSetting } from '../../export-code-slice.js';
 import { useCallbackAsync2 } from '../../../../front-utils/front-utils.js';
+import { selectCodeGenIsLoading, selectCustomCssSetting } from '../../export-code-slice.js';
 import { createSettingName, setOneUserSetting } from '../../export-code-utils.js';
+import { CssEditor } from './CssEditor.js';
+import classes from './CustomCssSetting.module.css';
 
 interface Props {}
 

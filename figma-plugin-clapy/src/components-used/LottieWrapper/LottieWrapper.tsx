@@ -1,7 +1,7 @@
-import type { FC } from 'react';
-import { memo } from 'react';
 import type { LottieOptions } from 'lottie-react';
 import Lottie from 'lottie-react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
 interface Props {
   animationData: LottieOptions['animationData'];

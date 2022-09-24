@@ -1,4 +1,5 @@
 import type Stripe from 'stripe';
+
 import { env } from './env.js';
 
 export const appConfig = {

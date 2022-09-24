@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import { toConcurrencySafeAsyncFn } from '../../../common/general-utils.js';
 import { fetchPlugin } from '../../../common/plugin-utils.js';
 import type { SelectedRepo } from '../../../common/sb-serialize.model.js';
@@ -8,21 +9,21 @@ import { handleError, toastError } from '../../../front-utils/front-utils.js';
 import { getGithubCredentials, githubPost, isNoGHTokenError } from '../../../front-utils/http-github-utils.js';
 import type { Branch, Repo } from './github-slice.js';
 import {
-  setSelectedCodeGenBranch,
+  endGHSignIn,
+  endLoadingGHSettingsAndCredentials,
+  selectGHBranches,
+  selectGHRepos,
   selectGHSelectedRepo,
   setGHBranches,
-  selectGHBranches,
-  startLoadingGHBranches,
-  setSelectedTargetBranch,
-  selectGHRepos,
-  setGHSettings,
-  endLoadingGHSettingsAndCredentials,
-  startLoadingGHSettingsAndCredentials,
-  setSelectedRepo,
-  endGHSignIn,
   setGHRepositories,
+  setGHSettings,
+  setSelectedCodeGenBranch,
+  setSelectedRepo,
+  setSelectedTargetBranch,
   startGHSignIn,
+  startLoadingGHBranches,
   startLoadingGHRepos,
+  startLoadingGHSettingsAndCredentials,
 } from './github-slice.js';
 
 // Load initial credentials and settings

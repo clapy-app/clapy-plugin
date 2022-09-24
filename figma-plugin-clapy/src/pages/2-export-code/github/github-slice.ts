@@ -1,5 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
+
 import type { GithubCredentials, Nil, ValueOf } from '../../../common/app-models.js';
 import { codegenBranchDefaultValue, setRepoInSettings } from '../../../common/github-shared-utils.js';
 import type { GithubSettings, SelectedRepo } from '../../../common/sb-serialize.model.js';

@@ -1,6 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ManagementClient } from 'auth0';
 import axios from 'axios';
+
 import { env } from '../../env-and-config/env.js';
 
 const { auth0Domain, auth0BackendClientId, auth0BackendClientSecret } = env;

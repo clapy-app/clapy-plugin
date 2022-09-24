@@ -1,11 +1,11 @@
 import type { FC } from 'react';
-import { useRef, memo, useCallback } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
+import { AbortableButton } from '../../2-export-code/github/components/AbortableButton.js';
 import { login, signup } from '../../../core/auth/auth-service';
 import { selectAuthLoading } from '../../../core/auth/auth-slice';
 import { useCallbackAsync } from '../../../front-utils/front-utils.js';
-import { AbortableButton } from '../../2-export-code/github/components/AbortableButton.js';
 import { ClapyLogo2Icon } from './ClapyLogo2Icon/ClapyLogo2Icon';
 import { Decoration } from './Decoration/Decoration';
 import classes from './LoginHome.module.css';

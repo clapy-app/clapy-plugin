@@ -10,8 +10,8 @@ import { PublicRoute } from '../../auth/public-route-annotation.js';
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 import type { RequestPrivate } from '../../typings/express-jwt.js';
-import { UserService } from '../user/user.service.js';
 import { getAuth0User } from '../user/auth0-management-api.js';
+import { UserService } from '../user/user.service.js';
 import { StripeWebhookService } from './stripe-webhook.service.js';
 import { StripeService } from './stripe.service.js';
 

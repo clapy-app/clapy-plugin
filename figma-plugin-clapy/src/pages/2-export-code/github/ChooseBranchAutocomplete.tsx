@@ -1,9 +1,15 @@
-import type { FC } from 'react';
-import { useCallback, memo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
+import Button from '@mui/material/Button/Button.js';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
+import TextField from '@mui/material/TextField/TextField.js';
+import Tooltip from '@mui/material/Tooltip/Tooltip.js';
+import type { FC } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { appConfig } from '../../../common/app-config.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
+import { setTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
 import {
   selectGHBranchesOrJustSelection,
   selectGHHasRepoSelected,
@@ -11,12 +17,7 @@ import {
   selectGHLoadingBranches,
   selectGHSelectedTargetBranch,
 } from './github-slice.js';
-import TextField from '@mui/material/TextField/TextField.js';
-import { setTargetBranchInGHWizard, useLoadGHBranchesIfEditable } from './github-service.js';
-import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
-import Button from '@mui/material/Button/Button.js';
-import Tooltip from '@mui/material/Tooltip/Tooltip.js';
-import { appConfig } from '../../../common/app-config.js';
+import classes from './GithubOption.module.css';
 
 interface Props {
   isLoading: boolean;

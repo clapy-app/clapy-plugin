@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import type { FC } from 'react';
 
+import { LottieWrapper } from '../../../components-used/LottieWrapper/LottieWrapper.js';
 import successLottie from '../../../lotties/gen-code-success.json';
 import { ArrowLeft } from './ArrowLeft/ArrowLeft';
 import { ArrowLeftIcon } from './ArrowLeftIcon';
 import { Button_SizeMdHierarchyLinkGray } from './Button_SizeMdHierarchyLinkGray/Button_SizeMdHierarchyLinkGray';
 import classes from './PaymentConfirmation.module.css';
-import { LottieWrapper } from '../../../components-used/LottieWrapper/LottieWrapper.js';
 
 interface Props {
   className?: string;

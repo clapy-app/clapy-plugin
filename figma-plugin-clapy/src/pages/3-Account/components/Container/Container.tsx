@@ -2,11 +2,11 @@ import Button from '@mui/material/Button/Button.js';
 import Input from '@mui/material/Input/Input.js';
 import TextField from '@mui/material/TextField/TextField.js';
 import type { ChangeEvent, FC } from 'react';
-import { useCallback, useRef, memo } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
+
 import { renderFigmaConfig } from '../../../../admin/admin-service.js';
 import type { FigmaConfigGenPayload } from '../../../../common/sb-serialize.model.js';
-
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectDevTools, selectFreeStripeAccess } from '../../../../core/auth/auth-slice.js';
 import { env } from '../../../../environment/env.js';

@@ -4,17 +4,18 @@ import Radio from '@mui/material/Radio/Radio.js';
 import RadioGroup from '@mui/material/RadioGroup/RadioGroup.js';
 import Tooltip from '@mui/material/Tooltip/Tooltip.js';
 import type { ChangeEvent, FC } from 'react';
-import { useRef, memo } from 'react';
+import { memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
+
 import { appConfig } from '../../../common/app-config.js';
 import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../../common/sb-serialize.model.js';
 import { selectGithubEnabled, selectNoCodesandboxUser } from '../../../core/auth/auth-slice.js';
-import classes from './TargetSetting.module.css';
-import { GithubOption } from '../github/GithubOption.js';
-import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
-import { selectCodeGenIsLoading, selectTargetSetting } from '../export-code-slice.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
+import { selectCodeGenIsLoading, selectTargetSetting } from '../export-code-slice.js';
+import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
+import { GithubOption } from '../github/GithubOption.js';
+import classes from './TargetSetting.module.css';
 
 interface Props {}
 

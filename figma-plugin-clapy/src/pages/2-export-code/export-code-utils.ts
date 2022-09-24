@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import { fetchPlugin } from '../../common/plugin-utils.js';
 import type { GithubSettings, UserSettings, UserSettingsWithRequired } from '../../common/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../common/sb-serialize.model.js';

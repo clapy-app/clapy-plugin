@@ -53,7 +53,6 @@ export async function exportCode(
   }
   // /Legacy
 
-
   extraConfig.useZipProjectTemplate = env.localPreviewInsteadOfCsb || extraConfig.target !== UserSettingsTarget.csb;
   const fwConnector = frameworkConnectors[extraConfig.framework || 'react'];
   const parent = (root as any)?.parent as ParentNode | Nil;

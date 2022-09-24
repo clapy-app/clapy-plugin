@@ -1,4 +1,5 @@
 import equal from 'fast-deep-equal';
+
 import type {
   BaseNode2,
   ComponentNode2,
@@ -22,7 +23,7 @@ import {
 } from '../../common/node-type-utils.js';
 import { generateNode } from './3-create-parent-nodes.js';
 import type { FigmaConfigContext, TextNode2, WriteableSceneNodeKeys } from './utils.js';
-import { appendChild, ignoredAttributes, ensureFontIsLoaded } from './utils.js';
+import { appendChild, ensureFontIsLoaded, ignoredAttributes } from './utils.js';
 
 function isNotMixed(el: readonly Paint[] | typeof figma.mixed | readonly Effect[] | 'Mixed') {
   return el !== 'Mixed';

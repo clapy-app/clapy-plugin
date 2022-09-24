@@ -12,9 +12,12 @@ import { selectFeedbackPageState, selectPricingPageState, selectStripeState } fr
 import { Generator } from '../4-Generator/Generator.js';
 import { Feedback } from '../5-Feedback/Feedback';
 import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
+import { InfoAlert } from '../../components-used/ErrorAlert/InfoAlert.js';
 import { Loading } from '../../components-used/Loading/Loading.js';
 import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks.js';
+// Flag for development only. Will be ignored in production.
+import { handleError, toastError } from '../../front-utils/front-utils.js';
 import { FillUserProfile } from '../user/FillUserProfile/FillUserProfile';
 import { FillUserProfileStep2 } from '../user/FillUserProfile/FillUserProfileStep2';
 import { selectHasMissingMetaProfile, selectHasMissingMetaUsage } from '../user/user-slice';
@@ -22,9 +25,6 @@ import { Footer } from './Footer/Footer';
 import { HeaderGenerator } from './Header/Header_Generator.js';
 import classes from './Layout.module.css';
 
-// Flag for development only. Will be ignored in production.
-import { handleError, toastError } from '../../front-utils/front-utils.js';
-import { InfoAlert } from '../../components-used/ErrorAlert/InfoAlert.js';
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;

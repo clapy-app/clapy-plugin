@@ -1,4 +1,5 @@
 import type { DeclarationPlain } from 'css-tree';
+import type ts from 'typescript';
 
 import { mapTagStyles, mapTextSegmentStyles, postMapStyles } from '../6-figma-to-code-map.js';
 import { isEmptyObject } from '../../../common/general-utils.js';
@@ -23,7 +24,6 @@ import { getOrGenClassName } from './gen-unique-name-utils.js';
 import { escapeHTMLSplitParagraphsNoSpacing, splitParagraphsWithSpacing } from './process-nodes-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
-import type ts from 'typescript';
 
 function mkListBlock(listType: ListType): ListBlock {
   return { paragraphBlocks: [], listType };

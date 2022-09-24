@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/rest';
-import type { RequestError } from '@octokit/types';
 import { retry } from '@octokit/plugin-retry';
 import { throttling } from '@octokit/plugin-throttling';
+import { Octokit } from '@octokit/rest';
+import type { RequestError } from '@octokit/types';
 
 export type MyGithubError = (RequestError | Error) & {
   isGithub: true;

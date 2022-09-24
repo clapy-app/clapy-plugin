@@ -9,7 +9,7 @@ import type { Dict } from '../sb-serialize-preview/sb-serialize.model.js';
 import { genNodeAst, prepareNode } from './4-gen-node.js';
 import type { ModuleContext, NodeContext, ParentNode, ProjectContext } from './code.model.js';
 import type { ComponentNode2, RulePlainExtended, SceneNode2 } from './create-ts-compiler/canvas-utils.js';
-import { isPage, isComponent, isInstance } from './create-ts-compiler/canvas-utils.js';
+import { isComponent, isInstance, isPage } from './create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss, mkStylesheetCss } from './css-gen/css-factories-low.js';
 import { getComponentsDirPath } from './gen-node-utils/3-gen-comp-utils.js';
 import { mkNamedImportsDeclaration } from './gen-node-utils/ts-ast-utils.js';

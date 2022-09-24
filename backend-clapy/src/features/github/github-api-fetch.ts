@@ -1,8 +1,8 @@
 import type { RestEndpointMethodTypes } from '@octokit/rest';
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
-import { env } from '../../env-and-config/env.js';
 
+import { env } from '../../env-and-config/env.js';
 import { getAuth0User } from '../user/auth0-management-api.js';
 import type { GHContext } from './github-service.js';
 

@@ -1,13 +1,13 @@
 import type { FC, ReactNode } from 'react';
 import { memo } from 'react';
 
+import { CheckCircleIcon } from './_ButtonBase/CheckCircleIcon.js';
 import { MailIcon } from './_ButtonBase/MailIcon';
+import { ExternalLinkIcon } from './_ButtonBase_2/ExternalLinkIcon.js';
 import { SlashIcon } from './_ButtonBase_2/SlashIcon';
 import { BadgeGroup } from './BadgeGroup/BadgeGroup';
 import { Button } from './Button/Button';
 import classes from './ErrorAlert.module.css';
-import { CheckCircleIcon } from './_ButtonBase/CheckCircleIcon.js';
-import { ExternalLinkIcon } from './_ButtonBase_2/ExternalLinkIcon.js';
 
 interface Props {
   // Like PropsWithChildren<...>

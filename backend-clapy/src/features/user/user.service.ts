@@ -6,18 +6,18 @@ import { DataSource, Not } from 'typeorm';
 
 import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
+import type { CSBResponse } from '../export-code/9-upload-to-csb.js';
 import { GenerationHistoryEntity } from '../export-code/generation-history.entity.js';
+import type { GitHubResponse } from '../github/github-service.js';
 import { UserSettingsTarget } from '../sb-serialize-preview/sb-serialize.model.js';
 import type {
   ExportCodePayload,
-  GenerationHistory,
   GenCodeResponse,
+  GenerationHistory,
 } from '../sb-serialize-preview/sb-serialize.model.js';
 import { StripeService } from '../stripe/stripe.service.js';
 import type { AccessTokenDecoded } from './user.utils.js';
 import { hasRoleIncreasedQuota, hasRoleNoCodeSandbox } from './user.utils.js';
-import type { CSBResponse } from '../export-code/9-upload-to-csb.js';
-import type { GitHubResponse } from '../github/github-service.js';
 
 @Injectable()
 export class UserService {

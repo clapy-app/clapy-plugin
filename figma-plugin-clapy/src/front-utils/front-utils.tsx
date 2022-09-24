@@ -1,8 +1,8 @@
 import type { DependencyList } from 'react';
-import { useReducer, useCallback } from 'react';
+import { useCallback, useReducer } from 'react';
 import { toast } from 'react-toastify';
-import { signInCancelledCode } from '../common/error-utils.js';
 
+import { signInCancelledCode } from '../common/error-utils.js';
 import { Alert, ErrorAlertButtons } from '../components-used/ErrorAlert/ErrorAlert';
 import { env } from '../environment/env.js';
 import { apiPost } from './http.utils.js';

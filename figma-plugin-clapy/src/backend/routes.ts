@@ -19,10 +19,10 @@ import {
   setGithubCachedCredentials,
 } from './routes/2-user/getCachedToken';
 import {
-  addTargetBranchToSettings,
-  addRepoToSettings,
-  getGithubSettings,
   addCodeGenBranchToSettings,
+  addRepoToSettings,
+  addTargetBranchToSettings,
+  getGithubSettings,
 } from './routes/2-user/github-settings.js';
 import {
   getUserMetadata,

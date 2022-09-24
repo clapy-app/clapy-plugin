@@ -2,8 +2,8 @@ import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import type { AxiosError } from 'axios';
 import type { Request } from 'express';
-import type { MyGithubError } from '../features/github/octokit.js';
 
+import type { MyGithubError } from '../features/github/octokit.js';
 import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 
 const logger = new Logger('AllExceptionsFilter');

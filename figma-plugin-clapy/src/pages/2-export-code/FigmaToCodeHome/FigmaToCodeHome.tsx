@@ -17,9 +17,9 @@ import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type {
-  GenCodeResponse,
   ExportCodePayload,
   ExportImageMap2,
+  GenCodeResponse,
   GithubSettings,
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
@@ -30,6 +30,7 @@ import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
 import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
+import { githubPost } from '../../../front-utils/http-github-utils.js';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
@@ -41,24 +42,23 @@ import {
   setLoading,
 } from '../export-code-slice.js';
 import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
+import { loadGHSettings } from '../github/github-service.js';
+import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
+import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
 import { AddCssOption } from '../user-settings/CustomCssSetting/CustomCssSetting.js';
+import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
+import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
+import { PageSetting } from '../user-settings/PageSetting.js';
+import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
+import { ScssSetting } from '../user-settings/ScssSetting.js';
+import { GenTargetOptions } from '../user-settings/TargetSetting.js';
+import { ViewportSizeSetting } from '../user-settings/ViewportSizeSetting.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
-import { GenTargetOptions } from '../user-settings/TargetSetting.js';
-import { loadGHSettings } from '../github/github-service.js';
-import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { PageSetting } from '../user-settings/PageSetting.js';
-import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
-import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
-import { ScssSetting } from '../user-settings/ScssSetting.js';
-import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
-import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
-import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
-import { ViewportSizeSetting } from '../user-settings/ViewportSizeSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb

@@ -1,6 +1,5 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------main functions that calls the others--------------------------------
-
 import type { GenerationHistory } from '../../../common/sb-serialize.model.js';
 import { generateNode } from './3-create-parent-nodes.js';
 import { generateComponents } from './4-create-child-nodes.js';

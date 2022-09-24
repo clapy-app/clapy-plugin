@@ -1,5 +1,5 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
-import { Inject, Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { expressjwt } from 'express-jwt';

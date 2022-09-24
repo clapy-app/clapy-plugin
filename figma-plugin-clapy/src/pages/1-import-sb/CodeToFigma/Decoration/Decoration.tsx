@@ -1,5 +1,4 @@
 import { LottieWrapper } from '../../../../components-used/LottieWrapper/LottieWrapper.js';
-
 import animationData from '../../../../lotties/code-to-design-later.json';
 import classes from './Decoration.module.css';
 

@@ -1,20 +1,21 @@
 import type { OutlinedInputProps } from '@mui/material';
+import Button from '@mui/material/Button/Button.js';
 import TextField from '@mui/material/TextField/TextField.js';
+import Tooltip from '@mui/material/Tooltip/Tooltip.js';
 import type { FC } from 'react';
-import { useRef, useCallback, useState, memo } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import { appConfig } from '../../../common/app-config.js';
+import { readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { setCodeGenBranchInGHWizard } from './github-service.js';
 import {
-  selectGHSelectedCodegenBranch,
   selectGHHasCodegenBranchSelected,
   selectGHHasRepoSelected,
+  selectGHSelectedCodegenBranch,
 } from './github-slice.js';
-import Button from '@mui/material/Button/Button.js';
-import { readSelectorOnce } from '../../../core/redux/redux.utils.js';
 import classes from './GithubOption.module.css';
-import Tooltip from '@mui/material/Tooltip/Tooltip.js';
-import { appConfig } from '../../../common/app-config.js';
 
 interface Props {
   isLoading: boolean;

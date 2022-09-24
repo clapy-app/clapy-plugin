@@ -1,7 +1,7 @@
 import type { ComponentNode2, Dict, ExportCodePayload } from '../../sb-serialize-preview/sb-serialize.model.js';
 import { UserSettingsTarget } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { InstanceNode2 } from '../create-ts-compiler/canvas-utils.js';
-import { fillWithDefaults, fillWithComponent } from './default-node.js';
+import { fillWithComponent, fillWithDefaults } from './default-node.js';
 
 export function prepareConfig({ root, components, extraConfig }: ExportCodePayload) {
   if (!extraConfig.target) {

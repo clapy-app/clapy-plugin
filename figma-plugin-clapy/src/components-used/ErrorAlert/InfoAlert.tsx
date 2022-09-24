@@ -1,7 +1,8 @@
-import alertClasses from './NewUpdateAlert.module.css';
 import { toast } from 'react-toastify';
+
 import { fetchPluginNoResponse } from '../../common/plugin-utils.js';
 import { Alert, ErrorAlertButtons as AlertButtons } from './ErrorAlert.js';
+import alertClasses from './NewUpdateAlert.module.css';
 
 export function InfoAlert() {
   toast(

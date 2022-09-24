@@ -1,5 +1,6 @@
-import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 import type { Request } from 'express';
+
+import type { AccessTokenDecoded } from '../features/user/user.utils.js';
 
 // declare global is required when we import an interface above, because this file becomes a module instead of a script.
 // https://stackoverflow.com/a/63948053/4053349 section "Modules vs. Scripts"

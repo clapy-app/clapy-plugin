@@ -1,9 +1,14 @@
-import type { FC } from 'react';
-import { useCallback, memo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import classes from './GithubOption.module.css';
 import Autocomplete from '@mui/material/Autocomplete/Autocomplete.js';
+import Button from '@mui/material/Button/Button.js';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
+import TextField from '@mui/material/TextField/TextField.js';
+import type { FC } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { env } from '../../../environment/env.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
+import { selectRepoInGHWizard, useLoadGHReposIfEditable } from './github-service.js';
 import type { Repo } from './github-slice.js';
 import {
   selectGHHasRepoSelected,
@@ -11,11 +16,7 @@ import {
   selectGHReposOrJustSelection,
   selectGHSelectedRepo,
 } from './github-slice.js';
-import TextField from '@mui/material/TextField/TextField.js';
-import { env } from '../../../environment/env.js';
-import { selectRepoInGHWizard, useLoadGHReposIfEditable } from './github-service.js';
-import CircularProgress from '@mui/material/CircularProgress/CircularProgress.js';
-import Button from '@mui/material/Button/Button.js';
+import classes from './GithubOption.module.css';
 
 interface Props {
   isLoading: boolean;

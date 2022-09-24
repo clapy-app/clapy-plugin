@@ -1,24 +1,24 @@
 export {};
 // import { Logger } from '@nestjs/common';
 // import axios from 'axios';
-// 
+//
 // import { wait } from '../../common/general-utils.js';
 // import { env } from '../../env-and-config/env.js';
 // import { backendDir, pluginDir } from '../../root.js';
-// 
+//
 // // Require dev dependencies:
 // // mkdirp
 // // graphql-fetch-schema
 // // @graphql-codegen/cli
 // // @graphql-codegen/typescript
-// 
+//
 // const rootHasuraUrl = `${env.hasuraHttp}/v1`;
-// 
+//
 // const secret = env.hasuraAdminSecret;
 // const frontGeneratedDir = `${pluginDir}/generated`;
 // const apiGeneratedDir = `${backendDir}/generated`;
 // const logger = new Logger('hasura-schema');
-// 
+//
 // export async function hasuraReloadMetadataAndSchema() {
 //   logger.log('Reload Hasura metadata...');
 //   await withRetry(hasuraReloadMetadata);
@@ -26,7 +26,7 @@ export {};
 //   // await withRetry(hasuraReloadRemoteSchema);
 //   logger.log('Metadata refreshed.');
 // }
-// 
+//
 // export async function generateTypes() {
 //   if (!env.isDev) {
 //     throw new Error('GraphQL types should only be generated in dev environment.');
@@ -37,10 +37,10 @@ export {};
 //   await generateTypesFromSchema();
 //   logger.log('Schema and types extracted.');
 // }
-// 
+//
 // const retryCodes = ['ECONNREFUSED', 'ECONNRESET'];
 // const retryDelay = 3;
-// 
+//
 // async function withRetry<T>(func: (...args: any[]) => Promise<T>): Promise<T> {
 //   try {
 //     return await func();
@@ -63,7 +63,7 @@ export {};
 //     }
 //   }
 // }
-// 
+//
 // async function hasuraReloadMetadata() {
 //   return axios.post(
 //     `${rootHasuraUrl}/query`,
@@ -79,12 +79,12 @@ export {};
 //     },
 //   );
 // }
-// 
+//
 // async function createGeneratedFolder() {
 //   const mkdirp = (await import('mkdirp')).default;
 //   return Promise.all([mkdirp(frontGeneratedDir), mkdirp(apiGeneratedDir)]);
 // }
-// 
+//
 // async function hasuraExtractSchema() {
 //   const fetchSchemaImport = await import('graphql-fetch-schema');
 //   let fetchSchema = fetchSchemaImport.default;
@@ -110,7 +110,7 @@ export {};
 //     }),
 //   ]);
 // }
-// 
+//
 // async function generateTypesFromSchema() {
 //   const { generate } = await import('@graphql-codegen/cli');
 //   return generate(

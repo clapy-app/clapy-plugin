@@ -1,14 +1,15 @@
+import TextField from '@mui/material/TextField/TextField.js';
 import Tooltip from '@mui/material/Tooltip/Tooltip.js';
 import type { ChangeEvent, FC } from 'react';
 import { memo } from 'react';
+import { useSelector } from 'react-redux';
+
 import { appConfig } from '../../../common/app-config.js';
-import classes from '../FigmaToCodeHome/FigmaToCodeHome.module.css';
+import type { UserSettings } from '../../../common/sb-serialize.model.js';
 import { useCallbackAsync2 } from '../../../front-utils/front-utils.js';
 import { selectCodeGenIsLoading, selectComponentsDirSetting } from '../export-code-slice.js';
-import { useSelector } from 'react-redux';
 import { createSettingName, setOneUserSetting } from '../export-code-utils.js';
-import type { UserSettings } from '../../../common/sb-serialize.model.js';
-import TextField from '@mui/material/TextField/TextField.js';
+import classes from '../FigmaToCodeHome/FigmaToCodeHome.module.css';
 
 interface Props {}
 

@@ -1,7 +1,7 @@
 import type { FC, MutableRefObject, ReactNode } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
-import { env } from '../../environment/env.js';
 
+import { env } from '../../environment/env.js';
 import styles from './PreviewMode.module.css';
 
 type WSRef = MutableRefObject<WebSocket | undefined>;
