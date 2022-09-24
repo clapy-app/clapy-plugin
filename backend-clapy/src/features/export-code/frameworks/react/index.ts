@@ -1,4 +1,5 @@
 import type { ChildNode } from 'parse5/dist/tree-adapters/default.js';
+import { relative } from 'path';
 import type { JsxChild, Statement } from 'typescript';
 import ts from 'typescript';
 
@@ -21,6 +22,7 @@ import type {
 import type { FlexNode, InstanceNode2, SceneNode2 } from '../../create-ts-compiler/canvas-utils.js';
 import { isInstance } from '../../create-ts-compiler/canvas-utils.js';
 import { cssAstToString, mkRawCss } from '../../css-gen/css-factories-low.js';
+import { getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
 import { getComponentName } from '../../gen-node-utils/gen-unique-name-utils.js';
 import { registerSvgForWrite } from '../../gen-node-utils/process-nodes-utils.js';
 import {
@@ -50,8 +52,6 @@ import { printTsStatements } from '../../gen-node-utils/ts-print.js';
 import { addMUIProviders, addMUIProvidersImports } from '../../tech-integration/mui/mui-add-globals.js';
 import { getCSSExtension, scssDevDependencies } from '../../tech-integration/scss/scss-utils.js';
 import type { FrameworkConnector, FwAttr, FwNodeOneOrMore } from '../framework-connectors.js';
-import { getResetsCssModulePath } from '../../css-gen/css-gen-utils.js';
-import { relative } from 'path';
 
 const { factory } = ts;
 
