@@ -1,12 +1,28 @@
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------utils functions implementation------------------------------------------------
-import type { OmitMethods, SVGsExtracted, TextNodeNoMethod } from '../../../common/sb-serialize.model.js';
+import type {
+  ComponentNode2,
+  Dict,
+  GenerationHistory,
+  OmitMethods,
+  SVGsExtracted,
+  TextNodeNoMethod,
+} from '../../../common/sb-serialize.model.js';
 
 //-------------------------------------------------------------------------------------------------------------
 const loadedFonts = new Map<string, Promise<void>>();
 
 export interface FigmaConfigContext {
   svgs?: SVGsExtracted;
+  components: ComponentNode2[] | undefined;
+  oldComponentIdsToNewDict: Dict;
+  configPage: PageNode;
+  componentsCoordinates: {
+    x: number;
+    y: number;
+    previousComponentHeight: number;
+  };
+  isRoot: boolean;
 }
 
 export interface TextNode2 extends TextNodeNoMethod {
@@ -48,6 +64,9 @@ const readOnlyAttributes = [
   'exportAsSvg',
   'strokeCap',
   'innerRadius',
+  'overflowDirection',
+  'componentProperties',
+  'mainComponent',
 ] as const;
 
 export const ignoredAttributes = new Set<string>(readOnlyAttributes);
@@ -55,7 +74,6 @@ export const ignoredAttributes = new Set<string>(readOnlyAttributes);
 type ReadOnlySceneNodeFields = typeof readOnlyAttributes[number];
 type WriteableSceneNode = Omit<OmitMethods<SceneNode>, ReadOnlySceneNodeFields>;
 export type WriteableSceneNodeKeys = keyof WriteableSceneNode;
-
 export async function ensureFontIsLoaded(font: FontName) {
   const fontCacheKey = `${font.family}_${font.style}`;
   if (!loadedFonts.has(fontCacheKey)) {
@@ -68,9 +86,10 @@ export async function ensureFontIsLoaded(font: FontName) {
   }
 }
 
-export function cleanUpLastLaunch() {
+// cette function va servir dans un futur proche pour faire un clean up des pages avec un bouton front
+export function cleanUpLastLaunch(figmaConfig: GenerationHistory[]) {
   for (const page of figma.root.children) {
-    if (page.id !== figma.currentPage.id) {
+    if (page.id !== figma.currentPage.id && !figmaConfig.find(element => element.id === page.name)) {
       page.remove();
     }
   }

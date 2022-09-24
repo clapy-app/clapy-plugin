@@ -1,8 +1,19 @@
 import type { SceneNode2 } from '../../../common/sb-serialize.model.js';
-import { isFrame2, isGroup2, isLine, isRectangle2, isText2, isVector2 } from '../../common/node-type-utils.js';
 import {
+  isComponent2,
+  isFrame2,
+  isGroup2,
+  isInstance2,
+  isLine,
+  isRectangle2,
+  isText2,
+  isVector2,
+} from '../../common/node-type-utils.js';
+import {
+  generateComponent,
   generateFrameNode,
   generateGroupNode,
+  generateInstance,
   generateLineNode,
   generateRectancle,
   generateTextNode,
@@ -23,6 +34,13 @@ export async function generateNode(parentNode: BaseNode & ChildrenMixin, root: S
     return await generateLineNode(parentNode, root, ctx);
   } else if (isVector2(root)) {
     return await generateVectorNode(parentNode, root, ctx);
+  } else if (isComponent2(root)) {
+    return await generateComponent(parentNode, root, ctx);
+  } else if (isInstance2(root)) {
+    if (!root.mainComponent?.id) {
+      throw new Error('Problem with this config, found instance without main componant reference.');
+    }
+    return await generateInstance(parentNode, root, ctx, ctx.oldComponentIdsToNewDict[root.mainComponent.id]);
   } else {
     return undefined;
   }
