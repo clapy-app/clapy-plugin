@@ -12,7 +12,7 @@
 }
 
 :where(.clapyResets),
-:where(.clapyResets) :not(span, a, ul, ol, li, p) {
+:where(.clapyResets) :not(span, a, ul, ol, li, p, sup, sub) {
   display: flex;
 }
 
@@ -32,4 +32,8 @@
 
 :where(.clapyResets) svg {
   overflow: visible;
+}
+
+:where(.clapyResets) sup, :where(.clapyResets) sub {
+  font-size: 50%;
 }
