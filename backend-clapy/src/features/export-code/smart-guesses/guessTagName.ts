@@ -18,7 +18,7 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
   const isGroup = name.includes('group');
   const isFlex = isFlexNode(node);
   const nodeFlex = node as FlexNode;
-  const hasFills = isFlex && Array.isArray(nodeFlex.fills) && nodeFlex.fills.length >= 1;
+  const hasFills = isFlex && Array.isArray(nodeFlex.fills) && nodeFlex.fills?.length >= 1;
   const hasStrokes = isFlex && nodeFlex.strokes?.length >= 1;
   const hasEffects = isFlex && nodeFlex.effects?.length >= 1;
   // If I want to use an img, the below code is the way to go. But the generic and simple way to handle multiple fills will be to use backgrounds, which is closer to how figma does it anyway.
@@ -38,7 +38,7 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
   } else if (
     !context.moduleContext.inInteractiveElement &&
     isFlexNode(node) &&
-    !node.children.length &&
+    !node.children?.length &&
     (hasFills || hasStrokes || hasEffects) &&
     (name === 'checkbox' || (name.includes('checkbox') && !isWrapper && !isGroup))
   ) {
@@ -55,7 +55,7 @@ export function guessTagNameAndUpdateNode(context: NodeContext, node: SceneNode2
         // - Exactly 2 siblings, the first being the checkbox and the second text
         // - More than 2 siblings, and the sibling right after the checkbox is a text with name including "label"
         const shouldWrapInLabel =
-          isText(nextSibling) && (siblings.length === 2 || nextSibling.name.toLowerCase().includes('label'));
+          isText(nextSibling) && (siblings?.length === 2 || nextSibling.name.toLowerCase().includes('label'));
         if (shouldWrapInLabel) {
           const overrides: Partial<FrameNode2> = {
             children: [node, nextSibling],
