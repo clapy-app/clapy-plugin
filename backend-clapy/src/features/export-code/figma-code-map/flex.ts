@@ -242,17 +242,19 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 function checkChildrenLayout(node: FlexNode) {
   let atLeastOneChildHasLayoutGrow1 = false;
   let atLeastOneChildHasLayoutAlignNotStretch = false;
-  for (const child of node.children) {
-    if (isLayout(child)) {
-      if (child.layoutGrow === 1) {
-        atLeastOneChildHasLayoutGrow1 = true;
-      }
-      if (child.layoutAlign !== 'STRETCH') {
-        // TODO a child text node, full-width by default, should be treated as stretch
-        atLeastOneChildHasLayoutAlignNotStretch = true;
-      }
-      if (atLeastOneChildHasLayoutGrow1 && atLeastOneChildHasLayoutAlignNotStretch) {
-        break;
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      if (isLayout(child)) {
+        if (child.layoutGrow === 1) {
+          atLeastOneChildHasLayoutGrow1 = true;
+        }
+        if (child.layoutAlign !== 'STRETCH') {
+          // TODO a child text node, full-width by default, should be treated as stretch
+          atLeastOneChildHasLayoutAlignNotStretch = true;
+        }
+        if (atLeastOneChildHasLayoutGrow1 && atLeastOneChildHasLayoutAlignNotStretch) {
+          break;
+        }
       }
     }
   }
