@@ -42,7 +42,7 @@ export class StripeWebhookService {
         {
           const session = event.data.object as Stripe.Subscription;
           const { current_period_start, current_period_end, status } = session;
-          if (status === 'active') {
+          if (status === 'active' || status === 'trialing') {
             const customer = await stripe.customers.retrieve(session.customer as string);
             if (!customer.deleted) {
               const { auth0Id } = customer!.metadata;
