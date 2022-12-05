@@ -1,5 +1,4 @@
 import type { CElementNode, CPseudoElementNode, SbStory } from '../../../../common/sb-serialize.model';
-import { env } from '../../../../environment/env';
 import type { MyCompNode } from '../../../common/node-type-utils';
 
 export const storiesSamples = {
@@ -11,16 +10,6 @@ export const storiesSamples = {
     label: 'Monday Vibe',
     sbUrl: 'https://style.monday.com',
   },
-  ...(env.isDev && {
-    equisafe: {
-      label: 'Equisafe',
-      sbUrl: 'http://localhost:9009',
-    },
-    rupali: {
-      label: 'Rupali',
-      sbUrl: 'https://6240065dafe4da003aaa33c2-foshjfdhfb.chromatic.com/',
-    },
-  }),
 } as const;
 
 export type StoriesSamples = Required<typeof storiesSamples>;

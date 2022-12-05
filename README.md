@@ -1,9 +1,26 @@
+# [Clapy](https://docs.clapy.co/)
+
+> Clapy is a Figma plugin that generates React and Angular components and pages from your Figma design.
+
+For usage, please refer to [the documentation](https://docs.clapy.co/) or [our website](https://clapy.co/).
+
+This readme describes how to get started with the source code. The below instructions are opinionated, initially written for our internal team.
+
+The Figma plugin sources also show an example about how we could have a relatively good developer experiences compared to alternative templates available out there.
+
+- Preview in the browser (In dev mode, the plugin is split in 2 parts: the front in the browser and the back in Figma, as plugin. They communicate through websockets)
+- Hot-reload the front with vitejs (super fast)
+- build with esbuild (super fast)
+- Example of authentication with Auth0 (the token management can be improved when signing in)
+- ...
+
 ## Setup
 
 - Use nvm to install NodeJS (makes it much easier to switch versions)
 - NodeJS >= 16 required
+- yarn (`npm install -g yarn`)
 - If you're on Windows, 16 GB of RAM
-  - you may want to cap the memory consumption of WSL2 to 4.5 or 5 GB. https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261
+  - you may want to cap the memory consumption of WSL2 to 4.5 or 5 GB. Feel free to tune it. https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261
 
 In a terminal, run:
 
@@ -17,37 +34,24 @@ First usage of git? Also run (replace with your name/email):
 
 ## Usage
 
-- With VSCode, `Open Workspace from File...`, select the file `clapy.code-workspace`. **Don't** open the root directory.
+- We use a VSCode workspace. With VSCode, `Open Workspace from File...`, select the file `clapy.code-workspace`. **Don't** open the root directory.
 - Required: Install the suggested plugins and accept to use the TypeScript workspace version when prompted.
 - `yarn install` in the root directory
 - To develop:
   - Build and watch everything: in VS Code: "Run Build Task" command (Ctrl+Shift+B with my keyboard shortcuts) to run the default build task and build everything (1)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 - Alternatively, to develop on the webservice only:
-  - `yarn dup` through command-line to start all docker containers
+  - `yarn dup` through command-line to start all docker containers (like `docker-compose up -d`)
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 
 (1) Alternative: `yarn dev` through command-line to start everything
 
-## Update the database
+## Apply updates to the database
 
 - Run `hasura console` in a terminal, and open the printed link. From the hasura console, make the desired changes.
 - Run `yarn gentypes` to update the TypeScript interface and graphql model in the code base.
 
 Note: for now, the corresponding `Hasura console` task is excluded from the default build because it's rarely useful in current developments. If you find yourself often opening the console, don't hesitate to add the task back to the main task, `Start dev env`, in `.vscode/tasks.json`.
-
-## Generate aggregated analytics for Pipedrive
-
-### Get raw analytics from Metabase
-
-URL: https://clapy-production.ew.r.appspot.com/
-Sign in with Google. Clapy emails should be allowed.
-
-To redeploy Metabase, check the instructions in `metabase/README.md`.
-
-### Run the script
-
-TODO Yacine
 
 ## Updates
 
@@ -66,7 +70,7 @@ Special mentions:
 - Hasura CLI: you need to update the library version + the version of the image hasura/graphql-engine in docker-compose.yml + db/Dockerfile. They all have to have the same version number.
 - @types/node: the major version should be the same as the node used in the project
 
-Code to design libraries, unused for now:
+"Code-to-design" libraries (the old Clapy), unused for now:
 
 - opentype.js: it's a fork, no need to upgrade for now (see _Open PR & issues from me_ below)
 - puppeteer
@@ -75,33 +79,14 @@ Code to design libraries, unused for now:
 
 See [db/README.md](db/README.md)
 
-## Test Stripe workflow
-
-If an event, sent by Stripe CLI, was not caught locally by the API (e.g. while it was restarting), you can re-send the event.
-
-- Copy the event ID on this page: https://dashboard.stripe.com/test/events
-- Open the CLI in the docker container of Stripe CLI (through Docker Desktop UI, "CLI" button)
-- Command: `stripe events resend evt_<event ID>`
-
-In production, the events are re-sent, but Stripe CLI (dev) doesn't support it. Issue: https://github.com/stripe/stripe-cli/issues/313
-
 ## Open pgAdmin
 
-- Get the database credentials, e.g. from Google Cloud Run environment variables. Ask Antoine if required. It may be in the format `postgres://username:password@hostname:port/maintenancedatabase`.
+- Get your database credentials.
 - Locally, `yarn dup pgadmin` to start pgAdmin, then open its UI from Docker Desktop. Credentials are in `.env`, variables `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`.
 - Right-click Servers > Register > Server...
 - Name: whatever you want (e.g. Metabase prod). In Connection tab, fill the `hostname`, `port`, `maintenancedatabase`, `username`, `password`.
 
 ## Troubleshooting
-
-### Switch to production branch
-
-- Arrêter toutes les tâches en cours d'exécution et le webservice si en mode debug
-- changer de branche
-- yarn install dans les 2 dossiers (front/webservice)
-- changer la fin de .env en copiant-collant le template
-- webservice : supprimer dist et node_modules/.cache/tsconfig.tsbuildinfo
-- Lancer les tâches (ctrl shift B). Ca inclut le webservice.
 
 ### `Error: Cannot find module '/app/dist/main2'`
 
@@ -111,9 +96,9 @@ Open a docker container terminal and remove /app/node_modules/.cache/tsconfig.ts
 
 This must be done inside Docker, because node_modules is in a separate volume.
 
-## Switch backend to script outside webservice
+## Switch backend to experiment with a script outside the webservice
 
-To use main2.ts instead of main.ts, open docker-compose.yml and change the backend command to command: yarn start:docker:debug:main2.
+To use main2.ts instead of main.ts, open docker-compose.yml and change the backend command to command: `yarn start:docker:debug:main2`.
 
 WARN: don't commit this change. It's a convenience to make development easier on features testable outside the webservice.
 
@@ -137,8 +122,6 @@ VS Code debugger : https://github.com/microsoft/vscode/issues/150036
 
 ## Notes for later
 
-- codesandbox uses parcel to bundle in the browser.
-- Puppeteer optimised for concurrent requests: https://stackoverflow.com/questions/57898974/calling-puppeteer-from-rest-api
 - If need to hash images, binaries... the lib sha256-uint8array can help. I also tried crypto-js and use sha.js in another context, but they seem bigger/slower.
 
 ## Figma plugin tips
@@ -169,4 +152,4 @@ Inspiration to convert figma config to CSS: https://github.com/figma-plugin-help
 
 ## CDN for assets
 
-Uploaded on Cloudinary - Antoine OL account - https://cloudinary.com/console/c-4ef63b1d9baacdff4573fef39c2ef0/media_library/folders/home
+Uploaded on Cloudinary

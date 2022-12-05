@@ -40,9 +40,7 @@ export {};
 //   );
 //   const authLoading = useSelector(selectAuthLoading);
 //   const isSignedIn = useSelector(selectSignedIn);
-//   const [sbSelection, setSbSelection] = useState<SbSampleSelection>(
-//     env.isDev ? 'rupali' /* 'equisafe' */ : 'reactstrap',
-//   );
+//   const [sbSelection, setSbSelection] = useState<SbSampleSelection>('reactstrap');
 //   const [sbUrl, setSbUrl] = useState<string>();
 //   const [options, setOptions] = useState<JSX.Element[]>();
 //   useEffect(() => {
