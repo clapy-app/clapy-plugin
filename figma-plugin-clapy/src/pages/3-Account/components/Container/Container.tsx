@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { Loading } from '../../../../components-used/Loading/Loading.js';
 import { selectFreeStripeAccess } from '../../../../core/auth/auth-slice.js';
-import { selectIsFreeUser, selectUserMetadata } from '../../../user/user-slice.js';
+import { selectIsFreeUser, selectIsQuotaDisabled, selectUserMetadata } from '../../../user/user-slice.js';
 import { PaymentConfirmation } from '../../PaymentConfirmation/PaymentConfirmation';
 import { selectPaymentConfirmation } from '../../stripe-slice.js';
 import { AvatarProfilePhoto } from './AvatarProfilePhoto/AvatarProfilePhoto';
@@ -44,6 +44,7 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
   const isFreeUser = useSelector(selectIsFreeUser);
   const hasRoleFreeStripeAccess = useSelector(selectFreeStripeAccess);
   const isPaymentDone = useSelector(selectPaymentConfirmation);
+  const quotaDisabled = useSelector(selectIsQuotaDisabled);
 
   if (isPaymentDone) {
     return <PaymentConfirmation />;
@@ -77,16 +78,18 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
               </div>
               <div className={`${classes.supportingText} ${props.classes?.supportingText || ''}`}>{email}</div>
             </div>
-            <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
-              <div className={`${classes.row} ${props.classes?.row || ''}`}>
-                <BadgePlan />
-                <BadgeBilling />
+            {!quotaDisabled && (
+              <div className={`${classes.badges} ${props.classes?.badges || ''}`}>
+                <div className={`${classes.row} ${props.classes?.row || ''}`}>
+                  <BadgePlan />
+                  <BadgeBilling />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
         <div className={`${classes.actions} ${props.classes?.actions || ''}`}>
-          {isFreeUser && (
+          {isFreeUser && !quotaDisabled && (
             <>
               <div className={`${classes.btnContainer}`}>
                 <BtnUpgrade />
@@ -96,7 +99,7 @@ export const Container: FC<Props> = memo(function Container(props = {}) {
               <BtnHistoryExportDisabled />
             </>
           )}
-          {!isFreeUser && !hasRoleFreeStripeAccess && (
+          {!isFreeUser && !hasRoleFreeStripeAccess && !quotaDisabled && (
             <>
               <div className={`${classes.btnContainer}`}>
                 <ButtonViewPlan />

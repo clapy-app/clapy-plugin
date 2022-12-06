@@ -11,7 +11,7 @@ import { Pricing } from '../3-Account/Pricing/Pricing.js';
 import { selectFeedbackPageState, selectPricingPageState, selectStripeState } from '../3-Account/stripe-slice.js';
 import { Generator } from '../4-Generator/Generator.js';
 import { Feedback } from '../5-Feedback/Feedback';
-import { fetchPlugin, fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
+import { fetchPluginNoResponse, subscribePlugin } from '../../common/plugin-utils.js';
 import { Loading } from '../../components-used/Loading/Loading.js';
 import { selectAuthError, selectSessionChecking, selectSignedIn } from '../../core/auth/auth-slice';
 import { useAppDispatch } from '../../core/redux/hooks.js';
@@ -23,8 +23,7 @@ import { HeaderGenerator } from './Header/Header_Generator.js';
 import classes from './Layout.module.css';
 
 // Flag for development only. Will be ignored in production.
-import { handleError, toastError } from '../../front-utils/front-utils.js';
-import { InfoAlert } from '../../components-used/ErrorAlert/InfoAlert.js';
+import { handleError } from '../../front-utils/front-utils.js';
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
 // backend-clapy/src/features/export-code/1-code-controller.ts
 const sendToApi = true;
@@ -74,21 +73,23 @@ export const LayoutInner: FC = memo(function LayoutInner() {
     return dispose;
   }, [dispatch]);
 
-  useEffect(() => {
-    async function setFirstLoginStatus() {
-      try {
-        const cachedInfo = await fetchPlugin('getCachedIsFirstLogin');
-        if (isSignedIn && !cachedInfo && !alreadyToasted) {
-          alreadyToasted = true;
-          InfoAlert();
-        }
-      } catch (error) {
-        handleError(error);
-        toastError(error);
-      }
-    }
-    setFirstLoginStatus();
-  }, [isSignedIn]);
+  // ---- disable toaster about pro plans ----
+  //
+  // useEffect(() => {
+  //   async function setFirstLoginStatus() {
+  //     try {
+  //       const cachedInfo = await fetchPlugin('getCachedIsFirstLogin');
+  //       if (isSignedIn && !cachedInfo && !alreadyToasted) {
+  //         alreadyToasted = true;
+  //         InfoAlert();
+  //       }
+  //     } catch (error) {
+  //       handleError(error);
+  //       toastError(error);
+  //     }
+  //   }
+  //   setFirstLoginStatus();
+  // }, [isSignedIn]);
 
   if (authError) {
     return (

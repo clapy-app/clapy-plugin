@@ -66,6 +66,7 @@ interface CheckSessionResp {
   ok: boolean;
   quotas: number;
   quotasMax: number;
+  quotaDisabled?: boolean;
   isLicenseExpired: boolean;
 }
 

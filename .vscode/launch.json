@@ -7,6 +7,7 @@
     {
       "name": "Debug Backend local",
       "type": "node",
+      "runtimeVersion": "16",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "cwd": "${workspaceFolder}/backend-clapy",
@@ -16,11 +17,12 @@
       // "restart": true,
       // "remoteRoot": "/app",
       "localRoot": "${workspaceFolder}/backend-clapy",
-      "preLaunchTask": "${defaultBuildTask}",
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Debug main local",
       "type": "node",
+      "runtimeVersion": "16",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "cwd": "${workspaceFolder}/backend-clapy",
@@ -30,7 +32,7 @@
       // "restart": true,
       // "remoteRoot": "/app",
       "localRoot": "${workspaceFolder}/backend-clapy",
-      "preLaunchTask": "${defaultBuildTask}",
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Debug Backend docker",
@@ -38,7 +40,7 @@
       "request": "attach",
       "restart": true,
       "remoteRoot": "/app",
-      "localRoot": "${workspaceFolder}/backend-clapy",
+      "localRoot": "${workspaceFolder}/backend-clapy"
       // "preLaunchTask": "${defaultBuildTask}",
     },
     {
@@ -48,7 +50,7 @@
       "restart": true,
       "port": 9230,
       // "remoteRoot": "/app",
-      "localRoot": "${workspaceFolder}/figma-plugin-clapy",
+      "localRoot": "${workspaceFolder}/figma-plugin-clapy"
       // "preLaunchTask": "${defaultBuildTask}",
     }
   ]

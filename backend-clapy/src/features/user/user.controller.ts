@@ -75,14 +75,16 @@ export class UserController {
       phone,
     });
 
-    // Insert data in Pipedrive asynchronously (non-blocking operation).
-    // We normally wait for update-usage (below route, updating usage field = why Clapy in pipedrive),
-    // but if the usage is already provided for some reason, this step will be skipped in the plugin,
-    // So we immediately push the updated data in Pipedrive.
-    // TODO do it in production only
-    if (!hasMissingMetaUsage(auth0user.user_metadata?.usage)) {
-      upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
-    }
+    // ---- Pipedrive is now disabled ----
+    //
+    // // Insert data in Pipedrive asynchronously (non-blocking operation).
+    // // We normally wait for update-usage (below route, updating usage field = why Clapy in pipedrive),
+    // // but if the usage is already provided for some reason, this step will be skipped in the plugin,
+    // // So we immediately push the updated data in Pipedrive.
+    // // TODO do it in production only
+    // if (!hasMissingMetaUsage(auth0user.user_metadata?.usage)) {
+    //   upsertPipedrivePersonByAuth0Id(auth0user).catch(handleError);
+    // }
 
     perfMeasure();
   }

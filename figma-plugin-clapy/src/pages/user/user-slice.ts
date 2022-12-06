@@ -42,6 +42,7 @@ export const userSlice = createSlice({
       if (state.userMetadata && state.userMetadata !== true) {
         state.userMetadata.quotas = payload.quotas;
         state.userMetadata.quotasMax = payload.quotasMax;
+        state.userMetadata.quotaDisabled = payload.quotaDisabled;
 
         state.userMetadata.isLicenseExpired = payload.isLicenseExpired;
       }
@@ -52,6 +53,7 @@ export const userSlice = createSlice({
 export const { setMetadata, setMetaProfile, setMetaUsage, clearMetadata, setStripeData } = userSlice.actions;
 
 export const selectUserQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotas!;
+export const selectIsQuotaDisabled = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotaDisabled!;
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 // export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
 export const selectIsFreeUser = (state: RootState) => {

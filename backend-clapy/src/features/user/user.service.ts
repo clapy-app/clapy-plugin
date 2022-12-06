@@ -40,10 +40,14 @@ export class UserService {
   async getUserSubscriptionData(user: AccessTokenDecoded) {
     const userId = user.sub;
     const isUserQualified = hasRoleIncreasedQuota(user);
-    const quotas = await this.getQuotaCount(userId);
-    const quotasMax = isUserQualified ? appConfig.codeGenQualifiedQuota : appConfig.codeGenFreeQuota;
+    const quotas = appConfig.quotaDisabled ? 0 : await this.getQuotaCount(userId);
+    const quotasMax = appConfig.quotaDisabled
+      ? 9999
+      : isUserQualified
+      ? appConfig.codeGenQualifiedQuota
+      : appConfig.codeGenFreeQuota;
     const isLicenseExpired = this.stripeService.isLicenceInactive(user);
-    return { quotas: quotas, quotasMax: quotasMax, isLicenseExpired };
+    return { quotas: quotas, quotasMax: quotasMax, quotaDisabled: appConfig.quotaDisabled, isLicenseExpired };
   }
 
   async getQuotaCount(userId: string) {

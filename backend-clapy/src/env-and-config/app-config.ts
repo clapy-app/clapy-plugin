@@ -9,6 +9,7 @@ export const appConfig = {
   stripeConfig: {
     apiVersion: '2022-08-01',
   } as Stripe.StripeConfig,
+  quotaDisabled: true,
 };
 
 export const flags = {

@@ -1,4 +1,5 @@
 import { Body, Controller, Inject, Post, Req } from '@nestjs/common';
+import { appConfig } from '../../env-and-config/app-config.js';
 import { env } from '../../env-and-config/env.js';
 
 import type { RequestPrivate } from '../../typings/express-jwt.js';
@@ -19,7 +20,7 @@ export class CodeController {
     await this.userService.checkIfCsbUploadIsDisabledWhenRoleNoCodesanboxIsAttributed(figmaNode, user);
 
     const isStripeOn = isStripeEnabled(user);
-    if (env.isDev || isStripeOn) {
+    if (!appConfig.quotaDisabled && (env.isDev || isStripeOn)) {
       await this.userService.checkUserOrThrow(user);
     }
 

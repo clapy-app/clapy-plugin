@@ -447,6 +447,7 @@ export interface GenCodeResponse {
   url?: string;
   quotas: number;
   quotasMax: number;
+  quotaDisabled?: boolean;
   isLicenseExpired?: boolean;
 }
 
