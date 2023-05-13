@@ -52,7 +52,7 @@ services:
 
   hasura:
     # See db/README.md to update the version number.
-    image: hasura/graphql-engine:v2.10.1.cli-migrations-v3
+    image: hasura/graphql-engine:v2.10.2.cli-migrations-v3
     container_name: clapy_hasura
     ports:
       - '${VITE_HASURA_PORT}:${HASURA_DOCKER_PORT}'

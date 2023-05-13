@@ -7,7 +7,7 @@
     {
       "name": "Debug Backend local",
       "type": "node",
-      "runtimeVersion": "16",
+      "runtimeVersion": "18",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "cwd": "${workspaceFolder}/backend-clapy",

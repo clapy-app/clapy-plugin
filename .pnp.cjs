@@ -51,7 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["dotenv", "npm:16.0.2"],\
             ["eslint", "npm:8.23.0"],\
             ["graphql", "npm:16.6.0"],\
-            ["hasura-cli", "npm:2.10.1"],\
+            ["hasura-cli", "npm:2.24.1"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["prettier", "npm:2.7.1"],\
             ["tslib", "npm:2.4.0"],\
@@ -7145,7 +7145,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["dotenv", "npm:16.0.2"],\
             ["eslint", "npm:8.23.0"],\
             ["graphql", "npm:16.6.0"],\
-            ["hasura-cli", "npm:2.10.1"],\
+            ["hasura-cli", "npm:2.24.1"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["prettier", "npm:2.7.1"],\
             ["tslib", "npm:2.4.0"],\
@@ -10206,10 +10206,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["hasura-cli", [\
-        ["npm:2.10.1", {\
-          "packageLocation": "./.yarn/unplugged/hasura-cli-npm-2.10.1-8227330cf4/node_modules/hasura-cli/",\
+        ["npm:2.24.1", {\
+          "packageLocation": "./.yarn/unplugged/hasura-cli-npm-2.24.1-9df174793c/node_modules/hasura-cli/",\
           "packageDependencies": [\
-            ["hasura-cli", "npm:2.10.1"],\
+            ["hasura-cli", "npm:2.24.1"],\
             ["axios", "npm:0.21.4"],\
             ["chalk", "npm:2.4.2"]\
           ],\

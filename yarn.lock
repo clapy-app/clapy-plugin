@@ -4924,7 +4924,7 @@ __metadata:
     dotenv: ^16.0.2
     eslint: ^8.23.0
     graphql: ^16.6.0
-    hasura-cli: ^2.10.1
+    hasura-cli: ^2.10.2
     npm-run-all: ^4.1.5
     prettier: ^2.7.1
     tslib: ^2.4.0
@@ -7524,15 +7524,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hasura-cli@npm:^2.10.1":
-  version: 2.10.1
-  resolution: "hasura-cli@npm:2.10.1"
+"hasura-cli@npm:^2.10.2":
+  version: 2.24.1
+  resolution: "hasura-cli@npm:2.24.1"
   dependencies:
     axios: ^0.21.1
     chalk: ^2.4.2
   bin:
     hasura: hasura
-  checksum: 20b1247d6b4bd5a1b3010737421e9c83cbd8fd1f7e8573f1dbc90044c1fc266d5bc6d1f21a9026d972f63590caa88608a0b4a510f5e600ef03f78d04fd29cccd
+  checksum: 8123b2a1f5420134e3f07911443ebcfa6c2a55454e43464114df5a59021f5af793a676e5102900293fcfa9fdd0934b9fe76a3f8a238187d0e188c2b24cf4345f
   languageName: node
   linkType: hard
 
