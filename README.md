@@ -29,8 +29,8 @@ In a terminal, run:
 
 First usage of git? Also run (replace with your name/email):
 
-  git config --global user.email "you@example.com"
-  git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
 
 ## Usage
 
@@ -45,6 +45,31 @@ First usage of git? Also run (replace with your name/email):
   - "Start Debugging" command (F11 with my keyboard shortcuts) to start the debugger for the webservice
 
 (1) Alternative: `yarn dev` through command-line to start everything
+
+## Build and release
+
+### Plugin
+
+**Option 1**:
+
+- After a push to the `master` branch, a github action uploads a zip to publish on AOL's Drive
+- Unzip in `[repo-directory]/figma-plugin-clapy/dist`, so that the manifest is directly in `dist/manifest.json` (it could be any directory, as long as it is always the same, but that one is compatible with option 2)
+- Register the plugin on Figma by providing `dist/manifest.json` (first time only; the next time Figma will remember the plugin)
+- Test
+- `Publish new version` from the Figma plugin panel
+
+**Option 2**:
+
+```
+cd figma-plugin-clapy
+yarn build:prod
+```
+
+- It will build the plugin in `[repo-directory]/figma-plugin-clapy/dist`
+- Register the manifest on Figma (first time only; the next time Figma will remember the plugin)
+- Register the plugin on Figma by providing `dist/manifest.json` (first time only; the next time Figma will remember the plugin)
+- Test
+- `Publish new version` from the Figma plugin panel
 
 ## Apply updates to the database
 
