@@ -1,6 +1,7 @@
 import { env } from '../../environment/env';
 
-const cloudName = 'clapy2';
+// const cloudName = 'clapy2';
+const cloudName = 'clapy';
 const resourceType = 'auto';
 
 export const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
