@@ -261,6 +261,7 @@ export function isInstanceFeatureDetection(node: BaseNode2 | SceneNode2 | Nil): 
   return !!(node as InstanceNode2).mainComponent || node?.type === 'INSTANCE';
 }
 
+// TODO to update after updating the lib. The layoutMode may have moved to AutoLayoutMixin.
 export function isBaseFrameMixin(node: BaseNode2 | BaseFrameMixin | Nil): node is BaseFrameMixin {
   return !!(node as BaseFrameMixin)?.layoutMode;
 }
@@ -300,6 +301,11 @@ export type FlexNode = FrameNode2 | ComponentNode2 | ComponentSetNode2 | Instanc
 export function isFlexNode(node: BaseNode2 | SceneNode2 | Nil): node is FlexNode {
   return (isFrame(node) || isComponent(node) || isComponentSet(node) || isInstance(node)) && !isVector(node);
 }
+
+// To check with new Figma typing lib. Also check isBaseFrameMixin that may be outdated.
+// export function isAutoLayoutMixin(node: BaseNode2 | SceneNode2 | AutoLayoutMixin | Nil): node is AutoLayoutMixin {
+//   return !!(node as AutoLayoutMixin).layoutMode;
+// }
 
 // GroupNode doesn't have auto-layout
 export type BlockNode = FlexNode | RectangleNode2 | GroupNode2 | BooleanOperationNode2 | LineNode2;

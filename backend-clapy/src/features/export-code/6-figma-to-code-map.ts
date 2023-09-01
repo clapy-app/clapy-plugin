@@ -18,6 +18,7 @@ import { cursorFigmaToCode } from './figma-code-map/cursor.js';
 import { effectsFigmaToCode } from './figma-code-map/effects.js';
 import { flexFigmaToCode } from './figma-code-map/flex.js';
 import { fontFigmaToCode } from './figma-code-map/font.js';
+import { marginFigmaToCode } from './figma-code-map/margin.js';
 import { maskFigmaToCode } from './figma-code-map/mask.js';
 import { opacityFigmaToCode } from './figma-code-map/opacity.js';
 import { overflowFigmaToCode } from './figma-code-map/overflow.js';
@@ -39,6 +40,7 @@ export function mapCommonStyles(context: NodeContext, node: ValidNode, styles: D
 }
 
 export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  prepareBorders(context, node, styles);
   mapTagLayoutStyles(context, node, styles);
   if (!context.outerLayoutOnly) {
     mapTagUIStyles(context, node, styles);
@@ -94,11 +96,11 @@ function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict
   zindexFigmaToCode(context2, node, styles);
   positionAbsoluteFigmaToCode(context2, node, styles);
   flexFigmaToCode(context2, node, styles);
+  marginFigmaToCode(context2, node, styles);
 }
 
 // Styles that are the responsibility of the component, typically the look and feel.
 function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
-  prepareBorders(context, node, styles);
   prepareBackgrounds(context, node, styles);
   borderFigmaToCode(context, node, styles);
   borderRadiusFigmaToCode(context, node, styles);

@@ -9,7 +9,7 @@
   "engines": {
     "node": ">=14"
   },
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@3.6.3",
   "workspaces": [
     "backend-clapy",
     "figma-plugin-clapy"

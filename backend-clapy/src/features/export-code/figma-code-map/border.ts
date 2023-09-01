@@ -8,10 +8,11 @@ import type {
   ValidNode,
   VectorNodeDerived,
 } from '../create-ts-compiler/canvas-utils.js';
-import { isGroup, isLine, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
+import { isBaseFrameMixin, isGroup, isLine, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
 import { addBoxShadow } from './effects.js';
+import { addMargin } from './margin.js';
 
 export function prepareBorders(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>): void {
   if (doesNotHaveBorders(node)) {
@@ -19,6 +20,76 @@ export function prepareBorders(context: NodeContext, node: ValidNode, styles: Di
     return;
   }
   node.visibleStrokes = (node.strokes || []).filter(({ visible }) => visible);
+  alterPaddingMargin(context, node, styles);
+}
+
+function alterPaddingMargin(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  if (doesNotHaveBorders(node)) {
+    return;
+  }
+  if (isText(node)) {
+    return;
+  }
+  const visibleStrokes = node.visibleStrokes;
+  if (!visibleStrokes?.length) {
+    return;
+  }
+  const stroke = visibleStrokes[0];
+  if (stroke.type !== 'SOLID') {
+    return;
+  }
+  if (isLine(node)) {
+    return;
+  }
+  // To use after the figma typings lib is updated instead of checking Rectangle.
+  // if (!isAutoLayoutMixin(node)) {
+  //   return;
+  // }
+  if (!isBaseFrameMixin(node)) {
+    return;
+  }
+  let { strokeAlign, strokeWeight } = node;
+  if (typeof strokeWeight !== 'number') strokeWeight = 0;
+  if (strokeAlign === 'INSIDE' && node.strokesIncludedInLayout) {
+    node.paddingTop += node.strokeTopWeight || strokeWeight;
+    node.paddingRight += node.strokeRightWeight || strokeWeight;
+    node.paddingBottom += node.strokeBottomWeight || strokeWeight;
+    node.paddingLeft += node.strokeLeftWeight || strokeWeight;
+  }
+  if (strokeAlign === 'CENTER' && node.strokesIncludedInLayout) {
+    node.paddingTop += (node.strokeTopWeight || strokeWeight) / 2;
+    node.paddingRight += (node.strokeRightWeight || strokeWeight) / 2;
+    node.paddingBottom += (node.strokeBottomWeight || strokeWeight) / 2;
+    node.paddingLeft += (node.strokeLeftWeight || strokeWeight) / 2;
+  }
+  if (
+    strokeAlign === 'OUTSIDE' &&
+    // Same
+    // isAutoLayoutMixin(context.parentNode) &&
+    isBaseFrameMixin(context.parentNode) &&
+    context.parentNode?.strokesIncludedInLayout
+  ) {
+    addMargin(context, {
+      top: node.strokeTopWeight || strokeWeight,
+      right: node.strokeRightWeight || strokeWeight,
+      bottom: node.strokeBottomWeight || strokeWeight,
+      left: node.strokeLeftWeight || strokeWeight,
+    });
+  }
+  if (
+    strokeAlign === 'CENTER' &&
+    // Same
+    // isAutoLayoutMixin(context.parentNode) &&
+    isBaseFrameMixin(context.parentNode) &&
+    context.parentNode?.strokesIncludedInLayout
+  ) {
+    addMargin(context, {
+      top: (node.strokeTopWeight || strokeWeight) / 2,
+      right: (node.strokeRightWeight || strokeWeight) / 2,
+      bottom: (node.strokeBottomWeight || strokeWeight) / 2,
+      left: (node.strokeLeftWeight || strokeWeight) / 2,
+    });
+  }
 }
 
 function doesNotHaveBorders(node: ValidNode): node is VectorNodeDerived | GroupNode2 | BooleanOperationNode2 {
@@ -44,6 +115,7 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
   if (visibleStrokes?.length) {
     if (visibleStrokes.length > 1) {
       warnNode(node, 'TODO Unsupported multiple borders, will only apply the first');
+      // If implementing it, also check alterPadding above.
     }
     const stroke = visibleStrokes[0];
     if (stroke.type === 'SOLID') {
@@ -224,6 +296,7 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
       }
     } else {
       warnNode(node, 'TODO Unsupported non solid border');
+      // If implementing it, also check alterPadding above.
     }
   } else {
     resetStyleIfOverriding(context, node, styles, 'outline');

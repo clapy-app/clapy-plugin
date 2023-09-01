@@ -102,7 +102,7 @@ services:
 
   backend:
     <<: *backend
-    container_name: clapy_backend
+    container_name: clapy_backendh
 
   dev:
     <<: *backend

@@ -112,6 +112,7 @@ export interface NodeContext {
   outerLayoutOnly?: boolean;
   tranforms?: string[];
   boxShadows?: string[];
+  margins?: Margins;
   transformTranslateX?: string;
   transformTranslateY?: string;
   className?: string;
@@ -206,4 +207,11 @@ export interface BorderWidths {
   borderLeftWidth: number;
   borderTopWidth: number;
   borderRightWidth: number;
+}
+
+export interface Margins {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
 }
