@@ -24,6 +24,7 @@ import { opacityFigmaToCode } from './figma-code-map/opacity.js';
 import { overflowFigmaToCode } from './figma-code-map/overflow.js';
 import { paragraphIndentFigmaToCode } from './figma-code-map/paragraph-indent.js';
 import { positionAbsoluteFigmaToCode } from './figma-code-map/position-absolute.js';
+import { applyReverseOrder } from './figma-code-map/reverse-order.js';
 import { textNodePatchesFigmaToCode } from './figma-code-map/text-node-patches.js';
 import { postTransform, transformFigmaToCode } from './figma-code-map/transform.js';
 import { zindexFigmaToCode } from './figma-code-map/zindex.js';
@@ -49,6 +50,7 @@ export function mapTagStyles(context: NodeContext, node: ValidNode, styles: Dict
 
 export function postMapStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   postTransform(context, node, styles);
+  applyReverseOrder(context, node);
   if (isInstanceContext(context) && !isText(node)) {
     // On the instance, only keep the styles different from the next intermediate component.
     const nextIntermediateNode = context.intermediateNodes[1];

@@ -5,6 +5,7 @@ import type { DeclarationPlain } from 'css-tree';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { hasBorderThatRequireMargin } from './border.js';
 
 export function addMargin(context: NodeContext, margins: Margins) {
   if (!context.margins) {
@@ -19,6 +20,10 @@ export function addMargin(context: NodeContext, margins: Margins) {
   context.margins.right += margins.right || 0;
   context.margins.bottom += margins.bottom || 0;
   context.margins.left += margins.left || 0;
+}
+
+export function nodeHasMargin(context: NodeContext, node: BaseFrameMixin) {
+  return hasBorderThatRequireMargin(context, node);
 }
 
 export function marginFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {

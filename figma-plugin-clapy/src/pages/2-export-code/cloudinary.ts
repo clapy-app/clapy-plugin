@@ -1,8 +1,8 @@
 import { env } from '../../environment/env';
 
-const cloudName = 'clapy';
+// const cloudName = 'clapy';
 // const cloudName = 'clapy2'; // account disabled
-// const cloudName = 'clapy3';
+const cloudName = 'clapy3';
 
 const resourceType = 'auto';
 

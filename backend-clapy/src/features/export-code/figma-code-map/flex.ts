@@ -18,6 +18,9 @@ import {
   isVector,
 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { addMargin } from './margin.js';
+import { registerReverseOrder } from './reverse-order.js';
+import { addZIndex0 } from './zindex.js';
 
 // type LayoutAlignMap = {
 //   [key in LayoutMixin['layoutAlign']]: string;
@@ -192,12 +195,35 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     }
   }
 
+  // Negative gap: apply negative margin to individual children.
+  // Ideally, when applicable (no other margin on children), we should apply the *>* trick on the parent node.
+  const parent = context.parentNode;
+  if (isFlexNode(parent)) {
+    const parentShouldApplyGap = checkShouldApplyGap(parent);
+    if (parentShouldApplyGap && parent.itemSpacing < 0 && (parent?.children || []).indexOf(node) >= 1) {
+      addMargin(context, { left: parent.itemSpacing });
+    }
+    if (parentShouldApplyGap && parent.itemReverseZIndex) {
+      addZIndex0(context, node, styles);
+    }
+  }
+
   if (!outerLayoutOnly && isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    if (node.layoutMode === (defaultIsVertical ? 'HORIZONTAL' : 'VERTICAL')) {
+    const shouldApplyGap = checkShouldApplyGap(node);
+    const reverse = shouldApplyGap && node.itemReverseZIndex;
+
+    const isHorizontal = node.layoutMode === 'HORIZONTAL';
+    if ((defaultIsVertical ? isHorizontal : !isHorizontal) || reverse) {
       // row is used as default in index.css reset. We can omit it.
-      addStyle(context, node, styles, 'flex-direction', defaultIsVertical ? 'row' : 'column');
+      addStyle(
+        context,
+        node,
+        styles,
+        'flex-direction',
+        isHorizontal ? (reverse ? 'row-reverse' : 'row') : reverse ? 'column-reverse' : 'column',
+      );
     } else {
       resetStyleIfOverriding(context, node, styles, 'flex-direction');
     }
@@ -228,10 +254,18 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
 
     // May also cover paragraph-spacing, paragraphSpacing, paragraph spacing
     // (using multiple typo for future global text researches)
-    if (node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
+    if (shouldApplyGap && node.itemSpacing >= 0) {
       addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
     } else {
+      // if (shouldApplyGap) {
+      //   if (!anyChildHasMargin(context, node)) {
+      //     // *>* trick // parent node
+      //   }
+      // }
       resetStyleIfOverriding(context, node, styles, 'gap');
+    }
+    if (reverse) {
+      registerReverseOrder(context);
     }
 
     // Padding is embedded here because, on Figma, it only applies to auto-layout elements.
@@ -445,4 +479,8 @@ function readCssValueFromAst(node: CssNodePlain | Nil): string | null {
     default:
       throw new Error(`Reading css value from node unsupported: ${JSON.stringify(node)}`);
   }
+}
+
+function checkShouldApplyGap(node: FlexNode) {
+  return node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN';
 }

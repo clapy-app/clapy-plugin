@@ -62,13 +62,7 @@ function alterPaddingMargin(context: NodeContext, node: ValidNode, styles: Dict<
     node.paddingBottom += (node.strokeBottomWeight || strokeWeight) / 2;
     node.paddingLeft += (node.strokeLeftWeight || strokeWeight) / 2;
   }
-  if (
-    strokeAlign === 'OUTSIDE' &&
-    // Same
-    // isAutoLayoutMixin(context.parentNode) &&
-    isBaseFrameMixin(context.parentNode) &&
-    context.parentNode?.strokesIncludedInLayout
-  ) {
+  if (outsideBorderInLayout(context, node)) {
     addMargin(context, {
       top: node.strokeTopWeight || strokeWeight,
       right: node.strokeRightWeight || strokeWeight,
@@ -76,13 +70,7 @@ function alterPaddingMargin(context: NodeContext, node: ValidNode, styles: Dict<
       left: node.strokeLeftWeight || strokeWeight,
     });
   }
-  if (
-    strokeAlign === 'CENTER' &&
-    // Same
-    // isAutoLayoutMixin(context.parentNode) &&
-    isBaseFrameMixin(context.parentNode) &&
-    context.parentNode?.strokesIncludedInLayout
-  ) {
+  if (centerBorderInLayout(context, node)) {
     addMargin(context, {
       top: (node.strokeTopWeight || strokeWeight) / 2,
       right: (node.strokeRightWeight || strokeWeight) / 2,
@@ -90,6 +78,28 @@ function alterPaddingMargin(context: NodeContext, node: ValidNode, styles: Dict<
       left: (node.strokeLeftWeight || strokeWeight) / 2,
     });
   }
+}
+
+function outsideBorderInLayout(context: NodeContext, node: BaseFrameMixin) {
+  return !!(
+    node.strokes?.length &&
+    node.strokeAlign === 'OUTSIDE' &&
+    isBaseFrameMixin(context.parentNode) &&
+    context.parentNode?.strokesIncludedInLayout
+  );
+}
+
+function centerBorderInLayout(context: NodeContext, node: BaseFrameMixin) {
+  return !!(
+    node.strokes?.length &&
+    node.strokeAlign === 'CENTER' &&
+    isBaseFrameMixin(context.parentNode) &&
+    context.parentNode?.strokesIncludedInLayout
+  );
+}
+
+export function hasBorderThatRequireMargin(context: NodeContext, node: BaseFrameMixin) {
+  return outsideBorderInLayout(context, node) || centerBorderInLayout(context, node);
 }
 
 function doesNotHaveBorders(node: ValidNode): node is VectorNodeDerived | GroupNode2 | BooleanOperationNode2 {

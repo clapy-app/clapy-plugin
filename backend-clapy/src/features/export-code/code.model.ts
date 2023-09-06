@@ -124,6 +124,7 @@ export interface NodeContext {
   firstChildIsPlaceholder?: boolean;
   selector?: string;
   hasExtraAttributes?: boolean;
+  mustReverseOrder?: boolean;
 }
 
 export type TextOValue = JsxOneOrMore | string | false;
