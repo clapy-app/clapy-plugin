@@ -330,6 +330,12 @@ export function isValidNode(node: BaseNode2 | SceneNode2 | Nil): node is ValidNo
   return isBlockNode(node) || isText(node) || isVector(node);
 }
 
+export function isMinimalStrokesMixin(
+  node: BaseNode2 | SceneNode2 | Nil | MinimalStrokesMixin2,
+): node is MinimalStrokesMixin2 {
+  return !!(node as MinimalStrokesMixin2).strokeAlign;
+}
+
 export function isIndividualStrokesMixin(
   node: BaseNode2 | SceneNode2 | Nil | IndividualStrokesMixin2,
 ): node is IndividualStrokesMixin2 {

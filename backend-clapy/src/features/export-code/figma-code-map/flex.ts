@@ -8,6 +8,8 @@ import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { FlexNode, ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import {
+  isIndividualStrokesMixin,
+  isMinimalStrokesMixin,
   isConstraintMixin,
   isFlexNode,
   isGroup,
@@ -200,7 +202,7 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   // Ideally, when applicable (no other margin on children), we should apply the *>* trick on the parent node.
   const parent = context.parentNode;
   if (isFlexNode(parent)) {
-    const parentShouldApplyGap = checkShouldApplyGap(parent);
+    const parentShouldApplyGap = checkShouldApplyGapMain(parent);
     if (parentShouldApplyGap && parent.itemSpacing < 0 && (parent?.children || []).indexOf(node) >= 1) {
       addMargin(context, { left: parent.itemSpacing });
     }
@@ -212,8 +214,9 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
   if (!outerLayoutOnly && isFlex) {
     // display: flex is applied in mapCommonStyles
 
-    const shouldApplyGap = checkShouldApplyGap(node);
-    const reverse = shouldApplyGap && node.itemReverseZIndex;
+    const shouldGapMain = checkShouldApplyGapMain(node);
+    const shouldGapCounter = checkShouldApplyGapCounter(node);
+    const reverse = shouldGapMain && node.itemReverseZIndex;
 
     const isHorizontal = node.layoutMode === 'HORIZONTAL';
     if ((defaultIsVertical ? isHorizontal : !isHorizontal) || reverse) {
@@ -243,26 +246,39 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       node.primaryAxisAlignItems !== 'MIN' &&
       !atLeastOneChildHasLayoutGrow1
     ) {
-      // use place-content instead of justify-content (+ align-content)
       // If there is a single child, SPACE_BETWEEN centers children. Let's translate to space-around instead.
       const primaryAxisAlignItems =
-        node.children?.length === 1 && node.primaryAxisAlignItems === 'SPACE_BETWEEN'
+        node.children?.length === 1 && node.primaryAxisAlignItems === 'SPACE_BETWEEN' && !shouldWrap
           ? 'SPACE_BETWEEN_SINGLE'
           : node.primaryAxisAlignItems;
-      addStyle(context, node, styles, 'place-content', primaryAlignToJustifyContent[primaryAxisAlignItems]);
+      addStyle(context, node, styles, 'justify-content', primaryAlignToJustifyContent[primaryAxisAlignItems]);
     } else {
-      resetStyleIfOverriding(context, node, styles, 'place-content');
+      resetStyleIfOverriding(context, node, styles, 'justify-content');
     }
 
     if ((!nodeCounterAxisHugContents || node.children.length > 1) && atLeastOneChildHasLayoutAlignNotStretch) {
       addStyle(context, node, styles, 'align-items', counterAlignToAlignItems[node.counterAxisAlignItems]);
+      if (shouldWrap) {
+        addStyle(
+          context,
+          node,
+          styles,
+          'align-content',
+          node.counterAxisAlignContent === 'SPACE_BETWEEN' && node.children.length > 1
+            ? 'space-between'
+            : counterAlignToAlignItems[node.counterAxisAlignItems],
+        );
+      }
     } else {
       resetStyleIfOverriding(context, node, styles, 'align-items');
+      if (shouldWrap) {
+        resetStyleIfOverriding(context, node, styles, 'align-content');
+      }
     }
 
     // May also cover paragraph-spacing, paragraphSpacing, paragraph spacing
     // (using multiple typo for future global text researches)
-    if (shouldApplyGap && node.itemSpacing >= 0) {
+    if ((shouldGapMain || shouldGapCounter) && node.itemSpacing >= 0) {
       if (!shouldWrap || node.itemSpacing === node.counterAxisSpacing || node.counterAxisSpacing === null) {
         addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
       } else if (isHorizontal) {
@@ -433,7 +449,7 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     isSeparatorOrWorkaround; /* || (parentIsBiggerThanNode && !parentHasVerticalScroll) */
 
   if (widthHugContents) {
-    addStyle(context, node, styles, 'width', 'min-content');
+    addStyle(context, node, styles, 'width', isFlex && node.layoutWrap === 'WRAP' ? 'max-content' : 'min-content');
   } else if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
@@ -501,6 +517,29 @@ function readCssValueFromAst(node: CssNodePlain | Nil): string | null {
   }
 }
 
-function checkShouldApplyGap(node: FlexNode) {
+function checkShouldApplyGapMain(node: FlexNode) {
   return node.itemSpacing && node.children.length >= 2 && node.primaryAxisAlignItems !== 'SPACE_BETWEEN';
+}
+function checkShouldApplyGapCounter(node: FlexNode) {
+  return node.itemSpacing && node.children.length >= 2 && node.counterAxisAlignContent !== 'SPACE_BETWEEN';
+}
+
+// TODO remove after a couple of weeks without usage
+function childrenAreWrapped(node: FlexNode) {
+  const { children, layoutWrap, layoutMode, paddingLeft, paddingRight, itemSpacing, strokesIncludedInLayout } = node;
+
+  const nbChildren = children.length;
+  if (layoutWrap !== 'WRAP' || !(nbChildren >= 2) || layoutMode !== 'HORIZONTAL') return false;
+  let w = paddingLeft + paddingRight + (nbChildren - 1) * itemSpacing;
+  for (const n of children) {
+    w += n.width;
+    if (strokesIncludedInLayout && isMinimalStrokesMixin(n) && isIndividualStrokesMixin(n)) {
+      if (n.strokeAlign === 'OUTSIDE') {
+        w += n.strokeRightWeight + n.strokeLeftWeight;
+      } else if (node.strokeAlign === 'CENTER') {
+        w += (n.strokeRightWeight + n.strokeLeftWeight) / 2;
+      }
+    }
+  }
+  return w > node.width;
 }
