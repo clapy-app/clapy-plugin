@@ -229,6 +229,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
       resetStyleIfOverriding(context, node, styles, 'flex-direction');
     }
 
+    const shouldWrap = node.layoutWrap === 'WRAP';
+    if (shouldWrap) {
+      addStyle(context, node, styles, 'flex-wrap', 'wrap');
+    } else {
+      resetStyleIfOverriding(context, node, styles, 'flex-wrap');
+    }
+
     const [atLeastOneChildHasLayoutGrow1, atLeastOneChildHasLayoutAlignNotStretch] = checkChildrenLayout(node);
 
     if (
@@ -256,7 +263,13 @@ export function flexFigmaToCode(context: NodeContext, node: ValidNode, styles: D
     // May also cover paragraph-spacing, paragraphSpacing, paragraph spacing
     // (using multiple typo for future global text researches)
     if (shouldApplyGap && node.itemSpacing >= 0) {
-      addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
+      if (!shouldWrap || node.itemSpacing === node.counterAxisSpacing || node.counterAxisSpacing === null) {
+        addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px']);
+      } else if (isHorizontal) {
+        addStyle(context, node, styles, 'gap', [node.counterAxisSpacing, 'px'], [node.itemSpacing, 'px']);
+      } else {
+        addStyle(context, node, styles, 'gap', [node.itemSpacing, 'px'], [node.counterAxisSpacing, 'px']);
+      }
     } else {
       // if (shouldApplyGap) {
       //   if (!anyChildHasMargin(context, node)) {
