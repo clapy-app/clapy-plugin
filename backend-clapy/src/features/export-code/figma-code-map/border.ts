@@ -10,7 +10,8 @@ import type {
 } from '../create-ts-compiler/canvas-utils.js';
 import { isBaseFrameMixin, isGroup, isLine, isText, isVector } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
-import { figmaColorToCssHex, warnNode } from '../gen-node-utils/utils-and-reset.js';
+import { strokeWeightX, strokeWeightY } from '../gen-node-utils/mixed-props-utils.js';
+import { figmaColorToCssHex, isMixed, warnNode } from '../gen-node-utils/utils-and-reset.js';
 import { addBoxShadow } from './effects.js';
 import { addMargin } from './margin.js';
 
@@ -133,11 +134,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
       // stroke.blendMode
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
       const { color, opacity } = stroke;
-      const { strokeAlign, strokeWeight } = node;
-      let borderWidth = strokeWeight;
+      const { strokeAlign } = node;
       const hex = figmaColorToCssHex(color, opacity);
       if (isLine(node)) {
-        if (borderWidth <= 1) {
+        const borderHeight = strokeWeightY(node);
+        if (borderHeight <= 1) {
           // Another way to do that for horizontal lines is box-shadow, but it doesn't work well with rotations and/or vertical lines.
           // box-shadow: 0 -1px 0 #000;
           addStyle(
@@ -146,10 +147,10 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             styles,
             'border-bottom',
             'solid',
-            { borderWidth: [borderWidth, 'px'] },
+            { borderWidth: [borderHeight, 'px'] },
             { border: hex },
           );
-          addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
+          addMargin(context, { bottom: -1 });
           if (node.dashPattern?.length === 2) {
             addStyle(context, node, styles, 'border-style', 'dashed');
           } else {
@@ -161,10 +162,6 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
           resetStyleIfOverriding(context, node, styles, 'border-top');
           resetStyleIfOverriding(context, node, styles, 'border-right');
           resetStyleIfOverriding(context, node, styles, 'border-left');
-          resetStyleIfOverriding(context, node, styles, 'margin');
-          resetStyleIfOverriding(context, node, styles, 'margin-top');
-          resetStyleIfOverriding(context, node, styles, 'margin-right');
-          resetStyleIfOverriding(context, node, styles, 'margin-left');
         } else {
           addStyle(
             context,
@@ -172,7 +169,7 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             styles,
             'outline',
             'solid',
-            { borderWidth: [borderWidth, 'px', 0.5] },
+            { borderWidth: [borderHeight, 'px', 0.5] },
             { border: hex },
           );
           if (node.dashPattern?.length === 2) {
@@ -186,15 +183,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
           resetStyleIfOverriding(context, node, styles, 'border-right');
           resetStyleIfOverriding(context, node, styles, 'border-bottom');
           resetStyleIfOverriding(context, node, styles, 'border-left');
-          resetStyleIfOverriding(context, node, styles, 'margin');
-          resetStyleIfOverriding(context, node, styles, 'margin-top');
-          resetStyleIfOverriding(context, node, styles, 'margin-right');
-          resetStyleIfOverriding(context, node, styles, 'margin-bottom');
-          resetStyleIfOverriding(context, node, styles, 'margin-left');
         }
       } else if (node.width <= 1) {
+        let borderWidth = strokeWeightX(node);
         addStyle(context, node, styles, 'border-right', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
-        addStyle(context, node, styles, 'margin-right', { borderWidth: [borderWidth, 'px', -1] });
+        addMargin(context, { right: -1 });
         if (node.dashPattern?.length === 2) {
           addStyle(context, node, styles, 'border-style', 'dashed');
         } else {
@@ -206,21 +199,18 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         resetStyleIfOverriding(context, node, styles, 'border-top');
         resetStyleIfOverriding(context, node, styles, 'border-bottom');
         resetStyleIfOverriding(context, node, styles, 'border-left');
-        resetStyleIfOverriding(context, node, styles, 'margin');
-        resetStyleIfOverriding(context, node, styles, 'margin-top');
-        resetStyleIfOverriding(context, node, styles, 'margin-bottom');
-        resetStyleIfOverriding(context, node, styles, 'margin-left');
       } else if (node.height <= 1) {
+        const borderHeight = strokeWeightY(node);
         addStyle(
           context,
           node,
           styles,
           'border-bottom',
           'solid',
-          { borderWidth: [borderWidth, 'px'] },
+          { borderWidth: [borderHeight, 'px'] },
           { border: hex },
         );
-        addStyle(context, node, styles, 'margin-bottom', { borderWidth: [borderWidth, 'px', -1] });
+        addMargin(context, { bottom: -1 });
         if (node.dashPattern?.length === 2) {
           addStyle(context, node, styles, 'border-style', 'dashed');
         } else {
@@ -232,22 +222,17 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         resetStyleIfOverriding(context, node, styles, 'border-top');
         resetStyleIfOverriding(context, node, styles, 'border-right');
         resetStyleIfOverriding(context, node, styles, 'border-left');
-        resetStyleIfOverriding(context, node, styles, 'margin');
-        resetStyleIfOverriding(context, node, styles, 'margin-top');
-        resetStyleIfOverriding(context, node, styles, 'margin-right');
-        resetStyleIfOverriding(context, node, styles, 'margin-left');
       } else {
+        // If strokes are included in the layout (recent Figma property), we could use CSS normal borders instead of outline/shadow.
+
+        const strokeWeight = node.strokeWeight;
         const { strokeTopWeight, strokeRightWeight, strokeBottomWeight, strokeLeftWeight } = node;
-        if (
-          strokeTopWeight === strokeRightWeight &&
-          strokeTopWeight === strokeBottomWeight &&
-          strokeTopWeight === strokeLeftWeight
-        ) {
-          addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
+        if (!isMixed(strokeWeight)) {
+          addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [strokeWeight, 'px'] }, { border: hex });
           if (strokeAlign === 'INSIDE') {
-            addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -1] });
+            addStyle(context, node, styles, 'outline-offset', { borderWidth: [strokeWeight, 'px', -1] });
           } else if (strokeAlign === 'CENTER') {
-            addStyle(context, node, styles, 'outline-offset', { borderWidth: [borderWidth, 'px', -0.5] });
+            addStyle(context, node, styles, 'outline-offset', { borderWidth: [strokeWeight, 'px', -0.5] });
           } else {
             resetStyleIfOverriding(context, node, styles, 'outline-offset');
           }
@@ -298,11 +283,6 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         resetStyleIfOverriding(context, node, styles, 'border-right');
         resetStyleIfOverriding(context, node, styles, 'border-bottom');
         resetStyleIfOverriding(context, node, styles, 'border-left');
-        resetStyleIfOverriding(context, node, styles, 'margin');
-        resetStyleIfOverriding(context, node, styles, 'margin-top');
-        resetStyleIfOverriding(context, node, styles, 'margin-right');
-        resetStyleIfOverriding(context, node, styles, 'margin-bottom');
-        resetStyleIfOverriding(context, node, styles, 'margin-left');
       }
     } else {
       warnNode(node, 'TODO Unsupported non solid border');
@@ -317,11 +297,6 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
     resetStyleIfOverriding(context, node, styles, 'border-right');
     resetStyleIfOverriding(context, node, styles, 'border-bottom');
     resetStyleIfOverriding(context, node, styles, 'border-left');
-    resetStyleIfOverriding(context, node, styles, 'margin');
-    resetStyleIfOverriding(context, node, styles, 'margin-top');
-    resetStyleIfOverriding(context, node, styles, 'margin-right');
-    resetStyleIfOverriding(context, node, styles, 'margin-bottom');
-    resetStyleIfOverriding(context, node, styles, 'margin-left');
   }
 
   return;

@@ -2135,10 +2135,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@figma/plugin-typings", [\
-        ["npm:1.51.0", {\
-          "packageLocation": "./.yarn/cache/@figma-plugin-typings-npm-1.51.0-d82d093858-4cf9f36865.zip/node_modules/@figma/plugin-typings/",\
+        ["npm:1.76.0", {\
+          "packageLocation": "./.yarn/cache/@figma-plugin-typings-npm-1.76.0-cccfa5789f-88feff4141.zip/node_modules/@figma/plugin-typings/",\
           "packageDependencies": [\
-            ["@figma/plugin-typings", "npm:1.51.0"]\
+            ["@figma/plugin-typings", "npm:1.76.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -6549,7 +6549,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["backend-clapy", "workspace:backend-clapy"],\
             ["@figma-plugin/helpers", "npm:0.15.2"],\
-            ["@figma/plugin-typings", "npm:1.51.0"],\
+            ["@figma/plugin-typings", "npm:1.76.0"],\
             ["@mui/material", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:5.10.4"],\
             ["@nestjs/axios", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:0.1.0"],\
             ["@nestjs/common", "virtual:45b53fe42e88f3faafcad92908c51626adccf6f554273f6010ff85a04651552962353942fba9c925b30efc62bec506ca7d9271fa6b07893b600c166620974ae5#npm:9.0.11"],\
@@ -9464,7 +9464,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["figma-plugin-clapy", "workspace:figma-plugin-clapy"],\
             ["@emotion/react", "virtual:638bf3718471fafded8abbca2d07bcea4625d208c244311cebf93fe1fa0602d6c0849c0cf636fbff93c1819a7ed682ab9aeb86b6970ea4ec11e615eeca3ab8c4#npm:11.10.4"],\
             ["@emotion/styled", "virtual:638bf3718471fafded8abbca2d07bcea4625d208c244311cebf93fe1fa0602d6c0849c0cf636fbff93c1819a7ed682ab9aeb86b6970ea4ec11e615eeca3ab8c4#npm:11.10.4"],\
-            ["@figma/plugin-typings", "npm:1.51.0"],\
+            ["@figma/plugin-typings", "npm:1.76.0"],\
             ["@mui/icons-material", "virtual:638bf3718471fafded8abbca2d07bcea4625d208c244311cebf93fe1fa0602d6c0849c0cf636fbff93c1819a7ed682ab9aeb86b6970ea4ec11e615eeca3ab8c4#npm:5.10.3"],\
             ["@mui/lab", "virtual:638bf3718471fafded8abbca2d07bcea4625d208c244311cebf93fe1fa0602d6c0849c0cf636fbff93c1819a7ed682ab9aeb86b6970ea4ec11e615eeca3ab8c4#npm:5.0.0-alpha.98"],\
             ["@mui/material", "virtual:638bf3718471fafded8abbca2d07bcea4625d208c244311cebf93fe1fa0602d6c0849c0cf636fbff93c1819a7ed682ab9aeb86b6970ea4ec11e615eeca3ab8c4#npm:5.10.4"],\

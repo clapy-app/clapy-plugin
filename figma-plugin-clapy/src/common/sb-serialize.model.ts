@@ -337,6 +337,7 @@ export interface NodeLight {
   name: string;
   type: (LayoutNode | PageNode2)['type'];
   parent?: NodeId;
+  readonly isAsset: boolean;
 }
 
 type BaseNodeMixin2 = ClapifyNode<BaseNodeMixin>;
@@ -350,6 +351,8 @@ type MinimalStrokesMixin2 = ClapifyNode<MinimalStrokesMixin>;
 type MinimalFillsMixin2 = ClapifyNode<MinimalFillsMixin>;
 type GeometryMixin2 = ClapifyNode<GeometryMixin>;
 export type LayoutMixin2 = ClapifyNode<LayoutMixin>;
+type DimensionAndPositionMixin2 = ClapifyNode<DimensionAndPositionMixin>;
+type AutoLayoutChildrenMixin2 = ClapifyNode<AutoLayoutChildrenMixin>;
 type ExportMixin2 = ClapifyNode<ExportMixin>;
 interface DefaultShapeMixin2
   extends BaseNodeMixin2,
@@ -373,6 +376,7 @@ type VectorLikeMixin2 = ClapifyNode<VectorLikeMixin>;
 type StickableMixin2 = ClapifyNode<StickableMixin>;
 type ComponentPropertiesMixin2 = ClapifyNode<ComponentPropertiesMixin>;
 type IndividualStrokesMixin2 = ClapifyNode<IndividualStrokesMixin>;
+type AutoLayoutMixin2 = ClapifyNode<AutoLayoutMixin>;
 
 export type BaseNode2 = ClapifyNode<BaseNode>;
 // Add PageConfig to get extra properties from the page
@@ -480,20 +484,34 @@ const defaultChildrenMixin: ChildrenMixin2 = {
   children: [],
 };
 
-const defaultLayoutMixin: LayoutMixin2 = {
+const defaultDimensionAndPositionMixin: DimensionAndPositionMixin2 = {
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  minWidth: null,
+  maxWidth: null,
+  minHeight: null,
+  maxHeight: null,
   relativeTransform: [
     [1, 0, 0],
     [0, 1, 0],
   ],
-  x: 0,
-  y: 0,
-  rotation: 0,
-  width: 0,
-  height: 0,
+  // absoluteTransform
   absoluteBoundingBox: null,
+};
+const defaultAutoLayoutChildrenMixin: AutoLayoutChildrenMixin2 = {
   layoutAlign: 'INHERIT',
   layoutGrow: 0,
   layoutPositioning: 'AUTO',
+};
+
+const defaultLayoutMixin: LayoutMixin2 = {
+  ...defaultDimensionAndPositionMixin,
+  ...defaultAutoLayoutChildrenMixin,
+  rotation: 0,
+  layoutSizingHorizontal: 'FIXED',
+  layoutSizingVertical: 'FIXED',
 };
 
 // const defaultSceneNode: SceneNodeNoMethod = {
@@ -515,6 +533,7 @@ const defaultLayoutMixin: LayoutMixin2 = {
 const defaultBaseNodeMixin: BaseNodeMixin2 = {
   id: null as unknown as '', // Should be overridden
   name: '',
+  isAsset: false,
 };
 
 const defaultSceneNodeMixin: SceneNodeMixin2 = {
@@ -522,6 +541,8 @@ const defaultSceneNodeMixin: SceneNodeMixin2 = {
   stuckNodes: [],
   attachedConnectors: [],
   componentPropertyReferences: null,
+  resolvedVariableModes: {},
+  explicitVariableModes: {},
 };
 
 const defaultReactionMixin: ReactionMixin2 = {
@@ -580,12 +601,22 @@ const defaultTextSublayerNode: TextSublayerNode2 = {
   hasMissingFont: false,
   paragraphIndent: 0,
   paragraphSpacing: 0,
+  listSpacing: 0,
+  hangingPunctuation: false,
+  hangingList: false,
   fontSize: 0,
   fontName: {
     family: 'Inter',
     style: 'Medium',
   },
+  fontWeight: 500,
   textCase: 'ORIGINAL',
+  openTypeFeatures: {
+    CLIG: false,
+    LIGA: false,
+  } as {
+    readonly [feature in OpenTypeFeature]: boolean;
+  },
   textDecoration: 'NONE',
   letterSpacing: {
     unit: 'PERCENT',
@@ -594,6 +625,7 @@ const defaultTextSublayerNode: TextSublayerNode2 = {
   lineHeight: {
     unit: 'AUTO',
   },
+  leadingTrim: 'NONE',
   hyperlink: null,
   characters: '',
 };
@@ -618,6 +650,26 @@ const defaultIndividualStrokesMixin: IndividualStrokesMixin2 = {
   strokeLeftWeight: 1,
 };
 
+const defaultAutoLayoutMixin: AutoLayoutMixin2 = {
+  layoutMode: 'HORIZONTAL',
+  layoutWrap: 'NO_WRAP',
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  // horizontalPadding: 0,
+  // verticalPadding: 0,
+  primaryAxisSizingMode: 'FIXED',
+  counterAxisSizingMode: 'FIXED',
+  primaryAxisAlignItems: 'MIN',
+  counterAxisAlignItems: 'MIN',
+  counterAxisAlignContent: 'AUTO',
+  itemSpacing: 0,
+  counterAxisSpacing: 0,
+  itemReverseZIndex: false,
+  strokesIncludedInLayout: false,
+};
+
 const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultBaseNodeMixin,
   ...defaultSceneNodeMixin,
@@ -631,21 +683,11 @@ const defaultBaseFrameMixin: BaseFrameMixin2 = {
   ...defaultLayoutMixin,
   ...defaultExportMixin,
   ...defaultIndividualStrokesMixin,
-  layoutMode: 'HORIZONTAL',
-  primaryAxisSizingMode: 'FIXED',
-  counterAxisSizingMode: 'FIXED',
-  primaryAxisAlignItems: 'MIN',
-  counterAxisAlignItems: 'MIN',
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingTop: 0,
-  paddingBottom: 0,
-  itemSpacing: 0,
+  ...defaultAutoLayoutMixin,
   layoutGrids: [],
   gridStyleId: '',
   clipsContent: false,
-  itemReverseZIndex: false,
-  strokesIncludedInLayout: false,
+  inferredAutoLayout: null,
 };
 
 const defaultFramePrototypingMixin: FramePrototypingMixin2 = {
@@ -758,6 +800,7 @@ const defaultComponentNode: ComponentNode2 = {
   ...defaultComponentPropertiesMixin,
   ...defaultChildrenMixin,
   type: 'COMPONENT',
+  instances: [],
 };
 
 // InstanceNode
@@ -770,6 +813,9 @@ const defaultInstanceNode: InstanceNode2 = {
   mainComponent: null,
   scaleFactor: 1,
   componentProperties: {},
+  exposedInstances: [],
+  isExposedInstance: false,
+  overrides: [],
 };
 
 // BooleanOperationNode
@@ -853,6 +899,8 @@ const defaultTextNode: TextNodeNoMethod = {
   textAlignVertical: 'CENTER',
   textAutoResize: 'WIDTH_AND_HEIGHT',
   textStyleId: '',
+  textTruncation: 'DISABLED',
+  maxLines: null,
 };
 
 // StampNode

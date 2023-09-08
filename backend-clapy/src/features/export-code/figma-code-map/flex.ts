@@ -6,7 +6,7 @@ import { flags } from '../../../env-and-config/app-config.js';
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
-import type { FlexNode, ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import type { FlexNode, ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import {
   isConstraintMixin,
   isFlexNode,
@@ -18,6 +18,7 @@ import {
   isVector,
 } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { strokeWeightX, strokeWeightY } from '../gen-node-utils/mixed-props-utils.js';
 import { addMargin } from './margin.js';
 import { registerReverseOrder } from './reverse-order.js';
 import { addZIndex0 } from './zindex.js';
@@ -423,8 +424,11 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
   } else if (fixedWidth) {
     // Patch for svg 0 width with stroke to match Figma behavior
     // The other part of the patch is in readSvg (process-nodes-utils.ts).
-    if (isVector(node) && node.strokeWeight > width) {
-      width = node.strokeWeight;
+    if (isVector(node)) {
+      const weight = strokeWeightX(node as VectorNodeDerived);
+      if (weight > width) {
+        width = weight;
+      }
     }
     addStyle(context, node, styles, 'width', [width, 'px']);
   } /* if (node.autoWidth) */ else {
@@ -439,8 +443,11 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
     addStyle(context, node, styles, 'height', 'min-content');
   } else if (fixedHeight) {
     // Patch for svg 0 height with stroke to match Figma behavior
-    if (isVector(node) && node.strokeWeight > height) {
-      height = node.strokeWeight;
+    if (isVector(node)) {
+      const weight = strokeWeightY(node as VectorNodeDerived);
+      if (weight > height) {
+        height = weight;
+      }
     }
     addStyle(context, node, styles, 'height', [height, 'px']);
   } /* if (node.autoHeight) */ else {

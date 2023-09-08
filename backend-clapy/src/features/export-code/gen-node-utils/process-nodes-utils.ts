@@ -17,6 +17,7 @@ import { stylesToList } from '../css-gen/css-type-utils.js';
 import type { FwAttr } from '../frameworks/framework-connectors.js';
 import { createNodeWithDefaults } from './default-node.js';
 import { genIconComponentImportName, getOrGenClassName } from './gen-unique-name-utils.js';
+import { strokeWeightX, strokeWeightY } from './mixed-props-utils.js';
 import { addCssRule, mkHtmlFullClass, mkIdAttribute, mkNamedImportsDeclaration } from './ts-ast-utils.js';
 
 export function registerSvgForWrite(context: NodeContext, svgContent: string) {
@@ -170,11 +171,13 @@ function patchSvgViewBox(svg: string, node: VectorNodeDerived | ComponentNode2 |
       if (width != null && height != null) {
         let width2 = width,
           height2 = height;
-        if (width2 < node.strokeWeight) {
-          width2 = node.strokeWeight;
+        const weightX = strokeWeightX(node);
+        if (width2 < weightX) {
+          width2 = weightX;
         }
-        if (height2 < node.strokeWeight) {
-          height2 = node.strokeWeight;
+        const weightY = strokeWeightY(node);
+        if (height2 < weightY) {
+          height2 = weightY;
         }
         if (width2 !== width || height2 !== height) {
           return `${begin}${x} ${y} ${width2} ${height2}${end}`;

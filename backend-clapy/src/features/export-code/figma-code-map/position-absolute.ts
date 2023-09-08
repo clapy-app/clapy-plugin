@@ -5,6 +5,7 @@ import type { NodeContext } from '../code.model.js';
 import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
 import { isComponent, isConstraintMixin, isFlexNode, isGroup, isLine } from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
+import { strokeWeightY } from '../gen-node-utils/mixed-props-utils.js';
 import { round } from '../gen-node-utils/utils-and-reset.js';
 import { addTransformTranslateX, addTransformTranslateY } from './transform.js';
 
@@ -96,7 +97,7 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
     const parentHeight = parentNode.height;
 
     if (isLine(node)) {
-      top -= node.strokeWeight;
+      top -= strokeWeightY(node);
     }
 
     if (vertical === 'MIN') {

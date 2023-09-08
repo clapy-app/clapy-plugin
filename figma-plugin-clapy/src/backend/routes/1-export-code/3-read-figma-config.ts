@@ -83,7 +83,7 @@ export function readFigmaNodesConfig<T extends AnyNodeOriginal>(
   if (parentId) {
     node.parent = context.isRootNodeInComponent
       ? parent
-      : { id: parentId, name: parentName!, type: parentType as LayoutTypes };
+      : { id: parentId, name: parentName!, type: parentType as LayoutTypes, isAsset: false };
   }
 
   const nodeIsComp = isComponent2(node);

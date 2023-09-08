@@ -160,6 +160,9 @@ export type LineNode2 = ExtendNodeType<LineNode>;
 export type BooleanOperationNode2 = ExtendNodeType<BooleanOperationNode> & ChildrenMixin2;
 export type TextSegment2 = StyledTextSegment & { _segmentStyles: Dict<DeclarationPlain> };
 
+export type MinimalStrokesMixin2 = ExtendNodeType<MinimalStrokesMixin>;
+export type IndividualStrokesMixin2 = ExtendNodeType<IndividualStrokesMixin>;
+
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
 }
@@ -325,4 +328,10 @@ export type ValidNode = BlockNode | TextNode2 | VectorNodeDerived;
 
 export function isValidNode(node: BaseNode2 | SceneNode2 | Nil): node is ValidNode {
   return isBlockNode(node) || isText(node) || isVector(node);
+}
+
+export function isIndividualStrokesMixin(
+  node: BaseNode2 | SceneNode2 | Nil | IndividualStrokesMixin2,
+): node is IndividualStrokesMixin2 {
+  return (node as IndividualStrokesMixin2).strokeBottomWeight != null;
 }

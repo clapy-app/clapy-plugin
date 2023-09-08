@@ -24,6 +24,7 @@ import { escapeHTMLSplitParagraphsNoSpacing, splitParagraphsWithSpacing } from '
 import { addCssRule, mkHtmlFullClass, mkIdAttribute } from './ts-ast-utils.js';
 import { warnNode } from './utils-and-reset.js';
 import type ts from 'typescript';
+import { applyTruncate } from '../figma-code-map/text/truncate.js';
 
 function mkListBlock(listType: ListType): ListBlock {
   return { paragraphBlocks: [], listType };
@@ -320,7 +321,7 @@ export function genTextAst<T extends boolean>(
 
         // Text span wrapper
         // If multiple segments, surround with span to maintain the inline style
-        if (!singleChild) {
+        if (applyTruncate(context, node, block) || !singleChild) {
           const attributes: FwAttr[] = [];
           if (block.textInlineWrapperStyles) {
             ({ htmlClass: htmlClass3, parentRule: parentRule3 } = applyStyles(
