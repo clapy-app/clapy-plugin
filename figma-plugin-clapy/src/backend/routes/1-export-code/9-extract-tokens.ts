@@ -1,6 +1,5 @@
-import { warnNode } from '../../../common/error-utils';
+import { handleErrorBack, warnNode } from '../../../common/error-utils';
 import type { Dict } from '../../../common/sb-serialize.model';
-import { handleError } from '../../../front-utils/front-utils.js';
 import { isPage } from '../../common/node-type-utils';
 
 const enableFigmaTokens = true;
@@ -36,7 +35,7 @@ export function extractFigmaTokens() {
       values,
     };
   } catch (error) {
-    handleError(error);
+    handleErrorBack(error);
     return undefined;
   }
 }
@@ -51,7 +50,7 @@ export function exportNodeTokens(node: SceneNode | PageNode) {
       return obj;
     }, undefined as Dict<TokenName> | undefined);
   } catch (error) {
-    handleError(error);
+    handleErrorBack(error);
     warnNode(node, 'while processing this node');
     // throw error;
     return undefined;
@@ -67,7 +66,7 @@ export function exportNodeTokens2(node: SceneNode) {
       return obj;
     }, undefined as Dict<TokenName> | undefined);
   } catch (error) {
-    handleError(error);
+    handleErrorBack(error);
     warnNode(node, 'while processing this node');
     // throw error;
     return undefined;
