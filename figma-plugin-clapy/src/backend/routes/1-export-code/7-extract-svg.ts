@@ -1,6 +1,5 @@
 import { flags } from '../../../common/app-config.js';
 import { warnNode } from '../../../common/error-utils.js';
-import { isArrayOf } from '../../../common/general-utils.js';
 import type { SVGsExtracted } from '../../../common/sb-serialize.model.js';
 import { isLayout0, isMinimalStrokesMixin } from '../../common/node-type-utils.js';
 import { perfReset } from '../../common/perf-utils.js';
@@ -43,18 +42,21 @@ async function extractSVG(nodeIdToExtractAsSVG: string) {
     // inside instances of components.
     if ((svgNode2 as BlendMixin).isMask) {
       (svgNode2 as BlendMixin).isMask = false;
-      const svgNode2WithFills = svgNode2 as MinimalFillsMixin;
-      const fills = svgNode2WithFills.fills as FillsOrUndef;
-      if (isArrayOf<Paint>(fills)) {
-        // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
-        // Well, images with transparency would be useful. Later.
-        svgNode2WithFills.fills = [
-          {
-            type: 'SOLID',
-            color: { r: 0, g: 0, b: 0 },
-          },
-        ];
-      }
+
+      // I don't remember why I needed to add the black fill. An optimization? It introduces a bug when there is already a fill like a gradient. If we want this optimization, should we restrict it to special cases like image fills only? Even in that case, the image may have alpha that is used as mask, so we shouldn't replace the fills.
+      // ---
+      // const svgNode2WithFills = svgNode2 as MinimalFillsMixin;
+      // const fills = svgNode2WithFills.fills as FillsOrUndef;
+      // if (isArrayOf<Paint>(fills)) {
+      //   // Only keep a black fill (in case there was an image or anything heavy and irrelevant).
+      //   // Well, images with transparency would be useful. Later.
+      //   svgNode2WithFills.fills = [
+      //     {
+      //       type: 'SOLID',
+      //       color: { r: 0, g: 0, b: 0 },
+      //     },
+      //   ];
+      // }
     }
 
     const effects = (svgNode2 as BlendMixin).effects;
