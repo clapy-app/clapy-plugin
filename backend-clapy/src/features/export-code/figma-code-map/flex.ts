@@ -8,6 +8,8 @@ import { nodeDefaults } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
 import type { FlexNode, ValidNode, VectorNodeDerived } from '../create-ts-compiler/canvas-utils.js';
 import {
+  isAutoLayoutChildrenMixin,
+  isChildrenMixin,
   isIndividualStrokesMixin,
   isMinimalStrokesMixin,
   isConstraintMixin,
@@ -386,12 +388,16 @@ function applyWidth(context: NodeContext, node: ValidNode, styles: Dict<Declarat
 
   const isNodeAutoLayout = isFlex && node.layoutMode !== 'NONE';
   const isNodeVertical = nodeIsText || (isFlex && node.layoutMode === 'VERTICAL');
+  const nonAbsoluteChildren =
+    (isChildrenMixin(node) &&
+      node.children.filter(c => !isAutoLayoutChildrenMixin(c) || c.layoutPositioning !== 'ABSOLUTE')) ||
+    undefined;
   const nodePrimaryAxisHugContents = nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT'
-    : isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!node.children.length;
+    : isNodeAutoLayout && node.primaryAxisSizingMode === 'AUTO' && !!nonAbsoluteChildren?.length;
   const nodeCounterAxisHugContents = nodeIsText
     ? node.textAutoResize === 'WIDTH_AND_HEIGHT'
-    : isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!node.children.length;
+    : isNodeAutoLayout && node.counterAxisSizingMode === 'AUTO' && !!nonAbsoluteChildren?.length;
   const widthHugContents = isNodeVertical ? nodeCounterAxisHugContents : nodePrimaryAxisHugContents;
   const heightHugContents = isNodeVertical ? nodePrimaryAxisHugContents : nodeCounterAxisHugContents;
 

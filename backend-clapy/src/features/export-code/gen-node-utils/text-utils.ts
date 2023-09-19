@@ -58,7 +58,8 @@ export function prepareStylesOnTextSegments(context: NodeContext, node: TextNode
       const blockWithSpacing = blocksWithParagraphSpacing[j];
 
       // Create new paragraph block if \n detected or if this fragment is in a new list block.
-      if (j >= 1 || !latestParagraphBlock) {
+      if (j >= 1 /* && segment.listOptions.type === 'NONE' */ || !latestParagraphBlock) {
+        // TODO something is wrong with this choice of index.
         const segIndex = latestListBlock ? i + 1 : i;
         let listTypeRaw = textSegments[segIndex]?.listOptions?.type;
         if (!latestListBlock || (listTypeRaw && listTypeRaw !== textSegments[segIndex - 1].listOptions?.type)) {

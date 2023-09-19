@@ -23,7 +23,12 @@ function shouldApplyPositionRelativeOnGroup(context: NodeContext) {
 
 function shouldApplyPositionRelative(context: NodeContext, node: ValidNode) {
   const isFlex = isFlexNode(node);
-  return isFlex && (node.layoutMode === 'NONE' || hasChildWithAutoLayoutAbsolute(node));
+  return (
+    isFlex &&
+    (node.layoutMode === 'NONE' ||
+      hasChildWithAutoLayoutAbsolute(node) ||
+      hasSiblingWithAutoLayoutAbsolute(context, node))
+  );
 }
 
 export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -171,6 +176,20 @@ function hasChildWithAutoLayoutAbsolute(node: FlexNode) {
     for (const child of children) {
       if (isAutoLayoutChildrenMixin(child) && child.layoutPositioning === 'ABSOLUTE') {
         return true;
+      }
+    }
+  }
+  return false;
+}
+
+function hasSiblingWithAutoLayoutAbsolute(context: NodeContext, node: FlexNode) {
+  if (Array.isArray(context.parentNode?.children)) {
+    const children: readonly SceneNode2[] | undefined = context.parentNode?.children;
+    if (children) {
+      for (const child of children) {
+        if (child !== node && isAutoLayoutChildrenMixin(child) && child.layoutPositioning === 'ABSOLUTE') {
+          return true;
+        }
       }
     }
   }
