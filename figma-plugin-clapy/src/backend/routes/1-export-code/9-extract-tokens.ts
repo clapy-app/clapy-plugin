@@ -1,5 +1,6 @@
 import { warnNode } from '../../../common/error-utils';
 import type { Dict } from '../../../common/sb-serialize.model';
+import { handleError } from '../../../front-utils/front-utils.js';
 import { isPage } from '../../common/node-type-utils';
 
 const enableFigmaTokens = true;
@@ -22,17 +23,22 @@ function tokenOf(node: SceneNode | PageNode | DocumentNode, name: string, parseA
 export function extractFigmaTokens() {
   if (!enableFigmaTokens) return;
 
-  let values = tokenOf(figma.root, 'values', true);
-  const usedTokenSet = tokenOf(figma.root, 'usedTokenSet', true);
-  if (usedTokenSet) {
-    values = Object.fromEntries(Object.entries(values).filter(([key, _]) => usedTokenSet[key] !== 'disabled'));
+  try {
+    let values = tokenOf(figma.root, 'values', true);
+    const usedTokenSet = tokenOf(figma.root, 'usedTokenSet', true);
+    if (usedTokenSet) {
+      values = Object.fromEntries(Object.entries(values).filter(([key, _]) => usedTokenSet[key] !== 'disabled'));
+    }
+    return {
+      version: tokenOf(figma.root, 'version', true),
+      usedTokenSet,
+      updatedAt: tokenOf(figma.root, 'updatedAt'),
+      values,
+    };
+  } catch (error) {
+    handleError(error);
+    return undefined;
   }
-  return {
-    version: tokenOf(figma.root, 'version', true),
-    usedTokenSet,
-    updatedAt: tokenOf(figma.root, 'updatedAt'),
-    values,
-  };
 }
 
 export function exportNodeTokens(node: SceneNode | PageNode) {
@@ -45,8 +51,10 @@ export function exportNodeTokens(node: SceneNode | PageNode) {
       return obj;
     }, undefined as Dict<TokenName> | undefined);
   } catch (error) {
+    handleError(error);
     warnNode(node, 'while processing this node');
-    throw error;
+    // throw error;
+    return undefined;
   }
 }
 
@@ -59,7 +67,9 @@ export function exportNodeTokens2(node: SceneNode) {
       return obj;
     }, undefined as Dict<TokenName> | undefined);
   } catch (error) {
+    handleError(error);
     warnNode(node, 'while processing this node');
-    throw error;
+    // throw error;
+    return undefined;
   }
 }
