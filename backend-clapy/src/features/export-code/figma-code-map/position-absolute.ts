@@ -2,8 +2,15 @@ import type { DeclarationPlain, Raw, ValuePlain } from 'css-tree';
 
 import type { Dict } from '../../sb-serialize-preview/sb-serialize.model.js';
 import type { NodeContext } from '../code.model.js';
-import type { ValidNode } from '../create-ts-compiler/canvas-utils.js';
-import { isComponent, isConstraintMixin, isFlexNode, isGroup, isLine } from '../create-ts-compiler/canvas-utils.js';
+import type { FlexNode, SceneNode2, ValidNode } from '../create-ts-compiler/canvas-utils.js';
+import {
+  isAutoLayoutChildrenMixin,
+  isComponent,
+  isConstraintMixin,
+  isFlexNode,
+  isGroup,
+  isLine,
+} from '../create-ts-compiler/canvas-utils.js';
 import { addStyle, getInheritedNodeStyle, resetStyleIfOverriding } from '../css-gen/css-factories-high.js';
 import { strokeWeightY } from '../gen-node-utils/mixed-props-utils.js';
 import { round } from '../gen-node-utils/utils-and-reset.js';
@@ -16,7 +23,7 @@ function shouldApplyPositionRelativeOnGroup(context: NodeContext) {
 
 function shouldApplyPositionRelative(context: NodeContext, node: ValidNode) {
   const isFlex = isFlexNode(node);
-  return isFlex && node.layoutMode === 'NONE';
+  return isFlex && (node.layoutMode === 'NONE' || hasChildWithAutoLayoutAbsolute(node));
 }
 
 export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
@@ -44,7 +51,8 @@ export function positionAbsoluteFigmaToCode(context: NodeContext, node: ValidNod
         !isEmbeddedComponent
       ) /* && (isPage(node.parent) || isComponentSet(node.parent)) */
     ) &&
-    (parentIsGroup || (isFlexNode(parentNode) && parentNode?.layoutMode === 'NONE'));
+    (parentIsGroup ||
+      (isFlexNode(parentNode) && (parentNode?.layoutMode === 'NONE' || node.layoutPositioning === 'ABSOLUTE')));
   if (parentIsAbsolute) {
     addStyle(context, node, styles, 'position', 'absolute');
     const { horizontal, vertical } =
@@ -155,4 +163,16 @@ function applyRotationToX(node: ValidNode, x: number, y: number) {
 function applyRotationToY(node: ValidNode, x: number, y: number) {
   const angle = (node.rotation * Math.PI) / 180; // To radian
   return round(y * Math.cos(angle) - x * Math.sin(angle));
+}
+
+function hasChildWithAutoLayoutAbsolute(node: FlexNode) {
+  if (Array.isArray(node.children)) {
+    const children: readonly SceneNode2[] = node.children;
+    for (const child of children) {
+      if (isAutoLayoutChildrenMixin(child) && child.layoutPositioning === 'ABSOLUTE') {
+        return true;
+      }
+    }
+  }
+  return false;
 }

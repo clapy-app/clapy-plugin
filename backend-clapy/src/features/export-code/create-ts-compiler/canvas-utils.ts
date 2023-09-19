@@ -162,6 +162,7 @@ export type TextSegment2 = StyledTextSegment & { _segmentStyles: Dict<Declaratio
 
 export type MinimalStrokesMixin2 = ExtendNodeType<MinimalStrokesMixin>;
 export type IndividualStrokesMixin2 = ExtendNodeType<IndividualStrokesMixin>;
+export type AutoLayoutChildrenMixin2 = ExtendNodeType<AutoLayoutChildrenMixin>;
 
 export function isPage(node: BaseNode2 | PageNode2 | Nil): node is PageNode2 {
   return node?.type === 'PAGE';
@@ -340,4 +341,10 @@ export function isIndividualStrokesMixin(
   node: BaseNode2 | SceneNode2 | Nil | IndividualStrokesMixin2,
 ): node is IndividualStrokesMixin2 {
   return (node as IndividualStrokesMixin2).strokeBottomWeight != null;
+}
+
+export function isAutoLayoutChildrenMixin(
+  node: BaseNode2 | SceneNode2 | Nil | AutoLayoutChildrenMixin2,
+): node is AutoLayoutChildrenMixin2 {
+  return (node as AutoLayoutChildrenMixin2).layoutAlign != null;
 }
