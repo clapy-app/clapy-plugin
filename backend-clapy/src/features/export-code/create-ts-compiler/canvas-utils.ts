@@ -129,6 +129,7 @@ interface GlobalExtender2 extends GlobalExtender {
   visibleFills?: Paint[];
   // Attributes useful for AST generation
   styles?: Dict<DeclarationPlain>;
+  beforeStyles?: Dict<DeclarationPlain>;
   skip?: boolean;
   muiConfig?: MUIConfig | false; // For MUI instances
   componentContext?: ModuleContext; // For instance nodes

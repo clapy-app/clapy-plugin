@@ -58,7 +58,7 @@ const cssToFigmaTokenMap: Dict<string | (string | [string, string])[]> = {
 
 const toRound: Set<keyof PropertiesHyphen> = new Set(['outline-offset']);
 
-type StyleValue<T extends keyof PropertiesHyphen> =
+export type StyleValue<T extends keyof PropertiesHyphen> =
   | NonNullable<PropertiesHyphen[T]>
   | [number, CssUnit]
   | [number, CssUnit, number]

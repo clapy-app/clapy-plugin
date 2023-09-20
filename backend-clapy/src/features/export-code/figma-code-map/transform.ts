@@ -10,7 +10,8 @@ import { round } from '../gen-node-utils/utils-and-reset.js';
 
 export function transformFigmaToCode(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
   // The rotation is already included in the SVG itself when exporting from Figma
-  if (isVector(node)) return;
+  // For lines, rotations are processed separately in line.ts.
+  if (isVector(node) || isLine(node)) return;
   if (!node.relativeTransform) {
     warnOrThrow(
       `BUG node.relativeTransform is not defined in node ${node.name} (${node.type}), skipping. But it should have been defined when setting default values.`,

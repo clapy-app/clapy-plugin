@@ -36,6 +36,7 @@ import { mergeWithInheritedStyles } from './css-gen/css-factories-high.js';
 import { stylesToList } from './css-gen/css-type-utils.js';
 import type { FwAttr } from './frameworks/framework-connectors.js';
 import { prepareCompUsageWithOverrides } from './gen-node-utils/3-gen-comp-utils.js';
+import { genBeforeStyles } from './gen-node-utils/before-styles.js';
 import { getOrGenClassName } from './gen-node-utils/gen-unique-name-utils.js';
 import { addNodeStyles, createSvgAst, patchInstanceAsSVG, readSvg } from './gen-node-utils/process-nodes-utils.js';
 import { genInputPlaceholderStyles, genTextAst, prepareStylesOnTextSegments } from './gen-node-utils/text-utils.js';
@@ -289,6 +290,8 @@ export function genNodeAst(node: SceneNode2) {
         className = getOrGenClassName(moduleContext, node);
         node.htmlClass = mkHtmlFullClass(context, className, node.htmlClass);
       }
+
+      genBeforeStyles(context, node, className);
 
       const children = context.firstChildIsPlaceholder ? undefined : genNodeAstLoopChildren(node);
       let attributes: FwAttr[] = [];

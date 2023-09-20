@@ -18,6 +18,7 @@ import { cursorFigmaToCode } from './figma-code-map/cursor.js';
 import { effectsFigmaToCode } from './figma-code-map/effects.js';
 import { flexFigmaToCode } from './figma-code-map/flex.js';
 import { fontFigmaToCode } from './figma-code-map/font.js';
+import { lineFigmaToCode } from './figma-code-map/line.js';
 import { marginFigmaToCode } from './figma-code-map/margin.js';
 import { maskFigmaToCode } from './figma-code-map/mask.js';
 import { opacityFigmaToCode } from './figma-code-map/opacity.js';
@@ -103,6 +104,7 @@ function mapTagLayoutStyles(context2: NodeContext, node: ValidNode, styles: Dict
 
 // Styles that are the responsibility of the component, typically the look and feel.
 function mapTagUIStyles(context: NodeContext, node: ValidNode, styles: Dict<DeclarationPlain>) {
+  styles = lineFigmaToCode(context, node, styles);
   prepareBackgrounds(context, node, styles);
   borderFigmaToCode(context, node, styles);
   borderRadiusFigmaToCode(context, node, styles);
