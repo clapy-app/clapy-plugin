@@ -1,6 +1,7 @@
 import { generateConfig } from './admin/1-figma-from-config/1-read-figma-config.js';
 import {
   getSelectionCustomCss,
+  getSelectionsNodeId,
   saveCustomCssInFigmaNode,
   selectionCustomCss,
   selectionPreview,
@@ -42,6 +43,7 @@ export const routes = {
   reloadUI,
   closePlugin: () => figma.closePlugin(),
   getCurrentUser,
+  getSelectionsNodeId,
 
   // User and auth routes
   getCachedToken,

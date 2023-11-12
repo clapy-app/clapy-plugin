@@ -80,3 +80,11 @@ a {
 .textSetting.textSetting {
   margin-top: 10px;
 }
+
+.actionBtnsContainer {
+  display: flex;
+}
+
+.btn {
+  flex: 1;
+}

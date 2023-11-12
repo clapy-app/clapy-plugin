@@ -128,3 +128,8 @@ export interface GithubCredentialsDef {
   user: string;
   hasPermission: boolean;
 }
+
+export interface ProjectSelection {
+  id: string;
+  name: string;
+}

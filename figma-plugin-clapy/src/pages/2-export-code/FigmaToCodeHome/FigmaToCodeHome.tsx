@@ -1,25 +1,25 @@
+import { twJoin, twMerge } from 'tailwind-merge';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
+import classNames from 'classnames';
 import type { FC } from 'react';
 import { memo, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
-import { Button_SizeSmHierarchyLinkColo } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo/Button_SizeSmHierarchyLinkColo.js';
 import { track } from '../../../common/analytics';
-import type { ExtractionProgress, UserMetadata } from '../../../common/app-models.js';
+import type { ExtractionProgress, ProjectSelection, UserMetadata } from '../../../common/app-models.js';
 import { getDuration } from '../../../common/general-utils';
 import { perfMeasure, perfReset } from '../../../common/perf-front-utils.js';
 import type { Disposer } from '../../../common/plugin-utils';
 import { fetchPlugin, subscribePlugin } from '../../../common/plugin-utils';
 import type {
-  GenCodeResponse,
   ExportCodePayload,
   ExportImageMap2,
+  GenCodeResponse,
   GithubSettings,
   UserSettings,
 } from '../../../common/sb-serialize.model.js';
@@ -30,7 +30,10 @@ import { selectIsAlphaDTCUser } from '../../../core/auth/auth-slice';
 import { useAppDispatch } from '../../../core/redux/hooks.js';
 import { env } from '../../../environment/env.js';
 import { handleError, useCallbackAsync2 } from '../../../front-utils/front-utils';
+import { githubPost } from '../../../front-utils/http-github-utils.js';
 import { apiGet, apiPost } from '../../../front-utils/http.utils.js';
+import { Button_SizeSmHierarchyLinkColo } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo/Button_SizeSmHierarchyLinkColo.js';
+import { Button_SizeSmHierarchyLinkColo2 } from '../../4-Generator/quotaBar/Button_SizeSmHierarchyLinkColo2/Button_SizeSmHierarchyLinkColo2.js';
 import { selectIsUserMaxQuotaReached, selectUserMetadata, setStripeData } from '../../user/user-slice.js';
 import { uploadAssetFromUintArrayRaw } from '../cloudinary.js';
 import {
@@ -41,24 +44,23 @@ import {
   setLoading,
 } from '../export-code-slice.js';
 import { downloadFile, readUserSettingsWithDefaults, useLoadUserSettings } from '../export-code-utils.js';
+import { loadGHSettings } from '../github/github-service.js';
+import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
+import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
 import { AddCssOption } from '../user-settings/CustomCssSetting/CustomCssSetting.js';
+import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
+import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
+import { PageSetting } from '../user-settings/PageSetting.js';
+import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
+import { ScssSetting } from '../user-settings/ScssSetting.js';
+import { GenTargetOptions } from '../user-settings/TargetSetting.js';
+import { ViewportSizeSetting } from '../user-settings/ViewportSizeSetting.js';
 import { BackToCodeGen } from './BackToCodeGen/BackToCodeGen';
 import { EditCodeButton } from './EditCodeButton/EditCodeButton';
 import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
-import { GenTargetOptions } from '../user-settings/TargetSetting.js';
-import { loadGHSettings } from '../github/github-service.js';
-import { githubPost } from '../../../front-utils/http-github-utils.js';
-import { PageSetting } from '../user-settings/PageSetting.js';
-import { FrameworkSetting } from '../user-settings/FrameworkSetting.js';
-import { LegacyZipSetting } from '../user-settings/LegacyZipSetting.js';
-import { ScssSetting } from '../user-settings/ScssSetting.js';
-import { ScssBemSetting } from '../user-settings/ScssBemSetting.js';
-import { AngularPrefixSetting } from '../user-settings/AngularPrefixSetting.js';
-import { ComponentsDirSetting } from '../user-settings/ComponentsDirSetting.js';
-import { ViewportSizeSetting } from '../user-settings/ViewportSizeSetting.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -103,6 +105,22 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
     : selectionPreview === false
     ? 'selectionko'
     : 'noselection';
+
+  const [pages, setPages] = useState<ProjectSelection[]>([]);
+
+  const addToProject = useCallback(async () => {
+    const selections = await fetchPlugin('getSelectionsNodeId');
+    setPages(pages => {
+      const newPages = [...pages];
+      for (const sel of selections) {
+        if (!pages.find(p => p.id === sel.id)) {
+          newPages.push(sel);
+        }
+      }
+      return newPages;
+    });
+    console.log({ selections });
+  }, []);
 
   const generateCode = useCallbackAsync2(async () => {
     const timer = performance.now();
@@ -290,12 +308,14 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
   }, []);
   return (
     <div className={classes.root}>
-      <div className={classes.previewTitle}>
-        {(state === 'noselection' || state === 'selection_too_many') && <>Choose an element to code</>}
-        {(state === 'selection' || state === 'selectionko') && <>Ready to code</>}
-        {isLoading && <>Your code is loading...</>}
-        {state === 'generated' && <>And... it’s done!</>}
-      </div>
+      {(isLoading || state === 'generated') && (
+        <div className={classes.previewTitle}>
+          {/* {(state === 'noselection' || state === 'selection_too_many') && <>Choose an element to code</>}
+        {(state === 'selection' || state === 'selectionko') && <>Ready to code</>} */}
+          {isLoading && <>Your code is loading...</>}
+          {state === 'generated' && <>And... it’s done!</>}
+        </div>
+      )}
       <SelectionPreview state={state} selectionPreview={selectionPreview} progress={progress} />
       {!isQuotaReached && typeof picture !== 'undefined' && state !== 'generated' && (
         <>
@@ -329,22 +349,39 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
       {typeof picture === 'undefined' ? (
         <Loading />
       ) : (
-        <Button
-          onClick={generateCode}
-          disabled={state === 'loading' || state === 'noselection' || isQuotaReached || !isCodeGenReady}
-          loading={isLoading}
-          className={state === 'generated' ? classes.hide : undefined}
-        >
-          {isQuotaReached ? (
-            <>
-              <LockIcon />
-              &nbsp;&nbsp; <span> Generate code</span>
-            </>
-          ) : (
-            <>&lt; Generate code &gt;</>
-          )}
-        </Button>
+        <div className={twMerge(classes.actionBtnsContainer, 'gap-2')}>
+          <Button
+            onClick={addToProject}
+            disabled={state === 'loading' || state === 'noselection' || isQuotaReached || !isCodeGenReady}
+            loading={isLoading}
+            className={twJoin(classes.btn, state === 'generated' && classes.hide)}
+          >
+            Add to project
+          </Button>
+          <Button
+            onClick={generateCode}
+            disabled={state === 'loading' || state === 'noselection' || isQuotaReached || !isCodeGenReady}
+            loading={isLoading}
+            className={classNames(classes.btn, state === 'generated' && classes.hide)}
+          >
+            {isQuotaReached ? (
+              <>
+                <LockIcon />
+                &nbsp;&nbsp; <span> Generate code</span>
+              </>
+            ) : (
+              <>Generate code</>
+            )}
+          </Button>
+        </div>
       )}
+
+      {pages?.map(p => (
+        <div key={p.id}>
+          {p.name} ({p.id})
+        </div>
+      ))}
+
       {isQuotaReached && state !== 'generated' ? (
         <div className={classes.fullQuotaTextContainer}>
           You have used up all your monthly credits.

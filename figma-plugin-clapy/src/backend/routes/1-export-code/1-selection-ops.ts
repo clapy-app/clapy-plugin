@@ -1,6 +1,6 @@
-import type { NextFn, PreviewResp } from '../../../common/app-models';
+import type { NextFn, PreviewResp, ProjectSelection } from '../../../common/app-models';
 import { isBlendMixin } from '../../common/node-type-utils';
-import { getFigmaSelection } from '../../common/selection-utils';
+import { getFigmaSelection, getFigmaSelections } from '../../common/selection-utils';
 import { readPageConfig } from './3-read-figma-config.js';
 import { customCssPluginKey } from './read-figma-config-utils.js';
 
@@ -71,4 +71,9 @@ async function readCustomCssFromNode() {
   }
   const customCss = selection.getPluginData(customCssPluginKey);
   return { id: selection.id, css: customCss };
+}
+
+export function getSelectionsNodeId() {
+  const selections = getFigmaSelections();
+  return selections.map(({ id, name }) => ({ id, name } as ProjectSelection));
 }
