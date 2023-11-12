@@ -61,6 +61,7 @@ import classes from './FigmaToCodeHome.module.css';
 import { LivePreviewButton } from './LivePreviewButton/LivePreviewButton';
 import { LockIcon } from './lockIcon/lock.js';
 import { SelectionPreview } from './SelectionPreview/SelectionPreview';
+import { useRefLatest } from '../../../front-utils/hooks/useRefLatest.js';
 
 // Flag for development only. Will be ignored in production.
 // To disable sending to codesandbox, open the API controller and change the default of uploadToCsb
@@ -107,14 +108,18 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
     : 'noselection';
 
   const [pages, setPages] = useState<ProjectSelection[]>([]);
+  const pagesRef = useRefLatest(pages);
 
   const addToProject = useCallback(async () => {
     const selections = await fetchPlugin('getSelectionsNodeId');
     setPages(pages => {
       const newPages = [...pages];
       for (const sel of selections) {
-        if (!pages.find(p => p.id === sel.id)) {
+        const existing = pages.find(p => p.id === sel.id);
+        if (!existing) {
           newPages.push(sel);
+        } else {
+          existing.name = sel.name;
         }
       }
       return newPages;
@@ -162,7 +167,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
 
       setProgress({ stepId: 'init', stepNumber: 1 });
       const { extraConfig, root, components, nodeIdsToExtractAsSVG, imageHashesToExtract, styles, tokens, page } =
-        await fetchPlugin('serializeSelectedNode');
+        await fetchPlugin('serializeSelectedNode', pagesRef.current);
       unsubscribe?.();
       perfMeasure(`Figma configuration extracted in`);
 
@@ -249,6 +254,12 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
 
           setProgress({ stepId: 'generateCode', stepNumber: 8 });
 
+          // TODO to manage multiple selected pages, I can:
+          // Ensure that, for each component, I know the page using it
+          // Pass the list of pages as an extra argument; do multi-pages only if this arg is present
+          // merge "root" and "components" to remain compatible with the old API. Let's store the result in components.
+          // For each component, check if it's linked to a single page. If yes, store in this page dir, otherwise in a separate components directory.
+
           const { data } = await fetchApiMethod<GenCodeResponse>('code/export', nodes);
           if (!data.quotas) {
             const { data } = await apiGet<UserMetadata>('stripe/get-user-quota');
@@ -300,7 +311,7 @@ export const FigmaToCodeHomeInner: FC<Props> = memo(function FigmaToCodeHomeInne
       dispatch(setLoading(false));
       setProgress(undefined);
     }
-  }, [dispatch, isAlphaDTCUser]);
+  }, [dispatch, isAlphaDTCUser, pagesRef]);
 
   const backToSelection = useCallback(() => {
     setSandboxId(undefined);

@@ -1,10 +1,10 @@
-import type { ExtractionProgress, NextFn } from '../../../common/app-models';
+import type { ExtractionProgress, NextFn, ProjectSelection } from '../../../common/app-models';
 import { wait } from '../../../common/general-utils.js';
 import type { ComponentNode2 } from '../../../common/sb-serialize.model.js';
 import { env } from '../../../environment/env.js';
 import { isComponentSet } from '../../common/node-type-utils.js';
 import { perfMeasure, perfReset } from '../../common/perf-utils';
-import { getFigmaSelectionOrThrow } from '../../common/selection-utils';
+import { getFigmaSelections } from '../../common/selection-utils';
 import {
   linkInstancesToComponents,
   readFigmaNodesConfig,
@@ -34,15 +34,18 @@ async function notifyProgress(progress: ExtractionProgress, node?: SceneNode) {
   await wait();
 }
 
-export async function serializeSelectedNode() {
+export async function serializeSelectedNode(pages: ProjectSelection[]) {
   perfReset();
-  const node = getFigmaSelectionOrThrow();
+  // const node = getFigmaSelectionOrThrow();
+  const selection = getFigmaSelections() as SceneNode[]; // The initial type includes readonly
+  let selectedNodes = pages.map(p => figma.getNodeById(p.id)).filter(n => n) as SceneNode[];
+  if (!selectedNodes?.length) selectedNodes = selection /* [node] */;
   // We could first check something like getParentCompNode(selectedNode).node in case we want to reuse the notion of components from code>design.
 
   const extractBatchContext: ExtractBatchContext = {
     isRootNodeInComponent: true,
     components: {},
-    componentsToProcess: [node],
+    componentsToProcess: selectedNodes /* [node] */,
     componentsCache: {},
     componentsCallbacks: {},
     textStyles: {},
