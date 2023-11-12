@@ -1,4 +1,5 @@
 import * as cssModulesPlugin from 'esbuild-css-modules-plugin';
+import * as postCssPlugin from 'esbuild-style-plugin';
 import { readFile, writeFile } from 'fs/promises';
 
 import type { BuildContext } from './build-prepare';
@@ -31,6 +32,11 @@ export async function getConfigFront(context: BuildContext) {
       cssModulesPlugin({
         inject: true,
         localsConvention: 'camelCase',
+      }),
+      postCssPlugin({
+        postcss: {
+          plugins: [require('tailwindcss'), require('autoprefixer')],
+        },
       }),
       {
         name: 'example',

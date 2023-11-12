@@ -20,12 +20,12 @@
   "settings": {
     // Project-specific settings
     "search.exclude": {
+      "**/.pnp.*": true,
+      "**/.yarn": true,
       "**/build*": true,
       "**/dist*": true,
-      "**/old": true,
-      "**/.yarn": true,
-      "**/.pnp.*": true,
-      "**/node_modules*": true
+      "**/node_modules*": true,
+      "**/old": true
     },
     "files.exclude": {
       "**/.yarn": true,
