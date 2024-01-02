@@ -28,14 +28,14 @@ export const Footer_styleLinearColorBlueVer: FC<Props> = memo(function Footer_st
   return (
     <div className={`${classes.root} ${props.classes?.root || ''} ${props.className || ''}`}>
       <a
-        href={'https://clapy.co?utm_source=plugin&utm_medium=button&utm_campaign=referral'}
+        href={'https://clapy.gitbook.io/clapy/'}
         target='_blank'
         rel='noreferrer'
         className={classes.clapyMadeWithLogo}
       >
         <MadeWithClapyIcon className={classes.clapyIcon} />
       </a>
-      <a href='https://bit.ly/docs-footer' className={classes.styled} target={'_blank'} rel='noreferrer'>
+      <a href='https://clapy.gitbook.io/clapy/' className={classes.styled} target={'_blank'} rel='noreferrer'>
         <div className={classes.frame69}>
           {props.swap?.lifeBuoy || (
             <LifeBuoy

@@ -97,7 +97,7 @@ export function parseErrorForDisplay(error: any) {
   }
   // Mail link generated with https://mailtolink.me/
   const emailLink =
-    `mailto:support@clapy.co?subject=%5BBug%5D%20Short%20description%20here%20XXX&body=Please%20describe%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0A-------------------%0D%0A%0D%0A${encodeURIComponent(
+    `mailto:antoine.orylamballe@gmail.com?subject=%5BBug%5D%20Short%20description%20here%20XXX&body=Please%20describe%20the%20steps%20to%20reproduce%3A%0D%0A%0D%0A-%20XXX%0D%0A-%20XXX%0D%0A%0D%0A-------------------%0D%0A%0D%0A${encodeURIComponent(
       errorStr,
     )}`.substring(0, 1800);
   const errorMsgDisplayed = `Error: ${data ? JSON.stringify(data.error || data) : error?.message || errorStr}`;
