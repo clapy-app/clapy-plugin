@@ -130,6 +130,8 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
     }
     const stroke = visibleStrokes[0];
     if (stroke.type === 'SOLID') {
+      const isDashed = node.dashPattern?.length === 2;
+      const borderStyle = isDashed ? 'dashed' : 'solid';
       // Examples of properties not supported yet:
       // stroke.blendMode
       // node.{strokeCap, strokeGeometry, strokeJoin, strokeMiterLimit}
@@ -146,16 +148,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             node,
             styles,
             'border-bottom',
-            'solid',
+            borderStyle,
             { borderWidth: [borderHeight, 'px'] },
             { border: hex },
           );
           addMargin(context, { bottom: -1 });
-          if (node.dashPattern?.length === 2) {
-            addStyle(context, node, styles, 'border-style', 'dashed');
-          } else {
-            resetStyleIfOverriding(context, node, styles, 'border-style');
-          }
           resetStyleIfOverriding(context, node, styles, 'outline');
           resetStyleIfOverriding(context, node, styles, 'outline-offset');
           resetStyleIfOverriding(context, node, styles, 'border');
@@ -168,15 +165,10 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
             node,
             styles,
             'outline',
-            'solid',
+            borderStyle,
             { borderWidth: [borderHeight, 'px', 0.5] },
             { border: hex },
           );
-          if (node.dashPattern?.length === 2) {
-            addStyle(context, node, styles, 'outline-style', 'dashed');
-          } else {
-            resetStyleIfOverriding(context, node, styles, 'outline-style');
-          }
           resetStyleIfOverriding(context, node, styles, 'outline-offset');
           resetStyleIfOverriding(context, node, styles, 'border');
           resetStyleIfOverriding(context, node, styles, 'border-top');
@@ -186,13 +178,16 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         }
       } else if (node.width <= 1) {
         let borderWidth = strokeWeightX(node);
-        addStyle(context, node, styles, 'border-right', 'solid', { borderWidth: [borderWidth, 'px'] }, { border: hex });
+        addStyle(
+          context,
+          node,
+          styles,
+          'border-right',
+          borderStyle,
+          { borderWidth: [borderWidth, 'px'] },
+          { border: hex },
+        );
         addMargin(context, { right: -1 });
-        if (node.dashPattern?.length === 2) {
-          addStyle(context, node, styles, 'border-style', 'dashed');
-        } else {
-          resetStyleIfOverriding(context, node, styles, 'border-style');
-        }
         resetStyleIfOverriding(context, node, styles, 'outline');
         resetStyleIfOverriding(context, node, styles, 'outline-offset');
         resetStyleIfOverriding(context, node, styles, 'border');
@@ -206,16 +201,11 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
           node,
           styles,
           'border-bottom',
-          'solid',
+          borderStyle,
           { borderWidth: [borderHeight, 'px'] },
           { border: hex },
         );
         addMargin(context, { bottom: -1 });
-        if (node.dashPattern?.length === 2) {
-          addStyle(context, node, styles, 'border-style', 'dashed');
-        } else {
-          resetStyleIfOverriding(context, node, styles, 'border-style');
-        }
         resetStyleIfOverriding(context, node, styles, 'outline');
         resetStyleIfOverriding(context, node, styles, 'outline-offset');
         resetStyleIfOverriding(context, node, styles, 'border');
@@ -228,18 +218,21 @@ export function borderFigmaToCode(context: NodeContext, node: ValidNode, styles:
         const strokeWeight = node.strokeWeight;
         const { strokeTopWeight, strokeRightWeight, strokeBottomWeight, strokeLeftWeight } = node;
         if (!isMixed(strokeWeight)) {
-          addStyle(context, node, styles, 'outline', 'solid', { borderWidth: [strokeWeight, 'px'] }, { border: hex });
+          addStyle(
+            context,
+            node,
+            styles,
+            'outline',
+            borderStyle,
+            { borderWidth: [strokeWeight, 'px'] },
+            { border: hex },
+          );
           if (strokeAlign === 'INSIDE') {
             addStyle(context, node, styles, 'outline-offset', { borderWidth: [strokeWeight, 'px', -1] });
           } else if (strokeAlign === 'CENTER') {
             addStyle(context, node, styles, 'outline-offset', { borderWidth: [strokeWeight, 'px', -0.5] });
           } else {
             resetStyleIfOverriding(context, node, styles, 'outline-offset');
-          }
-          if (node.dashPattern?.length === 2) {
-            addStyle(context, node, styles, 'outline-style', 'dashed');
-          } else {
-            resetStyleIfOverriding(context, node, styles, 'outline-style');
           }
         } else {
           // Individual strokes. Outline doesn't work, so we use shadows instead.
