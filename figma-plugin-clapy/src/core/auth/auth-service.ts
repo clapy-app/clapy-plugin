@@ -295,9 +295,9 @@ export interface AccessTokenDecoded {
     'x-hasura-default-role': string; //"team@earlymetrics.com"
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
-  'https://clapy.co/roles'?: string[];
-  'https://clapy.co/licence-expiration-date'?: number;
-  'https://clapy.co/limited-user'?: boolean;
+  'https://clapy.gitbook.io/roles'?: string[];
+  'https://clapy.gitbook.io/licence-expiration-date'?: number;
+  'https://clapy.gitbook.io/limited-user'?: boolean;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"

@@ -1,8 +1,8 @@
-# [Clapy](https://docs.clapy.co/)
+# [Clapy](https://clapy.gitbook.io/clapy)
 
 > Clapy is a Figma plugin that generates React and Angular components and pages from your Figma design.
 
-For usage, please refer to [the documentation](https://docs.clapy.co/) or [our website](https://clapy.co/).
+For usage, please refer to [the documentation](https://clapy.gitbook.io/clapy).
 
 This readme describes how to get started with the source code. The below instructions are opinionated, initially written for our internal team.
 

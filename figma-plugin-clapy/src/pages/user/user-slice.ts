@@ -57,7 +57,8 @@ export const selectIsQuotaDisabled = (state: RootState) => (state.user.userMetad
 export const selectUserMaxQuota = (state: RootState) => (state.user.userMetadata as UserMetadata)?.quotasMax!;
 // export const selectIsUserLimited = (state: RootState) => (state.user.userMetadata as UserMetadata)?.limitedUser!;
 export const selectIsFreeUser = (state: RootState) => {
-  const hasRoleFreeStripeAccess = state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+  const hasRoleFreeStripeAccess =
+    state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('FreeStripeAccess');
   if (hasRoleFreeStripeAccess) {
     return false;
   }

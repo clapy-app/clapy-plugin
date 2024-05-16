@@ -19,9 +19,9 @@ export interface AccessTokenDecoded {
     'x-hasura-default-role': string; //"team@earlymetrics.com"
     'x-hasura-user-id': string; // "auth0|622f597dc4b56e0071615ebe"} - auth0 user ID repeated for Hasura
   };
-  'https://clapy.co/roles'?: string[];
-  'https://clapy.co/licence-expiration-date'?: number;
-  'https://clapy.co/limited-user'?: boolean;
+  'https://clapy.gitbook.io/roles'?: string[];
+  'https://clapy.gitbook.io/licence-expiration-date'?: number;
+  'https://clapy.gitbook.io/limited-user'?: boolean;
   iat: number; // 1647520009 - Issued at
   iss: string; // "https://clapy.eu.auth0.com/" - Issuer
   scope: string; // "offline_access"
@@ -83,16 +83,16 @@ export function hasMissingMetaUsage(userMetaUsage: UserMetaUsage | undefined) {
 }
 
 export const hasRoleNoCodeSandbox = (user: AccessTokenDecoded) =>
-  user?.['https://clapy.co/roles']?.includes('noCodesandbox');
+  user?.['https://clapy.gitbook.io/roles']?.includes('noCodesandbox');
 export const hasRoleIncreasedQuota = (user: AccessTokenDecoded) =>
-  user?.['https://clapy.co/roles']?.includes('increasedQuota');
+  user?.['https://clapy.gitbook.io/roles']?.includes('increasedQuota');
 
 // TODO edit here and in src/core/auth/auth-slice.ts
 export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
-  user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+  user?.['https://clapy.gitbook.io/roles']?.includes('FreeStripeAccess');
 
 export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
+  return !!user?.['https://clapy.gitbook.io/roles']?.includes('dev_tools');
 }
 
 // TODO remove after the quota has been enabled for everybody
@@ -101,6 +101,6 @@ export const isStripeEnabled = (user: AccessTokenDecoded | Nil) => {
 };
 
 function isNewUserTmp(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/limited-user'];
+  return !!user?.['https://clapy.gitbook.io/limited-user'];
 }
 // /TODO remove after the quota has been enabled for everybody

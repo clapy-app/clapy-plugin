@@ -69,25 +69,25 @@ export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectSignedIn = (state: RootState) => !!state.auth.isSignedIn;
 export const selectTokenDecoded = (state: RootState) => state.auth.tokenDecoded;
 export const selectIsAlphaDTCUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('alpha_design_to_code');
+  state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('alpha_design_to_code');
 export const selectNoCodesandboxUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('noCodesandbox');
+  state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('noCodesandbox');
 export const selectIncreasedQuotaUser = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('increasedQuota');
+  state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('increasedQuota');
 export const selectUserLicenceExpirationDate = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/licence-expiration-date'];
+  state.auth.tokenDecoded?.['https://clapy.gitbook.io/licence-expiration-date'];
 export const selectGithubEnabled = (state: RootState) =>
-  env.isDev || state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('github_integration');
+  env.isDev || state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('github_integration');
 
 export const selectCssOptionEnabled = (state: RootState) => true;
 export const selectFreeStripeAccess = (state: RootState) => hasRoleFreeStripeAccess(state.auth.tokenDecoded);
 export const selectDevTools = (state: RootState) =>
-  state.auth.tokenDecoded?.['https://clapy.co/roles']?.includes('dev_tools');
+  state.auth.tokenDecoded?.['https://clapy.gitbook.io/roles']?.includes('dev_tools');
 // TODO edit here and in src/features/user/user.utils.ts
 
 export function hasRoleDevTools(user: AccessTokenDecoded | Nil) {
-  return !!user?.['https://clapy.co/roles']?.includes('dev_tools');
+  return !!user?.['https://clapy.gitbook.io/roles']?.includes('dev_tools');
 }
 
 export const hasRoleFreeStripeAccess = (user: AccessTokenDecoded | Nil) =>
-  user?.['https://clapy.co/roles']?.includes('FreeStripeAccess');
+  user?.['https://clapy.gitbook.io/roles']?.includes('FreeStripeAccess');

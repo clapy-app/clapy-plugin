@@ -11,7 +11,7 @@ export class StripeService {
   constructor(@InjectRepository(LoginTokensEntity) private loginTokensRepo: Repository<LoginTokensEntity>) {}
 
   isLicenceInactive(user: AccessTokenDecoded) {
-    const licenceExpirationDate = user['https://clapy.co/licence-expiration-date'];
+    const licenceExpirationDate = user['https://clapy.gitbook.io/licence-expiration-date'];
     if (hasRoleFreeStripeAccess(user)) {
       return false;
     }

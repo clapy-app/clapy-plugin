@@ -1,4 +1,4 @@
-const namespace = 'https://clapy.co';
+const namespace = 'https://clapy.gitbook.io';
 
 /**
  * Handler that will be called during the execution of a PostLogin flow.
