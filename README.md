@@ -1,3 +1,7 @@
+# Important notice
+
+Clapy has stopped operating. We are thankful for your support. After years of generating projects code from design, it's time to move forward.
+
 # [Clapy](https://clapy.gitbook.io/clapy)
 
 > Clapy is a Figma plugin that generates React and Angular components and pages from your Figma design.
